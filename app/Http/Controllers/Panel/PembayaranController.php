@@ -23,7 +23,7 @@ class PembayaranController extends Controller
         abort_unless($pembayaran->order_id === $pesanan->id, 404);
         abort_if($pembayaran->status === PaymentStatus::LUNAS, 422, 'Pembayaran ini sudah diverifikasi.');
 
-        $this->alur->terimaPembayaran($pembayaran, auth()->id());
+        $this->alur->terimaPembayaran($pembayaran, auth('web')->id());
 
         ActivityLog::catat('pembayaran.diverifikasi', $pesanan, [
             'payment_id' => $pembayaran->id,
@@ -58,11 +58,11 @@ class PembayaranController extends Controller
             'status' => PaymentStatus::MENUNGGU,
             'jumlah' => $data['jumlah'],
             // Titik rawan uang kas: siapa yang menerima selalu tercatat.
-            'dicatat_oleh' => auth()->id(),
+            'dicatat_oleh' => auth('web')->id(),
             'dibayar_pada' => now(),
         ]);
 
-        $this->alur->terimaPembayaran($pembayaran, auth()->id());
+        $this->alur->terimaPembayaran($pembayaran, auth('web')->id());
 
         ActivityLog::catat('pembayaran.dicatat', $pesanan, [
             'jumlah' => $data['jumlah'],
@@ -84,7 +84,7 @@ class PembayaranController extends Controller
 
         $pembayaran->update([
             'status' => PaymentStatus::GAGAL,
-            'diverifikasi_oleh' => auth()->id(),
+            'diverifikasi_oleh' => auth('web')->id(),
         ]);
 
         ActivityLog::catat('pembayaran.ditolak', $pesanan, $data);

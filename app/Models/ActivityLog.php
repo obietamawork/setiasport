@@ -25,7 +25,7 @@ class ActivityLog extends Model
     public static function catat(string $aksi, ?Model $subjek = null, array $data = []): self
     {
         return static::create([
-            'user_id' => auth()->id(),
+            'user_id' => auth('web')->id(),
             'aksi' => $aksi,
             'subjek_tipe' => $subjek ? class_basename($subjek) : null,
             'subjek_id' => $subjek?->getKey(),

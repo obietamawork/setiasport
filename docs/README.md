@@ -35,7 +35,8 @@ sudah jalan dan tertutup test. Cara menjalankan proyeknya ada di
   ditukar, dan webhook status Resend. 72 test lulus di MySQL
 - Susunan peran diringkas jadi dua (KEP-017), gambar produk mendukung unggah
   maupun CDN (KEP-018), dan identitas visual diturunkan dari logo (KEP-019).
-  79 test lulus di MySQL
+  Pelanggan kini bisa memakai akun sebagai jalur kedua di samping tautan
+  bertoken (KEP-020). 93 test lulus di MySQL
 - Sisa pekerjaan bukan lagi kode: pasang berkas logo, koreksi harga katalog,
   pembelian hosting, pendaftaran merchant, dan deploy ([12-deploy.md](12-deploy.md))
 - Menunggu dari pemilik toko: koreksi harga katalog & pembelian hosting

@@ -15,7 +15,7 @@
 <body class="min-h-screen bg-paper" x-data="{ menu: false }">
 
 @php
-    $u = auth()->user();
+    $u = auth('web')->user();
     $menu = [
         ['panel.dashboard', 'Dashboard', null, 'panel.dashboard'],
         ['panel.pesanan.index', 'Pesanan', 'order.lihat', 'panel.pesanan.*'],

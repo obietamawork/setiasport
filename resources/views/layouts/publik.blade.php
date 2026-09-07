@@ -17,10 +17,18 @@
 
 @php
     $isiKeranjang = app(\App\Services\Keranjang::class)->jumlahBaris();
-    $nav = [
-        ['katalog', 'Katalog', ['katalog', 'produk']],
-        ['lacak', 'Lacak pesanan', ['lacak*']],
-    ];
+    $pelanggan = auth('pelanggan')->user();
+
+    $nav = $pelanggan
+        ? [
+            ['katalog', 'Katalog', ['katalog', 'produk']],
+            ['pesanan-saya', 'Pesanan saya', ['pesanan-saya', 'lacak*']],
+        ]
+        : [
+            ['katalog', 'Katalog', ['katalog', 'produk']],
+            ['lacak', 'Lacak pesanan', ['lacak*']],
+            ['masuk', 'Masuk', ['masuk', 'daftar']],
+        ];
 @endphp
 
 <header class="sticky top-0 z-30 border-b border-line bg-field/95 backdrop-blur">

@@ -19,12 +19,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('panel')->name('panel.')->group(function () {
 
-    Route::middleware('guest')->group(function () {
+    Route::middleware('guest:web')->group(function () {
         Route::get('/login', [AuthController::class, 'form'])->name('login');
         Route::post('/login', [AuthController::class, 'masuk'])->name('masuk');
     });
 
-    Route::middleware('auth')->group(function () {
+    // Guard disebut eksplisit. Panel tidak boleh bergantung pada guard mana
+    // yang kebetulan menjadi bawaan, karena pelanggan kini punya guard sendiri.
+    Route::middleware('auth:web')->group(function () {
         Route::post('/keluar', [AuthController::class, 'keluar'])->name('keluar');
         Route::get('/', DashboardController::class)->name('dashboard');
 

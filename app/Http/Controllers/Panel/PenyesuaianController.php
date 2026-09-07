@@ -30,7 +30,7 @@ class PenyesuaianController extends Controller
             'jumlah.not_in' => 'Nominal tidak boleh nol. Pakai angka negatif untuk potongan harga.',
         ], ['deskripsi' => 'deskripsi', 'jumlah' => 'nominal']);
 
-        $penyesuaian = $pesanan->adjustments()->create($data + ['dibuat_oleh' => auth()->id()]);
+        $penyesuaian = $pesanan->adjustments()->create($data + ['dibuat_oleh' => auth('web')->id()]);
 
         ActivityLog::catat('penyesuaian.dibuat', $pesanan, $data);
 

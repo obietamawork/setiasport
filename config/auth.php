@@ -42,6 +42,16 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        /*
+         * Penjaga terpisah untuk pelanggan. Staf dan pelanggan tidak pernah
+         * berbagi sesi, sehingga pelanggan mustahil ikut terbawa ke panel
+         * internal karena salah konfigurasi peran (KEP-020).
+         */
+        'pelanggan' => [
+            'driver' => 'session',
+            'provider' => 'customers',
+        ],
     ],
 
     /*
@@ -65,6 +75,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'customers' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Customer::class,
         ],
 
         // 'users' => [

@@ -16,7 +16,7 @@ class EnsurePermission
 {
     public function handle(Request $request, Closure $next, string ...$izin): Response
     {
-        $user = $request->user();
+        $user = $request->user('web');
 
         abort_if(! $user || ! $user->aktif, 403, 'Akun Anda tidak aktif.');
 

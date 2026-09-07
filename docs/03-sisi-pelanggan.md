@@ -76,10 +76,16 @@ Yang harus ada:
 
 ## Akses & Notifikasi  → lihat KEP-004, KEP-008
 
-### Akses: magic link, tanpa password
+### Akses: dua jalur yang sama-sama berlaku (KEP-020)
 
-Tidak ada pendaftaran akun. Setiap order punya token akses; emailnya berisi tautan
-sekali-klik ke halaman tracking. Bisa juga dibuka manual dengan **kode order + email**.
+**Tautan bertoken** adalah jalur utama dan tidak pernah dimatikan. Setiap order
+punya token akses; emailnya berisi tautan sekali-klik ke halaman pesanan. Bisa
+juga dibuka manual dengan **kode order + email**.
+
+**Akun dengan kata sandi** ditawarkan sebagai tambahan bagi pelanggan berulang
+yang ingin melihat semua pesanannya dalam satu halaman. Sepenuhnya opsional:
+checkout tamu tetap tanpa pendaftaran. Pemesan tamu yang mendaftar belakangan
+langsung mewarisi riwayatnya, karena email sudah menjadi kunci sejak awal.
 
 Tautan **sengaja bisa dibagikan** — Budi memesan 18 jersey lalu membagikannya ke grup
 tim, dan 17 anggota lain memantau progres sendiri tanpa bertanya ke Budi. Konsekuensinya:

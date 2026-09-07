@@ -2,13 +2,39 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Customer extends Model
+/**
+ * Pelanggan boleh punya akun, boleh juga tidak (KEP-020).
+ *
+ * Yang tanpa akun tetap membuka pesanannya lewat tautan bertoken di email,
+ * persis seperti sebelumnya. Akun hanya menambah kemudahan bagi pelanggan
+ * berulang, tidak pernah menjadi syarat.
+ */
+class Customer extends Authenticatable
 {
-    protected $fillable = ['nama', 'email', 'no_hp', 'catatan', 'user_id'];
+    use Notifiable;
+
+    protected $fillable = ['nama', 'email', 'no_hp', 'catatan', 'user_id', 'password'];
+
+    protected $hidden = ['password', 'remember_token'];
+
+    protected function casts(): array
+    {
+        return [
+            'password' => 'hashed',
+            'akun_dibuat_pada' => 'datetime',
+            'login_terakhir_pada' => 'datetime',
+        ];
+    }
+
+    public function punyaAkun(): bool
+    {
+        return filled($this->password);
+    }
 
     public function orders(): HasMany
     {
@@ -21,7 +47,7 @@ class Customer extends Model
     }
 
     /**
-     * Halaman tracking bersifat publik-bertoken dan tautannya memang dibagikan
+     * Halaman pesanan bersifat publik-bertoken dan tautannya memang dibagikan
      * ke grup tim (KEP-008), jadi data kontak tidak boleh tampil utuh di sana.
      */
     public function getNoHpSamarAttribute(): string

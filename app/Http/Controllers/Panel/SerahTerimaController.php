@@ -59,7 +59,7 @@ class SerahTerimaController extends Controller
             );
         }
 
-        $this->alur->serahkan($pesanan, $data['diambil_oleh'], auth()->id());
+        $this->alur->serahkan($pesanan, $data['diambil_oleh'], auth('web')->id());
 
         ActivityLog::catat('pesanan.diserahkan', $pesanan, $data);
 

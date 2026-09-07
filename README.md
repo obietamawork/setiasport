@@ -38,6 +38,9 @@ Buka:
 | Aplikasi | http://localhost:8080 |
 | Adminer (DB) | http://localhost:8081 — server `db`, user `setiasport`, pass `secret` |
 
+Pelanggan punya dua jalur (KEP-020): tautan bertoken di email seperti biasa,
+atau akun dengan kata sandi lewat `/masuk`. Keduanya berlaku penuh.
+
 Akun internal (kata sandi keduanya `password`, ganti sebelum deploy):
 
 | Email | Peran | Memegang |

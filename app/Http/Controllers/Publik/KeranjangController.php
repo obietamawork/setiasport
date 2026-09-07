@@ -51,11 +51,24 @@ class KeranjangController extends Controller
     {
         abort_unless($produk->aktif && $produk->punyaJalurKustom(), 404);
 
+        // Opsi yang tidak wajib mengirim nilai kosong saat pelanggan memilih
+        // "Tidak dipakai". Dibuang lebih dulu, karena kosong berarti tidak
+        // memilih, bukan memilih sesuatu yang tidak sah.
+        $request->merge([
+            'opsi' => array_values(array_filter(
+                (array) $request->input('opsi', []),
+                fn ($v) => $v !== '' && $v !== null
+            )),
+        ]);
+
         $data = $request->validate([
             'qty' => ['required', 'integer', 'min:1', 'max:100000'],
             'opsi' => ['array'],
             'opsi.*' => ['integer', 'exists:option_values,id'],
-        ], [], ['qty' => 'jumlah']);
+        ], [
+            'opsi.*.integer' => 'Ada pilihan yang tidak dikenali. Muat ulang halaman lalu coba lagi.',
+            'opsi.*.exists' => 'Ada pilihan yang sudah tidak tersedia. Muat ulang halaman lalu coba lagi.',
+        ], ['qty' => 'jumlah']);
 
         try {
             $this->keranjang->tambahKustom($produk, $data['qty'], $data['opsi'] ?? []);

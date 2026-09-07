@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Publik\AkunController;
 use App\Http\Controllers\Publik\BerandaController;
 use App\Http\Controllers\Publik\CheckoutController;
 use App\Http\Controllers\Publik\KatalogController;
@@ -7,6 +8,7 @@ use App\Http\Controllers\Publik\KeranjangController;
 use App\Http\Controllers\Publik\LacakController;
 use App\Http\Controllers\Publik\PembayaranOnlineController;
 use App\Http\Controllers\Publik\PesananItemController;
+use App\Http\Controllers\Publik\PesananSayaController;
 use App\Http\Controllers\Webhook\MidtransController;
 use App\Http\Controllers\Webhook\ResendController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +26,22 @@ Route::delete('/keranjang', [KeranjangController::class, 'hapus'])->name('keranj
 
 Route::get('/checkout', [CheckoutController::class, 'form'])->name('checkout');
 Route::post('/checkout', [CheckoutController::class, 'proses'])->name('checkout.proses');
+
+/*
+ * Akun pelanggan: jalur kedua, bukan pengganti (KEP-020). Tautan bertoken di
+ * bawah tetap bekerja penuh untuk pelanggan yang tidak mau membuat akun.
+ */
+Route::middleware('guest:pelanggan')->group(function () {
+    Route::get('/masuk', [AkunController::class, 'formMasuk'])->name('masuk');
+    Route::post('/masuk', [AkunController::class, 'masuk'])->name('masuk.proses');
+    Route::get('/daftar', [AkunController::class, 'formDaftar'])->name('daftar');
+    Route::post('/daftar', [AkunController::class, 'daftar'])->name('daftar.proses');
+});
+
+Route::middleware('auth:pelanggan')->group(function () {
+    Route::get('/pesanan-saya', PesananSayaController::class)->name('pesanan-saya');
+    Route::post('/keluar', [AkunController::class, 'keluar'])->name('keluar');
+});
 
 // Halaman pesanan pelanggan: tanpa akun, tanpa kata sandi (KEP-008).
 Route::get('/lacak', [LacakController::class, 'form'])->name('lacak');

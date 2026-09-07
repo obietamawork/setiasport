@@ -33,7 +33,7 @@ class AntrianController extends Controller
 
     public function index()
     {
-        $tahap = auth()->user()->tahapProduksi();
+        $tahap = auth('web')->user()->tahapProduksi();
 
         // Kalau hanya memegang satu divisi, tidak perlu memilih dulu.
         if (count($tahap) === 1) {
@@ -53,13 +53,13 @@ class AntrianController extends Controller
         $stage = ProductionStage::tryFrom(strtoupper($tahap));
 
         abort_unless($stage, 404);
-        abort_unless(auth()->user()->punyaIzin($stage->permission()), 403,
+        abort_unless(auth('web')->user()->punyaIzin($stage->permission()), 403,
             'Peran Anda tidak memegang antrian '.$stage->label().'.');
 
         return view('panel.antrian.tahap', [
             'stage' => $stage,
             'pekerjaan' => $this->kueri($stage)->get(),
-            'tahapLain' => collect(auth()->user()->tahapProduksi())
+            'tahapLain' => collect(auth('web')->user()->tahapProduksi())
                 ->reject(fn (ProductionStage $t) => $t === $stage),
         ]);
     }
@@ -80,12 +80,12 @@ class AntrianController extends Controller
         $this->pastikanBoleh($item);
 
         if (isset(self::ANTRI_KE_KERJA[$item->status_item->value])) {
-            $baru = $this->alur->majukanItem($item, auth()->id());
+            $baru = $this->alur->majukanItem($item, auth('web')->id());
 
             return back()->with('sukses', "{$item->nama_produk} sekarang: {$baru->label()}.");
         }
 
-        $this->alur->mulaiKerja($item, auth()->id());
+        $this->alur->mulaiKerja($item, auth('web')->id());
 
         return back()->with('sukses', "Mulai mengerjakan {$item->nama_produk}.");
     }
@@ -94,7 +94,7 @@ class AntrianController extends Controller
     {
         $this->pastikanBoleh($item);
 
-        $baru = $this->alur->majukanItem($item, auth()->id());
+        $baru = $this->alur->majukanItem($item, auth('web')->id());
 
         return back()->with('sukses',
             "{$item->nama_produk} selesai dan diteruskan ke tahap {$baru->label()}.");
@@ -107,7 +107,7 @@ class AntrianController extends Controller
         );
 
         abort_unless($stage, 422, 'Item ini sedang tidak berada di antrian produksi mana pun.');
-        abort_unless(auth()->user()->punyaIzin($stage->permission()), 403,
+        abort_unless(auth('web')->user()->punyaIzin($stage->permission()), 403,
             'Item ini berada di antrian '.$stage->label().', yang bukan tanggung jawab peran Anda.');
     }
 

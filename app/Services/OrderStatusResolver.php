@@ -71,7 +71,7 @@ class OrderStatusResolver
             'order_id' => $order->id,
             'dari' => $lama?->value,
             'ke' => $baru->value,
-            'oleh' => auth()->id(),
+            'oleh' => auth('web')->id(),
             'catatan' => $catatan,
             'created_at' => now(),
         ]);

@@ -478,6 +478,50 @@ bukan karena netral.
 
 ---
 
+## KEP-020 — Akun pelanggan sebagai jalur kedua, bukan pengganti
+**Status:** TERKUNCI · 2026-09-08
+
+Pelanggan kini punya dua cara membuka pesanannya, dan **keduanya berlaku penuh**:
+
+| Jalur | Untuk siapa |
+|---|---|
+| **Tautan bertoken di email** (KEP-008) | Semua orang. Tidak pernah dimatikan |
+| **Akun dengan kata sandi** | Pelanggan berulang yang ingin melihat semua pesanannya dalam satu halaman |
+
+**Akun tidak pernah menjadi syarat.** Checkout tamu tetap tanpa pendaftaran,
+karena memaksa daftar di checkout menurunkan konversi, dan tautan yang bisa
+dibagikan ke grup tim adalah fitur, bukan kekurangan. Halaman masuk pun
+menampilkan jalur tanpa akun secara terbuka, bukan menyembunyikannya.
+
+Akun ditawarkan di dua titik yang sudah terbukti paling masuk akal: sebagai
+centang opsional saat checkout, dan di halaman pesanan setelah pesanan nyata
+terbentuk.
+
+**Email adalah kuncinya.** Pemesan tamu yang mendaftar belakangan langsung
+mewarisi seluruh riwayat pesanannya, karena `customers` memang sudah dicocokkan
+berdasarkan email sejak awal. Tidak ada data yang perlu dipindahkan.
+
+### Pelanggan disimpan terpisah dari staf
+
+Pelanggan memakai tabel `customers` dan **penjaga sesi sendiri** (`pelanggan`),
+bukan digabung ke `users`. Alasannya keamanan, bukan kerapian: dengan penjaga
+terpisah, akun pelanggan mustahil ikut terbawa ke panel internal karena salah
+konfigurasi peran.
+
+**Konsekuensi teknis:**
+- `customers` mendapat `password` (nullable), `remember_token`, dan indeks unik
+  pada `email`
+- Seluruh rute serta pemeriksaan izin panel menyebut guard `web` secara
+  eksplisit, tidak lagi bergantung pada guard mana yang kebetulan menjadi bawaan
+- Pengalihan tamu sadar konteks: `/panel/*` ke halaman masuk staf, sisanya ke
+  halaman masuk pelanggan
+- Pelanggan yang sudah masuk tidak mengetik ulang datanya di checkout, dan
+  emailnya dikunci karena itulah yang mengikat pesanan ke akunnya
+- Pelanggan lama tanpa kata sandi yang mencoba masuk diarahkan ke pendaftaran
+  dengan email terisi, bukan diberi pesan gagal yang membingungkan
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -501,3 +545,4 @@ bukan karena netral.
 | KEP-017 | Hanya dua peran: Pemilik dan Admin | TERKUNCI |
 | KEP-018 | Gambar produk: unggah atau tautan CDN | TERKUNCI |
 | KEP-019 | Identitas visual diturunkan dari logo | TERKUNCI |
+| KEP-020 | Akun pelanggan sebagai jalur kedua, bukan pengganti | TERKUNCI |

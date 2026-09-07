@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
@@ -20,6 +21,11 @@ class LacakController extends Controller
 {
     public function form()
     {
+        // Pelanggan yang sudah masuk tidak perlu mengetik kode apa pun.
+        if (Auth::guard('pelanggan')->check()) {
+            return redirect()->route('pesanan-saya');
+        }
+
         return view('publik.lacak-form');
     }
 

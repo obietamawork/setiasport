@@ -15,7 +15,7 @@
 
             <div>
                 <label for="nama" class="label-form">Nama pemesan</label>
-                <input type="text" id="nama" name="nama" value="{{ old('nama') }}"
+                <input type="text" id="nama" name="nama" value="{{ old('nama', $pelanggan?->nama) }}"
                        class="kotak-input" required autofocus autocomplete="name">
             </div>
 
@@ -31,7 +31,7 @@
 
             <div>
                 <label for="no_hp" class="label-form">Nomor HP (WhatsApp)</label>
-                <input type="tel" id="no_hp" name="no_hp" value="{{ old('no_hp') }}"
+                <input type="tel" id="no_hp" name="no_hp" value="{{ old('no_hp', $pelanggan?->no_hp) }}"
                        class="kotak-input tabular" required autocomplete="tel">
                 <p class="mt-1 text-xs text-muted">Dipakai kalau kami perlu menghubungi Anda langsung.</p>
             </div>
@@ -67,6 +67,39 @@
             @else
                 <input type="hidden" name="tipe_pembayaran" value="LUNAS">
             @endif
+
+            @unless ($pelanggan)
+                {{-- Akun sepenuhnya opsional. Ditawarkan di sini karena inilah
+                     saat pelanggan paling mungkin mau, bukan karena diwajibkan. --}}
+                <div class="border-t border-line pt-4" x-data="{ buat: {{ old('buat_akun') ? 'true' : 'false' }} }">
+                    <label class="flex items-start gap-2 text-sm">
+                        <input type="checkbox" name="buat_akun" value="1" x-model="buat"
+                               class="mt-0.5 size-4 accent-navy">
+                        <span>
+                            <strong>Buat akun sekalian</strong>
+                            <span class="block text-muted">
+                                Supaya semua pesanan Anda bisa dilihat dalam satu halaman
+                                tanpa mencari email. Tanpa ini pun pesanan tetap bisa dibuka
+                                lewat tautan yang kami kirim.
+                            </span>
+                        </span>
+                    </label>
+
+                    <div x-show="buat" x-cloak class="mt-4 grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="password" class="label-form">Kata sandi</label>
+                            <input type="password" id="password" name="password"
+                                   class="kotak-input" autocomplete="new-password">
+                            <p class="bantuan-form">Minimal 8 karakter.</p>
+                        </div>
+                        <div>
+                            <label for="password_confirmation" class="label-form">Ulangi kata sandi</label>
+                            <input type="password" id="password_confirmation" name="password_confirmation"
+                                   class="kotak-input" autocomplete="new-password">
+                        </div>
+                    </div>
+                </div>
+            @endunless
 
             <label class="flex items-start gap-2 border-t border-line pt-4 text-sm">
                 <input type="checkbox" name="setuju" value="1" class="mt-0.5 size-4 accent-navy" @checked(old('setuju'))>

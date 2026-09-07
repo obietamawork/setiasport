@@ -20,7 +20,7 @@ class MockupController extends Controller
 
     public function store(Request $request, OrderItem $item): RedirectResponse
     {
-        abort_unless(auth()->user()->punyaIzin('produksi.desain'), 403);
+        abort_unless(auth('web')->user()->punyaIzin('produksi.desain'), 403);
         abort_unless(
             in_array($item->status_item, [OrderItemStatus::ANTRIAN_DESAIN, OrderItemStatus::PROSES_DESAIN], true),
             422,
@@ -56,7 +56,7 @@ class MockupController extends Controller
             $request->file('preview')?->store('mockup', 'public'),
             $request->input('tautan'),
             $request->input('catatan'),
-            auth()->id(),
+            auth('web')->id(),
         );
 
         ActivityLog::catat('mockup.diunggah', $item, ['versi' => $aset->versi]);

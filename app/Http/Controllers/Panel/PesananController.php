@@ -65,7 +65,7 @@ class PesananController extends Controller
     {
         abort_unless($item->order_id === $pesanan->id, 404);
 
-        $baru = $this->alur->majukanItem($item, auth()->id());
+        $baru = $this->alur->majukanItem($item, auth('web')->id());
 
         return back()->with('sukses', "{$item->nama_produk} sekarang: {$baru->label()}.");
     }
@@ -78,7 +78,7 @@ class PesananController extends Controller
             'alasan.required' => 'Tulis alasan pembatalan: pelanggan berhak tahu, dan ini masuk riwayat pesanan.',
         ], ['alasan' => 'alasan pembatalan']);
 
-        $this->alur->batalkan($pesanan, $data['alasan'], auth()->id());
+        $this->alur->batalkan($pesanan, $data['alasan'], auth('web')->id());
 
         return back()->with('sukses', 'Pesanan dibatalkan dan reservasi stoknya dilepas.');
     }

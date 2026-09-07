@@ -83,6 +83,18 @@ class KustomFlowTest extends TestCase
             ->assertSessionHasNoErrors();
     }
 
+    public function test_opsi_yang_tidak_dipakai_tidak_menggagalkan_checkout(): void
+    {
+        // Opsi tidak wajib mengirim nilai kosong saat pelanggan memilih
+        // "Tidak dipakai". Itu berarti tidak memilih, bukan pilihan tidak sah.
+        $this->post(route('keranjang.kustom', $this->jersey()), [
+            'qty' => 12,
+            'opsi' => [1 => $this->opsi('Milano')[0], 6 => ''],
+        ])->assertSessionHasNoErrors()->assertRedirect(route('keranjang'));
+
+        $this->assertSame(1, app(\App\Services\Keranjang::class)->jumlahBaris());
+    }
+
     public function test_konfigurator_menegakkan_moq_dan_menghitung_harga_di_server(): void
     {
         $this->post(route('keranjang.kustom', $this->jersey()), ['qty' => 11])

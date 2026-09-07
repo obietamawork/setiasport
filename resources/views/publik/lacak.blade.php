@@ -255,7 +255,21 @@
 
     <p class="mt-8 text-sm leading-relaxed text-muted">
         Simpan tautan halaman ini. Boleh dibagikan ke anggota tim yang ingin ikut
-        memantau: tidak ada data pribadi yang tampil di sini.
+        memantau, tidak ada data pribadi yang tampil di sini.
     </p>
+
+    {{-- Ditawarkan di sini karena inilah saat pelanggan paling mungkin mau:
+         pesanannya sudah nyata dan mereka sedang melihat manfaatnya. --}}
+    @if (! auth('pelanggan')->check() && ! $order->customer->punyaAkun())
+        <div class="notis notis-info mt-4">
+            <p class="font-semibold">Sering memesan di sini?</p>
+            <p class="mt-1">
+                Buat akun sekali, lalu semua pesanan Anda tampil dalam satu halaman tanpa
+                perlu mencari email. Pesanan ini ikut tercatat otomatis.
+            </p>
+            <a href="{{ route('daftar', ['email' => $order->customer->email]) }}"
+               class="tombol tombol-garis tombol-sm mt-3">Buat akun</a>
+        </div>
+    @endif
 </div>
 @endsection

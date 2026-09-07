@@ -8,6 +8,9 @@ use App\Services\Keranjang;
 use App\Services\PengirimEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class CheckoutController extends Controller
@@ -34,11 +37,44 @@ class CheckoutController extends Controller
             // besok, jadi tidak ada gunanya menunda pembayarannya (KEP-005).
             'bolehDp' => $isi->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::PREORDER),
             'persenDp' => (int) setting('dp_minimum_persen', 50),
+            'pelanggan' => Auth::guard('pelanggan')->user(),
         ]);
+    }
+
+    /**
+     * Pelanggan yang sudah masuk tidak perlu mengetik ulang datanya.
+     * Emailnya dikunci karena itulah yang mengikat pesanan ke akunnya.
+     */
+    private function isiOtomatis(Request $request): void
+    {
+        if ($pelanggan = Auth::guard('pelanggan')->user()) {
+            $request->merge([
+                'email' => $pelanggan->email,
+                'nama' => $request->filled('nama') ? $request->input('nama') : $pelanggan->nama,
+                'no_hp' => $request->filled('no_hp') ? $request->input('no_hp') : $pelanggan->no_hp,
+                'buat_akun' => null,
+            ]);
+        }
+    }
+
+    private function buatkanAkun(\App\Models\Customer $pelanggan, string $password): void
+    {
+        if ($pelanggan->punyaAkun()) {
+            return;
+        }
+
+        $pelanggan->forceFill([
+            'password' => Hash::make($password),
+            'akun_dibuat_pada' => now(),
+        ])->save();
+
+        Auth::guard('pelanggan')->login($pelanggan);
     }
 
     public function proses(Request $request): RedirectResponse
     {
+        $this->isiOtomatis($request);
+
         if ($this->keranjang->kosong()) {
             return redirect()->route('keranjang');
         }
@@ -60,7 +96,13 @@ class CheckoutController extends Controller
             // masuk akal di sana.
             'tipe_pembayaran' => ['nullable', 'in:LUNAS,DP'],
             'setuju' => ['accepted'],
+
+            // Akun sepenuhnya opsional. Kolomnya hanya diperiksa bila kotaknya
+            // dicentang, supaya checkout tamu tidak pernah terhalang (KEP-020).
+            'buat_akun' => ['nullable', 'boolean'],
+            'password' => ['exclude_unless:buat_akun,1', 'required', 'confirmed', Password::min(8)],
         ], [
+            'password.confirmed' => 'Ulangi kata sandi belum sama.',
             'email.required' => 'Email wajib diisi: ke sanalah tautan pesanan dan kabar progres dikirim.',
             'no_hp.regex' => 'Nomor HP hanya boleh berisi angka, spasi, tanda plus, dan strip.',
             'setuju.accepted' => 'Centang persetujuan pengambilan di toko untuk melanjutkan.',
@@ -78,6 +120,10 @@ class CheckoutController extends Controller
         } catch (\RuntimeException $e) {
             // Umumnya stok habis diambil pembeli lain di detik terakhir.
             throw ValidationException::withMessages(['nama' => $e->getMessage()]);
+        }
+
+        if ($request->boolean('buat_akun')) {
+            $this->buatkanAkun($order->customer, $request->string('password')->toString());
         }
 
         $this->email->kirim($order, 'order-dibuat');

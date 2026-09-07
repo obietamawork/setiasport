@@ -15,7 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'izin' => \App\Http\Middleware\EnsurePermission::class,
         ]);
 
-        $middleware->redirectGuestsTo('/panel/login');
+        // Staf dan pelanggan punya halaman masuk sendiri; jangan saling melempar.
+        $middleware->redirectGuestsTo(
+            fn ($request) => $request->is('panel', 'panel/*') ? route('panel.login') : route('masuk')
+        );
 
         $middleware->validateCsrfTokens(except: [
             'webhook/*',
