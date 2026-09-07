@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Queue\SerializesModels;
 
 /**
@@ -24,7 +25,18 @@ class EmailPesanan extends Mailable implements ShouldQueue
         public Order $order,
         public string $template,
         public string $subjek,
+        public ?int $logId = null,
     ) {}
+
+    /**
+     * Id baris email_logs ikut sebagai header, supaya id pesan yang dikembalikan
+     * Resend bisa dicatat balik ke baris yang benar — dan webhook status nanti
+     * punya sesuatu untuk dicocokkan.
+     */
+    public function headers(): Headers
+    {
+        return new Headers(text: $this->logId ? ['X-Log-Id' => (string) $this->logId] : []);
+    }
 
     public function envelope(): Envelope
     {

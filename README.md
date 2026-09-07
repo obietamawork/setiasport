@@ -4,6 +4,8 @@ Toko alat olahraga + workshop kustom. Satu aplikasi web, dua alur pesanan
 (Ready Stock & PreOrder), tracking pesanan sampai **siap diambil di toko**.
 Tanpa pengiriman.
 
+**Siap deploy** — langkahnya di [docs/12-deploy.md](docs/12-deploy.md).
+
 **Rancangan lengkap ada di [docs/](docs/).** Baca [docs/08-log-keputusan.md](docs/08-log-keputusan.md)
 lebih dulu — semua keputusan fondasi beserta alasannya ada di sana, dan kode ini
 merujuk ke nomor KEP-xxx.
@@ -16,6 +18,7 @@ merujuk ke nomor KEP-xxx.
 | Blade + Alpine.js | Tanpa SPA — katalog butuh SEO |
 | Queue driver `database` | Dijalankan cron, bukan daemon |
 | Resend (HTTP API) | Notifikasi email; tanpa SMTP, tanpa WhatsApp API |
+| Midtrans Snap | Pembayaran online; nonaktif sampai kuncinya diisi |
 
 ## Menjalankan di lokal
 
@@ -81,6 +84,8 @@ app/Models/         Eloquent; Order sengaja TIDAK menyimpan kolom total
 app/Services/       PriceCalculator (KEP-009), OrderStatusResolver (KEP-001),
                     Keranjang, Checkout, ReservasiStok, AlurPesanan, PengirimEmail,
                     AlurDesain (gerbang approve), RosterPemain
+app/Services/Pembayaran/  Gerbang pembayaran; Midtrans, bisa ditukar Xendit
+app/Mail/Transport/ Transport Resend lewat HTTP API, bukan SMTP
 app/Http/           Controller publik & panel, middleware izin RBAC
 resources/views/    publik/ (etalase) dan panel/ (alat kerja) — dua register visual
 resources/views/emails/  Email pesanan; gaya inline karena klien email mengabaikan CSS

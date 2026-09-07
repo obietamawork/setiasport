@@ -53,6 +53,15 @@ return [
             'transport' => 'ses',
         ],
 
+        /*
+         * Dipanggil lewat HTTP API port 443, bukan SMTP — shared hosting sering
+         * memblokir port SMTP tapi hampir tidak pernah HTTPS keluar (KEP-004).
+         */
+        'resend' => [
+            'transport' => 'resend',
+            'key' => env('RESEND_API_KEY'),
+        ],
+
         'postmark' => [
             'transport' => 'postmark',
             // 'message_stream_id' => env('POSTMARK_MESSAGE_STREAM_ID'),

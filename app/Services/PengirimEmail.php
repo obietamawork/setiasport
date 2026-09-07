@@ -30,28 +30,32 @@ class PengirimEmail
         $subjek = sprintf(self::SUBJEK[$template], $order->kode);
         $ke = $order->customer->email;
 
-        try {
-            Mail::to($ke)->queue(new EmailPesanan($order, $template, $subjek));
-            $status = EmailStatus::TERKIRIM;
-            $error = null;
-        } catch (Throwable $e) {
-            // Kegagalan kirim tidak boleh menggagalkan checkout atau verifikasi
-            // pembayaran. Dicatat, lalu ditampilkan di dashboard untuk ditindaklanjuti.
-            $status = EmailStatus::GAGAL;
-            $error = mb_substr($e->getMessage(), 0, 250);
-
-            report($e);
-        }
-
-        return EmailLog::create([
+        // Baris log dibuat lebih dulu supaya id-nya bisa ikut sebagai header,
+        // dan id pesan dari Resend punya tempat untuk dicatat balik.
+        $log = EmailLog::create([
             'order_id' => $order->id,
             'ke' => $ke,
             'template' => $template,
             'subjek' => $subjek,
-            'status' => $status,
-            'error' => $error,
+            'status' => EmailStatus::TERKIRIM,
             'dikirim_pada' => now(),
         ]);
+
+        try {
+            Mail::to($ke)->queue(new EmailPesanan($order, $template, $subjek, $log->id));
+        } catch (Throwable $e) {
+            // Kegagalan kirim tidak boleh menggagalkan checkout atau verifikasi
+            // pembayaran. Dicatat, lalu muncul di dashboard untuk ditindaklanjuti
+            // manual lewat WhatsApp.
+            $log->update([
+                'status' => EmailStatus::GAGAL,
+                'error' => mb_substr($e->getMessage(), 0, 250),
+            ]);
+
+            report($e);
+        }
+
+        return $log->refresh();
     }
 
     /**

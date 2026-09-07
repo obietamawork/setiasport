@@ -70,6 +70,7 @@ class LacakController extends Controller
             'order' => $order,
             'menungguBayar' => $order->payments
                 ->firstWhere('status', PaymentStatus::MENUNGGU),
+            'gerbangAktif' => app(\App\Services\Pembayaran\GerbangPembayaran::class)->aktif(),
         ]);
     }
 

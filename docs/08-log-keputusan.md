@@ -351,6 +351,58 @@ yang tercentang tanpa pernah dilewati.
 
 ---
 
+## KEP-015 — Gerbang pembayaran di balik satu antarmuka, Midtrans lebih dulu
+**Status:** TERKUNCI · 2026-09-08
+
+Penyedia pembayaran disembunyikan di balik `GerbangPembayaran`. Midtrans Snap
+diimplementasikan lebih dulu karena **QRIS sudah termasuk** tanpa integrasi
+terpisah, dan QRIS hampir wajib untuk pasar ini. Xendit bisa menggantikannya
+dengan menulis satu kelas, tanpa menyentuh alur pesanan.
+
+**Selama merchant belum disetujui, gerbangnya nonaktif** dan seluruh sistem tetap
+berjalan penuh dengan transfer manual. Konfigurasi setengah jadi diperlakukan
+sama dengan tidak ada: tombol yang muncul tapi gagal di tengah jalan lebih buruk
+daripada tombol yang tidak ada.
+
+**Konsekuensi teknis:**
+- `payments.provider_ref` berisi `<kode order>-P<id payment>`, bukan kode pesanan
+  saja — satu pesanan bisa punya beberapa transaksi (DP lalu pelunasan), dan
+  Midtrans menuntut `order_id` unik untuk setiap transaksi
+- Notifikasi diperiksa tanda tangannya (SHA-512) **sebelum** apa pun disentuh.
+  Tanpa itu siapa saja bisa menandai pesanan orang lain lunas
+- Notifikasi yang diulang tidak diproses dua kali; Midtrans mengirim ulang
+  sampai dibalas 200
+- `capture` dengan `fraud_status` selain `accept` tidak dianggap lunas —
+  kasir yang memutuskan
+- Kegagalan gateway tidak menutup jalur transfer manual
+
+---
+
+## KEP-016 — Transport Resend ditulis sendiri, bukan lewat paket
+**Status:** TERKUNCI · 2026-09-08
+
+Pengiriman email memakai transport khusus yang memanggil HTTP API Resend
+langsung, alih-alih memasang paket resmi.
+
+**Alasan:** yang kita butuhkan dari Resend bukan hanya "kirim", melainkan **id
+pesan** yang dikembalikannya. Tanpa id itu, webhook status tidak punya cara
+mencocokkan email mana yang bounce — padahal justru itulah yang membuat admin
+tahu kapan harus menyerah pada email dan menindaklanjuti lewat WhatsApp
+(docs/03). Transport sendiri hanya ~60 baris, memberi kendali penuh atas
+korelasi itu, dan menambah nol dependensi untuk diunggah ke shared hosting.
+
+**Konsekuensi teknis:**
+- Baris `email_logs` dibuat **sebelum** email diantre, lalu id-nya ikut sebagai
+  header `X-Log-Id`; listener `MessageSent` mencatat balik id dari Resend
+- Webhook memverifikasi tanda tangan Svix (HMAC-SHA256) dan **menolak seluruh
+  permintaan bila rahasianya belum dipasang** — endpoint yang menerima apa saja
+  lebih berbahaya daripada endpoint yang tidak ada
+- Notifikasi berumur lebih dari 5 menit ditolak untuk menutup celah pengulangan
+- Peristiwa Resend bisa datang tidak berurutan, jadi status hanya boleh maju.
+  `BOUNCED` selalu menang karena itu kabar terpenting
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -369,3 +421,5 @@ yang tercentang tanpa pernah dilewati.
 | KEP-012 | Lingkungan lokal Docker mencerminkan shared hosting | TERKUNCI |
 | KEP-013 | Roster diisi setelah pesanan, terkunci saat approve | TERKUNCI |
 | KEP-014 | Status item = divisi; status job = aktivitas | TERKUNCI |
+| KEP-015 | Gerbang pembayaran di balik antarmuka; Midtrans dulu | TERKUNCI |
+| KEP-016 | Transport Resend ditulis sendiri demi korelasi webhook | TERKUNCI |

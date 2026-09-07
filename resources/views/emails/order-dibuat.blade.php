@@ -10,10 +10,22 @@
 
 @include('emails.komponen-rincian')
 
+@php
+    // Jangan pernah mengandalkan keberadaan tagihan di sini: email yang gagal
+    // dirender adalah email yang tidak pernah terkirim, dan pelanggan tidak
+    // akan pernah menerima tautan pesanannya.
+    $tagihan = $order->payments->firstWhere('status', \App\Enums\PaymentStatus::MENUNGGU)
+        ?? $order->payments->first();
+@endphp
+
 <p style="margin:0 0 12px;">
-  Mohon transfer <strong>{{ rupiah($order->payments->first()->jumlah) }}</strong>
-  sebelum <strong>{{ $order->kadaluarsa_pada->translatedFormat('l, j F Y H:i') }}</strong>.
-  Lewat batas itu pesanan otomatis dibatalkan dan barangnya kembali dijual.
+  Mohon transfer <strong>{{ rupiah($tagihan?->jumlah ?? $order->total) }}</strong>
+  @if ($order->kadaluarsa_pada)
+      sebelum <strong>{{ $order->kadaluarsa_pada->translatedFormat('l, j F Y H:i') }}</strong>.
+      Lewat batas itu pesanan otomatis dibatalkan dan barangnya kembali dijual.
+  @else
+      untuk melanjutkan pesanan ini.
+  @endif
 </p>
 
 <p style="margin:0 0 20px;">

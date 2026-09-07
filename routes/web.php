@@ -5,7 +5,10 @@ use App\Http\Controllers\Publik\CheckoutController;
 use App\Http\Controllers\Publik\KatalogController;
 use App\Http\Controllers\Publik\KeranjangController;
 use App\Http\Controllers\Publik\LacakController;
+use App\Http\Controllers\Publik\PembayaranOnlineController;
 use App\Http\Controllers\Publik\PesananItemController;
+use App\Http\Controllers\Webhook\MidtransController;
+use App\Http\Controllers\Webhook\ResendController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', BerandaController::class)->name('beranda');
@@ -28,11 +31,21 @@ Route::post('/lacak', [LacakController::class, 'cari'])->name('lacak.cari');
 Route::get('/lacak/{token}', [LacakController::class, 'show'])->name('lacak.token');
 Route::post('/lacak/{token}/bukti', [LacakController::class, 'buktiTransfer'])->name('lacak.bukti');
 
+Route::post('/lacak/{token}/bayar', [PembayaranOnlineController::class, 'mulai'])->name('lacak.bayar');
+
 Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->group(function () {
     Route::post('roster', [PesananItemController::class, 'simpanRoster'])->name('roster');
     Route::post('desain', [PesananItemController::class, 'unggahDesain'])->name('desain');
     Route::post('setujui', [PesananItemController::class, 'setujuiDesain'])->name('setujui');
     Route::post('revisi', [PesananItemController::class, 'mintaRevisi'])->name('revisi');
 });
+
+/*
+ * Webhook. Pengirimnya bukan browser pelanggan, jadi tidak ada sesi maupun
+ * token CSRF; keabsahannya sepenuhnya bergantung pada pemeriksaan tanda tangan
+ * di dalam masing-masing controller.
+ */
+Route::post('/webhook/midtrans', MidtransController::class)->name('webhook.midtrans');
+Route::post('/webhook/resend', ResendController::class)->name('webhook.resend');
 
 require __DIR__.'/panel.php';

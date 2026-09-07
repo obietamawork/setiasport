@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->redirectGuestsTo('/panel/login');
+
+        $middleware->validateCsrfTokens(except: [
+            'webhook/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

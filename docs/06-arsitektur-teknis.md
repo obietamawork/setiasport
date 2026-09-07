@@ -99,7 +99,7 @@ dan harus naik ke VPS + object storage.
 | 2 | Keranjang, checkout, order, pembayaran manual, tracking + email Resend | **SELESAI** — pesanan masuk lewat web |
 | 3 | Konfigurator kustom, roster, alur desain + approval, antrian produksi | **SELESAI** — alur PreOrder penuh |
 | 4 | Serah terima (kode ambil), worksheet cetak, dashboard harian | **SELESAI** — operasional harian di sistem |
-| 5 | Payment gateway (Midtrans/Xendit) | Otomatisasi pembayaran online |
+| 5 | Payment gateway (Midtrans) + webhook Resend | **SELESAI** — pembayaran & status email otomatis |
 
 Email (Resend) masuk di fase 2, bukan fase 5 — tanpa notifikasi, halaman tracking tidak
 akan pernah dibuka pelanggan dan seluruh nilainya hilang.

@@ -18,6 +18,7 @@ tracking pesanan sampai **siap diambil di toko** (tanpa pengiriman).
 | [09-katalog-contoh.md](09-katalog-contoh.md) | Draft 5 produk penguji model data |
 | [10-spesifikasi-hosting.md](10-spesifikasi-hosting.md) | Syarat hosting & panduan membeli |
 | [11-panduan-visual.md](11-panduan-visual.md) | Token warna, tipografi, dan prinsip desain |
+| [12-deploy.md](12-deploy.md) | Langkah deploy ke shared hosting |
 
 ## Status
 
@@ -30,7 +31,10 @@ sudah jalan dan tertutup test. Cara menjalankan proyeknya ada di
   pesanan end-to-end, serta alur kustom penuh: konfigurator harga live, roster
   pemain, gerbang persetujuan desain, antrian kerja per divisi, dan worksheet
   cetak. 52 test lulus di MySQL
-- Belum dibangun: payment gateway (Midtrans/Xendit) dan webhook status Resend
+- **Fase 5 selesai.** Gerbang pembayaran Midtrans di balik antarmuka yang bisa
+  ditukar, dan webhook status Resend. 72 test lulus di MySQL
+- Sisa pekerjaan bukan lagi kode: koreksi harga katalog, pembelian hosting,
+  pendaftaran merchant, dan deploy ([12-deploy.md](12-deploy.md))
 - Menunggu dari pemilik toko: koreksi harga katalog & pembelian hosting
 
 Setiap dokumen di atas sudah disinkronkan dengan keputusan terkunci. Kalau ada

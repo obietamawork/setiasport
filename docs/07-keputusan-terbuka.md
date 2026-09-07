@@ -56,8 +56,11 @@ shared hosting (KEP-012).
 Domain sudah ada? DNS-nya di mana? Resend butuh verifikasi domain (record SPF/DKIM) —
 mudah kalau DNS sudah di Cloudflare, dan Cloudflare memang direkomendasikan (lihat 06).
 
-## 10. Payment gateway: Midtrans atau Xendit?
-Belum mendesak (fase 5), tapi keputusannya mempengaruhi pilihan metode yang ditawarkan.
-Untuk pasar ini, **QRIS hampir wajib ada**. Yang perlu dicek lebih dulu: syarat
-pendaftaran merchant (badan usaha vs perorangan) — ini sering jadi penghambat administratif,
-bukan teknis.
+## 10. Pendaftaran merchant payment gateway
+Pilihan teknisnya sudah selesai: **Midtrans** diimplementasikan lebih dulu karena QRIS
+sudah termasuk (KEP-015), dan Xendit tetap bisa menggantikannya dengan satu kelas.
+
+Yang tersisa adalah urusan administratif, bukan teknis: **syarat pendaftaran merchant**
+(badan usaha vs perorangan, rekening atas nama siapa, dokumen yang diminta). Ini sering
+jadi penghambat sesungguhnya. Selama merchant belum disetujui, toko tetap beroperasi
+penuh dengan transfer manual.

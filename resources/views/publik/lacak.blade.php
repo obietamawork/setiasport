@@ -37,6 +37,21 @@
                     </p>
                 @endif
 
+                @if ($gerbangAktif)
+                    <form method="POST" action="{{ route('lacak.bayar', $order->access_token) }}">
+                        @csrf
+                        <button type="submit" class="tombol tombol-utama w-full sm:w-auto">
+                            Bayar online sekarang
+                        </button>
+                        <p class="mt-2 text-sm text-muted">
+                            Kartu, transfer virtual account, QRIS, atau e-wallet. Pembayaran
+                            terverifikasi otomatis dalam hitungan menit.
+                        </p>
+                    </form>
+
+                    <p class="border-t border-line pt-4 text-sm font-medium">Atau transfer manual</p>
+                @endif
+
                 <div class="border-l-2 border-court bg-court-soft p-4 text-sm leading-relaxed">
                     Transfer ke rekening toko, lalu unggah bukti di bawah. Kami memeriksanya
                     pada jam kerja dan mengabari lewat email begitu masuk.
