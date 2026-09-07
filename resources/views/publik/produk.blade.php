@@ -29,9 +29,12 @@
         </a>
     </nav>
 
-    <div class="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1fr)_390px]">
+    {{-- Di layar sempit urutannya gambar, kotak beli, lalu spesifikasi. Harga
+         dan tombol beli tidak boleh terkubur di bawah tabel rujukan yang
+         panjang; itu pertanyaan pertama pelanggan. --}}
+    <div class="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start lg:gap-10">
 
-        <div>
+        <div class="min-w-0 lg:col-start-1 lg:row-start-1">
             @if ($produk->images->isNotEmpty())
                 <div x-data="{ aktif: 0 }">
                     <div class="kartu flex aspect-4/3 items-center justify-center overflow-hidden bg-navy-50">
@@ -64,90 +67,10 @@
                     </span>
                 </div>
             @endif
-
-            @if ($produk->deskripsi)
-                <div class="kolom-baca mt-8 leading-relaxed text-muted">{!! nl2br(e($produk->deskripsi)) !!}</div>
-            @endif
-
-            @if ($adaStok && $matriks)
-                {{-- Matriks ukuran x warna dengan stok sebenarnya. Dropdown akan
-                     menyembunyikan justru informasi yang paling menentukan
-                     keputusan: ukuran mana yang masih ada. --}}
-                <section class="mt-10">
-                    <h2 class="text-xl font-extrabold">Stok per ukuran</h2>
-                    <div class="mt-4 overflow-x-auto">
-                        <table class="w-full min-w-100 border-collapse border border-line bg-field text-sm">
-                            <thead>
-                                <tr>
-                                    <th class="border border-line px-3 py-2 text-left font-semibold">Ukuran</th>
-                                    @foreach ($warna as $w)
-                                        <th class="border border-line px-3 py-2 text-left font-semibold">{{ $w }}</th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($ukuran as $u)
-                                    <tr>
-                                        <th class="border border-line px-3 py-2 text-left font-semibold">{{ $u }}</th>
-                                        @foreach ($warna as $w)
-                                            @php
-                                                $v = $produk->variants->first(fn ($x) => $x->ukuran === $u && $x->warna === $w);
-                                                $sisa = $v?->stok_tersedia ?? 0;
-                                            @endphp
-                                            <td class="border border-line px-3 py-2 tabular {{ $sisa === 0 ? 'bg-paper text-muted' : '' }}">
-                                                @if (! $v)
-                                                   
-                                                @elseif ($sisa === 0)
-                                                    Habis
-                                                @else
-                                                    {{ $sisa }}
-                                                @endif
-                                            </td>
-                                        @endforeach
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-            @endif
-
-            @if ($adaKustom && $produk->options->isNotEmpty())
-                <section class="mt-10">
-                    <h2 class="text-xl font-extrabold">Pilihan untuk pesanan kustom</h2>
-                    <dl class="mt-4 divide-y divide-line border border-line bg-field">
-                        @foreach ($produk->options as $opsi)
-                            <div class="grid gap-2 p-4 sm:grid-cols-[160px_1fr]">
-                                <dt class="font-semibold">{{ $opsi->nama }}</dt>
-                                <dd class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-                                    @foreach ($opsi->values as $v)
-                                        <span>
-                                            {{ $v->label }}
-                                            @if ($v->tambahan_harga !== 0)
-                                                <span class="tabular text-muted">
-                                                    {{ $v->tambahan_harga > 0 ? '+' : '−' }}{{ rupiah(abs($v->tambahan_harga)) }}
-                                                    @if ($v->basis === \App\Enums\PriceBasis::PER_ITEM)
-                                                        <span class="text-merah">sekali</span>
-                                                    @else
-                                                        / pcs
-                                                    @endif
-                                                </span>
-                                            @endif
-                                        </span>
-                                    @endforeach
-                                </dd>
-                            </div>
-                        @endforeach
-                    </dl>
-                    <p class="mt-3 text-sm text-muted">
-                        Biaya bertanda <span class="text-merah">sekali</span> dikenakan satu kali
-                        untuk seluruh pesanan, bukan per potong.
-                    </p>
-                </section>
-            @endif
         </div>
 
-        <aside x-data="{ jalur: '{{ $jalurAwal }}' }" class="lg:sticky lg:top-6 lg:self-start">
+        <aside x-data="{ jalur: '{{ $jalurAwal }}' }"
+               class="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-6 lg:self-start">
             <div class="border border-line bg-field">
                 <div class="border-b border-line p-5">
                     <h1 class="text-2xl leading-tight font-extrabold">{{ $produk->nama }}</h1>
@@ -203,7 +126,7 @@
                                         <select id="variant_id" name="variant_id" class="kotak-input" required>
                                             @foreach ($tersedia as $v)
                                                 <option value="{{ $v->id }}">
-                                                    {{ $v->label }}: sisa {{ $v->stok_tersedia }}
+                                                    {{ $v->label }} ({{ $v->stok_tersedia }} tersedia)
                                                 </option>
                                             @endforeach
                                         </select>
@@ -286,6 +209,89 @@
                 @endif
             </div>
         </aside>
+
+        <div class="min-w-0 space-y-10 lg:col-start-1 lg:row-start-2">
+            @if ($produk->deskripsi)
+                <div class="kolom-baca mt-8 leading-relaxed text-muted">{!! nl2br(e($produk->deskripsi)) !!}</div>
+            @endif
+
+            @if ($adaStok && $matriks)
+                {{-- Matriks ukuran x warna dengan stok sebenarnya. Dropdown akan
+                     menyembunyikan justru informasi yang paling menentukan
+                     keputusan: ukuran mana yang masih ada. --}}
+                <section class="mt-10">
+                    <h2 class="text-xl font-extrabold">Stok per ukuran</h2>
+                    <div class="mt-4 overflow-x-auto">
+                        <table class="w-full min-w-100 border-collapse border border-line bg-field text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="border border-line px-3 py-2 text-left font-semibold">Ukuran</th>
+                                    @foreach ($warna as $w)
+                                        <th class="border border-line px-3 py-2 text-left font-semibold">{{ $w }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($ukuran as $u)
+                                    <tr>
+                                        <th class="border border-line px-3 py-2 text-left font-semibold">{{ $u }}</th>
+                                        @foreach ($warna as $w)
+                                            @php
+                                                $v = $produk->variants->first(fn ($x) => $x->ukuran === $u && $x->warna === $w);
+                                                $sisa = $v?->stok_tersedia ?? 0;
+                                            @endphp
+                                            <td class="border border-line px-3 py-2 tabular {{ $sisa === 0 ? 'bg-paper text-muted' : '' }}">
+                                                @if (! $v)
+                                                   
+                                                @elseif ($sisa === 0)
+                                                    Habis
+                                                @else
+                                                    {{ $sisa }}
+                                                @endif
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            @endif
+
+            @if ($adaKustom && $produk->options->isNotEmpty())
+                <section class="mt-10">
+                    <h2 class="text-xl font-extrabold">Pilihan untuk pesanan kustom</h2>
+                    <dl class="mt-4 divide-y divide-line border border-line bg-field">
+                        @foreach ($produk->options as $opsi)
+                            <div class="grid gap-2 p-4 sm:grid-cols-[160px_1fr]">
+                                <dt class="font-semibold">{{ $opsi->nama }}</dt>
+                                <dd class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
+                                    @foreach ($opsi->values as $v)
+                                        <span>
+                                            {{ $v->label }}
+                                            @if ($v->tambahan_harga !== 0)
+                                                <span class="tabular text-muted">
+                                                    {{ $v->tambahan_harga > 0 ? '+' : '−' }}{{ rupiah(abs($v->tambahan_harga)) }}
+                                                    @if ($v->basis === \App\Enums\PriceBasis::PER_ITEM)
+                                                        <span class="text-merah">sekali</span>
+                                                    @else
+                                                        / pcs
+                                                    @endif
+                                                </span>
+                                            @endif
+                                        </span>
+                                    @endforeach
+                                </dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                    <p class="mt-3 text-sm text-muted">
+                        Biaya bertanda <span class="text-merah">sekali</span> dikenakan satu kali
+                        untuk seluruh pesanan, bukan per potong.
+                    </p>
+                </section>
+            @endif
+        </div>
     </div>
 </div>
 @endsection

@@ -31,13 +31,16 @@
         ];
 @endphp
 
-<header class="sticky top-0 z-30 border-b border-line bg-field/95 backdrop-blur">
-    <div class="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5">
+<header class="sticky top-0 z-30 border-b border-line bg-field/95 backdrop-blur"
+        x-data="{ menu: false }" @keydown.escape.window="menu = false">
+    <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-5">
         <a href="{{ route('beranda') }}" class="shrink-0" aria-label="Beranda Setia Sport">
             <x-logo />
         </a>
 
-        <nav class="ml-auto flex h-full items-stretch gap-1 text-sm" aria-label="Navigasi utama">
+        {{-- Navigasi penuh hanya muat mulai layar sedang. Di bawah itu ia
+             meluber dan memotong dirinya sendiri, jadi dipindah ke panel. --}}
+        <nav class="ml-auto hidden h-full items-stretch gap-1 text-sm md:flex" aria-label="Navigasi utama">
             @foreach ($nav as [$rute, $label, $pola])
                 @php $aktif = request()->routeIs(...$pola); @endphp
                 <a href="{{ route($rute) }}"
@@ -46,18 +49,44 @@
                     {{ $label }}
                 </a>
             @endforeach
-
-            <a href="{{ route('keranjang') }}"
-               class="ml-2 flex items-center gap-2 self-center rounded-[7px] border border-line-strong px-3 py-2 font-semibold transition-colors hover:border-navy-300 hover:bg-navy-50">
-                Keranjang
-                @if ($isiKeranjang)
-                    <span class="tabular inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-merah px-1 text-xs text-white">
-                        {{ $isiKeranjang }}
-                    </span>
-                @endif
-            </a>
         </nav>
+
+        {{-- Keranjang tetap terlihat di semua ukuran: ia satu-satunya aksi yang
+             sedang dikejar pelanggan, jadi tidak boleh disembunyikan di menu. --}}
+        <a href="{{ route('keranjang') }}"
+           class="ml-auto flex items-center gap-2 rounded-[7px] border border-line-strong px-3 py-2 text-sm font-semibold transition-colors hover:border-navy-300 hover:bg-navy-50 md:ml-2">
+            Keranjang
+            @if ($isiKeranjang)
+                <span class="tabular inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-merah px-1 text-xs text-white">
+                    {{ $isiKeranjang }}
+                </span>
+            @endif
+        </a>
+
+        <button type="button" @click="menu = !menu"
+                class="-mr-1 rounded-[7px] p-2 text-muted transition-colors hover:bg-navy-50 hover:text-ink md:hidden"
+                :aria-expanded="menu" aria-controls="menu-mobil" aria-label="Buka menu">
+            <svg class="size-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" aria-hidden="true">
+                <path x-show="!menu" d="M3 6h14M3 10h14M3 14h14" />
+                <path x-show="menu" x-cloak d="M5 5l10 10M15 5L5 15" />
+            </svg>
+        </button>
     </div>
+
+    <nav id="menu-mobil" x-show="menu" x-cloak @click="menu = false"
+         class="border-t border-line bg-field md:hidden" aria-label="Navigasi utama">
+        <div class="mx-auto max-w-6xl px-5 py-2">
+            @foreach ($nav as [$rute, $label, $pola])
+                @php $aktif = request()->routeIs(...$pola); @endphp
+                <a href="{{ route($rute) }}"
+                   class="block border-l-2 py-3 pl-3 font-medium transition-colors
+                          {{ $aktif ? 'border-kuning text-navy' : 'border-transparent text-muted hover:text-ink' }}">
+                    {{ $label }}
+                </a>
+            @endforeach
+        </div>
+    </nav>
 </header>
 
 <main class="flex-1">

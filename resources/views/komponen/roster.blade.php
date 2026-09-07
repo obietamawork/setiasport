@@ -46,47 +46,41 @@
               x-data="rosterEditor(@js($baris), {{ $item->qty }})" class="mt-4">
             @csrf
 
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-100 border-collapse text-sm">
-                    <thead>
-                        <tr class="border-b border-line text-left">
-                            <th class="w-8 py-1.5 font-semibold">#</th>
-                            <th class="py-1.5 font-semibold">Nama punggung</th>
-                            <th class="w-20 py-1.5 font-semibold">Nomor</th>
-                            <th class="w-28 py-1.5 font-semibold">Ukuran</th>
-                            <th class="w-8"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="(b, i) in baris" :key="i">
-                            <tr>
-                                <td class="py-1 text-muted tabular" x-text="i + 1"></td>
-                                <td class="py-1 pr-2">
-                                    <input type="text" :name="`roster[${i}][nama_punggung]`" x-model="b.nama_punggung"
-                                           class="kotak-input" maxlength="60" placeholder="RIZKY">
-                                </td>
-                                <td class="py-1 pr-2">
-                                    <input type="text" inputmode="numeric" :name="`roster[${i}][nomor]`"
-                                           x-model="b.nomor" class="kotak-input tabular text-center"
-                                           maxlength="3" placeholder="10"
-                                           :class="nomorGanda(i) ? 'border-merah' : ''">
-                                </td>
-                                <td class="py-1 pr-2">
-                                    <select :name="`roster[${i}][ukuran]`" x-model="b.ukuran" class="kotak-input">
-                                        <option value="">Pilih</option>
-                                        @foreach ($ukuranPilihan as $u)
-                                            <option value="{{ $u }}">{{ $u }}</option>
-                                        @endforeach
-                                    </select>
-                                </td>
-                                <td class="py-1 text-right">
-                                    <button type="button" @click="baris.splice(i, 1)"
-                                            class="tautan text-xs text-muted" aria-label="Hapus baris">Hapus</button>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
+            {{-- Baris yang melipat, bukan tabel. Tabel empat kolom memaksa
+                 geser horizontal di layar sempit, padahal daftar ini justru
+                 paling sering diisi dari HP sambil menyalin dari grup tim. --}}
+            <div class="mt-4 divide-y divide-line border-y border-line">
+                <template x-for="(b, i) in baris" :key="i">
+                    <div class="flex flex-wrap items-center gap-2 py-2">
+                        <span class="tabular w-5 shrink-0 text-sm text-muted" x-text="i + 1"></span>
+
+                        <input type="text" :name="`roster[${i}][nama_punggung]`" x-model="b.nama_punggung"
+                               class="kotak-input min-w-40 flex-1" maxlength="60"
+                               placeholder="Nama punggung" :aria-label="`Nama punggung pemain ${i + 1}`">
+
+                        <input type="text" inputmode="numeric" :name="`roster[${i}][nomor]`"
+                               x-model="b.nomor" class="kotak-input tabular w-16 text-center"
+                               maxlength="3" placeholder="No" :aria-label="`Nomor punggung pemain ${i + 1}`"
+                               :class="nomorGanda(i) ? 'border-merah' : ''">
+
+                        <select :name="`roster[${i}][ukuran]`" x-model="b.ukuran" class="kotak-input w-24"
+                                :aria-label="`Ukuran pemain ${i + 1}`">
+                            <option value="">Ukuran</option>
+                            @foreach ($ukuranPilihan as $u)
+                                <option value="{{ $u }}">{{ $u }}</option>
+                            @endforeach
+                        </select>
+
+                        <button type="button" @click="baris.splice(i, 1)"
+                                class="rounded-[7px] p-2 text-muted transition-colors hover:bg-merah-50 hover:text-merah"
+                                :aria-label="`Hapus baris ${i + 1}`">
+                            <svg class="size-4" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+                                 stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                                <path d="M4 4l8 8M12 4l-8 8" />
+                            </svg>
+                        </button>
+                    </div>
+                </template>
             </div>
 
             <p x-show="adaNomorGanda" x-cloak class="mt-2 text-sm text-merah">

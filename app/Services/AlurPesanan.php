@@ -71,6 +71,19 @@ class AlurPesanan
             'Item hanya berpindah ke Selesai lewat serah terima di kasir.'
         );
 
+        /*
+         * Gerbang persetujuan tidak boleh dilewati dari sisi toko. Kalau staf
+         * bisa memajukannya sendiri, catatan siapa yang menyetujui dan versi
+         * mockup mana akan kosong, dan justru itulah yang menyelesaikan sengketa
+         * berbulan-bulan kemudian (docs/02).
+         */
+        abort_if(
+            $item->status_item === OrderItemStatus::MENUNGGU_PERSETUJUAN,
+            422,
+            'Hanya pelanggan yang bisa menyetujui desain, dari halaman pesanannya. '
+            .'Kirim ulang tautannya kalau mereka belum merespons.'
+        );
+
         DB::transaction(function () use ($item, $berikutnya, $olehUserId) {
             // Tahap yang DITINGGALKAN-lah yang selesai; tahap yang dimasuki baru dimulai.
             $this->selesaikanJob($item, $item->status_item->tahapProduksi(), $olehUserId);

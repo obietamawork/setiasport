@@ -64,7 +64,20 @@ ingin terbaca rapi dan modern. Satu keluarga untuk seluruh sistem.
 | Hiasan | Satu blok berani | Tidak ada |
 
 Panel wajib mobile-first: operator produksi membuka antrian dari HP di dekat
-mesin, bukan dari PC (docs/04).
+mesin, opname dilakukan sambil berdiri di depan rak, dan admin memeriksa pesanan
+di jalan. Hasil auditnya ada di [13-audit-ui.md](13-audit-ui.md).
+
+### Aturan tata letak sempit
+
+- Setiap layar baru diperiksa `scrollWidth`-nya di 375px. Halaman yang bisa
+  digeser ke samping selalu berarti ada yang rusak
+- Aksi utama tidak pernah masuk ke dalam menu: keranjang dan tombol beli selalu
+  terlihat
+- Urutan di layar sempit mengikuti urutan pertanyaan pelanggan, bukan urutan
+  markup. Di halaman produk: gambar, kotak beli, baru spesifikasi
+- Tabel data boleh digeser di dalam pembungkusnya, tidak pernah menggeser halaman
+- Item grid yang memuat pembungkus `overflow-x-auto` wajib diberi `min-w-0`,
+  karena `min-width: auto` bawaannya membuat pembungkus itu tidak pernah menyempit
 
 ## Aturan penulisan
 

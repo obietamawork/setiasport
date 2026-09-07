@@ -19,6 +19,7 @@ tracking pesanan sampai **siap diambil di toko** (tanpa pengiriman).
 | [10-spesifikasi-hosting.md](10-spesifikasi-hosting.md) | Syarat hosting & panduan membeli |
 | [11-panduan-visual.md](11-panduan-visual.md) | Token warna, tipografi, dan prinsip desain |
 | [12-deploy.md](12-deploy.md) | Langkah deploy ke shared hosting |
+| [13-audit-ui.md](13-audit-ui.md) | Audit UI/UX dan perbaikan mobile |
 
 ## Status
 
@@ -36,7 +37,7 @@ sudah jalan dan tertutup test. Cara menjalankan proyeknya ada di
 - Susunan peran diringkas jadi dua (KEP-017), gambar produk mendukung unggah
   maupun CDN (KEP-018), dan identitas visual diturunkan dari logo (KEP-019).
   Pelanggan kini bisa memakai akun sebagai jalur kedua di samping tautan
-  bertoken (KEP-020), dengan konfirmasi email wajib (KEP-021). 98 test lulus di MySQL
+  bertoken (KEP-020), dengan konfirmasi email wajib (KEP-021). Seluruh 21 halaman lolos audit mobile di 375px. 99 test lulus di MySQL
 - Sisa pekerjaan bukan lagi kode: pasang berkas logo, koreksi harga katalog,
   pembelian hosting, pendaftaran merchant, dan deploy ([12-deploy.md](12-deploy.md))
 - Menunggu dari pemilik toko: koreksi harga katalog & pembelian hosting

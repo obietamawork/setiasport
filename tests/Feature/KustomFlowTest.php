@@ -304,6 +304,23 @@ class KustomFlowTest extends TestCase
         $this->assertSame(5, $item->productionJobs()->where('status', 'SELESAI')->count());
     }
 
+    public function test_toko_tidak_bisa_melewati_gerbang_persetujuan(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+
+        // Kalau staf bisa memajukannya sendiri, catatan siapa yang menyetujui
+        // dan versi mockup mana akan kosong, dan justru itu yang menyelesaikan
+        // sengketa berbulan-bulan kemudian.
+        $this->actingAs($this->staf('owner@setiasport.test'))
+            ->post(route('panel.pesanan.item.maju', [$item->order, $item]))
+            ->assertStatus(422);
+
+        $item->refresh();
+
+        $this->assertSame(OrderItemStatus::MENUNGGU_PERSETUJUAN, $item->status_item);
+        $this->assertNull($item->approved_at);
+    }
+
     public function test_worksheet_memuat_daftar_pemain(): void
     {
         $item = $this->siapkanMenungguPersetujuan();

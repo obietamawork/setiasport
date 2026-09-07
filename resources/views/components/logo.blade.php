@@ -14,8 +14,8 @@
     <img src="{{ asset($berkas) }}" alt="{{ setting('toko_nama', 'Setia Sport') }}"
          class="{{ $tinggi }} w-auto">
 @else
-    <span class="wordmark {{ $terang ? 'wordmark-terang' : '' }} text-lg sm:text-xl">
+    <span class="wordmark {{ $terang ? 'wordmark-terang' : '' }} text-base whitespace-nowrap sm:text-xl">
         <span>SETIA SPORT</span>
-        <span class="wordmark-kota">WONOGIRI</span>
+        <span class="wordmark-kota hidden sm:inline">WONOGIRI</span>
     </span>
 @endif

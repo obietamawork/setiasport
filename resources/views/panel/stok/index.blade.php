@@ -29,44 +29,48 @@
     <form method="POST" action="{{ route('panel.stok.update') }}" class="mt-6">
         @csrf @method('PUT')
 
-        <div class="space-y-6">
+        <div class="space-y-6 pb-4">
             @foreach ($varian as $grup)
                 <div class="border border-line bg-field">
                     <div class="flex items-baseline gap-3 border-b border-line px-4 py-2.5">
                         <span class="font-semibold">{{ $grup->first()->product->nama }}</span>
                         <span class="text-xs text-muted tabular">{{ $grup->first()->product->sku }}</span>
                     </div>
-                    <table class="w-full text-sm">
-                        <tbody class="divide-y divide-line">
-                            @foreach ($grup as $v)
-                                <tr class="{{ $v->stok_tersedia === 0 ? 'bg-paper' : '' }}">
-                                    <td class="w-56 px-4 py-2 tabular whitespace-nowrap text-muted">{{ $v->sku }}</td>
-                                    <td class="px-4 py-2">{{ $v->label ?: 'Varian tunggal' }}</td>
-                                    <td class="w-40 px-4 py-2 text-right text-muted tabular">
-                                        tersedia {{ $v->stok_tersedia }}
-                                        @if ($v->stok_dipesan > 0)
-                                            ({{ $v->stok_dipesan }})
-                                        @endif
-                                    </td>
-                                    <td class="w-28 px-4 py-2">
-                                        <label class="sr-only" for="stok-{{ $v->id }}">
-                                            Stok {{ $v->product->nama }} {{ $v->label }}
-                                        </label>
-                                        <input type="number" id="stok-{{ $v->id }}"
-                                               name="stok[{{ $v->id }}]" value="{{ $v->stok }}"
-                                               class="kotak-input tabular text-right" min="0">
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                    {{-- Baris yang melipat, bukan tabel: opname biasanya dilakukan
+                         sambil berdiri di depan rak, dari HP. --}}
+                    <div class="divide-y divide-line">
+                        @foreach ($grup as $v)
+                            <div class="flex flex-wrap items-center gap-3 px-4 py-2.5 {{ $v->stok_tersedia === 0 ? 'bg-paper' : '' }}">
+                                <div class="min-w-40 flex-1">
+                                    <p class="text-sm font-medium">{{ $v->label ?: 'Varian tunggal' }}</p>
+                                    <p class="tabular text-xs text-muted">{{ $v->sku }}</p>
+                                </div>
+
+                                <p class="tabular text-sm text-muted">
+                                    tersedia {{ $v->stok_tersedia }}
+                                    @if ($v->stok_dipesan > 0)
+                                        <span class="text-merah">({{ $v->stok_dipesan }} dipesan)</span>
+                                    @endif
+                                </p>
+
+                                <div class="w-24">
+                                    <label class="sr-only" for="stok-{{ $v->id }}">
+                                        Stok {{ $v->product->nama }} {{ $v->label }}
+                                    </label>
+                                    <input type="number" id="stok-{{ $v->id }}"
+                                           name="stok[{{ $v->id }}]" value="{{ $v->stok }}"
+                                           class="kotak-input tabular text-right" min="0">
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             @endforeach
         </div>
 
         {{-- Stok yang berubah tanpa jejak adalah sumber perselisihan internal,
              jadi alasan wajib diisi sebelum penyimpanan diterima. --}}
-        <div class="sticky bottom-0 mt-6 flex flex-wrap items-end gap-3 border border-line bg-field p-4">
+        <div class="sticky bottom-0 mt-6 flex flex-wrap items-end gap-3 rounded-[10px] border border-line bg-field p-4 shadow-[0_-4px_16px_-8px_rgba(19,26,46,0.25)]">
             <div class="min-w-64 flex-1">
                 <label for="alasan" class="label-form">Alasan penyesuaian</label>
                 <input type="text" id="alasan" name="alasan" class="kotak-input" required

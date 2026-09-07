@@ -31,8 +31,13 @@
 <header class="sticky top-0 z-30 bg-navy-900 text-white">
     <div class="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
         <button type="button" @click="menu = !menu"
-                class="-ml-1 rounded-[7px] px-2.5 py-1.5 text-sm font-medium hover:bg-white/10 lg:hidden">
-            Menu
+                class="-ml-1 rounded-[7px] p-2 hover:bg-white/10 lg:hidden"
+                :aria-expanded="menu" aria-label="Buka menu">
+            <svg class="size-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" aria-hidden="true">
+                <path x-show="!menu" d="M3 6h14M3 10h14M3 14h14" />
+                <path x-show="menu" x-cloak d="M5 5l10 10M15 5L5 15" />
+            </svg>
         </button>
 
         <a href="{{ route('panel.dashboard') }}" class="flex items-center gap-3">
@@ -59,15 +64,17 @@
     </div>
 </header>
 
-<div class="mx-auto flex max-w-7xl gap-7 px-4 py-6">
-    <aside :class="menu ? 'block' : 'hidden'" class="w-52 shrink-0 lg:block">
+<div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:gap-7">
+    {{-- Di mobile sidebar tampil sebagai blok penuh di atas konten. Sebagai
+         kolom sempit ia menghimpit isi layar sampai tidak terbaca. --}}
+    <aside :class="menu ? 'block' : 'hidden'" class="w-full shrink-0 lg:block lg:w-52">
         <nav class="space-y-0.5 text-sm" aria-label="Navigasi panel">
             @foreach ($menu as [$rute, $label, $izin, $pola])
                 @continue($izin && ! $u->punyaIzin($izin))
                 @continue($rute === 'panel.antrian.index' && empty($u->tahapProduksi()))
                 @php $aktif = request()->routeIs($pola); @endphp
-                <a href="{{ route($rute) }}"
-                   class="block rounded-[7px] px-3 py-2 font-medium transition-colors
+                <a href="{{ route($rute) }}" @click="menu = false"
+                   class="block rounded-[7px] px-3 py-2.5 font-medium transition-colors lg:py-2
                           {{ $aktif ? 'bg-navy text-white' : 'text-ink hover:bg-navy-50' }}">
                     {{ $label }}
                 </a>

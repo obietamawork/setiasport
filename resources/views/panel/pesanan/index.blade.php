@@ -44,7 +44,42 @@
         </p>
     </div>
 @else
-    <div class="mt-5 overflow-x-auto border border-line bg-field">
+    {{-- Kartu di layar sempit, tabel di layar lebar. Admin memeriksa pesanan
+         dari HP, dan tabel enam kolom yang digeser membuat itu menyiksa. --}}
+    <div class="mt-5 space-y-3 md:hidden">
+        @foreach ($pesanan as $o)
+            <a href="{{ route('panel.pesanan.show', $o) }}" class="kartu kartu-tautan block p-4">
+                <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <span class="tabular text-sm font-semibold">{{ $o->kode }}</span>
+                    <span class="chip {{ $o->status === OrderStatus::SIAP_DIAMBIL ? 'chip-merah' : 'chip-navy' }}">
+                        {{ $o->status->label() }}
+                    </span>
+                </div>
+
+                <p class="mt-2 font-medium">{{ $o->customer->nama }}</p>
+                <p class="tabular text-sm text-muted">{{ $o->customer->no_hp }}</p>
+
+                <div class="mt-3 flex flex-wrap items-baseline justify-between gap-2 border-t border-line pt-3">
+                    <span class="tabular text-sm text-muted">
+                        {{ $o->created_at->translatedFormat('j M, H:i') }}
+                        @if ($o->kode_ambil)
+                            &middot; ambil {{ $o->kode_ambil }}
+                        @endif
+                    </span>
+                    <span class="text-right">
+                        <span class="tabular font-semibold">{{ rupiah($o->total) }}</span>
+                        @if ($o->sisa_tagihan > 0)
+                            <span class="tabular block text-sm text-merah">
+                                sisa {{ rupiah($o->sisa_tagihan) }}
+                            </span>
+                        @endif
+                    </span>
+                </div>
+            </a>
+        @endforeach
+    </div>
+
+    <div class="mt-5 hidden overflow-x-auto rounded-[10px] border border-line bg-field md:block">
         <table class="w-full min-w-180 text-sm">
             <thead class="border-b border-line bg-paper text-left">
                 <tr>

@@ -49,8 +49,17 @@
                             <span class="chip chip-navy">{{ $item->status_item->label() }}</span>
                             <p class="mt-2 tabular font-semibold">{{ rupiah($item->subtotal) }}</p>
 
-                            @php $lanjut = $item->status_item->berikutnya($item->fulfillment_type); @endphp
-                            @if ($lanjut && $lanjut !== OrderItemStatus::SELESAI && $izin->punyaIzin('order.kelola'))
+                            @php
+                                $lanjut = $item->status_item->berikutnya($item->fulfillment_type);
+                                $menungguPelanggan = $item->status_item === OrderItemStatus::MENUNGGU_PERSETUJUAN;
+                            @endphp
+
+                            @if ($menungguPelanggan)
+                                <p class="mt-2 max-w-48 text-xs leading-relaxed text-muted">
+                                    Menunggu pelanggan menyetujui desain. Hanya mereka yang bisa
+                                    melakukannya, dari halaman pesanan.
+                                </p>
+                            @elseif ($lanjut && $lanjut !== OrderItemStatus::SELESAI && $izin->punyaIzin('order.kelola'))
                                 <form method="POST" action="{{ route('panel.pesanan.item.maju', [$pesanan, $item]) }}" class="mt-2">
                                     @csrf
                                     <button type="submit" class="tombol tombol-garis text-sm">
