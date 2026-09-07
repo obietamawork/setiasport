@@ -83,6 +83,22 @@ class AlurPesanan
         return $berikutnya;
     }
 
+    /**
+     * Operator mengambil pekerjaan dari antrian divisinya.
+     *
+     * Status item menyatakan divisi mana yang sedang memegang barang; status
+     * job menyatakan apa yang sedang divisi itu lakukan. Pemisahan ini membuat
+     * "antri" dan "sedang dikerjakan" tetap jujur (docs/02).
+     */
+    public function mulaiKerja(OrderItem $item, int $olehUserId): void
+    {
+        $tahap = $item->status_item->tahapProduksi();
+
+        abort_if($tahap === null, 422, 'Tahap ini tidak punya pekerjaan yang bisa dimulai.');
+
+        $this->mulaiJob($item, $tahap, $olehUserId);
+    }
+
     /** Serah terima di kasir: pelunasan dan pengambilan adalah satu tindakan (KEP-006). */
     public function serahkan(Order $order, string $diambilOleh, ?int $olehUserId = null): void
     {

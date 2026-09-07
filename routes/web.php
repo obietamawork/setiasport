@@ -5,6 +5,7 @@ use App\Http\Controllers\Publik\CheckoutController;
 use App\Http\Controllers\Publik\KatalogController;
 use App\Http\Controllers\Publik\KeranjangController;
 use App\Http\Controllers\Publik\LacakController;
+use App\Http\Controllers\Publik\PesananItemController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', BerandaController::class)->name('beranda');
@@ -13,6 +14,8 @@ Route::get('/produk/{produk:slug}', [KatalogController::class, 'show'])->name('p
 
 Route::get('/keranjang', [KeranjangController::class, 'index'])->name('keranjang');
 Route::post('/keranjang', [KeranjangController::class, 'tambah'])->name('keranjang.tambah');
+Route::post('/keranjang/kustom/{produk:slug}', [KeranjangController::class, 'tambahKustom'])
+    ->name('keranjang.kustom');
 Route::put('/keranjang', [KeranjangController::class, 'ubah'])->name('keranjang.ubah');
 Route::delete('/keranjang', [KeranjangController::class, 'hapus'])->name('keranjang.hapus');
 
@@ -24,5 +27,12 @@ Route::get('/lacak', [LacakController::class, 'form'])->name('lacak');
 Route::post('/lacak', [LacakController::class, 'cari'])->name('lacak.cari');
 Route::get('/lacak/{token}', [LacakController::class, 'show'])->name('lacak.token');
 Route::post('/lacak/{token}/bukti', [LacakController::class, 'buktiTransfer'])->name('lacak.bukti');
+
+Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->group(function () {
+    Route::post('roster', [PesananItemController::class, 'simpanRoster'])->name('roster');
+    Route::post('desain', [PesananItemController::class, 'unggahDesain'])->name('desain');
+    Route::post('setujui', [PesananItemController::class, 'setujuiDesain'])->name('setujui');
+    Route::post('revisi', [PesananItemController::class, 'mintaRevisi'])->name('revisi');
+});
 
 require __DIR__.'/panel.php';

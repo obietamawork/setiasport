@@ -254,10 +254,13 @@
                             pesanan masuk. Sisa pembayaran dilunasi saat mengambil barang.
                         </p>
 
-                        <button type="button" class="tombol tombol-utama w-full" disabled>
-                            Susun pesanan
-                        </button>
-                        <p class="text-xs text-muted">Penyusun pesanan kustom dibuka pada tahap berikutnya.</p>
+                        @if ($produk->priceTiers->isEmpty())
+                            <p class="border-l-2 border-line-strong bg-paper p-3 text-sm leading-relaxed">
+                                Harga produk ini belum lengkap di sistem. Hubungi toko untuk penawaran.
+                            </p>
+                        @else
+                            @include('komponen.konfigurator', ['produk' => $produk])
+                        @endif
                     </div>
                 @endif
             </div>

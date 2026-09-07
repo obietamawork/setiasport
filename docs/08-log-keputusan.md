@@ -301,6 +301,56 @@ setelah deploy.
 
 ---
 
+## KEP-013 — Roster diisi setelah pesanan dibuat, bukan saat checkout
+**Status:** TERKUNCI · 2026-09-07
+
+Dokumen 03 semula menempatkan pengisian nama–nomor–ukuran di dalam konfigurator,
+sebelum checkout. Itu diubah: konfigurator hanya menangani opsi dan jumlah, dan
+roster diisi **di halaman pesanan pelanggan** setelah order dibuat.
+
+**Alasan:** kapten tim memesan lebih dulu, lalu mengumpulkan nama dan ukuran dari
+anggotanya selama beberapa hari. Mewajibkan roster lengkap di checkout akan
+menghentikan pesanan yang sebenarnya sudah pasti — persis pelanggan yang paling
+ingin kita layani.
+
+Roster bisa diubah **sampai desain disetujui**, lalu terkunci bersama desainnya.
+Batas itu bukan pilihan sembarangan: setelah approve, namanya sudah masuk mesin
+cetak dan jersey bernama orang tidak bisa dijual ulang.
+
+**Konsekuensi teknis:**
+- Keranjang tidak menyimpan roster; hanya produk, jumlah, dan opsi
+- `RosterPemain::simpan()` menolak perubahan bila `rosterTerkunci()`
+- Desainer **tidak boleh** mengirim mockup selama roster belum lengkap pada
+  produk yang mewajibkannya — lebih murah dihentikan di layar desain daripada
+  di meja printing
+- Nomor punggung ganda ditolak di klien maupun server
+
+---
+
+## KEP-014 — Status item menyatakan divisi; status job menyatakan aktivitas
+**Status:** TERKUNCI · 2026-09-07
+
+Antrian produksi memakai dua tingkat yang tidak boleh dicampur:
+
+| | Arti | Contoh |
+|---|---|---|
+| `order_items.status_item` | **Divisi mana** yang sedang memegang barang | `JAHIT` = ada di tangan penjahit |
+| `production_jobs.status` | **Apa** yang divisi itu lakukan | `ANTRI` / `DIKERJAKAN` / `SELESAI` |
+
+Dua tahap punya status antrian tersendiri yang terlihat pelanggan
+(`ANTRIAN_DESAIN`, `ANTRIAN_PRODUKSI`), karena di situlah penungguan paling
+terasa. Menekan "Mulai kerjakan" pada keduanya benar-benar memindahkan status
+item — supaya timeline pelanggan menunjukkan waktu yang sebenarnya, bukan tahap
+yang tercentang tanpa pernah dilewati.
+
+**Konsekuensi teknis:**
+- Operator hanya bisa menyentuh item yang berada di divisi yang izinnya ia punya
+- Menyelesaikan mockup menutup job `DESAIN`; permintaan revisi membukanya kembali
+- Layar antrian berbentuk kartu, bukan tabel: operator membukanya dari HP di
+  dekat mesin (docs/04)
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -317,3 +367,5 @@ setelah deploy.
 | KEP-010 | Harga otomatis, pelanggan langsung bayar | TERKUNCI |
 | KEP-011 | Produk hybrid (BOTH): dua jalur pembelian | TERKUNCI |
 | KEP-012 | Lingkungan lokal Docker mencerminkan shared hosting | TERKUNCI |
+| KEP-013 | Roster diisi setelah pesanan, terkunci saat approve | TERKUNCI |
+| KEP-014 | Status item = divisi; status job = aktivitas | TERKUNCI |

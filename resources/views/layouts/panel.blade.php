@@ -42,6 +42,7 @@
                 $menu = [
                     ['panel.dashboard', 'Dashboard', null, 'panel.dashboard'],
                     ['panel.pesanan.index', 'Pesanan', 'order.lihat', 'panel.pesanan.*'],
+                    ['panel.antrian.index', 'Antrian kerja', null, 'panel.antrian.*'],
                     ['panel.serah-terima', 'Serah terima', 'serah_terima.proses', 'panel.serah-terima'],
                     ['panel.produk.index', 'Produk', 'katalog.kelola', 'panel.produk.*'],
                     ['panel.kategori.index', 'Kategori', 'katalog.kelola', 'panel.kategori.*'],
@@ -52,6 +53,7 @@
 
             @foreach ($menu as [$rute, $label, $izin, $pola])
                 @continue($izin && ! auth()->user()->punyaIzin($izin))
+                @continue($rute === 'panel.antrian.index' && empty(auth()->user()->tahapProduksi()))
                 @php $aktif = request()->routeIs($pola); @endphp
                 <a href="{{ route($rute) }}"
                    class="block rounded-sm px-3 py-2 font-medium {{ $aktif ? 'bg-court text-white' : 'hover:bg-court-soft' }}">

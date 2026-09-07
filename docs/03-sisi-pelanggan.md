@@ -26,7 +26,7 @@ harga jelas, hasil bisa dibayangkan, progres bisa dilihat.
 **Kustom / PreOrder:** ini bukan halaman produk, ini **konfigurator**. Isinya:
 - Pilih bahan / tipe (dryfit, hyget, dll) — mempengaruhi harga
 - **Pilih desain dari template** ATAU **kirim desain sendiri** (upload)
-- Isi **roster**: nama punggung, nomor, ukuran — per orang
+- (Roster **tidak** diisi di sini — lihat KEP-013)
 - Tabel ukuran (size chart) yang jelas + catatan "ukuran Asia"
 - MOQ (minimum order) ditegakkan di sini, bukan di checkout
 - **Harga & estimasi lead time terhitung live** saat pilihan berubah
@@ -41,7 +41,9 @@ pelanggan menyangkal, jersey dicetak ulang, rugi.
 Yang harus ada:
 - Form dinamis (tambah/hapus baris), atau upload Excel/CSV dengan template
 - Validasi: nomor tidak duplikat, ukuran harus dari daftar, jumlah baris = qty
-- Pelanggan bisa mengubah roster **hanya sampai tahap approve desain**, setelah itu terkunci
+- Diisi di halaman pesanan **setelah** order dibuat, bukan saat checkout (KEP-013):
+  kapten tim memesan dulu, lalu mengumpulkan data anggotanya selama beberapa hari
+- Bisa diubah **hanya sampai desain disetujui**, setelah itu terkunci
 - Ringkasan otomatis: "S:3, M:8, L:5, XL:2" — untuk pelanggan sekaligus untuk gudang
 
 ### 3. Keranjang & Checkout

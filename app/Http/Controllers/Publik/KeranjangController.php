@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Publik;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\Keranjang;
 use Illuminate\Http\RedirectResponse;
@@ -41,6 +42,30 @@ class KeranjangController extends Controller
 
         return redirect()->route('keranjang')
             ->with('sukses', "{$varian->product->nama} dimasukkan ke keranjang.");
+    }
+
+    /**
+     * Jalur kustom. Harga tetap dihitung ulang di server oleh PriceCalculator —
+     * angka apa pun yang dikirim konfigurator di browser tidak dipercaya (KEP-009).
+     */
+    public function tambahKustom(Request $request, Product $produk): RedirectResponse
+    {
+        abort_unless($produk->aktif && $produk->punyaJalurKustom(), 404);
+
+        $data = $request->validate([
+            'qty' => ['required', 'integer', 'min:1', 'max:100000'],
+            'opsi' => ['array'],
+            'opsi.*' => ['integer', 'exists:option_values,id'],
+        ], [], ['qty' => 'jumlah']);
+
+        try {
+            $this->keranjang->tambahKustom($produk, $data['qty'], $data['opsi'] ?? []);
+        } catch (InvalidArgumentException $e) {
+            return back()->withErrors($e->getMessage())->withInput();
+        }
+
+        return redirect()->route('keranjang')
+            ->with('sukses', "{$produk->nama} ({$data['qty']} pcs) dimasukkan ke keranjang.");
     }
 
     public function ubah(Request $request): RedirectResponse

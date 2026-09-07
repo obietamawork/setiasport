@@ -24,10 +24,16 @@ class CheckoutController extends Controller
             return redirect()->route('keranjang');
         }
 
+        $isi = $this->keranjang->isi();
+
         return view('publik.checkout', [
-            'isi' => $this->keranjang->isi(),
+            'isi' => $isi,
             'total' => $this->keranjang->total(),
             'adaMasalah' => $this->keranjang->adaMasalah(),
+            // DP hanya masuk akal untuk pesanan kustom: barang stok diambil
+            // besok, jadi tidak ada gunanya menunda pembayarannya (KEP-005).
+            'bolehDp' => $isi->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::PREORDER),
+            'persenDp' => (int) setting('dp_minimum_persen', 50),
         ]);
     }
 
@@ -49,6 +55,10 @@ class CheckoutController extends Controller
             'email' => ['required', 'email', 'max:150'],
             'no_hp' => ['required', 'string', 'max:20', 'regex:/^[0-9+\-\s]+$/'],
             'catatan' => ['nullable', 'string', 'max:500'],
+            // Longgar dengan sengaja: keranjang berisi barang stok saja tidak
+            // menampilkan pilihan ini, dan lunas adalah satu-satunya arti yang
+            // masuk akal di sana.
+            'tipe_pembayaran' => ['nullable', 'in:LUNAS,DP'],
             'setuju' => ['accepted'],
         ], [
             'email.required' => 'Email wajib diisi — ke sanalah tautan pesanan dan kabar progres dikirim.',
@@ -58,8 +68,13 @@ class CheckoutController extends Controller
             'nama' => 'nama', 'email' => 'email', 'no_hp' => 'nomor HP',
         ]);
 
+        $adaKustom = $this->keranjang->isi()
+            ->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::PREORDER);
+
+        $tipe = (($data['tipe_pembayaran'] ?? 'LUNAS') === 'DP' && $adaKustom) ? 'DP' : 'LUNAS';
+
         try {
-            $order = $this->checkout->proses($data, 'LUNAS');
+            $order = $this->checkout->proses($data, $tipe);
         } catch (\RuntimeException $e) {
             // Umumnya stok habis diambil pembeli lain di detik terakhir.
             throw ValidationException::withMessages(['nama' => $e->getMessage()]);

@@ -154,6 +154,14 @@
                             @endforeach
                         </ol>
                     @endif
+
+                    @if ($item->kustom() && ! $batal)
+                        @include('komponen.desain', ['item' => $item, 'order' => $order])
+
+                        @if ($item->product->roster_wajib || $item->rosters->isNotEmpty())
+                            @include('komponen.roster', ['item' => $item, 'order' => $order])
+                        @endif
+                    @endif
                 </div>
             @endforeach
         </div>

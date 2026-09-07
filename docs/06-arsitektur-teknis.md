@@ -97,8 +97,8 @@ dan harus naik ke VPS + object storage.
 | 0 | Keputusan di dokumen 07, skema DB, RBAC, seeder | **SELESAI** — 26 tabel, model, kalkulator harga, 14 test |
 | 1 | Katalog publik + panel produk/kategori/stok | **SELESAI** — etalase online + panel katalog |
 | 2 | Keranjang, checkout, order, pembayaran manual, tracking + email Resend | **SELESAI** — pesanan masuk lewat web |
-| 3 | Konfigurator kustom, roster, alur desain + approval, antrian produksi | Alur PreOrder penuh |
-| 4 | Serah terima (kode ambil/QR), worksheet cetak, dashboard harian | Operasional harian pindah ke sistem |
+| 3 | Konfigurator kustom, roster, alur desain + approval, antrian produksi | **SELESAI** — alur PreOrder penuh |
+| 4 | Serah terima (kode ambil), worksheet cetak, dashboard harian | **SELESAI** — operasional harian di sistem |
 | 5 | Payment gateway (Midtrans/Xendit) | Otomatisasi pembayaran online |
 
 Email (Resend) masuk di fase 2, bukan fase 5 — tanpa notifikasi, halaman tracking tidak

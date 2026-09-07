@@ -41,6 +41,33 @@
                 <textarea id="catatan" name="catatan" rows="3" class="kotak-input">{{ old('catatan') }}</textarea>
             </div>
 
+            @if ($bolehDp)
+                <fieldset class="border-t border-line pt-4">
+                    <legend class="label-form">Cara pembayaran</legend>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2 text-sm">
+                            <input type="radio" name="tipe_pembayaran" value="DP" class="mt-0.5 size-4 accent-court"
+                                   @checked(old('tipe_pembayaran', 'DP') === 'DP')>
+                            <span>
+                                <strong>Uang muka {{ $persenDp }}%</strong> &mdash;
+                                <span class="tabular">{{ rupiah((int) ceil($total * $persenDp / 100)) }}</span> sekarang,
+                                sisanya dibayar saat mengambil barang di toko.
+                            </span>
+                        </label>
+                        <label class="flex items-start gap-2 text-sm">
+                            <input type="radio" name="tipe_pembayaran" value="LUNAS" class="mt-0.5 size-4 accent-court"
+                                   @checked(old('tipe_pembayaran') === 'LUNAS')>
+                            <span>
+                                <strong>Bayar lunas</strong> &mdash;
+                                <span class="tabular">{{ rupiah($total) }}</span> sekarang.
+                            </span>
+                        </label>
+                    </div>
+                </fieldset>
+            @else
+                <input type="hidden" name="tipe_pembayaran" value="LUNAS">
+            @endif
+
             <label class="flex items-start gap-2 border-t border-line pt-4 text-sm">
                 <input type="checkbox" name="setuju" value="1" class="mt-0.5 size-4 accent-court" @checked(old('setuju'))>
                 <span>

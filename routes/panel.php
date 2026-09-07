@@ -3,11 +3,14 @@
 use App\Http\Controllers\Panel\AuthController;
 use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Panel\KategoriController;
+use App\Http\Controllers\Panel\AntrianController;
+use App\Http\Controllers\Panel\MockupController;
 use App\Http\Controllers\Panel\PembayaranController;
 use App\Http\Controllers\Panel\PenyesuaianController;
 use App\Http\Controllers\Panel\PengaturanController;
 use App\Http\Controllers\Panel\PesananController;
 use App\Http\Controllers\Panel\SerahTerimaController;
+use App\Http\Controllers\Panel\WorksheetController;
 use App\Http\Controllers\Panel\ProdukController;
 use App\Http\Controllers\Panel\ProdukKomponenController;
 use App\Http\Controllers\Panel\StokController;
@@ -27,7 +30,20 @@ Route::prefix('panel')->name('panel.')->group(function () {
         Route::middleware('izin:order.lihat')->group(function () {
             Route::get('pesanan', [PesananController::class, 'index'])->name('pesanan.index');
             Route::get('pesanan/{pesanan}', [PesananController::class, 'show'])->name('pesanan.show');
+            Route::get('pesanan/{pesanan}/worksheet', WorksheetController::class)->name('pesanan.worksheet');
         });
+
+        // Antrian kerja per divisi. Izin diperiksa per tahap di dalam controller,
+        // karena satu orang bisa memegang beberapa divisi sekaligus (docs/04).
+        Route::prefix('antrian')->name('antrian.')->group(function () {
+            Route::get('/', [AntrianController::class, 'index'])->name('index');
+            Route::get('{tahap}', [AntrianController::class, 'tahap'])->name('tahap');
+            Route::post('item/{item}/mulai', [AntrianController::class, 'mulai'])->name('mulai');
+            Route::post('item/{item}/selesai', [AntrianController::class, 'selesai'])->name('selesai');
+        });
+
+        Route::post('item/{item}/mockup', [MockupController::class, 'store'])
+            ->middleware('izin:produksi.desain')->name('mockup.simpan');
 
         Route::prefix('pesanan/{pesanan}')->name('pesanan.')->group(function () {
             Route::post('item/{item}/maju', [PesananController::class, 'majukanItem'])

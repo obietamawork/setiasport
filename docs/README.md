@@ -26,11 +26,11 @@ sudah jalan dan tertutup test. Cara menjalankan proyeknya ada di
 [README.md di root](../README.md).
 
 - **12 keputusan fondasi terkunci** (KEP-001 s/d KEP-012)
-- **Fase 0, 1 & 2 selesai.** Fondasi data, katalog publik, panel internal, dan
-  pesanan end-to-end: keranjang, checkout, pembayaran manual, halaman pesanan
-  pelanggan, email Resend, serah terima di kasir. 38 test lulus di MySQL
-- Belum dibangun: konfigurator kustom, roster, alur desain & approval,
-  antrian produksi per divisi, payment gateway
+- **Fase 0 s/d 3 selesai.** Fondasi data, katalog publik, panel internal,
+  pesanan end-to-end, serta alur kustom penuh: konfigurator harga live, roster
+  pemain, gerbang persetujuan desain, antrian kerja per divisi, dan worksheet
+  cetak. 52 test lulus di MySQL
+- Belum dibangun: payment gateway (Midtrans/Xendit) dan webhook status Resend
 - Menunggu dari pemilik toko: koreksi harga katalog & pembelian hosting
 
 Setiap dokumen di atas sudah disinkronkan dengan keputusan terkunci. Kalau ada

@@ -79,12 +79,13 @@ deploy:
 app/Enums/          Status, tipe, dan basis harga — nilai domain, bukan string lepas
 app/Models/         Eloquent; Order sengaja TIDAK menyimpan kolom total
 app/Services/       PriceCalculator (KEP-009), OrderStatusResolver (KEP-001),
-                    Keranjang, Checkout, ReservasiStok, AlurPesanan, PengirimEmail
+                    Keranjang, Checkout, ReservasiStok, AlurPesanan, PengirimEmail,
+                    AlurDesain (gerbang approve), RosterPemain
 app/Http/           Controller publik & panel, middleware izin RBAC
 resources/views/    publik/ (etalase) dan panel/ (alat kerja) — dua register visual
 resources/views/emails/  Email pesanan; gaya inline karena klien email mengabaikan CSS
 database/seeders/   Peran bawaan, pengaturan, dan 5 produk penguji model data
 docker/             Image PHP-Apache dan konfigurasi vhost
 docs/               Rancangan, log keputusan, panduan visual
-tests/Feature/      Penjaga rumus harga, aturan uang, dan akses panel
+tests/Feature/      Penjaga rumus harga, aturan uang, akses panel, dan alur pesanan
 ```
