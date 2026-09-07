@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Enums\EmailStatus;
 use App\Mail\EmailPesanan;
+use App\Mail\KonfirmasiAkun;
+use App\Models\Customer;
 use App\Models\EmailLog;
 use App\Models\Order;
 use Illuminate\Support\Facades\Mail;
@@ -56,6 +58,19 @@ class PengirimEmail
         }
 
         return $log->refresh();
+    }
+
+    /**
+     * Tautan konfirmasi pendaftaran (KEP-021). Sengaja tidak dicatat di
+     * email_logs karena tabel itu terikat pesanan, bukan akun.
+     */
+    public function kirimKonfirmasiAkun(Customer $pelanggan, string $tautan): void
+    {
+        try {
+            Mail::to($pelanggan->email)->queue(new KonfirmasiAkun($pelanggan, $tautan));
+        } catch (Throwable $e) {
+            report($e);
+        }
     }
 
     /**

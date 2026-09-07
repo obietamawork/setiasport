@@ -36,6 +36,11 @@ Route::middleware('guest:pelanggan')->group(function () {
     Route::post('/masuk', [AkunController::class, 'masuk'])->name('masuk.proses');
     Route::get('/daftar', [AkunController::class, 'formDaftar'])->name('daftar');
     Route::post('/daftar', [AkunController::class, 'daftar'])->name('daftar.proses');
+    Route::get('/daftar/terkirim', [AkunController::class, 'terkirim'])->name('daftar.terkirim');
+
+    // Penguasaan email dibuktikan di sini, bukan di formulir (KEP-021).
+    Route::get('/daftar/konfirmasi/{token}', [AkunController::class, 'konfirmasi'])
+        ->name('daftar.konfirmasi');
 });
 
 Route::middleware('auth:pelanggan')->group(function () {

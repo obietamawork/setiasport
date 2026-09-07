@@ -79,8 +79,8 @@
                             <strong>Buat akun sekalian</strong>
                             <span class="block text-muted">
                                 Supaya semua pesanan Anda bisa dilihat dalam satu halaman
-                                tanpa mencari email. Tanpa ini pun pesanan tetap bisa dibuka
-                                lewat tautan yang kami kirim.
+                                tanpa mencari email. Kami kirim tautan konfirmasi terpisah;
+                                pesanan ini tetap berjalan normal sambil menunggu.
                             </span>
                         </span>
                     </label>

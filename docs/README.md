@@ -36,7 +36,7 @@ sudah jalan dan tertutup test. Cara menjalankan proyeknya ada di
 - Susunan peran diringkas jadi dua (KEP-017), gambar produk mendukung unggah
   maupun CDN (KEP-018), dan identitas visual diturunkan dari logo (KEP-019).
   Pelanggan kini bisa memakai akun sebagai jalur kedua di samping tautan
-  bertoken (KEP-020). 93 test lulus di MySQL
+  bertoken (KEP-020), dengan konfirmasi email wajib (KEP-021). 98 test lulus di MySQL
 - Sisa pekerjaan bukan lagi kode: pasang berkas logo, koreksi harga katalog,
   pembelian hosting, pendaftaran merchant, dan deploy ([12-deploy.md](12-deploy.md))
 - Menunggu dari pemilik toko: koreksi harga katalog & pembelian hosting

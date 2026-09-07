@@ -9,7 +9,6 @@ use App\Services\PengirimEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -57,18 +56,20 @@ class CheckoutController extends Controller
         }
     }
 
+    /**
+     * Akun dibuat sebagai pendaftaran TERTUNDA, dan pelanggan tidak langsung
+     * dimasukkan (KEP-021). Pesanannya sendiri tetap berjalan normal: tautan
+     * bertoken di email pesanan tetap membukanya tanpa perlu akun.
+     */
     private function buatkanAkun(\App\Models\Customer $pelanggan, string $password): void
     {
-        if ($pelanggan->punyaAkun()) {
+        if ($pelanggan->akunAktif()) {
             return;
         }
 
-        $pelanggan->forceFill([
-            'password' => Hash::make($password),
-            'akun_dibuat_pada' => now(),
-        ])->save();
+        $token = $pelanggan->siapkanKonfirmasi($password);
 
-        Auth::guard('pelanggan')->login($pelanggan);
+        $this->email->kirimKonfirmasiAkun($pelanggan, route('daftar.konfirmasi', $token));
     }
 
     public function proses(Request $request): RedirectResponse
@@ -122,13 +123,15 @@ class CheckoutController extends Controller
             throw ValidationException::withMessages(['nama' => $e->getMessage()]);
         }
 
-        if ($request->boolean('buat_akun')) {
-            $this->buatkanAkun($order->customer, $request->string('password')->toString());
-        }
-
         $this->email->kirim($order, 'order-dibuat');
 
-        return redirect()->route('lacak.token', $order->access_token)
-            ->with('sukses', 'Pesanan Anda dibuat. Rincian pembayaran ada di bawah.');
+        $pesan = 'Pesanan Anda dibuat. Rincian pembayaran ada di bawah.';
+
+        if ($request->boolean('buat_akun')) {
+            $this->buatkanAkun($order->customer, $request->string('password')->toString());
+            $pesan .= ' Kami juga mengirim tautan konfirmasi akun ke email Anda.';
+        }
+
+        return redirect()->route('lacak.token', $order->access_token)->with('sukses', $pesan);
     }
 }

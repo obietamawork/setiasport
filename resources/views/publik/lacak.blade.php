@@ -260,7 +260,7 @@
 
     {{-- Ditawarkan di sini karena inilah saat pelanggan paling mungkin mau:
          pesanannya sudah nyata dan mereka sedang melihat manfaatnya. --}}
-    @if (! auth('pelanggan')->check() && ! $order->customer->punyaAkun())
+    @if (! auth('pelanggan')->check() && ! $order->customer->akunAktif())
         <div class="notis notis-info mt-4">
             <p class="font-semibold">Sering memesan di sini?</p>
             <p class="mt-1">

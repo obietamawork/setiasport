@@ -4,9 +4,10 @@
 @section('isi')
 <div class="mx-auto max-w-md px-5 py-14">
     <h1 class="text-3xl font-extrabold">Buat akun</h1>
-    <p class="mt-3 leading-relaxed text-muted">
-        Berguna kalau Anda memesan berulang kali. Kalau pernah memesan dengan email ini,
-        riwayat pesanannya langsung ikut tercatat.
+    <p class="kolom-baca mt-3 leading-relaxed text-muted">
+        Berguna kalau Anda memesan berulang kali. Kami akan mengirim tautan konfirmasi
+        ke email Anda, dan setelah dikonfirmasi seluruh pesanan yang pernah dibuat dengan
+        email itu ikut tercatat di akun Anda.
     </p>
 
     <form method="POST" action="{{ route('daftar.proses') }}" class="kartu mt-7 space-y-4 p-6">
@@ -43,7 +44,7 @@
                    class="kotak-input" required autocomplete="new-password">
         </div>
 
-        <button type="submit" class="tombol tombol-utama w-full">Buat akun</button>
+        <button type="submit" class="tombol tombol-utama w-full">Kirim tautan konfirmasi</button>
 
         <p class="border-t border-line pt-4 text-sm text-muted">
             Sudah punya akun?

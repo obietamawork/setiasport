@@ -28,12 +28,57 @@ class Customer extends Authenticatable
             'password' => 'hashed',
             'akun_dibuat_pada' => 'datetime',
             'login_terakhir_pada' => 'datetime',
+            'email_terverifikasi_pada' => 'datetime',
+            'token_dibuat_pada' => 'datetime',
         ];
     }
 
-    public function punyaAkun(): bool
+    /**
+     * Kata sandi sudah dipasang, tapi belum tentu boleh dipakai. Pendaftaran
+     * yang belum dikonfirmasi lewat email tetap berhenti di sini (KEP-021).
+     */
+    public function punyaKataSandi(): bool
     {
         return filled($this->password);
+    }
+
+    /** Satu-satunya keadaan yang boleh dipakai untuk masuk. */
+    public function akunAktif(): bool
+    {
+        return filled($this->password) && $this->email_terverifikasi_pada !== null;
+    }
+
+    public function tokenMasihBerlaku(): bool
+    {
+        return filled($this->token_verifikasi)
+            && $this->token_dibuat_pada?->gt(now()->subDay());
+    }
+
+    /**
+     * Membuat pendaftaran tertunda. Kata sandi disimpan tapi belum berlaku
+     * sampai tautan konfirmasi di email diklik.
+     */
+    public function siapkanKonfirmasi(string $password): string
+    {
+        $token = \Illuminate\Support\Str::random(64);
+
+        $this->forceFill([
+            'password' => \Illuminate\Support\Facades\Hash::make($password),
+            'token_verifikasi' => hash('sha256', $token),
+            'token_dibuat_pada' => now(),
+        ])->save();
+
+        return $token;
+    }
+
+    public function selesaikanKonfirmasi(): void
+    {
+        $this->forceFill([
+            'email_terverifikasi_pada' => now(),
+            'akun_dibuat_pada' => $this->akun_dibuat_pada ?? now(),
+            'token_verifikasi' => null,
+            'token_dibuat_pada' => null,
+        ])->save();
     }
 
     public function orders(): HasMany

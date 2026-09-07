@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Publik;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Services\PengirimEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -15,13 +15,15 @@ use Illuminate\Validation\ValidationException;
 /**
  * Akun pelanggan, jalur kedua di samping tautan bertoken (KEP-020).
  *
- * Yang tidak mau membuat akun tidak kehilangan apa pun: tautan di email tetap
- * membuka halaman pesanan seperti biasa. Akun hanya menjawab satu kebutuhan,
- * yaitu pelanggan berulang yang ingin melihat semua pesanannya dalam satu
- * tempat tanpa mencari-cari email lama.
+ * Pendaftaran WAJIB dikonfirmasi lewat email sebelum akunnya bisa dipakai
+ * (KEP-021). Tanpa itu, siapa pun yang tahu alamat email seorang pelanggan bisa
+ * mendaftar memakai alamat tersebut dan langsung mewarisi seluruh riwayat
+ * pesanannya, termasuk kode ambil barang. Email pelanggan bukan rahasia.
  */
 class AkunController extends Controller
 {
+    public function __construct(private PengirimEmail $email) {}
+
     public function formMasuk()
     {
         return Auth::guard('pelanggan')->check()
@@ -44,28 +46,34 @@ class AkunController extends Controller
             ]);
         }
 
-        $pelanggan = Customer::where('email', $data['email'])->first();
-
-        // Pelanggan yang pernah memesan sebagai tamu sudah ada di sistem tapi
-        // belum punya kata sandi. Arahkan ke pendaftaran, bukan ke pesan gagal
-        // yang membingungkan.
-        if ($pelanggan && ! $pelanggan->punyaAkun()) {
-            return redirect()->route('daftar', ['email' => $pelanggan->email])
-                ->with('sukses', 'Email Anda sudah kami kenal, tinggal buat kata sandinya.');
-        }
-
         if (! Auth::guard('pelanggan')->attempt($data, $request->boolean('ingat'))) {
             RateLimiter::hit($kunci, 300);
 
+            // Pesan yang sama untuk email tidak dikenal maupun kata sandi salah,
+            // supaya halaman ini tidak bisa dipakai menebak email pelanggan.
             throw ValidationException::withMessages([
                 'email' => 'Email atau kata sandi tidak cocok.',
+            ]);
+        }
+
+        $pelanggan = Auth::guard('pelanggan')->user();
+
+        // Kata sandinya benar, tapi penguasaan email belum pernah dibuktikan.
+        // Diberitahukan hanya setelah kata sandi cocok, jadi bukan celah tebakan.
+        if (! $pelanggan->akunAktif()) {
+            Auth::guard('pelanggan')->logout();
+            $this->kirimKonfirmasi($pelanggan, $request->string('password')->toString());
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun ini belum dikonfirmasi. Kami baru saja mengirim ulang '
+                    .'tautan konfirmasinya ke email Anda.',
             ]);
         }
 
         RateLimiter::clear($kunci);
         $request->session()->regenerate();
 
-        Auth::guard('pelanggan')->user()->forceFill(['login_terakhir_pada' => now()])->save();
+        $pelanggan->forceFill(['login_terakhir_pada' => now()])->save();
 
         return redirect()->intended(route('pesanan-saya'));
     }
@@ -94,22 +102,58 @@ class AkunController extends Controller
             'no_hp' => 'nomor HP', 'password' => 'kata sandi',
         ]);
 
-        $pelanggan = Customer::where('email', $data['email'])->first();
+        $kunci = 'daftar-pelanggan:'.$request->ip();
 
-        if ($pelanggan?->punyaAkun()) {
+        if (RateLimiter::tooManyAttempts($kunci, 6)) {
             throw ValidationException::withMessages([
-                'email' => 'Email ini sudah punya akun. Silakan masuk.',
+                'email' => 'Terlalu banyak percobaan. Coba lagi dalam beberapa menit.',
             ]);
         }
 
-        // Pemesan tamu yang mendaftar belakangan langsung mewarisi seluruh
-        // riwayat pesanannya, karena email adalah kuncinya sejak awal.
-        $pelanggan = Customer::updateOrCreate(['email' => $data['email']], [
-            'nama' => $data['nama'],
-            'no_hp' => $data['no_hp'],
-            'password' => Hash::make($data['password']),
-            'akun_dibuat_pada' => now(),
-        ]);
+        RateLimiter::hit($kunci, 600);
+
+        $pelanggan = Customer::where('email', $data['email'])->first();
+
+        if (! $pelanggan) {
+            $pelanggan = Customer::create([
+                'nama' => $data['nama'],
+                'email' => $data['email'],
+                'no_hp' => $data['no_hp'],
+            ]);
+        }
+
+        /*
+         * Akun yang sudah aktif tidak disentuh sama sekali: kata sandinya tidak
+         * ditimpa, dan nama serta nomor HP-nya tidak diubah oleh orang lain.
+         * Untuk yang belum aktif, kata sandi baru disiapkan sebagai pendaftaran
+         * tertunda yang hanya bisa diselesaikan dari email itu sendiri.
+         */
+        if (! $pelanggan->akunAktif()) {
+            $this->kirimKonfirmasi($pelanggan, $data['password']);
+        }
+
+        // Jawaban selalu sama, apa pun keadaan emailnya. Halaman ini tidak boleh
+        // bisa dipakai memastikan apakah sebuah email terdaftar di toko.
+        return redirect()->route('daftar.terkirim');
+    }
+
+    public function terkirim()
+    {
+        return view('publik.akun.terkirim');
+    }
+
+    public function konfirmasi(Request $request, string $token): RedirectResponse
+    {
+        $pelanggan = Customer::where('token_verifikasi', hash('sha256', $token))->first();
+
+        if (! $pelanggan || ! $pelanggan->tokenMasihBerlaku()) {
+            return redirect()->route('daftar')->withErrors(
+                'Tautan konfirmasi sudah tidak berlaku. Silakan daftar ulang untuk '
+                .'mendapatkan tautan baru.'
+            );
+        }
+
+        $pelanggan->selesaikanKonfirmasi();
 
         Auth::guard('pelanggan')->login($pelanggan);
         $request->session()->regenerate();
@@ -117,8 +161,8 @@ class AkunController extends Controller
         return redirect()->route('pesanan-saya')->with(
             'sukses',
             $pelanggan->orders()->exists()
-                ? 'Akun dibuat. Pesanan Anda sebelumnya sudah ikut tercatat di sini.'
-                : 'Akun dibuat. Pesanan Anda nanti akan muncul di halaman ini.'
+                ? 'Akun aktif. Pesanan Anda sebelumnya sudah ikut tercatat di sini.'
+                : 'Akun aktif. Pesanan Anda nanti akan muncul di halaman ini.'
         );
     }
 
@@ -129,5 +173,12 @@ class AkunController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('beranda')->with('sukses', 'Anda sudah keluar.');
+    }
+
+    private function kirimKonfirmasi(Customer $pelanggan, string $password): void
+    {
+        $token = $pelanggan->siapkanKonfirmasi($password);
+
+        $this->email->kirimKonfirmasiAkun($pelanggan, route('daftar.konfirmasi', $token));
     }
 }

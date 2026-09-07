@@ -84,8 +84,13 @@ juga dibuka manual dengan **kode order + email**.
 
 **Akun dengan kata sandi** ditawarkan sebagai tambahan bagi pelanggan berulang
 yang ingin melihat semua pesanannya dalam satu halaman. Sepenuhnya opsional:
-checkout tamu tetap tanpa pendaftaran. Pemesan tamu yang mendaftar belakangan
-langsung mewarisi riwayatnya, karena email sudah menjadi kunci sejak awal.
+checkout tamu tetap tanpa pendaftaran.
+
+Pendaftaran **wajib dikonfirmasi lewat tautan di email** sebelum akunnya bisa
+dipakai (KEP-021). Tanpa itu, siapa pun yang tahu alamat email seorang pelanggan
+bisa mewarisi riwayat pesanannya, termasuk kode ambil barang. Setelah
+dikonfirmasi, seluruh pesanan yang pernah dibuat dengan email itu ikut tercatat,
+karena email memang sudah menjadi kunci sejak awal.
 
 Tautan **sengaja bisa dibagikan** — Budi memesan 18 jersey lalu membagikannya ke grup
 tim, dan 17 anggota lain memantau progres sendiri tanpa bertanya ke Budi. Konsekuensinya:

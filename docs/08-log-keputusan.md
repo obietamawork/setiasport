@@ -522,6 +522,58 @@ konfigurasi peran.
 
 ---
 
+## KEP-021 — Pendaftaran wajib dikonfirmasi lewat email
+**Status:** TERKUNCI · 2026-09-08
+
+Ditemukan tinjauan keamanan otomatis pada rancangan awal KEP-020, sebelum
+sempat dipakai siapa pun.
+
+### Yang bisa terjadi
+
+Pendaftaran semula langsung mengaktifkan akun dan memasukkan penggunanya. Karena
+pesanan diikat ke pelanggan **berdasarkan email**, siapa pun yang tahu alamat
+email seorang pelanggan dapat:
+
+1. Membuka `/daftar`, memasukkan email itu dengan kata sandi karangannya
+2. Langsung mewarisi seluruh riwayat pesanan pemilik email, termasuk rincian
+   barang, nominal, dan **kode ambil**
+3. Menimpa nama serta nomor HP pemilik aslinya
+
+Kode ambil adalah yang ditunjukkan di kasir saat mengambil barang, jadi ini
+bukan sekadar kebocoran data. Dan email pelanggan bukan rahasia: tertulis di
+catatan toko dan diketahui sesama anggota tim.
+
+### Yang berlaku sekarang
+
+Pendaftaran hanya membuat **pendaftaran tertunda**. Kata sandi disimpan tapi
+belum berlaku sampai tautan konfirmasi di email diklik, dan tautan itu hanya
+bisa dibuka oleh yang benar-benar menguasai email tersebut.
+
+**Akun yang sudah aktif tidak pernah disentuh pendaftaran ulang.** Kata sandi,
+nama, dan nomor HP-nya dibiarkan apa adanya, dan tidak ada email yang dikirim.
+
+**Konsekuensi teknis:**
+- `customers` mendapat `email_terverifikasi_pada`, `token_verifikasi` (disimpan
+  ter-hash), dan `token_dibuat_pada`; tautan berlaku 24 jam
+- `akunAktif()` menggantikan `punyaAkun()` di setiap tempat yang menentukan
+  boleh-tidaknya masuk
+- Checkout tetap membuat pesanan seperti biasa; hanya akunnya yang menunggu.
+  Pelanggan tidak pernah tertahan gara-gara email belum dibuka
+- Pemesan tamu **tidak menimpa profil** pelanggan yang akunnya sudah aktif
+- Halaman masuk memberi pesan yang sama untuk email tak dikenal maupun kata
+  sandi salah, dan halaman daftar memberi jawaban yang sama apa pun keadaan
+  emailnya, sehingga keduanya tidak bisa dipakai menebak email pelanggan
+- Peringatan "belum dikonfirmasi" hanya muncul **setelah** kata sandi benar,
+  jadi bukan celah penebakan
+
+### Yang tidak berubah
+
+Tautan bertoken di email pesanan tetap jalur utama dan tidak tersentuh sama
+sekali (KEP-008, KEP-020). Pelanggan yang tidak mau membuat akun tidak
+kehilangan apa pun, dan tidak ada yang menunggu email untuk melihat pesanannya.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -546,3 +598,4 @@ konfigurasi peran.
 | KEP-018 | Gambar produk: unggah atau tautan CDN | TERKUNCI |
 | KEP-019 | Identitas visual diturunkan dari logo | TERKUNCI |
 | KEP-020 | Akun pelanggan sebagai jalur kedua, bukan pengganti | TERKUNCI |
+| KEP-021 | Pendaftaran wajib dikonfirmasi lewat email | TERKUNCI |

@@ -40,13 +40,18 @@ class Checkout
         abort_if($isi->isEmpty(), 422, 'Keranjang kosong.');
 
         return DB::transaction(function () use ($isi, $pelanggan, $tipePembayaran) {
-            $customer = Customer::updateOrCreate(
-                ['email' => $pelanggan['email']],
-                [
+            $customer = Customer::firstOrNew(['email' => $pelanggan['email']]);
+
+            // Profil pelanggan yang akunnya sudah aktif tidak boleh ditimpa oleh
+            // pemesan tamu yang kebetulan memakai alamat email yang sama (KEP-021).
+            if (! $customer->exists || ! $customer->akunAktif()) {
+                $customer->fill([
                     'nama' => $pelanggan['nama'],
                     'no_hp' => $pelanggan['no_hp'],
-                ]
-            );
+                ]);
+            }
+
+            $customer->save();
 
             $order = Order::create([
                 'kode' => Order::kodeBaru(),
