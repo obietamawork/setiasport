@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+/*
+ * Setia Sport — token visual.
+ *
+ * Warna diambil dari lantai lapangan futsal dan garis kapur, bukan palet
+ * netral: hitamnya berbasis hijau, kertasnya bersemu dingin. Oranye sublimasi
+ * dipakai sangat hemat — hanya harga dan aksi utama.
+ */
+@theme {
+    --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+
+    --color-paper: #f5f7f4;
+    --color-field: #ffffff;
+    --color-ink: #0e1c17;
+    --color-muted: #5c6b64;
+    --color-line: #dce4de;
+    --color-line-strong: #b9c7be;
+
+    --color-court: #14523a;
+    --color-court-dark: #0b2b20;
+    --color-court-soft: #e7efe9;
+
+    --color-signal: #ff5a1f;
+    --color-signal-soft: #ffede4;
+
+    --color-warn: #b45309;
+    --color-warn-soft: #fef3c7;
+}
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        background: var(--color-paper);
+        color: var(--color-ink);
+        font-feature-settings: "tnum" 1;
+    }
+
+    /* Angka selalu rata lebar: harga, stok, dan nomor punggung berbaris rapi. */
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-signal);
+        outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+@layer components {
+    /*
+     * Kontras tipografi datang dari sumbu LEBAR Archivo, bukan dari keluarga
+     * huruf kedua — persis cara penomoran jersey bekerja: satu huruf, dilebarkan.
+     */
+    .t-wide {
+        font-stretch: 112%;
+        letter-spacing: -0.02em;
+    }
+
+    .t-narrow {
+        font-stretch: 88%;
+    }
+
+    /* Angka besar: lead time, harga utama, nomor. */
+    .numeral {
+        font-stretch: 112%;
+        font-weight: 800;
+        letter-spacing: -0.045em;
+        line-height: 0.86;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .tautan {
+        text-decoration: underline;
+        text-decoration-color: var(--color-line-strong);
+        text-underline-offset: 3px;
+        transition: text-decoration-color 120ms;
+    }
+
+    .tautan:hover {
+        text-decoration-color: var(--color-signal);
+    }
+
+    /* Tombol: sudut nyaris tajam, terasa teknis seperti perkakas bengkel. */
+    .tombol {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border-radius: 3px;
+        padding: 0.7rem 1.15rem;
+        font-weight: 600;
+        font-stretch: 104%;
+        line-height: 1;
+        transition: background-color 120ms, border-color 120ms, color 120ms;
+    }
+
+    .tombol-utama {
+        background: var(--color-signal);
+        color: #fff;
+    }
+
+    .tombol-utama:hover {
+        background: #e84a12;
+    }
+
+    .tombol-lapangan {
+        background: var(--color-court);
+        color: #fff;
+    }
+
+    .tombol-lapangan:hover {
+        background: var(--color-court-dark);
+    }
+
+    .tombol-garis {
+        border: 1px solid var(--color-line-strong);
+        background: var(--color-field);
+        color: var(--color-ink);
+    }
+
+    .tombol-garis:hover {
+        border-color: var(--color-ink);
+    }
+
+    .tombol:disabled,
+    .tombol[aria-disabled="true"] {
+        background: var(--color-paper);
+        border: 1px solid var(--color-line);
+        color: var(--color-muted);
+        cursor: not-allowed;
+    }
+
+    /* Penanda jalur pemenuhan. Satu-satunya tempat huruf kapital dipakai. */
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 2px;
+        padding: 0.2rem 0.45rem;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        font-stretch: 96%;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .chip-stok {
+        background: var(--color-court-soft);
+        color: var(--color-court-dark);
+    }
+
+    .chip-kustom {
+        background: var(--color-signal-soft);
+        color: #a53a10;
+    }
+
+    .kolom-baca {
+        max-width: 68ch;
+    }
+
+    .kotak-input {
+        width: 100%;
+        border: 1px solid var(--color-line-strong);
+        border-radius: 3px;
+        background: var(--color-field);
+        padding: 0.55rem 0.7rem;
+        line-height: 1.4;
+    }
+
+    .kotak-input:focus {
+        border-color: var(--color-court);
+        outline: 2px solid var(--color-signal);
+        outline-offset: 1px;
+    }
+
+    .label-form {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--color-muted);
+    }
+}

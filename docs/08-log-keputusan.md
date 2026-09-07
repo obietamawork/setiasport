@@ -1,0 +1,319 @@
+# 08 — Log Keputusan
+
+Catatan keputusan yang sudah diambil, beserta alasannya. Ditambah seiring diskusi.
+
+---
+
+## KEP-001 — Keranjang campuran: satu order, progres per item
+**Status:** TERKUNCI · 2026-09-07
+
+Ready stock dan PreOrder boleh dicampur dalam satu checkout. Pelanggan mendapat **satu
+kode order**. Setiap `order_item` punya progresnya sendiri; status order adalah agregat.
+Order baru berstatus `Siap Diambil` ketika **semua** item siap — pelanggan datang sekali.
+
+**Konsekuensi teknis:**
+- `order_items.status_item` adalah sumber kebenaran; `orders.status` diturunkan darinya
+- `order_items.fulfillment_type` di-snapshot saat checkout
+- Halaman tracking menampilkan timeline per item, bukan satu timeline tunggal
+
+---
+
+## KEP-002 — File desain: hanya preview yang masuk sistem
+**Status:** TERKUNCI · 2026-09-07
+
+Sistem hanya menyimpan file preview: JPG/PNG/PDF, maksimum 10 MB per file.
+File mentah siap cetak (AI/PSD/CDR) **tidak diunggah ke sistem** — ditukar lewat
+Google Drive atau WhatsApp, dan sistem hanya menyimpan **link**-nya di field khusus.
+
+**Konsekuensi teknis:**
+- Shared hosting tetap layak dipakai; tidak perlu VPS/object storage
+- `design_assets` dapat kolom `external_url` (nullable) selain `path`
+- Validasi upload wajib ketat: whitelist MIME, batas ukuran, nama file di-sanitasi
+- Gambar dikompres & dibuat turunan WebP saat unggah (via queue cron)
+
+---
+
+## KEP-003 — Pembayaran fleksibel: Lunas atau DP, pelunasan bisa tunai di toko
+**Status:** ARAH DISEPAKATI, MEKANISME MASIH DIBAHAS · 2026-09-07
+
+Pelanggan boleh memilih **bayar lunas** (digital) atau **bayar DP** (digital), dengan
+sisa dilunasi **di toko** — tunai maupun digital. Artinya sistem harus menangani
+pembayaran online dan offline dalam satu order secara setara.
+
+**Konsekuensi teknis (sudah pasti):**
+- Tabel `payments` many-to-one ke `orders` — **wajib, bukan opsional**
+- Tidak boleh ada kolom `paid_at` / `payment_status` tunggal di `orders`
+- Angka yang selalu dihitung ulang dari `payments`, tidak pernah disimpan sebagai
+  kolom yang bisa basi: `total`, `sudah_dibayar`, `sisa_tagihan`
+- Pembayaran offline dicatat kasir dengan `dicatat_oleh` + waktu → wajib masuk audit log,
+  karena ini titik rawan penyelewengan uang tunai
+
+**Masih dibahas:** besaran & aturan DP, kapan pelunasan ditagih, kebijakan pembatalan,
+dan penanganan perubahan pesanan setelah DP masuk.
+
+---
+
+## KEP-004 — Kanal notifikasi: email via Resend, TANPA WhatsApp API
+**Status:** ARAH DISEPAKATI, MEKANISME MASIH DIBAHAS · 2026-09-07
+
+Notifikasi otomatis dikirim lewat **email menggunakan Resend**. Tidak ada WhatsApp
+Business API (berbayar & butuh verifikasi bisnis).
+
+**Konsekuensi teknis (sudah pasti):**
+- Resend dipanggil lewat **HTTP API (port 443)**, bukan SMTP. Ini justru menguntungkan:
+  shared hosting sering memblokir port SMTP 25/465/587, tapi hampir tidak pernah
+  memblokir HTTPS keluar
+- Butuh verifikasi domain di Resend (record DNS SPF/DKIM) — mudah kalau DNS di Cloudflare
+- **Email menjadi wajib diisi saat checkout**, tidak lagi opsional
+- Pengiriman email harus lewat queue (cron), jangan blocking saat request checkout
+- Batas gratis Resend perlu dicek terhadap volume order (umumnya cukup untuk skala ini)
+
+**Risiko yang diakui:** di segmen pelanggan ini (tim futsal, sekolah), email sering tidak
+dibaca atau masuk folder promosi. Mitigasi dibahas di bawah.
+
+**Masih dibahas:** bentuk akses pelanggan (magic link vs akun berpassword), dan cadangan
+kalau email tidak dibaca.
+
+---
+
+## KEP-005 — DP minimum 50%, pelanggan boleh membayar lebih
+**Status:** TERKUNCI · 2026-09-07
+
+Saat checkout PreOrder, pelanggan memilih nominal bayar dengan batas bawah **50% dari
+total**. Boleh menaikkan sampai lunas. Persentase minimum disimpan di `settings`
+(`dp_minimum_persen`) agar pemilik toko bisa mengubahnya tanpa deploy ulang.
+
+**Alasan:** 50% bukan angka acak — itu ambang yang menutup biaya produksi. Jersey kustom
+bernama orang tidak bisa dijual ke siapa pun kalau tidak diambil, jadi DP harus menanggung
+HPP. Membolehkan bayar lebih tidak menambah risiko dan memberi keleluasaan pelanggan.
+
+**Konsekuensi teknis:**
+- Validasi sisi server: `nominal_dp >= ceil(total * dp_minimum_persen / 100)`
+- Nominal DP dikunci saat pembayaran dibuat; kalau total berubah kemudian (lihat KEP-007),
+  yang menyesuaikan adalah **sisa tagihan**, bukan DP yang sudah dibayar
+- Ready stock tetap lunas di muka — tidak ada opsi DP
+
+---
+
+## KEP-006 — Pelunasan dibayar saat pengambilan di toko
+**Status:** TERKUNCI · 2026-09-07
+
+Tidak ada tahap "Menunggu Pelunasan" yang menahan produksi. Barang diproduksi sampai
+selesai dengan modal DP, lalu sisa dibayar saat serah terima — tunai atau digital.
+
+**Konsekuensi teknis:**
+- Alur PreOrder di dokumen 02 **dipangkas**: tahap `Menunggu Pelunasan` dihapus.
+  Setelah Packing langsung `Siap Diambil`.
+- Layar serah terima menggabungkan dua aksi jadi satu: **catat pelunasan + tandai diambil**.
+  Nominal terisi otomatis dari sisa tagihan; kasir memilih metode dan menyimpan.
+- Order tidak boleh berstatus `Selesai` kalau `sisa_tagihan > 0` — dijaga di level aplikasi
+- Halaman tracking menampilkan "Sisa yang dibayar saat ambil: Rp X" secara menonjol
+- Risiko yang diterima: barang siap tapi tidak diambil. Ditangani lewat pengingat
+  terjadwal dan laporan "siap > 7 hari" di dashboard, bukan lewat penahanan barang.
+
+---
+
+## KEP-007 — Perubahan pesanan dicatat sebagai penyesuaian
+**Status:** TERKUNCI · 2026-09-07
+
+Tambah pemain, ganti nama punggung berbayar, tambah patch, diskon nego — semuanya menjadi
+baris `order_adjustments`, bukan hasil mengedit item yang sudah ada.
+
+```
+order_adjustments   id, order_id, order_item_id (nullable), 
+                    deskripsi, jumlah (boleh negatif), 
+                    dibuat_oleh, dibuat_pada
+```
+
+**Alasan:** total dan sisa tagihan menjadi **transparan dan bisa ditelusuri**. Pelanggan
+melihat "Tambah 2 pemain — Rp 240.000" di halaman tracking-nya **sebelum** datang ke toko.
+Tidak ada kejutan angka di kasir — ini inti dari "DP yang nyaman".
+
+**Konsekuensi teknis:**
+- `total = subtotal_items + sum(adjustments) - diskon`, selalu dihitung, tidak disimpan
+- Penyesuaian bernilai negatif menangani diskon dan kompensasi kesalahan toko
+- Penyesuaian setelah desain disetujui tetap diperbolehkan (misal tambah pemain), tapi
+  **tidak boleh** mengubah roster yang sudah dicetak — perlu aturan operasional terpisah
+- Setiap penyesuaian masuk audit log; nominal besar sebaiknya butuh peran Owner/Admin
+
+---
+
+## KEP-008 — Akses pelanggan: magic link tanpa password, approve butuh konfirmasi
+**Status:** TERKUNCI · 2026-09-07
+
+Tidak ada pendaftaran akun dan tidak ada password. Setiap order punya **token akses**
+yang dikirim lewat email sebagai tautan sekali-klik. Halaman tracking juga bisa dibuka
+manual dengan **kode order + email**.
+
+Tombol **Setujui Desain** meminta konfirmasi tambahan sebelum aktif: pelanggan mengetik
+namanya dan mencentang pernyataan bahwa desain tidak dapat diubah setelah disetujui.
+
+**Alasan:** password tidak menambah keamanan nyata di sini — pemulihannya lewat email
+yang sama, jadi keamanannya toh bersandar pada email. Yang ditambahkannya hanya friksi
+checkout. Sementara tautan yang bisa dibagikan justru berguna untuk order tim: satu
+pemesan, banyak anggota yang ingin memantau. Perlindungan diletakkan tepat di titik
+yang berkonsekuensi, bukan di pintu masuk.
+
+**Konsekuensi teknis:**
+- `orders.access_token` — acak, panjang (≥32 byte), unik, dibuat saat order dibuat
+- Halaman tracking bersifat **publik-bertoken**. Karena tautan bisa beredar di grup,
+  **jangan menampilkan data sensitif**: no HP disamarkan, email disamarkan,
+  tidak ada data pelanggan lain
+- Approval mencatat: `approved_by_name` (yang diketik), `approved_at`, `approved_ip`,
+  dan `approved_design_asset_id` (versi mockup yang disetujui)
+- Rate limit pada form akses manual (kode order + email) untuk mencegah penebakan
+- `customers.user_id` tetap nullable — akun pelanggan bisa ditambahkan di masa depan
+  tanpa mengubah apa pun yang sudah berjalan
+
+---
+
+## KEP-009 — Harga bertingkat per jumlah, dihitung per baris item
+**Status:** TERKUNCI · 2026-09-07
+
+Produk kustom punya tabel tier harga. Tier ditentukan oleh **qty pada satu baris item**,
+bukan gabungan seluruh keranjang.
+
+```
+product_price_tiers  id, product_id, min_qty, max_qty (nullable = tak terbatas), 
+                     harga_satuan
+```
+
+Keringanan lintas item (misal 12 model A + 12 model B ingin dihargai seperti 24 pcs)
+ditangani admin lewat `order_adjustments` bernilai negatif — bukan lewat aturan otomatis.
+Aturan penggabungan di konveksi terlalu bergantung konteks (bahan sama? warna sama?)
+untuk dikodekan tanpa sering salah.
+
+### ★ Basis biaya: PER_PCS vs PER_ITEM
+
+Ini jebakan yang hampir selalu kena di sistem konveksi. Sebagian opsi dikenakan per potong
+(bahan, lengan, nameset), sebagian **sekali saja** per baris pesanan (setup desain kustom).
+
+`option_values` **wajib** punya kolom `basis`:
+
+| Nilai | Arti | Contoh |
+|---|---|---|
+| `PER_PCS` | dikali qty | Bahan Milano +7.000/pcs |
+| `PER_ITEM` | sekali per baris pesanan | Setup desain kustom +75.000 |
+
+Disebut `PER_ITEM`, **bukan** `PER_ORDER`: kalau pelanggan memesan dua model jersey
+berbeda, setup desainnya memang dua kali. Penamaan `PER_ORDER` akan menyesatkan sejak
+KEP-001 membolehkan banyak item dalam satu order.
+
+### Rumus resmi
+
+```
+harga_satuan   = tier(product, qty) + Σ(opsi dengan basis PER_PCS)
+subtotal_item  = harga_satuan × qty + Σ(opsi dengan basis PER_ITEM)
+total_order    = Σ(subtotal_item) + Σ(adjustments) − diskon
+sisa_tagihan   = total_order − Σ(payments berstatus LUNAS)
+```
+
+**Contoh (18 jersey, Milano, lengan panjang, nameset, setup kustom):**
+```
+tier 12-23 pcs                 95.000
++ Milano                        7.000
++ lengan panjang                8.000
++ nameset                      10.000
+                              ────────
+harga_satuan                  120.000  × 18 = 2.160.000
++ setup desain (PER_ITEM)                        75.000
+                                              ──────────
+total                                         2.235.000
+DP minimum 50%                                1.117.500
+```
+Kalau setup ikut dikali 18, tagihan melar Rp 1.275.000 — dan pelanggan baru sadar
+di kasir. Itulah alasan kolom `basis` ini tidak boleh ditunda.
+
+**Konsekuensi teknis:**
+- Semua komponen harga di-**snapshot** ke `order_item_options` saat checkout
+  (label, basis, nominal), agar order tetap terbaca benar setelah harga master berubah
+- Perhitungan harga harus punya satu fungsi tunggal yang dipakai konfigurator **dan**
+  server. Server adalah otoritas — harga dari sisi klien tidak pernah dipercaya
+
+---
+
+## KEP-010 — Harga dihitung otomatis, pelanggan langsung bisa membayar
+**Status:** TERKUNCI · 2026-09-07
+
+Tidak ada tahap "Menunggu Konfirmasi Harga". Pelanggan mengonfigurasi produk, harga
+muncul seketika, langsung checkout dan bayar DP. Admin tidak menjadi penghambat.
+
+**Alasan:** seluruh tujuan web ini adalah mengurangi percakapan. Kalau pelanggan tetap
+harus menunggu admin membalas untuk tahu harganya, web hanya jadi formulir kontak yang
+mahal. Kasus tidak biasa tetap bisa ditangani setelah order masuk lewat KEP-007.
+
+**Konsekuensi teknis:**
+- Struktur harga (tier + opsi) harus **lengkap dan benar** di data master. Produk dengan
+  data harga tidak lengkap tidak boleh tayang
+- Validasi MOQ dilakukan di konfigurator **dan** diulang di server saat checkout
+- Konfigurator menampilkan rincian harga secara terbuka (bukan hanya total), agar
+  pelanggan paham dari mana angkanya — ini mencegah pertanyaan yang justru ingin dihindari
+
+---
+
+## KEP-011 — Produk hybrid didukung: satu produk, dua jalur pembelian
+**Status:** TERKUNCI · 2026-09-07
+
+Satu produk boleh berjenis `BOTH` — dapat dibeli sebagai ready stock **atau** dipesan
+kustom. Halaman produknya menyediakan dua jalur: **Beli Ready Stock** dan **Pesan Kustom**.
+
+**Konsekuensi teknis:**
+- `products.fulfillment_type` bernilai `READY_STOCK | PREORDER | BOTH`
+- `order_items.fulfillment_type` di-snapshot per baris — sudah disiapkan KEP-001,
+  jadi satu produk `BOTH` bisa muncul dua kali di keranjang dengan jalur berbeda
+- **Harga kedua jalur terpisah:** jalur ready stock memakai `harga_dasar +
+  variant.tambahan_harga`; jalur kustom memakai `product_price_tiers`. Keduanya tidak
+  saling memengaruhi
+- **Stok hanya dipotong jalur ready stock.** Jalur kustom tidak menyentuh stok
+- **MOQ hanya berlaku di jalur kustom**
+- Roster dan alur desain hanya muncul di jalur kustom
+- UI harus membuat perbedaan waktu sangat jelas: "Siap diambil besok" vs
+  "Selesai ±14 hari kerja setelah desain disetujui". Ini beda ekspektasi paling tajam
+  di seluruh web, dan paling berpotensi jadi komplain kalau disamarkan
+
+---
+
+## KEP-012 — Lingkungan lokal Docker dibuat mencerminkan shared hosting
+**Status:** TERKUNCI · 2026-09-07
+
+Pengembangan dilakukan di lokal memakai Docker; shared hosting dibeli belakangan.
+Susunan containernya sengaja tidak "yang paling nyaman untuk developer", melainkan
+**yang paling mirip target produksi**, agar masalah muncul sekarang dan bukan
+setelah deploy.
+
+| Pilihan | Alasan |
+|---|---|
+| **Apache**, bukan nginx | Shared hosting memakai Apache; `.htaccess` dan `mod_rewrite` jadi berperilaku sama di kedua tempat |
+| Document root ke `public/` | Kode aplikasi, `.env`, dan `storage/` di luar jangkauan browser — penataan yang ditargetkan di produksi |
+| `php.ini` menyalin batas hosting | Upload preview 10 MB yang gagal akan gagal di lokal juga, bukan kejutan setelah rilis |
+| Service `scheduler` (`schedule:work`) | Menggantikan cron; di produksi diganti satu baris crontab. Tidak ada Supervisor yang diandalkan |
+| MySQL 8, bukan SQLite | Termasuk untuk test — skema memakai kolom JSON dan unique index bernilai NULL yang perilakunya berbeda antar engine |
+| PHP 8.2 | Versi yang dipastikan tersedia di hosting tujuan |
+
+**Konsekuensi teknis:**
+- `composer install` dijalankan di dalam container, bukan di komputer pemakai —
+  PHP dan Composer tidak perlu terpasang di host
+- Entrypoint container memperbaiki kepemilikan `storage/` dan `bootstrap/cache/`
+  setiap start, karena bind mount dari Windows membuatnya milik root sementara
+  Apache berjalan sebagai `www-data`
+- Database test terpisah (`setiasport_test`) supaya `migrate:fresh` di test tidak
+  menghapus data pengembangan
+
+---
+
+## Ringkasan keputusan
+
+| # | Keputusan | Status |
+|---|---|---|
+| KEP-001 | Keranjang campuran: 1 order, progres per item | TERKUNCI |
+| KEP-002 | File desain: hanya preview di sistem, mentah via link | TERKUNCI |
+| KEP-003 | Pembayaran fleksibel: lunas atau DP, online + offline | TERKUNCI |
+| KEP-004 | Notifikasi: email via Resend, tanpa WhatsApp API | TERKUNCI |
+| KEP-005 | DP minimum 50%, boleh bayar lebih | TERKUNCI |
+| KEP-006 | Pelunasan saat pengambilan di toko | TERKUNCI |
+| KEP-007 | Perubahan pesanan sebagai baris penyesuaian | TERKUNCI |
+| KEP-008 | Magic link tanpa password, konfirmasi saat approve | TERKUNCI |
+| KEP-009 | Harga tier per item + basis PER_PCS / PER_ITEM | TERKUNCI |
+| KEP-010 | Harga otomatis, pelanggan langsung bayar | TERKUNCI |
+| KEP-011 | Produk hybrid (BOTH): dua jalur pembelian | TERKUNCI |
+| KEP-012 | Lingkungan lokal Docker mencerminkan shared hosting | TERKUNCI |

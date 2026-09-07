@@ -1,0 +1,64 @@
+name: setiasport
+
+services:
+  app:
+    build:
+      context: ./docker/php
+    container_name: setiasport-app
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/apache/vhost.conf:/etc/apache2/sites-available/000-default.conf:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APACHE_DOCUMENT_ROOT: /var/www/html/public
+
+  db:
+    image: mysql:8.0
+    container_name: setiasport-db
+    command: --default-authentication-plugin=caching_sha2_password
+    environment:
+      MYSQL_DATABASE: setiasport
+      MYSQL_USER: setiasport
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - "3307:3306"          # 3307 di host agar tidak bentrok dengan MySQL lokal
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Menggantikan cron shared hosting. Di produksi, service ini diganti satu baris:
+  #   * * * * * cd /path/app && php artisan schedule:run >> /dev/null 2>&1
+  scheduler:
+    build:
+      context: ./docker/php
+    container_name: setiasport-scheduler
+    command: php artisan schedule:work
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  adminer:
+    image: adminer:4
+    container_name: setiasport-adminer
+    ports:
+      - "8081:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
