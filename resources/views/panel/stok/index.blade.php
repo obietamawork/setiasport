@@ -2,7 +2,7 @@
 @section('judul', 'Stok')
 
 @section('isi')
-<h1 class="t-wide text-2xl font-extrabold">Stok</h1>
+<h1 class="text-2xl font-extrabold">Stok</h1>
 <p class="mt-1 text-sm text-muted">
     Hanya produk yang dijual dari rak. Angka dalam kurung adalah stok yang sudah
     direservasi pesanan dan tidak boleh dijual ulang.
@@ -20,7 +20,7 @@
 
 @if ($varian->isEmpty())
     <div class="mt-6 border border-line bg-field p-8 text-center">
-        <p class="t-wide text-lg font-bold">Tidak ada varian yang cocok</p>
+        <p class="text-lg font-bold">Tidak ada varian yang cocok</p>
         <p class="mt-2 text-sm text-muted">
             Varian ditambahkan dari halaman ubah produk, di bagian Varian &amp; stok.
         </p>
@@ -72,7 +72,7 @@
                 <input type="text" id="alasan" name="alasan" class="kotak-input" required
                        placeholder="Opname 7 September / barang rusak / retur supplier">
             </div>
-            <button type="submit" class="tombol tombol-lapangan">Simpan stok</button>
+            <button type="submit" class="tombol tombol-navy">Simpan stok</button>
         </div>
     </form>
 @endif

@@ -39,7 +39,7 @@ if (! function_exists('setting')) {
 if (! function_exists('urutkan_ukuran')) {
     /**
      * Mengurutkan ukuran seperti orang membacanya, bukan seperti komputer.
-     * Tanpa ini, "S, M, L, XL" tampil sebagai "L, M, S, XL" — dan di toko
+     * Tanpa ini, "S, M, L, XL" tampil sebagai "L, M, S, XL", dan di toko
      * jersey itu langsung terlihat salah oleh siapa pun.
      */
     function urutkan_ukuran(iterable $ukuran): array

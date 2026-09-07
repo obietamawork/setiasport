@@ -8,7 +8,7 @@
 @endphp
 
 <div class="flex flex-wrap items-baseline justify-between gap-3">
-    <h1 class="t-wide text-2xl font-extrabold">Antrian {{ $stage->label() }}</h1>
+    <h1 class="text-2xl font-extrabold">Antrian {{ $stage->label() }}</h1>
     <span class="tabular text-muted">{{ $pekerjaan->count() }} pekerjaan</span>
 </div>
 
@@ -16,14 +16,14 @@
     <div class="mt-3 flex flex-wrap gap-1 text-sm">
         @foreach ($tahapLain as $t)
             <a href="{{ route('panel.antrian.tahap', strtolower($t->value)) }}"
-               class="rounded-sm bg-field px-3 py-1.5 hover:bg-court-soft">{{ $t->label() }}</a>
+               class="rounded-sm bg-field px-3 py-1.5 hover:bg-navy-50">{{ $t->label() }}</a>
         @endforeach
     </div>
 @endif
 
 @if ($pekerjaan->isEmpty())
     <div class="mt-6 border border-line bg-field p-8 text-center">
-        <p class="t-wide text-lg font-bold">Antrian kosong</p>
+        <p class="text-lg font-bold">Antrian kosong</p>
         <p class="mt-2 text-sm text-muted">
             Tidak ada pekerjaan {{ Str::lower($stage->label()) }} yang menunggu. Cek lagi nanti.
         </p>
@@ -38,10 +38,10 @@
                 $dikerjakan = $job?->status === ProductionStatus::DIKERJAKAN;
             @endphp
 
-            <div class="border border-line bg-field {{ $dikerjakan ? 'border-l-2 border-l-signal' : '' }}">
+            <div class="border border-line bg-field {{ $dikerjakan ? 'border-l-2 border-l-merah' : '' }}">
                 <div class="flex flex-wrap items-start gap-3 p-4">
                     <div class="min-w-50 flex-1">
-                        <p class="t-wide font-bold">{{ $item->nama_produk }}</p>
+                        <p class="font-bold">{{ $item->nama_produk }}</p>
                         <p class="mt-0.5 text-sm text-muted tabular">
                             {{ $item->qty }} pcs &middot; {{ $item->order->kode }} &middot;
                             {{ $item->order->customer->nama }}
@@ -52,7 +52,7 @@
                         @endif
 
                         @if ($item->order->target_siap_pada)
-                            <p class="mt-1 text-sm {{ $item->order->target_siap_pada->isPast() ? 'text-signal' : 'text-muted' }}">
+                            <p class="mt-1 text-sm {{ $item->order->target_siap_pada->isPast() ? 'text-merah' : 'text-muted' }}">
                                 Target siap {{ $item->order->target_siap_pada->translatedFormat('j M Y') }}
                             </p>
                         @endif
@@ -79,7 +79,7 @@
                         @if ($stage !== ProductionStage::DESAIN)
                             <form method="POST" action="{{ route('panel.antrian.selesai', $item) }}">
                                 @csrf
-                                <button type="submit" class="tombol tombol-lapangan text-sm">Selesai</button>
+                                <button type="submit" class="tombol tombol-navy text-sm">Selesai</button>
                             </form>
                         @endif
                     </div>

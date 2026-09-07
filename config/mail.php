@@ -54,7 +54,7 @@ return [
         ],
 
         /*
-         * Dipanggil lewat HTTP API port 443, bukan SMTP — shared hosting sering
+         * Dipanggil lewat HTTP API port 443, bukan SMTP, shared hosting sering
          * memblokir port SMTP tapi hampir tidak pernah HTTPS keluar (KEP-004).
          */
         'resend' => [

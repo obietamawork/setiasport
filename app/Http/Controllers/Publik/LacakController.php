@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Halaman pesanan pelanggan — tanpa akun, tanpa kata sandi (KEP-008).
+ * Halaman pesanan pelanggan, tanpa akun, tanpa kata sandi (KEP-008).
  *
  * Tautan bertoken memang dirancang untuk dibagikan ke grup tim, jadi halaman
  * ini TIDAK BOLEH memuat data kontak utuh. Nomor HP dan email disamarkan.

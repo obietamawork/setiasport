@@ -92,8 +92,8 @@
                     @foreach ($item->rosters as $r)
                         <tr>
                             <td class="no">{{ $r->urutan }}</td>
-                            <td>{{ $r->nama_punggung ?: '—' }}</td>
-                            <td class="nomor">{{ $r->nomor ?: '—' }}</td>
+                            <td>{{ $r->nama_punggung ?: '-' }}</td>
+                            <td class="nomor">{{ $r->nomor ?: '-' }}</td>
                             <td class="ukuran">{{ $r->ukuran }}</td>
                             <td></td>
                         </tr>
@@ -102,7 +102,7 @@
             </table>
         @elseif ($item->product->roster_wajib)
             <div class="ringkas" style="color:#a00">
-                DAFTAR PEMAIN BELUM ADA — jangan dicetak sebelum lengkap.
+                DAFTAR PEMAIN BELUM ADA: jangan dicetak sebelum lengkap.
             </div>
         @endif
 

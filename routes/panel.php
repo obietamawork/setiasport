@@ -4,6 +4,7 @@ use App\Http\Controllers\Panel\AuthController;
 use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Panel\KategoriController;
 use App\Http\Controllers\Panel\AntrianController;
+use App\Http\Controllers\Panel\GambarProdukController;
 use App\Http\Controllers\Panel\MockupController;
 use App\Http\Controllers\Panel\PembayaranController;
 use App\Http\Controllers\Panel\PenyesuaianController;
@@ -81,6 +82,10 @@ Route::prefix('panel')->name('panel.')->group(function () {
                 ->parameters(['produk' => 'produk']);
 
             Route::prefix('produk/{produk}')->name('produk.')->group(function () {
+                Route::post('gambar', [GambarProdukController::class, 'store'])->name('gambar.simpan');
+                Route::post('gambar/{gambar}/utama', [GambarProdukController::class, 'utama'])->name('gambar.utama');
+                Route::delete('gambar/{gambar}', [GambarProdukController::class, 'destroy'])->name('gambar.hapus');
+
                 Route::post('varian', [ProdukKomponenController::class, 'simpanVarian'])->name('varian.simpan');
                 Route::delete('varian/{varian}', [ProdukKomponenController::class, 'hapusVarian'])->name('varian.hapus');
 

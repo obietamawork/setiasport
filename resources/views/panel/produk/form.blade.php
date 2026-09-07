@@ -3,7 +3,7 @@
 
 @section('isi')
 <div class="flex items-baseline justify-between gap-4">
-    <h1 class="t-wide text-2xl font-extrabold">
+    <h1 class="text-2xl font-extrabold">
         {{ $produk->exists ? $produk->nama : 'Tambah produk' }}
     </h1>
     @if ($produk->exists)
@@ -39,7 +39,7 @@
             <option value="">Pilih kategori</option>
             @foreach ($kategori as $k)
                 <option value="{{ $k->id }}" @selected(old('category_id', $produk->category_id) == $k->id)>
-                    {{ $k->parent?->nama ? $k->parent->nama.' — ' : '' }}{{ $k->nama }}
+                    {{ $k->parent?->nama ? $k->parent->nama.' / ' : '' }}{{ $k->nama }}
                 </option>
             @endforeach
         </select>
@@ -48,9 +48,9 @@
     <div>
         <label for="fulfillment_type" class="label-form">Cara beli</label>
         <select id="fulfillment_type" name="fulfillment_type" x-model="jalur" class="kotak-input" required>
-            <option value="READY_STOCK">Ready Stock — diambil dari rak</option>
-            <option value="PREORDER">Kustom — dikerjakan di workshop</option>
-            <option value="BOTH">Keduanya — pelanggan memilih sendiri</option>
+            <option value="READY_STOCK">Ready Stock (diambil dari rak)</option>
+            <option value="PREORDER">Kustom (dikerjakan di workshop)</option>
+            <option value="BOTH">Keduanya (pelanggan memilih sendiri)</option>
         </select>
         <p class="mt-1 text-xs text-muted">
             Pilihan ini menentukan bagian mana yang muncul di halaman produk, dan tidak bisa
@@ -83,7 +83,7 @@
         </div>
 
         <label class="flex items-start gap-2 text-sm">
-            <input type="checkbox" name="roster_wajib" value="1" class="mt-0.5 size-4 accent-court"
+            <input type="checkbox" name="roster_wajib" value="1" class="mt-0.5 size-4 accent-navy"
                    @checked(old('roster_wajib', $produk->roster_wajib))>
             <span>
                 Wajib isi nama &amp; nomor punggung
@@ -106,13 +106,13 @@
     </div>
 
     <label class="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="aktif" value="1" class="size-4 accent-court"
+        <input type="checkbox" name="aktif" value="1" class="size-4 accent-navy"
                @checked(old('aktif', $produk->aktif ?? true))>
         Tampilkan di katalog
     </label>
 
     <div class="flex flex-wrap items-center gap-3 border-t border-line pt-5">
-        <button type="submit" class="tombol tombol-lapangan">
+        <button type="submit" class="tombol tombol-navy">
             {{ $produk->exists ? 'Simpan perubahan' : 'Buat produk' }}
         </button>
         <a href="{{ route('panel.produk.index') }}" class="tautan text-sm">Kembali ke daftar</a>
@@ -126,10 +126,115 @@
 @endunless
 
 @if ($produk->exists)
+<section class="mt-10 max-w-4xl">
+    <h2 class="text-lg font-extrabold">Gambar produk</h2>
+    <p class="mt-1 text-sm text-muted">
+        Bisa diunggah langsung ke hosting, atau ditunjuk ke tautan CDN. Yang diunggah
+        otomatis dikecilkan dan dikonversi ke WebP supaya katalog tetap ringan dibuka
+        dari jaringan seluler. Gambar pertama dipakai sebagai gambar utama.
+    </p>
+
+    <div class="kartu mt-4 overflow-hidden">
+        @if ($produk->images->isEmpty())
+            <p class="p-5 text-sm text-muted">
+                Belum ada gambar. Produk tanpa foto tetap tayang, tapi pelanggan jauh lebih
+                jarang membukanya.
+            </p>
+        @else
+            <ul class="grid gap-px bg-line sm:grid-cols-3 lg:grid-cols-4">
+                @foreach ($produk->images as $g)
+                    <li class="bg-field p-3">
+                        <div class="flex aspect-square items-center justify-center overflow-hidden rounded-[7px] bg-navy-50">
+                            <img src="{{ $g->thumb_url }}" alt="{{ $g->alt }}"
+                                 class="h-full w-full object-cover" loading="lazy">
+                        </div>
+
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                            @if ($loop->first)
+                                <span class="chip chip-navy">Utama</span>
+                            @endif
+                            <span class="chip {{ $g->dariCdn() ? 'chip-kuning' : 'chip-netral' }}">
+                                {{ $g->dariCdn() ? 'CDN' : 'Diunggah' }}
+                            </span>
+                            @if ($g->lebar)
+                                <span class="tabular text-xs text-muted">{{ $g->lebar }}px</span>
+                            @endif
+                        </div>
+
+                        <div class="mt-2 flex items-center gap-3 text-sm">
+                            @unless ($loop->first)
+                                <form method="POST" action="{{ route('panel.produk.gambar.utama', [$produk, $g]) }}">
+                                    @csrf
+                                    <button type="submit" class="tautan">Jadikan utama</button>
+                                </form>
+                            @endunless
+                            <form method="POST" action="{{ route('panel.produk.gambar.hapus', [$produk, $g]) }}"
+                                  class="ml-auto" onsubmit="return confirm('Hapus gambar ini?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="tautan text-muted">Hapus</button>
+                            </form>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+
+        <form method="POST" action="{{ route('panel.produk.gambar.simpan', $produk) }}"
+              enctype="multipart/form-data"
+              class="grid gap-4 border-t border-line bg-navy-50 p-4 sm:grid-cols-2"
+              x-data="{ sumber: 'unggah' }">
+            @csrf
+
+            <div class="sm:col-span-2">
+                <div class="inline-flex rounded-[7px] border border-line-strong bg-field p-0.5 text-sm">
+                    <button type="button" @click="sumber = 'unggah'"
+                            :class="sumber === 'unggah' ? 'bg-navy text-white' : 'text-muted hover:text-ink'"
+                            class="rounded-[5px] px-3 py-1.5 font-medium">Unggah berkas</button>
+                    <button type="button" @click="sumber = 'cdn'"
+                            :class="sumber === 'cdn' ? 'bg-navy text-white' : 'text-muted hover:text-ink'"
+                            class="rounded-[5px] px-3 py-1.5 font-medium">Tautan CDN</button>
+                </div>
+            </div>
+
+            <div x-show="sumber === 'unggah'" x-cloak>
+                <label for="berkas" class="label-form">Berkas gambar</label>
+                <input type="file" id="berkas" name="berkas" accept=".jpg,.jpeg,.png,.webp" class="kotak-input">
+                <p class="bantuan-form">
+                    JPG, PNG, atau WebP sampai {{ setting('upload_maks_mb', 10) }} MB.
+                    Foto dari HP boleh langsung, nanti dikecilkan sendiri.
+                </p>
+            </div>
+
+            <div x-show="sumber === 'cdn'" x-cloak>
+                <label for="external_url" class="label-form">Tautan gambar</label>
+                <input type="url" id="external_url" name="external_url" class="kotak-input"
+                       placeholder="https://cdn.contoh.com/jersey.webp">
+                <p class="bantuan-form">
+                    Dipakai apa adanya, tidak disalin ke hosting. Berguna saat katalog
+                    membesar dan kuota disk mulai terasa.
+                </p>
+            </div>
+
+            <div>
+                <label for="alt" class="label-form">Keterangan gambar</label>
+                <input type="text" id="alt" name="alt" class="kotak-input" maxlength="150"
+                       placeholder="{{ $produk->nama }}">
+                <p class="bantuan-form">Dibaca pembaca layar dan mesin pencari. Boleh dikosongkan.</p>
+            </div>
+
+            <div class="sm:col-span-2">
+                <button type="submit" class="tombol tombol-navy">Tambah gambar</button>
+            </div>
+        </form>
+    </div>
+</section>
+@endif
+
+@if ($produk->exists)
 
 @if ($produk->punyaJalurReadyStock())
 <section class="mt-10 max-w-4xl">
-    <h2 class="t-wide text-lg font-extrabold">Varian &amp; stok</h2>
+    <h2 class="text-lg font-extrabold">Varian &amp; stok</h2>
     <p class="mt-1 text-sm text-muted">
         Setiap kombinasi ukuran dan warna berdiri sendiri, lengkap dengan stoknya.
     </p>
@@ -137,7 +242,7 @@
     <div class="mt-4 border border-line bg-field">
         @if ($produk->variants->isEmpty())
             <p class="p-5 text-sm text-muted">
-                Belum ada varian. Produk tanpa varian tidak bisa dibeli dari stok — tambahkan
+                Belum ada varian. Produk tanpa varian tidak bisa dibeli dari stok: tambahkan
                 minimal satu di bawah.
             </p>
         @else
@@ -156,10 +261,10 @@
                     @foreach ($produk->variants as $v)
                         <tr>
                             <td class="px-4 py-2 tabular">{{ $v->sku }}</td>
-                            <td class="px-4 py-2">{{ $v->ukuran ?? '—' }}</td>
-                            <td class="px-4 py-2">{{ $v->warna ?? '—' }}</td>
+                            <td class="px-4 py-2">{{ $v->ukuran ?? '-' }}</td>
+                            <td class="px-4 py-2">{{ $v->warna ?? '-' }}</td>
                             <td class="px-4 py-2 text-right tabular">
-                                {{ $v->tambahan_harga === 0 ? '—' : ($v->tambahan_harga > 0 ? '+' : '−').rupiah(abs($v->tambahan_harga)) }}
+                                {{ $v->tambahan_harga === 0 ? '-' : ($v->tambahan_harga > 0 ? '+' : '−').rupiah(abs($v->tambahan_harga)) }}
                             </td>
                             <td class="px-4 py-2 text-right tabular">
                                 {{ $v->stok }}
@@ -201,7 +306,7 @@
 
 @if ($produk->punyaJalurKustom())
 <section class="mt-10 max-w-4xl">
-    <h2 class="t-wide text-lg font-extrabold">Tier harga kustom</h2>
+    <h2 class="text-lg font-extrabold">Tier harga kustom</h2>
     <p class="mt-1 text-sm text-muted">
         Harga per pcs menurut jumlah pesanan. Tanpa ini, pelanggan tidak bisa menghitung
         biayanya sendiri dan akan bertanya ke admin.
@@ -209,7 +314,7 @@
 
     <div class="mt-4 border border-line bg-field">
         @if ($produk->priceTiers->isEmpty())
-            <p class="border-l-2 border-signal p-5 text-sm">
+            <p class="border-l-2 border-merah p-5 text-sm">
                 Belum ada tier harga. Produk kustom tidak bisa dihitung harganya sampai
                 minimal satu tier diisi.
             </p>
@@ -254,10 +359,9 @@
 </section>
 
 <section class="mt-10 max-w-4xl">
-    <h2 class="t-wide text-lg font-extrabold">Opsi produk</h2>
+    <h2 class="text-lg font-extrabold">Opsi produk</h2>
     <p class="mt-1 text-sm text-muted">
-        Bahan, lengan, kerah, nameset, dan biaya setup. Perhatikan kolom cara hitung —
-        biaya setup dikenakan sekali per pesanan, bukan per potong.
+        Bahan, lengan, kerah, nameset, dan biaya setup. Perhatikan kolom cara hitung: biaya setup dikenakan sekali per pesanan, bukan per potong.
     </p>
 
     <div class="mt-4 space-y-4">
@@ -266,7 +370,7 @@
                 <div class="flex items-center gap-3 border-b border-line px-4 py-2.5">
                     <span class="font-semibold">{{ $opsi->nama }}</span>
                     @unless ($opsi->wajib)
-                        <span class="chip bg-paper text-muted">Opsional</span>
+                        <span class="chip chip-netral">Opsional</span>
                     @endunless
                     <form method="POST" action="{{ route('panel.produk.opsi.hapus', [$produk, $opsi]) }}"
                           class="ml-auto" onsubmit="return confirm('Hapus opsi {{ $opsi->nama }}?')">
@@ -283,7 +387,7 @@
                                 {{ $nilai->tambahan_harga === 0 ? 'tanpa tambahan biaya'
                                     : ($nilai->tambahan_harga > 0 ? '+' : '−').rupiah(abs($nilai->tambahan_harga)) }}
                             </span>
-                            <span class="chip {{ $nilai->basis === \App\Enums\PriceBasis::PER_ITEM ? 'chip-kustom' : 'chip-stok' }}">
+                            <span class="chip {{ $nilai->basis === \App\Enums\PriceBasis::PER_ITEM ? 'chip-merah' : 'chip-navy' }}">
                                 {{ $nilai->basis->label() }}
                             </span>
                             <form method="POST" action="{{ route('panel.produk.nilai.hapus', [$produk, $opsi, $nilai]) }}" class="ml-auto">
@@ -319,7 +423,7 @@
             <div class="w-56"><label class="label-form">Nama opsi baru</label>
                 <input type="text" name="nama" class="kotak-input" required placeholder="Bahan"></div>
             <label class="flex items-center gap-2 pb-2.5 text-sm">
-                <input type="checkbox" name="wajib" value="1" class="size-4 accent-court" checked>
+                <input type="checkbox" name="wajib" value="1" class="size-4 accent-navy" checked>
                 Wajib dipilih
             </label>
             <button type="submit" class="tombol tombol-garis">Tambah opsi</button>
@@ -334,7 +438,7 @@
     @csrf @method('DELETE')
     <button type="submit" class="tautan text-sm text-muted">Hapus produk ini</button>
     <p class="mt-1 text-xs text-muted">
-        Produk yang pernah dipesan tidak bisa dihapus — riwayat pesanan akan ikut rusak.
+        Produk yang pernah dipesan tidak bisa dihapus: riwayat pesanan akan ikut rusak.
         Sembunyikan saja dari katalog.
     </p>
 </form>

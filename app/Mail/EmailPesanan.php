@@ -30,7 +30,7 @@ class EmailPesanan extends Mailable implements ShouldQueue
 
     /**
      * Id baris email_logs ikut sebagai header, supaya id pesan yang dikembalikan
-     * Resend bisa dicatat balik ke baris yang benar — dan webhook status nanti
+     * Resend bisa dicatat balik ke baris yang benar, dan webhook status nanti
      * punya sesuatu untuk dicocokkan.
      */
     public function headers(): Headers

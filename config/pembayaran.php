@@ -3,8 +3,7 @@
 return [
 
     /*
-     * Gerbang pembayaran aktif. Dibiarkan kosong sampai merchant disetujui —
-     * sistem tetap berjalan penuh dengan transfer manual (KEP-003), dan tombol
+     * Gerbang pembayaran aktif. Dibiarkan kosong sampai merchant disetujui, * sistem tetap berjalan penuh dengan transfer manual (KEP-003), dan tombol
      * bayar online sekadar tidak muncul.
      */
     'gerbang' => env('PEMBAYARAN_GERBANG', ''),

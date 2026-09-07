@@ -71,7 +71,7 @@ class ProdukController extends Controller
     {
         if ($produk->orderItems()->exists()) {
             return back()->withErrors(
-                'Produk ini sudah pernah dipesan, jadi tidak bisa dihapus — riwayat pesanan '
+                'Produk ini sudah pernah dipesan, jadi tidak bisa dihapus: riwayat pesanan '
                 .'akan ikut rusak. Sembunyikan saja dari katalog.'
             );
         }

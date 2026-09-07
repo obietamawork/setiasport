@@ -5,9 +5,9 @@ FROM php:8.2-apache
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git curl unzip zip \
-        libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
+        libpng-dev libjpeg62-turbo-dev libfreetype6-dev libwebp-dev \
         libzip-dev libonig-dev libicu-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" \
         pdo_mysql mbstring bcmath gd zip exif intl \
     && a2enmod rewrite headers \

@@ -16,7 +16,7 @@ use Illuminate\Validation\Rule;
 
 /**
  * Varian, tier harga, dan opsi produk. Dipisah dari ProdukController karena
- * masing-masing punya formulir kecil sendiri di halaman ubah produk — jauh
+ * masing-masing punya formulir kecil sendiri di halaman ubah produk, jauh
  * lebih tahan salah daripada satu formulir raksasa.
  */
 class ProdukKomponenController extends Controller

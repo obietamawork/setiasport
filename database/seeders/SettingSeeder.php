@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
 
-/** Nilai bisnis yang pasti akan diubah pemilik toko — tidak boleh di-hardcode. */
+/** Nilai bisnis yang pasti akan diubah pemilik toko, tidak boleh di-hardcode. */
 class SettingSeeder extends Seeder
 {
     public function run(): void

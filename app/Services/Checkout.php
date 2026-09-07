@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Mengubah keranjang menjadi pesanan.
  *
- * Semua harga dihitung ulang di sini dari data master — nilai apa pun yang
+ * Semua harga dihitung ulang di sini dari data master, nilai apa pun yang
  * datang dari browser tidak dipercaya (KEP-009). Seluruhnya berjalan dalam
  * satu transaksi supaya order tidak pernah tercipta setengah jadi dengan
  * reservasi stok yang salah.
@@ -65,7 +65,7 @@ class Checkout
                     'product_id' => $baris['produk']->id,
                     'product_variant_id' => $baris['varian']?->id,
                     'nama_produk' => $baris['produk']->nama
-                        .($baris['varian']?->label ? ' — '.$baris['varian']->label : ''),
+                        .($baris['varian']?->label ? ': '.$baris['varian']->label : ''),
                     'fulfillment_type' => $baris['jalur'],
                     'qty' => $baris['qty'],
                     'harga_satuan' => $baris['rincian']->hargaSatuan,

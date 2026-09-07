@@ -27,7 +27,7 @@ return new class extends Migration
             $table->unique(['order_item_id', 'tipe', 'versi']);
         });
 
-        // FK ditunda sampai design_assets ada — relasinya melingkar.
+        // FK ditunda sampai design_assets ada, relasinya melingkar.
         Schema::table('order_items', function (Blueprint $table) {
             $table->foreign('approved_design_asset_id')
                 ->references('id')->on('design_assets')

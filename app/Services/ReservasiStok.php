@@ -13,7 +13,7 @@ use RuntimeException;
  * Menjaga agar dua pelanggan tidak bisa membeli barang terakhir yang sama.
  *
  * Selama order hidup, `stok_dipesan` naik sehingga `stok_tersedia` turun,
- * tapi `stok` fisik belum berubah — barangnya memang masih ada di rak.
+ * tapi `stok` fisik belum berubah, barangnya memang masih ada di rak.
  * `stok` baru berkurang saat barang benar-benar diserahkan.
  */
 class ReservasiStok
@@ -60,7 +60,7 @@ class ReservasiStok
     }
 
     /**
-     * Barang keluar dari rak saat serah terima — bukan saat pembayaran.
+     * Barang keluar dari rak saat serah terima, bukan saat pembayaran.
      * Sampai pelanggan datang, barangnya memang masih ada secara fisik.
      */
     public function keluarkan(Order $order): void

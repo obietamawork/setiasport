@@ -5,7 +5,7 @@ namespace App\Enums;
 /**
  * Progres satu baris pesanan. Inilah sumber kebenaran yang dilihat pelanggan
  * di halaman tracking, dan ia bergerak sebagai efek samping dari pekerjaan
- * yang diselesaikan operator — bukan diketik terpisah (docs/04).
+ * yang diselesaikan operator, bukan diketik terpisah (docs/04).
  */
 enum OrderItemStatus: string
 {

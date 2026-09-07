@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Satu pekerjaan nyata di satu divisi. Inilah yang mengisi layar "antrian saya"
  * per peran, dan penyelesaiannya adalah SATU-SATUNYA cara status pelanggan naik.
- * Status tracking tidak pernah diketik terpisah — kalau begitu, dalam dua minggu
+ * Status tracking tidak pernah diketik terpisah, kalau begitu, dalam dua minggu
  * ia jadi basi dan sistemnya ditinggalkan (docs/04).
  */
 class ProductionJob extends Model

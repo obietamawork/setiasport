@@ -12,7 +12,7 @@
 <div class="flex flex-wrap items-baseline justify-between gap-3">
     <div>
         <p class="text-sm text-muted tabular">{{ $pesanan->kode }}</p>
-        <h1 class="t-wide text-2xl font-extrabold">{{ $pesanan->status->label() }}</h1>
+        <h1 class="text-2xl font-extrabold">{{ $pesanan->status->label() }}</h1>
     </div>
     <a href="{{ route('lacak.token', $pesanan->access_token) }}" target="_blank" rel="noopener"
        class="tautan text-sm">Lihat seperti pelanggan</a>
@@ -46,7 +46,7 @@
                         </div>
 
                         <div class="text-right">
-                            <span class="chip chip-stok">{{ $item->status_item->label() }}</span>
+                            <span class="chip chip-navy">{{ $item->status_item->label() }}</span>
                             <p class="mt-2 tabular font-semibold">{{ rupiah($item->subtotal) }}</p>
 
                             @php $lanjut = $item->status_item->berikutnya($item->fulfillment_type); @endphp
@@ -80,7 +80,7 @@
                             </p>
                         </div>
 
-                        <span class="chip {{ $bayar->status === PaymentStatus::LUNAS ? 'chip-stok' : 'chip-kustom' }}">
+                        <span class="chip {{ $bayar->status === PaymentStatus::LUNAS ? 'chip-navy' : 'chip-merah' }}">
                             {{ $bayar->status->label() }}
                         </span>
 
@@ -92,7 +92,7 @@
                         @if ($bayar->status === PaymentStatus::MENUNGGU && $izin->punyaIzin('pembayaran.verifikasi'))
                             <form method="POST" action="{{ route('panel.pesanan.pembayaran.verifikasi', [$pesanan, $bayar]) }}">
                                 @csrf
-                                <button type="submit" class="tombol tombol-lapangan text-sm">Verifikasi</button>
+                                <button type="submit" class="tombol tombol-navy text-sm">Verifikasi</button>
                             </form>
                         @endif
                     </div>
@@ -128,8 +128,7 @@
 
             @if ($pesanan->adjustments->isEmpty())
                 <p class="px-5 py-4 text-sm text-muted">
-                    Belum ada penyesuaian. Pakai ini untuk perubahan setelah pesanan dibuat —
-                    tambah pemain, tambah patch, atau potongan harga. Pelanggan melihatnya di
+                    Belum ada penyesuaian. Pakai ini untuk perubahan setelah pesanan dibuat: tambah pemain, tambah patch, atau potongan harga. Pelanggan melihatnya di
                     halaman pesanannya sebelum datang ke toko.
                 </p>
             @else
@@ -143,7 +142,7 @@
                                     {{ $p->created_at->translatedFormat('j M Y, H:i') }}
                                 </span>
                             </span>
-                            <span class="tabular font-medium {{ $p->jumlah < 0 ? 'text-court' : '' }}">
+                            <span class="tabular font-medium {{ $p->jumlah < 0 ? 'text-ok' : '' }}">
                                 {{ $p->jumlah < 0 ? '−' : '+' }}{{ rupiah(abs($p->jumlah)) }}
                             </span>
                             @if ($izin->punyaIzin('order.penyesuaian') && ! $pesanan->status->final())
@@ -181,7 +180,7 @@
                 @foreach ($pesanan->statusLogs as $log)
                     <li class="flex flex-wrap justify-between gap-3 px-5 py-2.5">
                         <span>
-                            {{ $log->orderItem?->nama_produk ?? 'Pesanan' }} &mdash;
+                            {{ $log->orderItem?->nama_produk ?? 'Pesanan' }}
                             {{ OrderItemStatus::tryFrom($log->ke)?->label() ?? OrderStatus::tryFrom($log->ke)?->label() ?? $log->ke }}
                             @if ($log->catatan)
                                 <span class="block text-xs text-muted">{{ $log->catatan }}</span>
@@ -221,7 +220,7 @@
                 </div>
                 <div class="flex justify-between gap-3">
                     <dt class="font-semibold">Sisa</dt>
-                    <dd class="tabular font-semibold {{ $pesanan->sisa_tagihan > 0 ? 'text-signal' : 'text-court' }}">
+                    <dd class="tabular font-semibold {{ $pesanan->sisa_tagihan > 0 ? 'text-merah' : 'text-ok' }}">
                         {{ $pesanan->sisa_tagihan > 0 ? rupiah($pesanan->sisa_tagihan) : 'Lunas' }}
                     </dd>
                 </div>
@@ -251,7 +250,7 @@
                     @foreach ($pesanan->emailLogs as $log)
                         <li class="flex justify-between gap-2">
                             <span>{{ $log->template }}</span>
-                            <span class="{{ $log->status->perluTindakLanjut() ? 'text-signal' : 'text-muted' }}">
+                            <span class="{{ $log->status->perluTindakLanjut() ? 'text-merah' : 'text-muted' }}">
                                 {{ $log->status->label() }}
                             </span>
                         </li>

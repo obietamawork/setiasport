@@ -45,8 +45,7 @@ class KeranjangController extends Controller
     }
 
     /**
-     * Jalur kustom. Harga tetap dihitung ulang di server oleh PriceCalculator —
-     * angka apa pun yang dikirim konfigurator di browser tidak dipercaya (KEP-009).
+     * Jalur kustom. Harga tetap dihitung ulang di server oleh PriceCalculator, * angka apa pun yang dikirim konfigurator di browser tidak dipercaya (KEP-009).
      */
     public function tambahKustom(Request $request, Product $produk): RedirectResponse
     {

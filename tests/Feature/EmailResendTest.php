@@ -20,7 +20,7 @@ use Tests\TestCase;
  * Pengiriman email lewat HTTP API Resend dan webhook statusnya.
  *
  * Status inilah yang membuat admin tahu kapan email gagal sampai dan urusannya
- * harus diambil alih manusia lewat WhatsApp (docs/03) — jadi endpoint-nya harus
+ * harus diambil alih manusia lewat WhatsApp (docs/03), jadi endpoint-nya harus
  * menolak apa pun yang tidak bisa dibuktikan berasal dari Resend.
  */
 class EmailResendTest extends TestCase
@@ -99,7 +99,7 @@ class EmailResendTest extends TestCase
 
         $log = app(PengirimEmail::class)->kirim($this->order(), 'order-dibuat');
 
-        // Port 443, bukan SMTP — itulah alasan teknis Resend dipilih (KEP-004).
+        // Port 443, bukan SMTP, itulah alasan teknis Resend dipilih (KEP-004).
         Http::assertSent(fn ($r) => $r->url() === 'https://api.resend.com/emails'
             && $r->hasHeader('Authorization', 'Bearer re_kunci_uji'));
 

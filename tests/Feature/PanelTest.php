@@ -46,9 +46,9 @@ class PanelTest extends TestCase
 
     public function test_akun_nonaktif_tidak_bisa_masuk(): void
     {
-        $this->sebagai('gudang@setiasport.test')->update(['aktif' => false]);
+        $this->sebagai('admin@setiasport.test')->update(['aktif' => false]);
 
-        $this->post('/panel/login', ['email' => 'gudang@setiasport.test', 'password' => 'password'])
+        $this->post('/panel/login', ['email' => 'admin@setiasport.test', 'password' => 'password'])
             ->assertSessionHasErrors('email');
 
         $this->assertGuest();
@@ -67,22 +67,28 @@ class PanelTest extends TestCase
         $this->get(route('panel.kategori.create'))->assertOk();
     }
 
-    public function test_desainer_tidak_bisa_menyentuh_katalog(): void
+    public function test_admin_menjalankan_operasi_harian_tapi_bukan_pengaturan(): void
     {
-        $this->actingAs($this->sebagai('desainer@setiasport.test'));
+        $this->actingAs($this->sebagai('admin@setiasport.test'));
 
-        $this->get('/panel')->assertOk();
-        $this->get('/panel/produk')->assertForbidden();
-        $this->get('/panel/stok')->assertForbidden();
+        // Susunan dua peran (KEP-017): Admin memegang seluruh pekerjaan harian.
+        foreach (['/panel', '/panel/pesanan', '/panel/produk', '/panel/kategori',
+            '/panel/stok', '/panel/serah-terima'] as $url) {
+            $this->get($url)->assertOk();
+        }
+
+        // Kunci aturan main tetap di tangan pemilik toko.
         $this->get('/panel/pengaturan')->assertForbidden();
+        $this->put('/panel/pengaturan', ['setting' => ['dp_minimum_persen' => 10]])
+            ->assertForbidden();
     }
 
-    public function test_gudang_boleh_mengelola_stok_tapi_bukan_produk(): void
+    public function test_hanya_ada_dua_peran_bawaan(): void
     {
-        $this->actingAs($this->sebagai('gudang@setiasport.test'));
-
-        $this->get('/panel/stok')->assertOk();
-        $this->get('/panel/produk')->assertForbidden();
+        $this->assertSame(
+            ['admin', 'owner'],
+            \App\Models\Role::orderBy('slug')->pluck('slug')->all()
+        );
     }
 
     public function test_produk_kustom_wajib_punya_moq_dan_waktu_pengerjaan(): void
@@ -112,7 +118,7 @@ class PanelTest extends TestCase
 
     public function test_penyesuaian_stok_wajib_menyertakan_alasan(): void
     {
-        $this->actingAs($this->sebagai('gudang@setiasport.test'));
+        $this->actingAs($this->sebagai('admin@setiasport.test'));
         $varian = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();
 
         $this->put('/panel/stok', ['stok' => [$varian->id => 5]])
@@ -123,7 +129,7 @@ class PanelTest extends TestCase
 
     public function test_penyesuaian_stok_tercatat_di_log_aktivitas(): void
     {
-        $gudang = $this->sebagai('gudang@setiasport.test');
+        $gudang = $this->sebagai('admin@setiasport.test');
         $this->actingAs($gudang);
 
         $varian = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();

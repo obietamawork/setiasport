@@ -12,7 +12,7 @@ use InvalidArgumentException;
  * Satu-satunya tempat harga dihitung (KEP-009).
  *
  * Konfigurator di sisi pelanggan dan proses checkout di server memakai kelas
- * yang sama, dan server selalu jadi otoritas — harga yang dikirim dari browser
+ * yang sama, dan server selalu jadi otoritas, harga yang dikirim dari browser
  * tidak pernah dipercaya.
  *
  *   harga_satuan  = tier(product, qty) + SUM(opsi PER_PCS)
@@ -78,7 +78,7 @@ class PriceCalculator
     }
 
     /**
-     * Jalur ready stock. Tidak memakai tier sama sekali — kedua jalur pada
+     * Jalur ready stock. Tidak memakai tier sama sekali, kedua jalur pada
      * produk BOTH benar-benar terpisah dan tidak saling memengaruhi (KEP-011).
      */
     public function readyStock(ProductVariant $variant, int $qty): PriceBreakdown
@@ -113,7 +113,7 @@ class PriceCalculator
 
     /**
      * Memuat option value sekaligus memastikan semuanya benar-benar milik
-     * produk ini — mencegah harga dimanipulasi lewat id opsi dari produk lain.
+     * produk ini, mencegah harga dimanipulasi lewat id opsi dari produk lain.
      *
      * @param  array<int, int>  $ids
      * @return \Illuminate\Support\Collection<int, OptionValue>

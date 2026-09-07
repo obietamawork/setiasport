@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 /**
  * Menjaga rumus harga KEP-009. Yang diuji bukan sekadar "kodenya jalan", tapi
- * secara khusus jebakan PER_PCS vs PER_ITEM — kesalahan yang paling mahal dan
+ * secara khusus jebakan PER_PCS vs PER_ITEM, kesalahan yang paling mahal dan
  * paling sulit terlihat di sistem konveksi.
  */
 class PriceCalculatorTest extends TestCase

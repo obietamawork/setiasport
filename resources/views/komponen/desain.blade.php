@@ -12,11 +12,11 @@
     <h3 class="font-semibold">Desain</h3>
 
     @if ($item->sudahDisetujui())
-        <div class="mt-2 border-l-2 border-court bg-court-soft p-3 text-sm leading-relaxed">
+        <div class="mt-2 border-l-2 border-navy bg-navy-50 p-3 text-sm leading-relaxed">
             Disetujui oleh <strong>{{ $item->approved_by_name }}</strong> pada
             {{ $item->approved_at->translatedFormat('j F Y, H:i') }}
             @if ($item->approvedDesign)
-                &mdash; mockup v{{ $item->approvedDesign->versi }}
+                mockup v{{ $item->approvedDesign->versi }}
             @endif
         </div>
     @endif
@@ -42,15 +42,15 @@
     @endif
 
     {{-- Gerbang persetujuan (docs/02). Tautan halaman ini memang beredar di grup
-         tim, jadi tombolnya minta nama diketik dan pernyataan dicentang — dan
+         tim, jadi tombolnya minta nama diketik dan pernyataan dicentang: dan
          siapa yang mengetiknya dicatat bersama versi mockup yang disetujui. --}}
     @if ($perluSetuju)
-        <div class="mt-4 border border-signal bg-signal-soft p-4">
+        <div class="mt-4 border border-merah bg-merah-50 p-4">
             <p class="font-semibold">Mockup menunggu persetujuan Anda</p>
             <p class="kolom-baca mt-1 text-sm leading-relaxed">
                 Periksa nama, nomor, warna, dan penempatan logo. Waktu pengerjaan
                 {{ $item->product->lead_time_hari }} hari kerja baru mulai dihitung
-                setelah Anda menyetujui &mdash; dan setelah itu desain tidak dapat diubah.
+                setelah Anda menyetujui dan setelah itu desain tidak dapat diubah.
             </p>
 
             <form method="POST" action="{{ route('lacak.item.setujui', [$order->access_token, $item]) }}"
@@ -62,7 +62,7 @@
                            required minlength="3" autocomplete="name">
                 </div>
                 <label class="flex items-start gap-2 text-sm">
-                    <input type="checkbox" name="paham" value="1" class="mt-0.5 size-4 accent-court" required>
+                    <input type="checkbox" name="paham" value="1" class="mt-0.5 size-4 accent-navy" required>
                     <span>
                         Saya menyetujui desain ini dan memahami bahwa setelah disetujui,
                         desain serta daftar pemain tidak dapat diubah.
@@ -122,7 +122,7 @@
                                accept=".jpg,.jpeg,.png,.pdf" class="kotak-input">
                         <p class="mt-1 text-xs leading-relaxed text-muted">
                             JPG, PNG, atau PDF, maksimal {{ setting('upload_maks_mb', 10) }} MB.
-                            File mentah seperti AI, PSD, atau CDR terlalu besar untuk sistem &mdash;
+                            File mentah seperti AI, PSD, atau CDR terlalu besar untuk sistem
                             bagikan lewat tautan di bawah.
                         </p>
                     </div>

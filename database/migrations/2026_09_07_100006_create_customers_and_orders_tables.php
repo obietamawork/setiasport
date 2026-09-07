@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('kode', 20)->unique();               // SS-2609-0042
             $table->foreignId('customer_id')->constrained()->restrictOnDelete();
 
-            // Agregat dari status seluruh item (KEP-001) — tidak disetel manual.
+            // Agregat dari status seluruh item (KEP-001), tidak disetel manual.
             $table->string('status', 30);
 
             // Akses tanpa password (KEP-008). Sengaja panjang & acak.

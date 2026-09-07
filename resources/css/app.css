@@ -1,31 +1,51 @@
 @import "tailwindcss";
 
 /*
- * Setia Sport — token visual.
+ * Setia Sport Wonogiri, sistem visual.
  *
- * Warna diambil dari lantai lapangan futsal dan garis kapur, bukan palet
- * netral: hitamnya berbasis hijau, kertasnya bersemu dingin. Oranye sublimasi
- * dipakai sangat hemat — hanya harga dan aksi utama.
+ * Palet diambil langsung dari logo, dan logo itu pula yang menentukan cara
+ * memakainya: navy mendominasi sebagai warna struktur, sementara merah dan
+ * kuning muncul sebagai garis tipis penanda, persis seperti dua batang di
+ * bawah kata WONOGIRI. Merah tidak pernah menjadi bidang lebar; kuning tidak
+ * pernah dipakai sebagai latar teks.
+ *
+ * Tipografi: Plus Jakarta Sans, buatan Tokotype untuk identitas kota Jakarta.
+ * Dipilih bukan karena netral, tetapi karena rancangannya memang untuk merek
+ * Indonesia yang ingin terbaca rapi dan modern.
  */
 @theme {
-    --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+    --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
-    --color-paper: #f5f7f4;
+    --color-navy-900: #0d1733;
+    --color-navy-800: #12204a;
+    --color-navy: #16255b;
+    --color-navy-700: #1e3474;
+    --color-navy-400: #5f74a8;
+    --color-navy-300: #93a3ca;
+    --color-navy-100: #e7ebf5;
+    --color-navy-50: #f2f5fa;
+
+    --color-merah: #d62b1f;
+    --color-merah-tua: #b31f16;
+    --color-merah-50: #fdedec;
+
+    --color-kuning: #fdc500;
+    --color-kuning-50: #fff8e1;
+
+    --color-ink: #131a2e;
+    --color-muted: #5d687f;
+    --color-line: #e3e7f0;
+    --color-line-strong: #c3cbdc;
+    --color-paper: #f6f8fc;
     --color-field: #ffffff;
-    --color-ink: #0e1c17;
-    --color-muted: #5c6b64;
-    --color-line: #dce4de;
-    --color-line-strong: #b9c7be;
 
-    --color-court: #14523a;
-    --color-court-dark: #0b2b20;
-    --color-court-soft: #e7efe9;
+    --color-ok: #15803d;
+    --color-ok-50: #eefbf2;
+    --color-warn: #a16207;
+    --color-warn-50: #fefaec;
 
-    --color-signal: #ff5a1f;
-    --color-signal-soft: #ffede4;
-
-    --color-warn: #b45309;
-    --color-warn-soft: #fef3c7;
+    --radius-kartu: 10px;
+    --radius-kontrol: 7px;
 }
 
 @layer base {
@@ -36,23 +56,29 @@
     body {
         background: var(--color-paper);
         color: var(--color-ink);
-        font-feature-settings: "tnum" 1;
+        letter-spacing: -0.006em;
     }
 
-    /* Angka selalu rata lebar: harga, stok, dan nomor punggung berbaris rapi. */
+    h1, h2, h3 {
+        letter-spacing: -0.021em;
+    }
+
     .tabular {
         font-variant-numeric: tabular-nums;
     }
 
     :focus-visible {
-        outline: 2px solid var(--color-signal);
+        outline: 2px solid var(--color-navy-700);
         outline-offset: 2px;
+        border-radius: 3px;
+    }
+
+    ::selection {
+        background: var(--color-navy-100);
     }
 
     @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
+        *, *::before, *::after {
             animation-duration: 0.01ms !important;
             transition-duration: 0.01ms !important;
         }
@@ -60,130 +86,193 @@
 }
 
 @layer components {
-    /*
-     * Kontras tipografi datang dari sumbu LEBAR Archivo, bukan dari keluarga
-     * huruf kedua — persis cara penomoran jersey bekerja: satu huruf, dilebarkan.
-     */
-    .t-wide {
-        font-stretch: 112%;
-        letter-spacing: -0.02em;
-    }
 
-    .t-narrow {
-        font-stretch: 88%;
-    }
-
-    /* Angka besar: lead time, harga utama, nomor. */
-    .numeral {
-        font-stretch: 112%;
+    /* Wordmark sementara sampai berkas logo dipasang di public/logo.svg */
+    .wordmark {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.45rem;
         font-weight: 800;
-        letter-spacing: -0.045em;
-        line-height: 0.86;
+        font-style: italic;
+        letter-spacing: -0.035em;
+        color: var(--color-navy);
+        line-height: 1;
+    }
+
+    .wordmark-terang {
+        color: #fff;
+    }
+
+    /* Dua batang penanda, meniru garis merah dan kuning di bawah WONOGIRI. */
+    .wordmark-kota {
+        position: relative;
+        font-size: 0.56em;
+        font-style: normal;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        opacity: 0.78;
+        padding-inline: 1.05rem;
+    }
+
+    /* Batang dibuat cukup panjang agar terbaca sebagai penanda, bukan
+       tanda hubung, sebagaimana di logo aslinya. */
+    .wordmark-kota::before,
+    .wordmark-kota::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 0.75rem;
+        height: 3px;
+        border-radius: 2px;
+        transform: translateY(-50%);
+    }
+
+    .wordmark-kota::before { left: 0; background: var(--color-merah); }
+    .wordmark-kota::after { right: 0; background: var(--color-kuning); }
+
+    .numeral {
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 0.95;
         font-variant-numeric: tabular-nums;
     }
 
     .tautan {
+        color: var(--color-navy-700);
         text-decoration: underline;
         text-decoration-color: var(--color-line-strong);
         text-underline-offset: 3px;
-        transition: text-decoration-color 120ms;
+        text-decoration-thickness: 1px;
+        transition: text-decoration-color 120ms, color 120ms;
     }
 
     .tautan:hover {
-        text-decoration-color: var(--color-signal);
+        color: var(--color-navy);
+        text-decoration-color: currentColor;
     }
 
-    /* Tombol: sudut nyaris tajam, terasa teknis seperti perkakas bengkel. */
     .tombol {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        border-radius: 3px;
-        padding: 0.7rem 1.15rem;
+        border-radius: var(--radius-kontrol);
+        padding: 0.62rem 1.05rem;
+        font-size: 0.9375rem;
         font-weight: 600;
-        font-stretch: 104%;
-        line-height: 1;
-        transition: background-color 120ms, border-color 120ms, color 120ms;
+        line-height: 1.2;
+        border: 1px solid transparent;
+        transition: background-color 130ms, border-color 130ms, color 130ms;
     }
 
-    .tombol-utama {
-        background: var(--color-signal);
-        color: #fff;
+    .tombol-sm {
+        padding: 0.4rem 0.72rem;
+        font-size: 0.8125rem;
     }
 
-    .tombol-utama:hover {
-        background: #e84a12;
-    }
+    /* Merah dipakai untuk satu aksi utama per layar, tidak lebih. */
+    .tombol-utama { background: var(--color-merah); color: #fff; }
+    .tombol-utama:hover { background: var(--color-merah-tua); }
 
-    .tombol-lapangan {
-        background: var(--color-court);
-        color: #fff;
-    }
-
-    .tombol-lapangan:hover {
-        background: var(--color-court-dark);
-    }
+    .tombol-navy { background: var(--color-navy); color: #fff; }
+    .tombol-navy:hover { background: var(--color-navy-800); }
 
     .tombol-garis {
-        border: 1px solid var(--color-line-strong);
+        border-color: var(--color-line-strong);
         background: var(--color-field);
         color: var(--color-ink);
     }
 
     .tombol-garis:hover {
-        border-color: var(--color-ink);
+        border-color: var(--color-navy-300);
+        background: var(--color-navy-50);
     }
+
+    .tombol-halus { background: transparent; color: var(--color-muted); }
+    .tombol-halus:hover { background: var(--color-navy-50); color: var(--color-ink); }
 
     .tombol:disabled,
     .tombol[aria-disabled="true"] {
-        background: var(--color-paper);
-        border: 1px solid var(--color-line);
+        background: var(--color-navy-50);
+        border-color: var(--color-line);
         color: var(--color-muted);
         cursor: not-allowed;
     }
+}
 
-    /* Penanda jalur pemenuhan. Satu-satunya tempat huruf kapital dipakai. */
+@layer components {
+
+    /* Struktur dibentuk garis, bukan bayangan. */
+    .kartu {
+        background: var(--color-field);
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius-kartu);
+    }
+
+    .kartu-kop {
+        padding: 0.85rem 1.15rem;
+        border-bottom: 1px solid var(--color-line);
+        font-weight: 600;
+    }
+
+    .kartu-tautan {
+        transition: border-color 130ms, background-color 130ms;
+    }
+
+    .kartu-tautan:hover {
+        border-color: var(--color-navy-300);
+    }
+
     .chip {
         display: inline-flex;
         align-items: center;
-        gap: 0.35rem;
-        border-radius: 2px;
-        padding: 0.2rem 0.45rem;
-        font-size: 0.6875rem;
-        font-weight: 700;
-        font-stretch: 96%;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
+        gap: 0.3rem;
+        border-radius: 999px;
+        padding: 0.18rem 0.58rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.4;
+        white-space: nowrap;
     }
 
-    .chip-stok {
-        background: var(--color-court-soft);
-        color: var(--color-court-dark);
+    .chip-navy { background: var(--color-navy-100); color: var(--color-navy-800); }
+    .chip-merah { background: var(--color-merah-50); color: var(--color-merah-tua); }
+    .chip-kuning { background: var(--color-kuning-50); color: var(--color-warn); }
+    .chip-netral { background: var(--color-paper); color: var(--color-muted); }
+    .chip-ok { background: var(--color-ok-50); color: var(--color-ok); }
+
+    .notis {
+        border-radius: var(--radius-kontrol);
+        border: 1px solid var(--color-line);
+        border-left-width: 3px;
+        padding: 0.8rem 1rem;
+        font-size: 0.9375rem;
+        line-height: 1.55;
     }
 
-    .chip-kustom {
-        background: var(--color-signal-soft);
-        color: #a53a10;
-    }
-
-    .kolom-baca {
-        max-width: 68ch;
-    }
+    .notis-ok { border-left-color: var(--color-ok); background: var(--color-ok-50); }
+    .notis-galat { border-left-color: var(--color-merah); background: var(--color-merah-50); }
+    .notis-perhatian { border-left-color: var(--color-kuning); background: var(--color-kuning-50); }
+    .notis-info { border-left-color: var(--color-navy); background: var(--color-navy-50); }
 
     .kotak-input {
         width: 100%;
         border: 1px solid var(--color-line-strong);
-        border-radius: 3px;
+        border-radius: var(--radius-kontrol);
         background: var(--color-field);
-        padding: 0.55rem 0.7rem;
-        line-height: 1.4;
+        padding: 0.55rem 0.75rem;
+        font-size: 0.9375rem;
+        line-height: 1.45;
+        transition: border-color 120ms, box-shadow 120ms;
     }
 
+    .kotak-input::placeholder { color: var(--color-navy-300); }
+    .kotak-input:hover { border-color: var(--color-navy-300); }
+
     .kotak-input:focus {
-        border-color: var(--color-court);
-        outline: 2px solid var(--color-signal);
-        outline-offset: 1px;
+        border-color: var(--color-navy);
+        outline: none;
+        box-shadow: 0 0 0 3px var(--color-navy-100);
     }
 
     .label-form {
@@ -191,6 +280,52 @@
         margin-bottom: 0.3rem;
         font-size: 0.8125rem;
         font-weight: 600;
+        color: var(--color-ink);
+    }
+
+    .bantuan-form {
+        margin-top: 0.35rem;
+        font-size: 0.8125rem;
+        line-height: 1.5;
         color: var(--color-muted);
+    }
+
+    .tabel {
+        width: 100%;
+        font-size: 0.9375rem;
+        border-collapse: collapse;
+    }
+
+    .tabel thead th {
+        background: var(--color-navy-50);
+        border-bottom: 1px solid var(--color-line);
+        padding: 0.6rem 1rem;
+        text-align: left;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--color-muted);
+    }
+
+    .tabel tbody td {
+        border-bottom: 1px solid var(--color-line);
+        padding: 0.72rem 1rem;
+        vertical-align: top;
+    }
+
+    .tabel tbody tr:last-child td { border-bottom: 0; }
+
+    .kolom-baca { max-width: 66ch; }
+
+    /* Penanda navigasi aktif, meniru garis di bawah wordmark. */
+    .garis-aktif { position: relative; }
+
+    .garis-aktif::after {
+        content: "";
+        position: absolute;
+        inset-inline: 0.7rem;
+        bottom: -1px;
+        height: 2px;
+        background: var(--color-kuning);
+        border-radius: 2px;
     }
 }

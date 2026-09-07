@@ -44,7 +44,7 @@ class PesananItemController extends Controller
 
     /**
      * Gerbang persetujuan (docs/02). Nama diketik sendiri dan dicatat bersama
-     * versi mockup — tautan halaman ini memang beredar di grup tim, jadi
+     * versi mockup, tautan halaman ini memang beredar di grup tim, jadi
      * perlindungan diletakkan tepat di titik yang berkonsekuensi, bukan di
      * pintu masuk (KEP-008).
      */
@@ -63,7 +63,7 @@ class PesananItemController extends Controller
 
         if ($item->product->roster_wajib && ! $this->roster->lengkap($item)) {
             return back()->withErrors(
-                'Daftar pemain belum lengkap — masih kurang dari '.$item->qty.' baris. '
+                'Daftar pemain belum lengkap: masih kurang dari '.$item->qty.' baris. '
                 .'Lengkapi dulu sebelum menyetujui desain, karena setelah disetujui daftarnya terkunci.'
             );
         }
@@ -105,7 +105,7 @@ class PesananItemController extends Controller
             'catatan' => ['nullable', 'string', 'max:500'],
         ], [
             'berkas.mimes' => 'Kirim gambar (JPG/PNG) atau PDF. File mentah seperti AI, PSD, '
-                .'atau CDR terlalu besar untuk sistem — bagikan lewat tautan Google Drive.',
+                .'atau CDR terlalu besar untuk sistem: bagikan lewat tautan Google Drive.',
             'berkas.max' => "Ukuran berkas maksimal {$maks} KB.",
             'tautan.url' => 'Tautan harus lengkap, diawali https://',
         ], ['berkas' => 'berkas desain', 'tautan' => 'tautan Google Drive']);

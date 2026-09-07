@@ -29,7 +29,7 @@ class ProductVariant extends Model
 
     /**
      * Stok yang benar-benar bisa dijual. Selisih dengan `stok` adalah barang
-     * yang sudah dipesan tapi ordernya belum dibayar — tanpa pemisahan ini,
+     * yang sudah dipesan tapi ordernya belum dibayar, tanpa pemisahan ini,
      * dua pelanggan bisa membeli barang terakhir yang sama.
      */
     public function getStokTersediaAttribute(): int

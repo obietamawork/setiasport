@@ -12,7 +12,7 @@ use InvalidArgumentException;
 /**
  * Keranjang berbasis sesi.
  *
- * Yang disimpan hanya identitas dan jumlah — TIDAK ADA harga. Setiap kali
+ * Yang disimpan hanya identitas dan jumlah, TIDAK ADA harga. Setiap kali
  * keranjang dibaca, harganya dihitung ulang lewat PriceCalculator. Harga yang
  * ikut menginap di sesi adalah harga yang bisa basi atau dipalsukan.
  */

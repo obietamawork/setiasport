@@ -14,8 +14,7 @@ use Illuminate\Support\Str;
  * Perhatikan tidak adanya kolom subtotal / total / sudah_dibayar / sisa_tagihan.
  *
  * Semuanya dihitung ulang dari items + adjustments + payments (KEP-003, KEP-007).
- * Menyimpannya sebagai kolom berarti mengundang angka basi di layar kasir —
- * persis masalah yang ingin dihindari seluruh rancangan pembayaran ini.
+ * Menyimpannya sebagai kolom berarti mengundang angka basi di layar kasir, * persis masalah yang ingin dihindari seluruh rancangan pembayaran ini.
  */
 class Order extends Model
 {

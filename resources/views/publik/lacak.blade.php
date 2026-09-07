@@ -10,14 +10,14 @@
 <div class="mx-auto max-w-3xl px-5 py-10">
 
     @if (session('sukses'))
-        <p class="mb-6 border-l-2 border-court bg-court-soft px-4 py-3 text-sm">{{ session('sukses') }}</p>
+        <p class="mb-6 border-l-2 border-navy bg-navy-50 px-4 py-3 text-sm">{{ session('sukses') }}</p>
     @endif
     @if ($errors->any())
-        <p class="mb-6 border-l-2 border-signal bg-signal-soft px-4 py-3 text-sm">{{ $errors->first() }}</p>
+        <p class="mb-6 border-l-2 border-merah bg-merah-50 px-4 py-3 text-sm">{{ $errors->first() }}</p>
     @endif
 
     <p class="text-sm text-muted tabular">{{ $order->kode }}</p>
-    <h1 class="t-wide mt-1 text-3xl font-extrabold">{{ $order->status->label() }}</h1>
+    <h1 class="mt-1 text-3xl font-extrabold">{{ $order->status->label() }}</h1>
     <p class="mt-2 text-sm text-muted">
         Atas nama {{ $order->customer->nama }} &middot; {{ $order->customer->email_samar }}
     </p>
@@ -27,7 +27,7 @@
         <section class="mt-8 border border-line bg-field">
             <h2 class="border-b border-line px-5 py-3 font-semibold">Yang perlu dibayar sekarang</h2>
             <div class="space-y-4 p-5">
-                <p class="numeral text-4xl text-signal">{{ rupiah($menungguBayar->jumlah) }}</p>
+                <p class="numeral text-4xl text-merah">{{ rupiah($menungguBayar->jumlah) }}</p>
 
                 @if ($order->kadaluarsa_pada)
                     <p class="text-sm">
@@ -52,7 +52,7 @@
                     <p class="border-t border-line pt-4 text-sm font-medium">Atau transfer manual</p>
                 @endif
 
-                <div class="border-l-2 border-court bg-court-soft p-4 text-sm leading-relaxed">
+                <div class="border-l-2 border-navy bg-navy-50 p-4 text-sm leading-relaxed">
                     Transfer ke rekening toko, lalu unggah bukti di bawah. Kami memeriksanya
                     pada jam kerja dan mengabari lewat email begitu masuk.
                 </div>
@@ -100,11 +100,11 @@
                 <div>
                     @if ($order->sisa_tagihan > 0)
                         <p class="text-sm text-muted">Dibayar saat mengambil</p>
-                        <p class="numeral mt-2 text-4xl text-signal">{{ rupiah($order->sisa_tagihan) }}</p>
+                        <p class="numeral mt-2 text-4xl text-merah">{{ rupiah($order->sisa_tagihan) }}</p>
                         <p class="mt-3 text-sm text-muted">Tunai maupun non-tunai.</p>
                     @else
                         <p class="text-sm text-muted">Pembayaran</p>
-                        <p class="numeral mt-2 text-3xl text-court">Lunas</p>
+                        <p class="numeral mt-2 text-3xl text-ok">Lunas</p>
                         <p class="mt-3 text-sm text-muted">Tinggal diambil.</p>
                     @endif
                 </div>
@@ -119,7 +119,7 @@
     {{-- Timeline per item, bukan satu timeline tunggal: satu order boleh memuat
          barang stok dan barang kustom yang jalannya berbeda (KEP-001). --}}
     <section class="mt-8">
-        <h2 class="t-wide text-xl font-extrabold">Progres</h2>
+        <h2 class="text-xl font-extrabold">Progres</h2>
 
         <div class="mt-4 space-y-4">
             @foreach ($order->items as $item)
@@ -150,9 +150,9 @@
                                 <li class="flex gap-3 {{ $loop->last ? '' : 'pb-4' }}">
                                     <div class="flex flex-col items-center">
                                         <span class="mt-1 size-2.5 shrink-0 rounded-full
-                                            {{ $kini ? 'bg-signal ring-4 ring-signal-soft' : ($lewat ? 'bg-court' : 'bg-line-strong') }}"></span>
+                                            {{ $kini ? 'bg-merah ring-4 ring-merah-50' : ($lewat ? 'bg-navy' : 'bg-line-strong') }}"></span>
                                         @unless ($loop->last)
-                                            <span class="w-px flex-1 {{ $lewat ? 'bg-court' : 'bg-line' }}"></span>
+                                            <span class="w-px flex-1 {{ $lewat ? 'bg-navy' : 'bg-line' }}"></span>
                                         @endunless
                                     </div>
                                     <div class="-mt-0.5 pb-1">
@@ -227,7 +227,7 @@
                 </div>
                 <div class="flex justify-between gap-3">
                     <dt class="font-semibold">Sisa tagihan</dt>
-                    <dd class="tabular font-semibold {{ $order->sisa_tagihan > 0 ? 'text-signal' : 'text-court' }}">
+                    <dd class="tabular font-semibold {{ $order->sisa_tagihan > 0 ? 'text-merah' : 'text-ok' }}">
                         {{ $order->sisa_tagihan > 0 ? rupiah($order->sisa_tagihan) : 'Lunas' }}
                     </dd>
                 </div>
@@ -237,12 +237,12 @@
 
     @if ($order->statusLogs->isNotEmpty())
         <section class="mt-8">
-            <h2 class="t-wide text-xl font-extrabold">Riwayat</h2>
+            <h2 class="text-xl font-extrabold">Riwayat</h2>
             <ul class="mt-4 divide-y divide-line border border-line bg-field text-sm">
                 @foreach ($order->statusLogs->take(20) as $log)
                     <li class="flex flex-wrap justify-between gap-3 px-5 py-2.5">
                         <span>
-                            {{ $log->orderItem?->nama_produk ?? 'Pesanan' }} &mdash;
+                            {{ $log->orderItem?->nama_produk ?? 'Pesanan' }}
                             {{ \App\Enums\OrderItemStatus::tryFrom($log->ke)?->label()
                                 ?? OrderStatus::tryFrom($log->ke)?->label() ?? $log->ke }}
                         </span>
@@ -255,7 +255,7 @@
 
     <p class="mt-8 text-sm leading-relaxed text-muted">
         Simpan tautan halaman ini. Boleh dibagikan ke anggota tim yang ingin ikut
-        memantau — tidak ada data pribadi yang tampil di sini.
+        memantau: tidak ada data pribadi yang tampil di sini.
     </p>
 </div>
 @endsection

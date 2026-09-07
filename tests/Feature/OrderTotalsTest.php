@@ -140,7 +140,7 @@ class OrderTotalsTest extends TestCase
 
         $this->assertSame(1_140_000, $order->total);
 
-        // DP 50% lewat gateway — barang tetap diproduksi, tapi belum boleh diserahkan.
+        // DP 50% lewat gateway, barang tetap diproduksi, tapi belum boleh diserahkan.
         $order->payments()->create([
             'jenis' => PaymentType::DP,
             'metode' => PaymentMethod::GATEWAY,

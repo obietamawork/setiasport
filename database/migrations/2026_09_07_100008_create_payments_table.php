@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Satu order punya BANYAK pembayaran sejak hari pertama (KEP-003), meski payment
  * gateway baru dipasang di fase akhir. Kolom provider/provider_ref/payload_json
- * dibiarkan kosong dulu — itulah yang membuat pemasangan Midtrans atau Xendit
+ * dibiarkan kosong dulu, itulah yang membuat pemasangan Midtrans atau Xendit
  * nanti menjadi pekerjaan kecil, bukan refactor besar.
  */
 return new class extends Migration

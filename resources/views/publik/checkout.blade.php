@@ -3,9 +3,9 @@
 
 @section('isi')
 <div class="mx-auto max-w-4xl px-5 py-10">
-    <h1 class="t-wide text-3xl font-extrabold">Data pemesan</h1>
+    <h1 class="text-3xl font-extrabold">Data pemesan</h1>
     <p class="kolom-baca mt-3 text-muted">
-        Kami tidak meminta alamat pengiriman — pesanan diambil sendiri di toko.
+        Kami tidak meminta alamat pengiriman: pesanan diambil sendiri di toko.
         Yang kami butuhkan hanya cara menghubungi Anda saat pesanan siap.
     </p>
 
@@ -46,19 +46,19 @@
                     <legend class="label-form">Cara pembayaran</legend>
                     <div class="space-y-2">
                         <label class="flex items-start gap-2 text-sm">
-                            <input type="radio" name="tipe_pembayaran" value="DP" class="mt-0.5 size-4 accent-court"
+                            <input type="radio" name="tipe_pembayaran" value="DP" class="mt-0.5 size-4 accent-navy"
                                    @checked(old('tipe_pembayaran', 'DP') === 'DP')>
                             <span>
-                                <strong>Uang muka {{ $persenDp }}%</strong> &mdash;
+                                <strong>Uang muka {{ $persenDp }}%</strong>
                                 <span class="tabular">{{ rupiah((int) ceil($total * $persenDp / 100)) }}</span> sekarang,
                                 sisanya dibayar saat mengambil barang di toko.
                             </span>
                         </label>
                         <label class="flex items-start gap-2 text-sm">
-                            <input type="radio" name="tipe_pembayaran" value="LUNAS" class="mt-0.5 size-4 accent-court"
+                            <input type="radio" name="tipe_pembayaran" value="LUNAS" class="mt-0.5 size-4 accent-navy"
                                    @checked(old('tipe_pembayaran') === 'LUNAS')>
                             <span>
-                                <strong>Bayar lunas</strong> &mdash;
+                                <strong>Bayar lunas</strong>
                                 <span class="tabular">{{ rupiah($total) }}</span> sekarang.
                             </span>
                         </label>
@@ -69,7 +69,7 @@
             @endif
 
             <label class="flex items-start gap-2 border-t border-line pt-4 text-sm">
-                <input type="checkbox" name="setuju" value="1" class="mt-0.5 size-4 accent-court" @checked(old('setuju'))>
+                <input type="checkbox" name="setuju" value="1" class="mt-0.5 size-4 accent-navy" @checked(old('setuju'))>
                 <span>
                     Saya paham pesanan ini <strong>diambil sendiri di toko</strong> dan pembayaran
                     perlu diselesaikan dalam {{ setting('batas_bayar_jam', 24) }} jam sebelum
@@ -100,7 +100,7 @@
                 <div class="border-t border-line px-5 py-4">
                     <div class="flex items-baseline justify-between gap-3">
                         <span class="font-semibold">Total</span>
-                        <span class="numeral text-2xl text-signal">{{ rupiah($total) }}</span>
+                        <span class="numeral text-2xl text-merah">{{ rupiah($total) }}</span>
                     </div>
                     <p class="mt-2 text-xs text-muted">Tanpa ongkos kirim.</p>
                 </div>

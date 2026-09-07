@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Status dari webhook Resend. Karena tidak ada WhatsApp API (KEP-004), inilah
  * yang membuat sistem tahu kapan harus menyerah dan menyerahkan urusan ke
- * manusia — admin menindaklanjuti manual lewat WhatsApp.
+ * manusia, admin menindaklanjuti manual lewat WhatsApp.
  */
 class EmailLog extends Model
 {

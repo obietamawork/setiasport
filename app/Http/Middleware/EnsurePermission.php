@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Penjaga RBAC panel. Dipakai sebagai `izin:katalog.kelola`.
  *
- * Peran diperiksa lewat permission, bukan nama peran — supaya pemilik toko bisa
+ * Peran diperiksa lewat permission, bukan nama peran, supaya pemilik toko bisa
  * mengubah, menggabung, atau menambah peran tanpa menyentuh kode (docs/04).
  */
 class EnsurePermission

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Nama punggung, nomor, dan ukuran per pemain — inti pekerjaan toko jersey.
+ * Nama punggung, nomor, dan ukuran per pemain, inti pekerjaan toko jersey.
  * Kalau data ini dibiarkan mengalir lewat WhatsApp, admin mengetik ulang,
  * salah ketik, dan jersey dicetak dua kali (docs/03).
  */

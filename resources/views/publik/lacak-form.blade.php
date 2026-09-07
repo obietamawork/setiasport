@@ -3,7 +3,7 @@
 
 @section('isi')
 <div class="mx-auto max-w-lg px-5 py-14">
-    <h1 class="t-wide text-3xl font-extrabold">Lacak pesanan</h1>
+    <h1 class="text-3xl font-extrabold">Lacak pesanan</h1>
     <p class="mt-3 leading-relaxed text-muted">
         Cara tercepat adalah membuka tautan di email konfirmasi Anda. Kalau emailnya
         tidak ketemu, masukkan kode pesanan dan email yang dipakai saat memesan.
@@ -13,7 +13,7 @@
         @csrf
 
         @if ($errors->any())
-            <p class="border-l-2 border-signal bg-signal-soft px-3 py-2 text-sm">{{ $errors->first() }}</p>
+            <p class="border-l-2 border-merah bg-merah-50 px-3 py-2 text-sm">{{ $errors->first() }}</p>
         @endif
 
         <div>
@@ -27,7 +27,7 @@
             <input type="email" id="email" name="email" value="{{ old('email') }}" class="kotak-input" required>
         </div>
 
-        <button type="submit" class="tombol tombol-lapangan w-full">Buka pesanan</button>
+        <button type="submit" class="tombol tombol-navy w-full">Buka pesanan</button>
     </form>
 </div>
 @endsection

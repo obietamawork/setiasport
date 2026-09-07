@@ -44,7 +44,7 @@ class StokController extends Controller
     }
 
     /**
-     * Penyesuaian stok manual. Selalu tercatat beserta alasannya — stok yang
+     * Penyesuaian stok manual. Selalu tercatat beserta alasannya, stok yang
      * berubah tanpa jejak adalah sumber perselisihan internal (docs/04).
      */
     public function update(Request $request): RedirectResponse

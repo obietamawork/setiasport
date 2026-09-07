@@ -61,7 +61,7 @@ class CheckoutController extends Controller
             'tipe_pembayaran' => ['nullable', 'in:LUNAS,DP'],
             'setuju' => ['accepted'],
         ], [
-            'email.required' => 'Email wajib diisi — ke sanalah tautan pesanan dan kabar progres dikirim.',
+            'email.required' => 'Email wajib diisi: ke sanalah tautan pesanan dan kabar progres dikirim.',
             'no_hp.regex' => 'Nomor HP hanya boleh berisi angka, spasi, tanda plus, dan strip.',
             'setuju.accepted' => 'Centang persetujuan pengambilan di toko untuk melanjutkan.',
         ], [

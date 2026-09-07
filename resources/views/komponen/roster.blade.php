@@ -29,8 +29,8 @@
                 @foreach ($item->rosters as $r)
                     <li class="flex gap-3 px-3 py-1.5">
                         <span class="w-6 text-muted tabular">{{ $r->urutan }}</span>
-                        <span class="flex-1">{{ $r->nama_punggung ?: '—' }}</span>
-                        <span class="w-10 tabular">{{ $r->nomor ?: '—' }}</span>
+                        <span class="flex-1">{{ $r->nama_punggung ?: '-' }}</span>
+                        <span class="w-10 tabular">{{ $r->nomor ?: '-' }}</span>
                         <span class="w-12 text-muted">{{ $r->ukuran }}</span>
                     </li>
                 @endforeach
@@ -38,7 +38,7 @@
         @endif
     @else
         <p class="kolom-baca mt-2 text-sm leading-relaxed text-muted">
-            Isi sebisanya sekarang, sisanya menyusul — daftar ini bisa Anda ubah sampai
+            Isi sebisanya sekarang, sisanya menyusul: daftar ini bisa Anda ubah sampai
             desain disetujui. Setelah itu terkunci, karena namanya sudah masuk mesin cetak.
         </p>
 
@@ -69,7 +69,7 @@
                                     <input type="text" inputmode="numeric" :name="`roster[${i}][nomor]`"
                                            x-model="b.nomor" class="kotak-input tabular text-center"
                                            maxlength="3" placeholder="10"
-                                           :class="nomorGanda(i) ? 'border-signal' : ''">
+                                           :class="nomorGanda(i) ? 'border-merah' : ''">
                                 </td>
                                 <td class="py-1 pr-2">
                                     <select :name="`roster[${i}][ukuran]`" x-model="b.ukuran" class="kotak-input">
@@ -89,7 +89,7 @@
                 </table>
             </div>
 
-            <p x-show="adaNomorGanda" x-cloak class="mt-2 text-sm text-signal">
+            <p x-show="adaNomorGanda" x-cloak class="mt-2 text-sm text-merah">
                 Ada nomor punggung yang dipakai dua kali. Perbaiki dulu sebelum menyimpan.
             </p>
 
@@ -100,7 +100,7 @@
                         class="tautan text-sm">Isi sampai <span x-text="qty"></span> baris</button>
                 <span class="text-sm text-muted tabular" x-text="ringkasan"></span>
                 <button type="submit" :disabled="adaNomorGanda"
-                        class="tombol tombol-lapangan ml-auto text-sm">Simpan daftar</button>
+                        class="tombol tombol-navy ml-auto text-sm">Simpan daftar</button>
             </div>
         </form>
     @endif

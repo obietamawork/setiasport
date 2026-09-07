@@ -3,7 +3,7 @@
 namespace App\Enums;
 
 /**
- * Status order — sengaja ringkas. Detail progres ada di OrderItemStatus.
+ * Status order, sengaja ringkas. Detail progres ada di OrderItemStatus.
  *
  * Status ini adalah AGREGAT dari status seluruh item (KEP-001) dan tidak pernah
  * disetel langsung oleh operator; lihat App\Services\OrderStatusResolver.

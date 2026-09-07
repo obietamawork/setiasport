@@ -157,7 +157,7 @@ class KustomFlowTest extends TestCase
         $this->isiRoster($order, $item, 5);
 
         // Lebih murah dihentikan di sini daripada di meja printing.
-        $this->actingAs($this->staf('desainer@setiasport.test'))
+        $this->actingAs($this->staf('admin@setiasport.test'))
             ->post(route('panel.mockup.simpan', $item), [
                 'preview' => UploadedFile::fake()->image('mockup.jpg'),
             ])->assertSessionHasErrors();
@@ -206,7 +206,7 @@ class KustomFlowTest extends TestCase
         $item = $order->items()->first();
         $this->isiRoster($order, $item, 12);
 
-        $this->actingAs($this->staf('desainer@setiasport.test'))
+        $this->actingAs($this->staf('admin@setiasport.test'))
             ->post(route('panel.mockup.simpan', $item), [
                 'preview' => UploadedFile::fake()->image('mockup.jpg'),
                 'catatan' => 'Versi pertama.',
@@ -244,32 +244,27 @@ class KustomFlowTest extends TestCase
         ])->assertStatus(422);
     }
 
-    public function test_operator_hanya_bisa_membuka_antrian_divisinya(): void
+    public function test_admin_memegang_seluruh_antrian_produksi(): void
     {
-        $printing = $this->staf('produksi@setiasport.test');   // printing + jahit
-        $gudang = $this->staf('gudang@setiasport.test');       // qc + packing
+        $admin = $this->staf('admin@setiasport.test');
 
-        $this->actingAs($printing)->get('/panel/antrian/print')->assertOk();
-        $this->actingAs($printing)->get('/panel/antrian/desain')->assertForbidden();
-
-        $this->actingAs($gudang)->get('/panel/antrian/packing')->assertOk();
-        $this->actingAs($gudang)->get('/panel/antrian/jahit')->assertForbidden();
+        // Susunan dua peran: Admin menjalankan seluruh operasi harian, termasuk
+        // kelima divisi produksi (KEP-017).
+        foreach (['desain', 'print', 'jahit', 'qc', 'packing'] as $tahap) {
+            $this->actingAs($admin)->get("/panel/antrian/{$tahap}")->assertOk();
+        }
     }
 
-    public function test_operator_tidak_bisa_memajukan_item_dari_divisi_lain(): void
+    public function test_item_di_luar_antrian_produksi_tidak_bisa_dimajukan(): void
     {
         $item = $this->siapkanMenungguPersetujuan();
 
-        $this->post(route('lacak.item.setujui', [$item->order->access_token, $item]), [
-            'nama' => 'Budi Santoso', 'paham' => '1',
-        ]);
-
-        // Item berada di ANTRIAN_PRODUKSI, yang dipegang divisi printing.
-        $this->actingAs($this->staf('gudang@setiasport.test'))
+        // Bolanya sedang di tangan pelanggan, bukan di divisi mana pun.
+        $this->actingAs($this->staf('admin@setiasport.test'))
             ->post(route('panel.antrian.selesai', $item))
-            ->assertForbidden();
+            ->assertStatus(422);
 
-        $this->assertSame(OrderItemStatus::ANTRIAN_PRODUKSI, $item->fresh()->status_item);
+        $this->assertSame(OrderItemStatus::MENUNGGU_PERSETUJUAN, $item->fresh()->status_item);
     }
 
     public function test_antrian_produksi_membawa_item_sampai_siap_diambil(): void
@@ -281,8 +276,8 @@ class KustomFlowTest extends TestCase
             'nama' => 'Budi Santoso', 'paham' => '1',
         ]);
 
-        $operator = $this->staf('produksi@setiasport.test');
-        $gudang = $this->staf('gudang@setiasport.test');
+        $operator = $this->staf('admin@setiasport.test');
+        $gudang = $this->staf('admin@setiasport.test');
 
         $this->actingAs($operator)->post(route('panel.antrian.selesai', $item->fresh())); // -> PRINTING
         $this->actingAs($operator)->post(route('panel.antrian.selesai', $item->fresh())); // -> JAHIT
@@ -301,7 +296,7 @@ class KustomFlowTest extends TestCase
     {
         $item = $this->siapkanMenungguPersetujuan();
 
-        $this->actingAs($this->staf('produksi@setiasport.test'))
+        $this->actingAs($this->staf('admin@setiasport.test'))
             ->get(route('panel.pesanan.worksheet', $item->order))
             ->assertOk()
             ->assertSee('PEMAIN 1')

@@ -10,7 +10,7 @@ use App\Models\OrderStatusLog;
 /**
  * Status order adalah AGREGAT dari status seluruh item (KEP-001), tidak pernah
  * disetel manual. Operator menyelesaikan pekerjaannya di antrian divisinya,
- * status item naik, dan status order menyusul dari sini — nol input ganda.
+ * status item naik, dan status order menyusul dari sini, nol input ganda.
  *
  * Aturan pentingnya: order baru "Siap Diambil" ketika SEMUA item siap. Pelanggan
  * datang sekali dan mengambil semuanya.

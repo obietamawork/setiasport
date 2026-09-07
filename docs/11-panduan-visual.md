@@ -1,79 +1,92 @@
 # 11 — Panduan Visual
 
-Identitas visual Setia Sport tidak diambil dari "olahraga" secara umum, melainkan dari
-hal yang khas milik workshop ini: **nomor punggung** dan **size run** (S:3 M:8 L:5).
-Angka dan grid ukuran dipakai sebagai elemen aktif, bukan hiasan.
+Identitas diambil dari logo Setia Sport Wonogiri, bukan dari selera yang
+dikarang sendiri. Logo itu sekaligus menetapkan aturan pakainya.
+
+## Yang diajarkan logo
+
+Perhatikan bagaimana logo memakai warnanya: **navy mendominasi** sebagai badan
+huruf, sementara **merah dan kuning muncul sebagai dua batang tipis** yang
+mengapit kata WONOGIRI. Merah tidak pernah menjadi bidang lebar, kuning tidak
+pernah dipakai sebagai latar teks.
+
+Aturan itu dipakai apa adanya di seluruh antarmuka.
 
 ## Warna
 
-Diambil dari lantai lapangan futsal dan garis kapur. Hitamnya berbasis hijau, kertasnya
-bersemu dingin — sengaja menjauh dari palet krem netral yang dipakai di mana-mana.
-
 | Token | Hex | Peran |
 |---|---|---|
-| `court` | `#14523A` | hijau lapangan — warna struktural, chrome panel |
-| `court-dark` | `#0B2B20` | header panel, latar halaman masuk |
-| `court-soft` | `#E7EFE9` | latar penanda "stok toko", sorotan lembut |
-| `ink` | `#0E1C17` | teks utama |
-| `muted` | `#5C6B64` | teks pendukung |
-| `paper` | `#F5F7F4` | dasar halaman |
-| `field` | `#FFFFFF` | permukaan kartu, tabel, formulir |
-| `line` | `#DCE4DE` | hairline seperti garis lapangan |
-| `signal` | `#FF5A1F` | oranye sublimasi |
-
-**Aturan `signal`:** hanya untuk **harga** dan **aksi utama**. Begitu ia dipakai untuk
-hal ketiga, ia berhenti berarti apa-apa.
+| `navy-900` | `#0D1733` | header panel, halaman masuk |
+| `navy` | `#16255B` | warna struktur utama, blok berani, tombol sekunder |
+| `navy-400` | `#5F74A8` | teks pendamping pada judul |
+| `navy-100` | `#E7EBF5` | penanda, cincin fokus |
+| `navy-50` | `#F2F5FA` | latar tabel dan bidang lembut |
+| `merah` | `#D62B1F` | **hanya** harga dan satu aksi utama per layar |
+| `kuning` | `#FDC500` | **hanya** garis penanda, tidak pernah latar teks |
+| `ink` | `#131A2E` | teks utama, hitam bersemu navy |
+| `muted` | `#5D687F` | teks pendukung |
+| `line` / `line-strong` | `#E3E7F0` / `#C3CBDC` | garis pemisah dan tepi kendali |
+| `paper` / `field` | `#F6F8FC` / `#FFFFFF` | dasar halaman dan permukaan kartu |
 
 ## Tipografi
 
-Satu keluarga: **Archivo** (variabel, sumbu `wdth` 62–125). Kontras datang dari **lebar**,
-bukan dari tipe huruf kedua — persis cara penomoran jersey bekerja: satu huruf, dilebarkan.
+**Plus Jakarta Sans**, dirancang Tokotype untuk identitas kota Jakarta. Dipilih
+bukan karena netral, melainkan karena memang dibuat untuk merek Indonesia yang
+ingin terbaca rapi dan modern. Satu keluarga untuk seluruh sistem.
 
 | Kelas | Pemakaian |
 |---|---|
-| `.t-wide` | judul, nama produk — `font-stretch: 112%` |
-| `.numeral` | angka besar: lead time, harga utama, ringkasan — bobot 800, rapat |
-| `.tabular` | semua angka dalam tabel dan daftar, agar berbaris rapi |
+| `font-extrabold` + `tracking` rapat | judul halaman dan nama produk |
+| `.numeral` | angka besar: lead time, harga utama, ringkasan |
+| `.tabular` | semua angka dalam tabel dan daftar |
+| `.wordmark` | penanda kata sementara sampai berkas logo dipasang |
 
 ## Prinsip
 
 1. **Waktu adalah informasi utama.** Setiap produk menyatakan kapan bisa diambil.
-   Pertanyaan pertama pelanggan selalu itu, bukan harga.
-2. **Angka besar hanya untuk yang benar-benar angka** — harga, lead time, stok.
-   Bukan untuk memberi kesan penting pada teks biasa.
-3. **Garis, bukan bayangan.** Struktur dibentuk hairline; tidak ada kartu bershadow
-   seragam. Sudut nyaris tajam (radius 2–3px) agar terasa teknis seperti perkakas bengkel.
-4. **Satu tempat untuk berani.** Di beranda itu blok hijau jalur kustom. Sisanya tenang.
-5. **Data ditampilkan apa adanya.** Stok per ukuran adalah tabel ukuran × warna dengan
-   angka sebenarnya, bukan dropdown — dropdown menyembunyikan justru informasi yang
-   paling menentukan keputusan.
+   Itu pertanyaan pertama pelanggan, bukan harga.
+2. **Satu warna sinyal.** Merah dipakai untuk harga dan satu aksi utama saja.
+   Begitu ia muncul di hal ketiga, ia berhenti berarti apa pun.
+3. **Garis, bukan bayangan.** Struktur dibentuk hairline dan perbedaan latar.
+   Tidak ada kartu bershadow seragam.
+4. **Kuning tidak pernah menampung teks.** Ia hanya garis: penanda navigasi
+   aktif, pita tipis di atas blok berani, batang di wordmark.
+5. **Data ditampilkan apa adanya.** Stok per ukuran adalah tabel angka nyata,
+   bukan dropdown yang justru menyembunyikan informasi penentu keputusan.
 
 ## Dua register
 
-| | Sisi publik | Panel internal |
+| | Etalase | Panel internal |
 |---|---|---|
 | Tujuan | Mengurangi keraguan sebelum bayar | Menyelesaikan pekerjaan |
-| Kepadatan | Longgar, banyak ruang | Padat, tabel rapat |
-| Warna | Kertas dominan, hijau sebagai aksen | Hijau tua sebagai chrome, putih sebagai ruang kerja |
+| Kepadatan | Longgar | Padat, tabel rapat |
+| Warna | Kertas dominan, navy sebagai struktur | Navy tua sebagai chrome, putih sebagai ruang kerja |
 | Hiasan | Satu blok berani | Tidak ada |
 
-Panel **wajib mobile-first**: operator produksi tidak duduk di depan PC (docs/04).
+Panel wajib mobile-first: operator produksi membuka antrian dari HP di dekat
+mesin, bukan dari PC (docs/04).
 
 ## Aturan penulisan
 
-- Kalimat biasa, bukan huruf kapital semua. Kapital hanya di `chip` penanda jalur.
+- **Tanpa tanda pisah em.** Pakai koma, titik, atau kurung. Judul halaman
+  memakai `|` sebagai pemisah, bukan tanda pisah.
+- Kalimat biasa, bukan huruf kapital semua.
 - Tombol menyebut apa yang terjadi: "Simpan stok", bukan "Kirim".
-- Nama aksi konsisten dari tombol sampai pesan konfirmasi.
-- Layar kosong adalah ajakan bertindak, bukan kabar buruk: sebutkan langkah berikutnya
-  dan sediakan tombolnya.
-- Pesan galat menjelaskan apa yang salah **dan** cara memperbaikinya. Tidak minta maaf,
-  tidak samar. Contoh yang dipakai: "Kategori ini masih dipakai produk atau punya
-  subkategori, jadi belum bisa dihapus. Pindahkan isinya lebih dulu."
+- Layar kosong adalah ajakan bertindak, bukan kabar buruk.
+- Pesan galat menjelaskan apa yang salah **dan** cara memperbaikinya, tanpa
+  minta maaf dan tanpa samar.
+
+## Logo
+
+Komponen `<x-logo />` memakai berkas asli begitu tersedia. Taruh di
+`public/logo.svg` (boleh juga `logo.png` atau `logo.webp`) dan seluruh halaman
+memakainya otomatis, tanpa perlu disentuh satu per satu. Selama berkas belum
+ada, komponen menampilkan penanda kata yang meniru susunan logo.
 
 ## Catatan teknis
 
 - Font dimuat dari Google Fonts. Saat pindah ke shared hosting, pertimbangkan
-  self-host agar tidak bergantung pada pihak ketiga dan lebih cepat di jaringan lokal.
-- **Bangun aset setelah semua view ditulis.** Tailwind memindai berkas untuk menemukan
-  kelas yang dipakai; `npm run build` yang dijalankan sebelum sebuah view dibuat akan
-  menghasilkan CSS tanpa kelas-kelas view tersebut.
+  self-host agar tidak bergantung pihak ketiga dan lebih cepat di jaringan lokal.
+- **Bangun aset setelah semua view ditulis.** Tailwind memindai berkas untuk
+  menemukan kelas yang dipakai; `npm run build` yang dijalankan sebelum sebuah
+  view dibuat menghasilkan CSS tanpa kelas view tersebut.

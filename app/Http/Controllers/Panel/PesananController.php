@@ -75,7 +75,7 @@ class PesananController extends Controller
         $data = $request->validate([
             'alasan' => ['required', 'string', 'max:200'],
         ], [
-            'alasan.required' => 'Tulis alasan pembatalan — pelanggan berhak tahu, dan ini masuk riwayat pesanan.',
+            'alasan.required' => 'Tulis alasan pembatalan: pelanggan berhak tahu, dan ini masuk riwayat pesanan.',
         ], ['alasan' => 'alasan pembatalan']);
 
         $this->alur->batalkan($pesanan, $data['alasan'], auth()->id());

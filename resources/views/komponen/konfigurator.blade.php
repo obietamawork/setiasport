@@ -31,7 +31,7 @@
                    class="kotak-input w-28 tabular text-right" required>
             <span class="text-sm text-muted">pcs &middot; minimum {{ $produk->moq }}</span>
         </div>
-        <p x-show="qty < moq" x-cloak class="mt-1 text-sm text-signal">
+        <p x-show="qty < moq" x-cloak class="mt-1 text-sm text-merah">
             Minimum pemesanan <span x-text="moq"></span> pcs.
         </p>
     </div>
@@ -51,7 +51,7 @@
                 @endunless
                 @foreach ($opsi->values as $v)
                     <option value="{{ $v->id }}">
-                        {{ $v->label }}@if ($v->tambahan_harga !== 0) — {{ $v->tambahan_harga > 0 ? '+' : '−' }}{{ rupiah(abs($v->tambahan_harga)) }}{{ $v->basis === \App\Enums\PriceBasis::PER_ITEM ? ' sekali' : ' / pcs' }}@endif
+                        {{ $v->label }}@if ($v->tambahan_harga !== 0): {{ $v->tambahan_harga > 0 ? '+' : '−' }}{{ rupiah(abs($v->tambahan_harga)) }}{{ $v->basis === \App\Enums\PriceBasis::PER_ITEM ? ' sekali' : ' / pcs' }}@endif
                     </option>
                 @endforeach
             </select>
@@ -88,7 +88,7 @@
                 <div class="flex justify-between gap-3">
                     <dt class="text-muted">
                         <span x-text="k.label"></span>
-                        <span class="text-signal">sekali</span>
+                        <span class="text-merah">sekali</span>
                     </dt>
                     <dd class="tabular" x-text="(k.harga < 0 ? '−' : '+') + rp(Math.abs(k.harga))"></dd>
                 </div>
@@ -97,7 +97,7 @@
 
         <div class="mt-3 flex items-baseline justify-between gap-3 border-t border-line pt-3">
             <span class="font-semibold">Total</span>
-            <span class="numeral text-3xl text-signal" x-text="rp(total)"></span>
+            <span class="numeral text-3xl text-merah" x-text="rp(total)"></span>
         </div>
 
         <p class="mt-2 text-sm text-muted">
@@ -111,7 +111,7 @@
     </button>
 
     <p class="text-xs leading-relaxed text-muted">
-        Nama dan nomor punggung diisi setelah pesanan dibuat — Anda punya waktu
+        Nama dan nomor punggung diisi setelah pesanan dibuat: Anda punya waktu
         mengumpulkannya dari tim sampai desain disetujui.
     </p>
 </form>

@@ -152,7 +152,7 @@ class PesananFlowTest extends TestCase
     public function test_barang_baru_keluar_dari_stok_saat_diserahkan(): void
     {
         $order = $this->siapkanPesananSiap();
-        $kasir = User::where('email', 'gudang@setiasport.test')->firstOrFail();
+        $kasir = User::where('email', 'admin@setiasport.test')->firstOrFail();
 
         $this->actingAs($kasir)
             ->post(route('panel.pesanan.serah-terima', $order), ['diambil_oleh' => 'Budi Santoso'])

@@ -19,6 +19,7 @@ merujuk ke nomor KEP-xxx.
 | Queue driver `database` | Dijalankan cron, bukan daemon |
 | Resend (HTTP API) | Notifikasi email; tanpa SMTP, tanpa WhatsApp API |
 | Midtrans Snap | Pembayaran online; nonaktif sampai kuncinya diisi |
+| Plus Jakarta Sans | Tipografi; palet diturunkan dari logo (KEP-019) |
 
 ## Menjalankan di lokal
 
@@ -37,15 +38,12 @@ Buka:
 | Aplikasi | http://localhost:8080 |
 | Adminer (DB) | http://localhost:8081 — server `db`, user `setiasport`, pass `secret` |
 
-Akun internal contoh (kata sandi semua: `password`):
+Akun internal (kata sandi keduanya `password`, ganti sebelum deploy):
 
-| Email | Peran |
-|---|---|
-| owner@setiasport.test | Owner |
-| admin@setiasport.test | Admin / CS |
-| desainer@setiasport.test | Desainer |
-| produksi@setiasport.test | Operator Printing **dan** Jahit |
-| gudang@setiasport.test | Gudang |
+| Email | Peran | Memegang |
+|---|---|---|
+| owner@setiasport.test | Pemilik | Semuanya, termasuk pengaturan dan pengguna |
+| admin@setiasport.test | Admin | Seluruh operasi harian |
 
 ## Perintah yang sering dipakai
 
@@ -75,6 +73,8 @@ deploy:
   crontab; tidak ada Supervisor atau daemon yang perlu diandalkan.
 - **Test berjalan di MySQL, bukan SQLite in-memory.** Skema ini memakai kolom
   JSON dan unique index bernilai NULL yang perilakunya berbeda antar engine.
+- **GD dikompilasi dengan WebP.** Gambar produk dikonversi ke WebP, dengan jalan
+  mundur ke JPEG bila server tujuan tidak mendukungnya.
 
 ## Struktur
 
@@ -86,6 +86,7 @@ app/Services/       PriceCalculator (KEP-009), OrderStatusResolver (KEP-001),
                     AlurDesain (gerbang approve), RosterPemain
 app/Services/Pembayaran/  Gerbang pembayaran; Midtrans, bisa ditukar Xendit
 app/Mail/Transport/ Transport Resend lewat HTTP API, bukan SMTP
+resources/views/components/  <x-logo/>, memakai public/logo.svg bila ada
 app/Http/           Controller publik & panel, middleware izin RBAC
 resources/views/    publik/ (etalase) dan panel/ (alat kerja) — dua register visual
 resources/views/emails/  Email pesanan; gaya inline karena klien email mengabaikan CSS

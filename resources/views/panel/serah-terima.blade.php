@@ -2,7 +2,7 @@
 @section('judul', 'Serah terima')
 
 @section('isi')
-<h1 class="t-wide text-2xl font-extrabold">Serah terima</h1>
+<h1 class="text-2xl font-extrabold">Serah terima</h1>
 <p class="mt-1 text-sm text-muted">
     Pelunasan dan pengambilan diselesaikan di layar ini. Masukkan kode ambil yang
     dibawa pelanggan, atau kode pesanannya.
@@ -13,11 +13,11 @@
     <input type="text" id="kode" name="kode" value="{{ $kode }}" autofocus
            placeholder="ABC-1234 atau SS-2609-0042"
            class="kotak-input max-w-xs tabular uppercase">
-    <button type="submit" class="tombol tombol-lapangan">Cari pesanan</button>
+    <button type="submit" class="tombol tombol-navy">Cari pesanan</button>
 </form>
 
 @if ($tidakKetemu)
-    <div class="mt-5 border-l-2 border-signal bg-signal-soft px-4 py-3 text-sm">
+    <div class="mt-5 border-l-2 border-merah bg-merah-50 px-4 py-3 text-sm">
         Tidak ada pesanan dengan kode <span class="tabular font-semibold">{{ $kode }}</span>.
         Periksa lagi kodenya, atau cari pelanggan lewat halaman Pesanan.
     </div>
@@ -27,7 +27,7 @@
     <section class="mt-6 max-w-2xl border border-line bg-field">
         <div class="border-b border-line px-5 py-4">
             <p class="text-sm text-muted tabular">{{ $order->kode }}</p>
-            <h2 class="t-wide text-xl font-extrabold">{{ $order->customer->nama }}</h2>
+            <h2 class="text-xl font-extrabold">{{ $order->customer->nama }}</h2>
             <p class="text-sm text-muted">{{ $order->status->label() }}</p>
         </div>
 
@@ -43,7 +43,7 @@
         <div class="border-t border-line px-5 py-4">
             <div class="flex items-baseline justify-between gap-3">
                 <span class="text-sm text-muted">Sisa yang harus dibayar</span>
-                <span class="numeral text-3xl {{ $order->sisa_tagihan > 0 ? 'text-signal' : 'text-court' }}">
+                <span class="numeral text-3xl {{ $order->sisa_tagihan > 0 ? 'text-merah' : 'text-ok' }}">
                     {{ $order->sisa_tagihan > 0 ? rupiah($order->sisa_tagihan) : 'Lunas' }}
                 </span>
             </div>
@@ -77,7 +77,7 @@
                            value="{{ $order->customer->nama }}">
                     <p class="mt-1 text-xs text-muted">Ubah kalau diwakilkan orang lain.</p>
                 </div>
-                <button type="submit" class="tombol tombol-lapangan">Serahkan barang</button>
+                <button type="submit" class="tombol tombol-navy">Serahkan barang</button>
             </form>
         @else
             <p class="border-t border-line px-5 py-4 text-sm text-muted">
@@ -93,7 +93,7 @@
 
 @if ($siapHariIni->isNotEmpty())
     <section class="mt-10 max-w-2xl">
-        <h2 class="t-wide text-lg font-extrabold">Menunggu diambil</h2>
+        <h2 class="text-lg font-extrabold">Menunggu diambil</h2>
         <ul class="mt-4 divide-y divide-line border border-line bg-field text-sm">
             @foreach ($siapHariIni as $o)
                 <li class="flex flex-wrap items-center gap-3 px-4 py-2.5">

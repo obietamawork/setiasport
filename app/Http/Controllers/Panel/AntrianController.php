@@ -11,7 +11,7 @@ use App\Services\AlurPesanan;
 use Illuminate\Http\RedirectResponse;
 
 /**
- * Antrian kerja per divisi — layar yang paling sering dibuka operator.
+ * Antrian kerja per divisi, layar yang paling sering dibuka operator.
  *
  * Panel admin generik gagal di lingkungan workshop: operator jahit tidak peduli
  * pada 200 pesanan, dia peduli pada beberapa pekerjaan yang harus dia jahit hari
@@ -67,7 +67,7 @@ class AntrianController extends Controller
     /**
      * Dua tahap punya status "antri" tersendiri di mata pelanggan. Mengambil
      * pekerjaannya berarti memindahkan item ke status kerja, supaya timeline
-     * pelanggan menunjukkan waktu yang sebenarnya — bukan tahap yang tercentang
+     * pelanggan menunjukkan waktu yang sebenarnya, bukan tahap yang tercentang
      * tanpa pernah dilewati.
      */
     private const ANTRI_KE_KERJA = [

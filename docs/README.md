@@ -33,8 +33,11 @@ sudah jalan dan tertutup test. Cara menjalankan proyeknya ada di
   cetak. 52 test lulus di MySQL
 - **Fase 5 selesai.** Gerbang pembayaran Midtrans di balik antarmuka yang bisa
   ditukar, dan webhook status Resend. 72 test lulus di MySQL
-- Sisa pekerjaan bukan lagi kode: koreksi harga katalog, pembelian hosting,
-  pendaftaran merchant, dan deploy ([12-deploy.md](12-deploy.md))
+- Susunan peran diringkas jadi dua (KEP-017), gambar produk mendukung unggah
+  maupun CDN (KEP-018), dan identitas visual diturunkan dari logo (KEP-019).
+  79 test lulus di MySQL
+- Sisa pekerjaan bukan lagi kode: pasang berkas logo, koreksi harga katalog,
+  pembelian hosting, pendaftaran merchant, dan deploy ([12-deploy.md](12-deploy.md))
 - Menunggu dari pemilik toko: koreksi harga katalog & pembelian hosting
 
 Setiap dokumen di atas sudah disinkronkan dengan keputusan terkunci. Kalau ada

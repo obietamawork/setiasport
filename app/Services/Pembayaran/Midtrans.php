@@ -35,7 +35,7 @@ class Midtrans implements GerbangPembayaran
 
         // Midtrans menuntut order_id unik untuk SETIAP transaksi. Satu pesanan
         // bisa punya beberapa pembayaran (DP lalu pelunasan), jadi id pembayaran
-        // ikut disertakan — bukan hanya kode pesanan.
+        // ikut disertakan, bukan hanya kode pesanan.
         $ref = $order->kode.'-P'.$payment->id;
 
         $respons = Http::withBasicAuth($this->konfig['server_key'], '')

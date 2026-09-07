@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * RBAC berbasis permission, bukan enum role di kode (docs/04) — nama peran boleh
+ * RBAC berbasis permission, bukan enum role di kode (docs/04), nama peran boleh
  * diubah pemilik toko. Relasi user-role sengaja many-to-many: di toko kecil satu
  * orang lazim memegang beberapa peran sekaligus.
  */

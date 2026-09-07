@@ -2,7 +2,7 @@
 @section('judul', $kategori->exists ? 'Ubah kategori' : 'Tambah kategori')
 
 @section('isi')
-<h1 class="t-wide text-2xl font-extrabold">
+<h1 class="text-2xl font-extrabold">
     {{ $kategori->exists ? 'Ubah kategori' : 'Tambah kategori' }}
 </h1>
 
@@ -21,7 +21,7 @@
     <div>
         <label for="parent_id" class="label-form">Kategori induk</label>
         <select id="parent_id" name="parent_id" class="kotak-input">
-            <option value="">Tidak ada — ini kategori utama</option>
+            <option value="">Tidak ada: ini kategori utama</option>
             @foreach ($pilihanInduk as $p)
                 <option value="{{ $p->id }}" @selected(old('parent_id', $kategori->parent_id) == $p->id)>
                     {{ $p->nama }}
@@ -53,13 +53,13 @@
     </div>
 
     <label class="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="aktif" value="1" class="size-4 accent-court"
+        <input type="checkbox" name="aktif" value="1" class="size-4 accent-navy"
                @checked(old('aktif', $kategori->aktif ?? true))>
         Tampilkan di katalog
     </label>
 
     <div class="flex flex-wrap items-center gap-3 border-t border-line pt-5">
-        <button type="submit" class="tombol tombol-lapangan">Simpan kategori</button>
+        <button type="submit" class="tombol tombol-navy">Simpan kategori</button>
         <a href="{{ route('panel.kategori.index') }}" class="tautan text-sm">Batal</a>
     </div>
 </form>

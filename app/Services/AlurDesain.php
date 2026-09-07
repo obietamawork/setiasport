@@ -13,11 +13,11 @@ use App\Models\Setting;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Gerbang persetujuan desain — titik komersial paling penting di seluruh sistem.
+ * Gerbang persetujuan desain, titik komersial paling penting di seluruh sistem.
  *
  * Sebelum disetujui: revisi gratis sampai batas tertentu, dan jam produksi
  * belum berjalan. Sesudah disetujui: desain terkunci, roster terkunci, dan
- * estimasi tanggal siap baru dihitung dari SAAT ITU — bukan dari tanggal
+ * estimasi tanggal siap baru dihitung dari SAAT ITU, bukan dari tanggal
  * pesanan masuk (docs/02).
  */
 class AlurDesain
@@ -65,7 +65,7 @@ class AlurDesain
 
     /**
      * Pelanggan menyetujui. Nama yang diketik dan alamat IP disimpan bersama
-     * versi mockup yang disetujui — inilah yang menyelesaikan sengketa
+     * versi mockup yang disetujui, inilah yang menyelesaikan sengketa
      * "saya menyetujui yang mana" berbulan-bulan kemudian.
      */
     public function setujui(OrderItem $item, string $namaDiketik, ?string $ip): void

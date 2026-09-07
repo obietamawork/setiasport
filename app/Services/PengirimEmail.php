@@ -14,12 +14,12 @@ use Throwable;
  *
  * Setiap pengiriman dicatat di email_logs. Bukan untuk arsip, melainkan supaya
  * admin tahu kapan email gagal sampai dan urusannya harus diambil alih manusia
- * lewat WhatsApp — tanpa WhatsApp API, itulah jaring pengamannya.
+ * lewat WhatsApp, tanpa WhatsApp API, itulah jaring pengamannya.
  */
 class PengirimEmail
 {
     private const SUBJEK = [
-        'order-dibuat' => 'Pesanan %s diterima — menunggu pembayaran',
+        'order-dibuat' => 'Pesanan %s diterima: menunggu pembayaran',
         'pembayaran-diterima' => 'Pembayaran pesanan %s sudah kami terima',
         'pesanan-siap' => 'Pesanan %s siap diambil di toko',
         'pengingat-ambil' => 'Pengingat: pesanan %s masih menunggu diambil',
@@ -59,8 +59,8 @@ class PengirimEmail
     }
 
     /**
-     * Teks siap tempel untuk WhatsApp. Bukan otomatisasi — admin yang menekan
-     * kirim — tapi nol biaya dan realistis untuk pasar ini (docs/03).
+     * Teks siap tempel untuk WhatsApp. Bukan otomatisasi, admin yang menekan
+     * kirim, tapi nol biaya dan realistis untuk pasar ini (docs/03).
      */
     public function teksWhatsApp(Order $order, string $template): string
     {

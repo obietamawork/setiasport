@@ -31,18 +31,17 @@ Sesuai permintaan: kategori, jenis, dan role internal diisi belakangan. Maka pak
 **RBAC berbasis permission** (bukan enum role di kode), dengan role bawaan yang bisa
 diubah namanya, digabung, atau ditambah.
 
-| Role bawaan | Tanggung jawab |
+| Peran bawaan | Tanggung jawab |
 |---|---|
-| Owner / Super Admin | Semua akses, kelola pengguna & role, lihat laporan uang |
-| Admin / CS | Verifikasi pembayaran, kelola order, komunikasi pelanggan |
-| Desainer | Antrian desain, upload mockup, kelola template desain |
-| Operator Printing | Antrian print |
-| Operator Jahit | Antrian jahit |
-| Gudang / Stok | Stok, QC, packing, serah terima |
-| Katalog / Konten | Produk, kategori, foto, harga |
+| Pemilik | Semuanya, termasuk pengaturan, pengguna, dan laporan |
+| Admin | Seluruh operasi harian: pesanan, pembayaran, kelima antrian produksi, katalog, stok, serah terima |
 
-Di toko kecil, satu orang bisa memegang 3 role sekaligus. Sistem harus mengizinkan itu
-(**many-to-many user ↔ role**), jangan satu user satu role.
+Sesuai permintaan pemilik toko, hanya dua peran yang dipakai (KEP-017). Daftar
+permission tetap rinci, jadi peran yang lebih spesifik bisa ditambahkan lewat
+panel kapan saja tanpa menyentuh kode.
+
+Relasi user dan role tetap **many-to-many**, supaya satu orang bisa memegang
+beberapa peran sekaligus bila susunannya kelak diperinci lagi.
 
 ## Layar internal yang benar-benar dibutuhkan
 

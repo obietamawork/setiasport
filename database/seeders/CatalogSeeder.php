@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
  * produk tanpa varian, matriks varian 12 SKU, tier + dua basis biaya + roster
  * wajib, MOQ tinggi + roster kondisional, dan produk hybrid dua jalur.
  *
- * Angkanya masih draft — pemilik toko akan mengoreksinya lewat panel.
+ * Angkanya masih draft, pemilik toko akan mengoreksinya lewat panel.
  */
 class CatalogSeeder extends Seeder
 {
@@ -66,7 +66,7 @@ class CatalogSeeder extends Seeder
         return $hasil;
     }
 
-    /** A — produk paling sederhana: tanpa varian, tanpa opsi. */
+    /** A, produk paling sederhana: tanpa varian, tanpa opsi. */
     private function bola(Category $kategori): void
     {
         $p = $this->produk($kategori, [
@@ -79,7 +79,7 @@ class CatalogSeeder extends Seeder
         $this->varian($p, [['sku' => 'BOLA-MITRE-01', 'stok' => 12]]);
     }
 
-    /** B — matriks varian 12 SKU, penguji stok per SKU dan reservasi. */
+    /** B, matriks varian 12 SKU, penguji stok per SKU dan reservasi. */
     private function sepatu(Category $kategori): void
     {
         $p = $this->produk($kategori, [
@@ -106,7 +106,7 @@ class CatalogSeeder extends Seeder
         $this->varian($p, $varian);
     }
 
-    /** C — produk terpenting: tier, dua basis biaya, roster wajib. */
+    /** C, produk terpenting: tier, dua basis biaya, roster wajib. */
     private function jerseyFutsal(Category $kategori): void
     {
         $p = $this->produk($kategori, [
@@ -137,7 +137,7 @@ class CatalogSeeder extends Seeder
         ], wajib: false);
     }
 
-    /** D — MOQ tinggi dan roster KONDISIONAL: tidak semua PreOrder butuh roster. */
+    /** D, MOQ tinggi dan roster KONDISIONAL: tidak semua PreOrder butuh roster. */
     private function kaosSekolah(Category $kategori): void
     {
         $p = $this->produk($kategori, [
@@ -159,7 +159,7 @@ class CatalogSeeder extends Seeder
     }
 
     /**
-     * E — produk hybrid (KEP-011). Perhatikan harga kustom pada jumlah besar
+     * E, produk hybrid (KEP-011). Perhatikan harga kustom pada jumlah besar
      * LEBIH MURAH daripada ready stock: itu normal (produksi massal vs stok
      * satuan), dan model data memang harus membolehkannya.
      */

@@ -2,7 +2,7 @@
 @section('judul', 'Dashboard')
 
 @section('isi')
-<h1 class="t-wide text-2xl font-extrabold">Yang perlu ditangani</h1>
+<h1 class="text-2xl font-extrabold">Yang perlu ditangani</h1>
 <p class="mt-1 text-sm text-muted">
     Daftar tindakan, bukan grafik. Kalau bagian ini kosong, katalog sedang sehat.
 </p>
@@ -10,7 +10,7 @@
 <div class="mt-6 space-y-4">
 
     @if ($perluVerifikasi->isNotEmpty())
-        <section class="border-l-2 border-signal bg-field p-5">
+        <section class="border-l-2 border-merah bg-field p-5">
             <h2 class="font-bold">Bukti transfer menunggu diperiksa
                 <span class="tabular font-normal text-muted">{{ $perluVerifikasi->count() }}</span></h2>
             <p class="mt-1 text-sm text-muted">
@@ -28,7 +28,7 @@
     @endif
 
     @if ($lamaBelumDiambil->isNotEmpty())
-        <section class="border-l-2 border-warn bg-field p-5">
+        <section class="border-l-2 border-kuning bg-field p-5">
             <h2 class="font-bold">Siap tapi belum diambil &gt; {{ $peringatanHari }} hari
                 <span class="tabular font-normal text-muted">{{ $lamaBelumDiambil->count() }}</span></h2>
             <p class="mt-1 text-sm text-muted">Barang ini memakan rak toko. Hubungi pelanggannya.</p>
@@ -46,7 +46,7 @@
     @endif
 
     @if ($emailBermasalah->isNotEmpty())
-        <section class="border-l-2 border-warn bg-field p-5">
+        <section class="border-l-2 border-kuning bg-field p-5">
             <h2 class="font-bold">Email tidak sampai</h2>
             <p class="mt-1 text-sm text-muted">
                 Tanpa WhatsApp otomatis, pesanan ini perlu ditindaklanjuti manual.
@@ -57,7 +57,7 @@
                         @if ($log->order)
                             <a href="{{ route('panel.pesanan.show', $log->order) }}" class="tautan tabular">{{ $log->order->kode }}</a>
                         @else
-                            <span class="tabular text-muted">—</span>
+                            <span class="tabular text-muted">-</span>
                         @endif
                         <span class="text-muted">{{ $log->ke }} &middot; {{ $log->status->label() }}</span>
                     </li>
@@ -67,7 +67,7 @@
     @endif
 
     @if ($tanpaTier->isNotEmpty())
-        <section class="border-l-2 border-signal bg-field p-5">
+        <section class="border-l-2 border-merah bg-field p-5">
             <h2 class="font-bold">Harga belum lengkap</h2>
             <p class="mt-1 text-sm text-muted">
                 Produk kustom ini tayang tapi belum punya tier harga, jadi pelanggan
@@ -85,7 +85,7 @@
     @endif
 
     @if ($stokHabis->isNotEmpty())
-        <section class="border-l-2 border-warn bg-field p-5">
+        <section class="border-l-2 border-kuning bg-field p-5">
             <h2 class="font-bold">Stok habis <span class="tabular font-normal text-muted">{{ $stokHabis->count() }}</span></h2>
             <ul class="mt-3 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
                 @foreach ($stokHabis->take(10) as $v)
@@ -119,16 +119,16 @@
     @if ($tanpaTier->isEmpty() && $stokHabis->isEmpty() && $stokMenipis->isEmpty()
          && $perluVerifikasi->isEmpty() && $lamaBelumDiambil->isEmpty() && $emailBermasalah->isEmpty())
         <section class="border border-line bg-field p-8 text-center">
-            <p class="t-wide text-lg font-bold">Tidak ada yang perlu ditangani</p>
+            <p class="text-lg font-bold">Tidak ada yang perlu ditangani</p>
             <p class="mt-2 text-sm text-muted">
                 Harga lengkap dan stok masih aman. Waktu yang baik untuk menambah produk.
             </p>
-            <a href="{{ route('panel.produk.create') }}" class="tombol tombol-lapangan mt-5">Tambah produk</a>
+            <a href="{{ route('panel.produk.create') }}" class="tombol tombol-navy mt-5">Tambah produk</a>
         </section>
     @endif
 </div>
 
-<h2 class="t-wide mt-10 text-lg font-extrabold">Ringkasan katalog</h2>
+<h2 class="mt-10 text-lg font-extrabold">Ringkasan katalog</h2>
 <dl class="mt-4 grid gap-px border border-line bg-line sm:grid-cols-3">
     <div class="bg-field p-5">
         <dt class="text-sm text-muted">Produk tayang</dt>

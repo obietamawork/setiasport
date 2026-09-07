@@ -29,7 +29,7 @@
 </p>
 
 <p style="margin:0 0 20px;">
-  Unggah bukti transfer lewat halaman pesanan Anda — kami akan memeriksanya pada jam kerja.
+  Unggah bukti transfer lewat halaman pesanan Anda: kami akan memeriksanya pada jam kerja.
 </p>
 
 <a href="{{ $tautan }}"
@@ -39,6 +39,6 @@
 
 <p style="margin:20px 0 0;font-size:12px;color:#5c6b64;">
   Simpan email ini. Tautan di atas adalah satu-satunya cara membuka pesanan Anda tanpa
-  membuat akun — boleh dibagikan ke anggota tim yang ingin ikut memantau.
+  membuat akun: boleh dibagikan ke anggota tim yang ingin ikut memantau.
 </p>
 @endsection

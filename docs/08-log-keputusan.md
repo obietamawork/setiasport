@@ -403,6 +403,81 @@ korelasi itu, dan menambah nol dependensi untuk diunggah ke shared hosting.
 
 ---
 
+## KEP-017 — Hanya dua peran: Pemilik dan Admin
+**Status:** TERKUNCI · 2026-09-08
+
+Susunan tujuh peran diringkas menjadi dua atas permintaan pemilik toko.
+
+| Peran | Memegang |
+|---|---|
+| **Pemilik** | Semuanya, termasuk pengaturan, pengguna, dan laporan |
+| **Admin** | Seluruh operasi harian: pesanan, pembayaran, kelima antrian produksi, katalog, stok, serah terima |
+
+**Alasan:** di toko sebesar ini satu orang memang mengerjakan banyak hal
+sekaligus. Peran yang lebih rinci hanya menciptakan kerepotan tanpa membeli
+keamanan apa pun.
+
+**Daftar permission tetap rinci** dan tidak disederhanakan. Peran baru bisa
+ditambahkan lewat panel kapan saja tanpa menyentuh kode, jadi keputusan ini
+tidak mengunci masa depan. Yang berubah hanya siapa memegang apa.
+
+**Konsekuensi teknis:**
+- Batas yang tersisa adalah `pengaturan.kelola` dan `pengguna.kelola`: Admin
+  menjalankan toko, Pemilik menentukan aturan mainnya
+- Menu "Antrian kerja" kini menampilkan kelima divisi untuk Admin dan Pemilik
+- Peran dan akun contoh dari susunan lama dihapus oleh seeder
+
+---
+
+## KEP-018 — Gambar produk boleh diunggah atau ditunjuk ke CDN
+**Status:** TERKUNCI · 2026-09-08
+
+Dua sumber didukung sekaligus, dipilih per gambar:
+
+| Sumber | Kapan dipakai |
+|---|---|
+| **Unggah** | Toko bisa langsung jalan tanpa layanan tambahan |
+| **Tautan CDN** | Saat katalog membesar dan kuota disk shared hosting mulai terasa |
+
+Berkas yang diunggah **wajib diproses**, tidak pernah disimpan apa adanya: foto
+mentah dari HP lazimnya 3-8 MB, dan menayangkannya begitu saja membuat katalog
+berat dibuka dari jaringan seluler sekaligus menghabiskan disk dalam hitungan
+bulan. Setiap unggahan dikecilkan ke maksimum 1400px, dibuatkan versi kecil
+480px untuk kartu katalog, dan dikonversi ke WebP.
+
+**Konsekuensi teknis:**
+- `product_images` menampung `path` atau `external_url`; URL luar menang, jadi
+  gambar bisa dipindahkan ke CDN kapan saja tanpa mengubah halaman
+- Arah foto dikoreksi dari metadata EXIF, kalau tidak sebagian foto tampil terbaring
+- **WebP punya jalan mundur ke JPEG.** Tidak semua shared hosting mengompilasi
+  GD dengan dukungan WebP, dan unggahan tidak boleh gagal hanya karena itu
+- Menghapus gambar ikut membuang berkasnya; berkas yatim adalah cara paling
+  sunyi menghabiskan kuota disk
+
+---
+
+## KEP-019 — Identitas visual diturunkan dari logo, bukan dikarang
+**Status:** TERKUNCI · 2026-09-08
+
+Palet hijau lapangan dan oranye pada rancangan awal diganti seluruhnya oleh
+warna merek: **navy, merah, kuning**. Logo juga menetapkan aturan pakainya, dan
+aturan itu diikuti apa adanya: navy mendominasi sebagai warna struktur,
+sementara merah dan kuning hanya muncul sebagai garis tipis penanda seperti dua
+batang yang mengapit kata WONOGIRI.
+
+Tipografi memakai **Plus Jakarta Sans** buatan Tokotype, dirancang untuk
+identitas kota Jakarta. Dipilih karena memang dibuat untuk merek Indonesia,
+bukan karena netral.
+
+**Aturan yang ditegakkan** (rinciannya di [11-panduan-visual.md](11-panduan-visual.md)):
+- Merah hanya untuk harga dan satu aksi utama per layar
+- Kuning tidak pernah menampung teks, hanya menjadi garis
+- **Tidak ada tanda pisah em di teks antarmuka.** Judul halaman memakai `|`
+- Berkas logo cukup ditaruh di `public/logo.svg`; komponen `<x-logo />`
+  memakainya otomatis di seluruh halaman
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -423,3 +498,6 @@ korelasi itu, dan menambah nol dependensi untuk diunggah ke shared hosting.
 | KEP-014 | Status item = divisi; status job = aktivitas | TERKUNCI |
 | KEP-015 | Gerbang pembayaran di balik antarmuka; Midtrans dulu | TERKUNCI |
 | KEP-016 | Transport Resend ditulis sendiri demi korelasi webhook | TERKUNCI |
+| KEP-017 | Hanya dua peran: Pemilik dan Admin | TERKUNCI |
+| KEP-018 | Gambar produk: unggah atau tautan CDN | TERKUNCI |
+| KEP-019 | Identitas visual diturunkan dari logo | TERKUNCI |

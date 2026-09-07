@@ -49,7 +49,7 @@ class SerahTerimaController extends Controller
         $data = $request->validate([
             'diambil_oleh' => ['required', 'string', 'max:100'],
         ], [
-            'diambil_oleh.required' => 'Tulis nama orang yang mengambil — termasuk bila diwakilkan.',
+            'diambil_oleh.required' => 'Tulis nama orang yang mengambil: termasuk bila diwakilkan.',
         ], ['diambil_oleh' => 'nama pengambil']);
 
         if ($pesanan->sisa_tagihan > 0) {

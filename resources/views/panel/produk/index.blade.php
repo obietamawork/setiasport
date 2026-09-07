@@ -3,8 +3,8 @@
 
 @section('isi')
 <div class="flex items-center justify-between gap-4">
-    <h1 class="t-wide text-2xl font-extrabold">Produk</h1>
-    <a href="{{ route('panel.produk.create') }}" class="tombol tombol-lapangan">Tambah produk</a>
+    <h1 class="text-2xl font-extrabold">Produk</h1>
+    <a href="{{ route('panel.produk.create') }}" class="tombol tombol-navy">Tambah produk</a>
 </div>
 
 <form method="GET" class="mt-5 flex gap-2">
@@ -15,7 +15,7 @@
 
 @if ($produk->isEmpty())
     <div class="mt-6 border border-line bg-field p-8 text-center">
-        <p class="t-wide text-lg font-bold">
+        <p class="text-lg font-bold">
             {{ request('q') ? 'Tidak ada produk yang cocok' : 'Belum ada produk' }}
         </p>
         <p class="mt-2 text-sm text-muted">
@@ -23,7 +23,7 @@
                 ? 'Coba kata kunci lain, atau tambahkan produk baru.'
                 : 'Tambahkan produk pertama, lalu lengkapi varian dan harganya.' }}
         </p>
-        <a href="{{ route('panel.produk.create') }}" class="tombol tombol-lapangan mt-5">Tambah produk</a>
+        <a href="{{ route('panel.produk.create') }}" class="tombol tombol-navy mt-5">Tambah produk</a>
     </div>
 @else
     <div class="mt-5 overflow-x-auto border border-line bg-field">
@@ -51,7 +51,7 @@
                         <td class="px-4 py-3">{{ $p->category->nama }}</td>
                         <td class="px-4 py-3">{{ $p->fulfillment_type->label() }}</td>
                         <td class="px-4 py-3 text-right tabular">
-                            {{ $p->punyaJalurReadyStock() ? rupiah($p->harga_dasar) : '—' }}
+                            {{ $p->punyaJalurReadyStock() ? rupiah($p->harga_dasar) : '-' }}
                         </td>
                         <td class="px-4 py-3 text-right tabular">{{ $p->variants_count }}</td>
                         <td class="px-4 py-3 text-right">

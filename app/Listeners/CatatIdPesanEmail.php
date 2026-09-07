@@ -9,7 +9,7 @@ use Illuminate\Mail\Events\MessageSent;
  * Menyimpan id pesan dari penyedia ke email_logs.
  *
  * Tanpa id ini, webhook status tidak punya cara mencocokkan "email mana yang
- * bounce" — dan justru itulah yang membuat admin tahu kapan harus menyerah pada
+ * bounce", dan justru itulah yang membuat admin tahu kapan harus menyerah pada
  * email dan menindaklanjuti lewat WhatsApp (docs/03).
  */
 class CatatIdPesanEmail

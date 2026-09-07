@@ -13,14 +13,7 @@ class UserSeeder extends Seeder
     {
         $daftar = [
             ['Pemilik Toko', 'owner@setiasport.test', ['owner']],
-            ['Admin Toko', 'admin@setiasport.test', ['admin-cs']],
-            ['Desainer', 'desainer@setiasport.test', ['desainer']],
-
-            // Satu orang memegang dua peran sekaligus — hal biasa di toko kecil,
-            // dan alasan relasi user-role dibuat many-to-many (docs/04).
-            ['Operator Produksi', 'produksi@setiasport.test', ['operator-printing', 'operator-jahit']],
-
-            ['Staf Gudang', 'gudang@setiasport.test', ['gudang']],
+            ['Admin Toko', 'admin@setiasport.test', ['admin']],
         ];
 
         foreach ($daftar as [$nama, $email, $peran]) {
@@ -32,5 +25,10 @@ class UserSeeder extends Seeder
 
             $user->roles()->sync(Role::whereIn('slug', $peran)->pluck('id'));
         }
+
+        // Akun contoh dari susunan peran lama.
+        User::whereIn('email', [
+            'desainer@setiasport.test', 'produksi@setiasport.test', 'gudang@setiasport.test',
+        ])->delete();
     }
 }

@@ -34,7 +34,7 @@ class PembayaranController extends Controller
     }
 
     /**
-     * Pembayaran yang diterima langsung di toko — tunai, transfer, atau QRIS/EDC.
+     * Pembayaran yang diterima langsung di toko, tunai, transfer, atau QRIS/EDC.
      * Diperlakukan setara dengan pembayaran gateway (KEP-003); yang membedakan
      * hanya metode dan siapa yang mencatatnya.
      */

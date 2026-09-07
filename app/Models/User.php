@@ -10,7 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 /**
- * Pengguna INTERNAL saja. Pelanggan tidak punya akun — mereka mengakses
+ * Pengguna INTERNAL saja. Pelanggan tidak punya akun, mereka mengakses
  * pesanannya lewat magic link bertoken (KEP-008).
  */
 class User extends Authenticatable

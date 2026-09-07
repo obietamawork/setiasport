@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Nama punggung, nomor, dan ukuran per pemain — inti pekerjaan toko jersey.
+ * Nama punggung, nomor, dan ukuran per pemain, inti pekerjaan toko jersey.
  *
  * Diisi pelanggan sendiri dan bisa diubah sampai desain disetujui. Kalau data
  * ini dibiarkan mengalir lewat WhatsApp, admin mengetik ulang, salah ketik,
@@ -82,7 +82,7 @@ class RosterPemain
                 }
 
                 // Dua pemain bernomor sama adalah kesalahan yang baru ketahuan
-                // setelah jersey tercetak — mahal, dan tidak bisa dijual ulang.
+                // setelah jersey tercetak, mahal, dan tidak bisa dijual ulang.
                 if (isset($nomorTerpakai[$nomor])) {
                     throw ValidationException::withMessages([
                         "roster.{$i}.nomor" => "Nomor {$nomor} dipakai dua kali "

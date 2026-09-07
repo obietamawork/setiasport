@@ -2,9 +2,9 @@
 @section('judul', 'Pengaturan')
 
 @section('isi')
-<h1 class="t-wide text-2xl font-extrabold">Pengaturan</h1>
+<h1 class="text-2xl font-extrabold">Pengaturan</h1>
 <p class="mt-1 text-sm text-muted">
-    Nilai-nilai ini dipakai di seluruh sistem — halaman produk, checkout, dan email
+    Nilai-nilai ini dipakai di seluruh sistem: halaman produk, checkout, dan email
     pelanggan ikut berubah begitu disimpan.
 </p>
 
@@ -32,6 +32,6 @@
         </section>
     @endforeach
 
-    <button type="submit" class="tombol tombol-lapangan">Simpan pengaturan</button>
+    <button type="submit" class="tombol tombol-navy">Simpan pengaturan</button>
 </form>
 @endsection

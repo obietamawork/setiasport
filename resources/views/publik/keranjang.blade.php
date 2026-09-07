@@ -3,23 +3,23 @@
 
 @section('isi')
 <div class="mx-auto max-w-4xl px-5 py-10">
-    <h1 class="t-wide text-3xl font-extrabold">Keranjang</h1>
+    <h1 class="text-3xl font-extrabold">Keranjang</h1>
 
     @if ($isi->isEmpty())
         <div class="mt-8 border border-line bg-field p-10 text-center">
-            <p class="t-wide text-xl font-bold">Keranjang masih kosong</p>
+            <p class="text-xl font-bold">Keranjang masih kosong</p>
             <p class="kolom-baca mx-auto mt-3 text-muted">
                 Barang yang Anda pilih akan muncul di sini. Mulai dari stok toko kalau
                 butuh cepat, atau pesanan kustom kalau ingin desain sendiri.
             </p>
             <div class="mt-6 flex flex-wrap justify-center gap-3">
                 <a href="{{ route('katalog', ['jalur' => 'stok']) }}" class="tombol tombol-garis">Lihat stok toko</a>
-                <a href="{{ route('katalog', ['jalur' => 'kustom']) }}" class="tombol tombol-lapangan">Lihat pesanan kustom</a>
+                <a href="{{ route('katalog', ['jalur' => 'kustom']) }}" class="tombol tombol-navy">Lihat pesanan kustom</a>
             </div>
         </div>
     @else
         @if ($adaMasalah)
-            <p class="mt-6 border-l-2 border-signal bg-signal-soft px-4 py-3 text-sm">
+            <p class="mt-6 border-l-2 border-merah bg-merah-50 px-4 py-3 text-sm">
                 Ada barang yang stoknya berubah sejak Anda memasukkannya. Sesuaikan
                 jumlahnya atau keluarkan dari keranjang sebelum melanjutkan.
             </p>
@@ -38,12 +38,12 @@
 
                         @foreach ($b['rincian']?->komponenPerItem ?? [] as $k)
                             <p class="text-sm text-muted tabular">
-                                {{ $k['label'] }} — {{ rupiah($k['jumlah']) }} (sekali)
+                                {{ $k['label'] }}: {{ rupiah($k['jumlah']) }} (sekali)
                             </p>
                         @endforeach
 
                         @if ($b['masalah'])
-                            <p class="mt-1 text-sm text-signal">{{ $b['masalah'] }}</p>
+                            <p class="mt-1 text-sm text-merah">{{ $b['masalah'] }}</p>
                         @endif
                     </div>
 
@@ -74,8 +74,8 @@
         <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border border-line bg-field p-5">
             <div>
                 <p class="text-sm text-muted">Total</p>
-                <p class="numeral mt-1 text-3xl text-signal">{{ rupiah($total) }}</p>
-                <p class="mt-2 text-sm text-muted">Tanpa ongkos kirim — semua pesanan diambil di toko.</p>
+                <p class="numeral mt-1 text-3xl text-merah">{{ rupiah($total) }}</p>
+                <p class="mt-2 text-sm text-muted">Tanpa ongkos kirim: semua pesanan diambil di toko.</p>
             </div>
             <div class="flex flex-wrap gap-3">
                 <a href="{{ route('katalog') }}" class="tombol tombol-garis">Tambah barang lain</a>
