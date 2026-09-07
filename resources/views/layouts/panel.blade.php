@@ -41,6 +41,8 @@
                 // "panel.dashboard" menjadi pola "panel.*" yang cocok dengan semuanya.
                 $menu = [
                     ['panel.dashboard', 'Dashboard', null, 'panel.dashboard'],
+                    ['panel.pesanan.index', 'Pesanan', 'order.lihat', 'panel.pesanan.*'],
+                    ['panel.serah-terima', 'Serah terima', 'serah_terima.proses', 'panel.serah-terima'],
                     ['panel.produk.index', 'Produk', 'katalog.kelola', 'panel.produk.*'],
                     ['panel.kategori.index', 'Kategori', 'katalog.kelola', 'panel.kategori.*'],
                     ['panel.stok.index', 'Stok', 'stok.kelola', 'panel.stok.*'],

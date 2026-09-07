@@ -30,9 +30,18 @@
                class="rounded-sm px-3 py-2 font-medium hover:bg-court-soft">
                 Pesan kustom
             </a>
+            <a href="{{ route('lacak') }}"
+               class="rounded-sm px-3 py-2 font-medium hover:bg-court-soft {{ request()->routeIs('lacak*') ? 'bg-court-soft' : '' }}">
+                Lacak pesanan
+            </a>
             <span class="mx-1 hidden h-5 w-px bg-line sm:block"></span>
-            <a href="{{ route('panel.login') }}" class="rounded-sm px-3 py-2 text-muted hover:text-ink">
-                Masuk staf
+            @php $isiKeranjang = app(\App\Services\Keranjang::class)->jumlahBaris(); @endphp
+            <a href="{{ route('keranjang') }}"
+               class="flex items-center gap-1 rounded-sm px-3 py-2 font-semibold hover:bg-court-soft">
+                <span>Keranjang</span>
+                @if ($isiKeranjang)
+                    <span class="tabular text-signal">{{ $isiKeranjang }}</span>
+                @endif
             </a>
         </nav>
     </div>
@@ -66,9 +75,10 @@
         </div>
     </div>
     <div class="border-t border-line">
-        <p class="mx-auto max-w-6xl px-5 py-4 text-xs text-muted">
-            &copy; {{ date('Y') }} {{ setting('toko_nama', 'Setia Sport') }}
-        </p>
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-4 text-xs text-muted">
+            <span>&copy; {{ date('Y') }} {{ setting('toko_nama', 'Setia Sport') }}</span>
+            <a href="{{ route('panel.login') }}" class="tautan">Masuk staf</a>
+        </div>
     </div>
 </footer>
 

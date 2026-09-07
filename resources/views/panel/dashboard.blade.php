@@ -9,6 +9,63 @@
 
 <div class="mt-6 space-y-4">
 
+    @if ($perluVerifikasi->isNotEmpty())
+        <section class="border-l-2 border-signal bg-field p-5">
+            <h2 class="font-bold">Bukti transfer menunggu diperiksa
+                <span class="tabular font-normal text-muted">{{ $perluVerifikasi->count() }}</span></h2>
+            <p class="mt-1 text-sm text-muted">
+                Pelanggan sudah mengirim bukti. Pesanan belum dikerjakan sampai ini diverifikasi.
+            </p>
+            <ul class="mt-3 space-y-1 text-sm">
+                @foreach ($perluVerifikasi as $o)
+                    <li class="flex flex-wrap justify-between gap-3">
+                        <a href="{{ route('panel.pesanan.show', $o) }}" class="tautan font-medium tabular">{{ $o->kode }}</a>
+                        <span class="text-muted">{{ $o->customer->nama }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
+    @if ($lamaBelumDiambil->isNotEmpty())
+        <section class="border-l-2 border-warn bg-field p-5">
+            <h2 class="font-bold">Siap tapi belum diambil &gt; {{ $peringatanHari }} hari
+                <span class="tabular font-normal text-muted">{{ $lamaBelumDiambil->count() }}</span></h2>
+            <p class="mt-1 text-sm text-muted">Barang ini memakan rak toko. Hubungi pelanggannya.</p>
+            <ul class="mt-3 space-y-1 text-sm">
+                @foreach ($lamaBelumDiambil as $o)
+                    <li class="flex flex-wrap justify-between gap-3">
+                        <a href="{{ route('panel.pesanan.show', $o) }}" class="tautan font-medium tabular">{{ $o->kode }}</a>
+                        <span class="text-muted">
+                            {{ $o->customer->nama }} &middot; siap {{ $o->siap_pada?->diffForHumans(short: true) }}
+                        </span>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
+    @if ($emailBermasalah->isNotEmpty())
+        <section class="border-l-2 border-warn bg-field p-5">
+            <h2 class="font-bold">Email tidak sampai</h2>
+            <p class="mt-1 text-sm text-muted">
+                Tanpa WhatsApp otomatis, pesanan ini perlu ditindaklanjuti manual.
+            </p>
+            <ul class="mt-3 space-y-1 text-sm">
+                @foreach ($emailBermasalah as $log)
+                    <li class="flex flex-wrap justify-between gap-3">
+                        @if ($log->order)
+                            <a href="{{ route('panel.pesanan.show', $log->order) }}" class="tautan tabular">{{ $log->order->kode }}</a>
+                        @else
+                            <span class="tabular text-muted">—</span>
+                        @endif
+                        <span class="text-muted">{{ $log->ke }} &middot; {{ $log->status->label() }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     @if ($tanpaTier->isNotEmpty())
         <section class="border-l-2 border-signal bg-field p-5">
             <h2 class="font-bold">Harga belum lengkap</h2>
@@ -59,7 +116,8 @@
         </section>
     @endif
 
-    @if ($tanpaTier->isEmpty() && $stokHabis->isEmpty() && $stokMenipis->isEmpty())
+    @if ($tanpaTier->isEmpty() && $stokHabis->isEmpty() && $stokMenipis->isEmpty()
+         && $perluVerifikasi->isEmpty() && $lamaBelumDiambil->isEmpty() && $emailBermasalah->isEmpty())
         <section class="border border-line bg-field p-8 text-center">
             <p class="t-wide text-lg font-bold">Tidak ada yang perlu ditangani</p>
             <p class="mt-2 text-sm text-muted">

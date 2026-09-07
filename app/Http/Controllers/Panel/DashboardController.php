@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Enums\FulfillmentType;
+use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
+use App\Models\EmailLog;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Contracts\View\View;
@@ -20,7 +24,33 @@ class DashboardController extends Controller
     {
         $jalurKustom = [FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value];
 
+        $peringatanHari = (int) \App\Models\Setting::ambil('ambil_peringatan_hari', 7);
+
         return view('panel.dashboard', [
+            // Pesanan lebih mendesak daripada katalog, jadi tampil lebih dulu.
+            'perluVerifikasi' => Order::query()
+                ->with('customer')
+                ->whereHas('payments', fn ($q) => $q
+                    ->where('status', PaymentStatus::MENUNGGU->value)
+                    ->whereNotNull('bukti_path'))
+                ->get(),
+
+            // Barang siap tapi tak kunjung diambil memakan rak toko dan
+            // paling sering terlupakan (docs/04).
+            'lamaBelumDiambil' => Order::query()
+                ->with('customer')
+                ->where('status', OrderStatus::SIAP_DIAMBIL)
+                ->where('siap_pada', '<', now()->subDays($peringatanHari))
+                ->orderBy('siap_pada')
+                ->get(),
+            'peringatanHari' => $peringatanHari,
+
+            'emailBermasalah' => EmailLog::perluTindakLanjut()
+                ->with('order.customer')
+                ->latest()
+                ->limit(10)
+                ->get(),
+
             // Produk kustom tanpa tier tidak bisa dihitung harganya, jadi
             // tidak boleh tayang (KEP-010). Ini temuan paling mendesak.
             'tanpaTier' => Product::query()

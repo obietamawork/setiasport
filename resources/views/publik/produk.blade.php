@@ -158,19 +158,48 @@
                             <p class="mt-2 text-sm text-muted">Siap diambil besok pada jam buka.</p>
                         </div>
 
-                        @if (! $matriks)
-                            @php $v = $produk->variants->first(); @endphp
-                            <p class="text-sm tabular">Stok tersedia: <strong>{{ $v?->stok_tersedia ?? 0 }}</strong></p>
-                        @else
-                            <p class="text-sm tabular text-muted">
-                                Total semua varian: {{ $produk->variants->sum(fn ($v) => $v->stok_tersedia) }} pcs
-                            </p>
-                        @endif
+                        @php
+                            $tersedia = $produk->variants->filter(fn ($v) => $v->stok_tersedia > 0);
+                        @endphp
 
-                        <button type="button" class="tombol tombol-utama w-full" disabled>
-                            Tambah ke keranjang
-                        </button>
-                        <p class="text-xs text-muted">Keranjang dan pembayaran dibuka pada tahap berikutnya.</p>
+                        @if ($tersedia->isEmpty())
+                            <p class="border-l-2 border-line-strong bg-paper p-3 text-sm leading-relaxed">
+                                Semua ukuran sedang habis. Kami bisa membuatkannya lewat pesanan
+                                kustom, atau hubungi toko untuk menanyakan stok masuk berikutnya.
+                            </p>
+                        @else
+                            <form method="POST" action="{{ route('keranjang.tambah') }}" class="space-y-3">
+                                @csrf
+
+                                @if ($tersedia->count() === 1 && ! $matriks)
+                                    <input type="hidden" name="variant_id" value="{{ $tersedia->first()->id }}">
+                                    <p class="text-sm tabular">
+                                        Stok tersedia: <strong>{{ $tersedia->first()->stok_tersedia }}</strong>
+                                    </p>
+                                @else
+                                    <div>
+                                        <label for="variant_id" class="label-form">Pilih ukuran &amp; warna</label>
+                                        <select id="variant_id" name="variant_id" class="kotak-input" required>
+                                            @foreach ($tersedia as $v)
+                                                <option value="{{ $v->id }}">
+                                                    {{ $v->label }} — sisa {{ $v->stok_tersedia }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endif
+
+                                <div>
+                                    <label for="qty" class="label-form">Jumlah</label>
+                                    <input type="number" id="qty" name="qty" value="1" min="1"
+                                           class="kotak-input w-24 tabular text-right" required>
+                                </div>
+
+                                <button type="submit" class="tombol tombol-utama w-full">
+                                    Masukkan ke keranjang
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 @endif
 

@@ -51,6 +51,8 @@ docker compose exec app php artisan migrate:fresh --seed   # bangun ulang DB
 docker compose exec app php artisan test                   # jalankan test
 docker compose exec app php artisan tinker                 # REPL
 docker compose logs -f app                                 # log Apache
+docker compose exec app php artisan schedule:run           # jalankan tugas terjadwal
+docker compose exec app php artisan queue:work             # proses antrian email
 docker compose down                                        # matikan
 ```
 
@@ -76,9 +78,11 @@ deploy:
 ```
 app/Enums/          Status, tipe, dan basis harga — nilai domain, bukan string lepas
 app/Models/         Eloquent; Order sengaja TIDAK menyimpan kolom total
-app/Services/       PriceCalculator (KEP-009), OrderStatusResolver (KEP-001)
+app/Services/       PriceCalculator (KEP-009), OrderStatusResolver (KEP-001),
+                    Keranjang, Checkout, ReservasiStok, AlurPesanan, PengirimEmail
 app/Http/           Controller publik & panel, middleware izin RBAC
 resources/views/    publik/ (etalase) dan panel/ (alat kerja) — dua register visual
+resources/views/emails/  Email pesanan; gaya inline karena klien email mengabaikan CSS
 database/seeders/   Peran bawaan, pengaturan, dan 5 produk penguji model data
 docker/             Image PHP-Apache dan konfigurasi vhost
 docs/               Rancangan, log keputusan, panduan visual

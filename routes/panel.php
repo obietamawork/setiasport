@@ -3,7 +3,11 @@
 use App\Http\Controllers\Panel\AuthController;
 use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Panel\KategoriController;
+use App\Http\Controllers\Panel\PembayaranController;
+use App\Http\Controllers\Panel\PenyesuaianController;
 use App\Http\Controllers\Panel\PengaturanController;
+use App\Http\Controllers\Panel\PesananController;
+use App\Http\Controllers\Panel\SerahTerimaController;
 use App\Http\Controllers\Panel\ProdukController;
 use App\Http\Controllers\Panel\ProdukKomponenController;
 use App\Http\Controllers\Panel\StokController;
@@ -19,6 +23,37 @@ Route::prefix('panel')->name('panel.')->group(function () {
     Route::middleware('auth')->group(function () {
         Route::post('/keluar', [AuthController::class, 'keluar'])->name('keluar');
         Route::get('/', DashboardController::class)->name('dashboard');
+
+        Route::middleware('izin:order.lihat')->group(function () {
+            Route::get('pesanan', [PesananController::class, 'index'])->name('pesanan.index');
+            Route::get('pesanan/{pesanan}', [PesananController::class, 'show'])->name('pesanan.show');
+        });
+
+        Route::prefix('pesanan/{pesanan}')->name('pesanan.')->group(function () {
+            Route::post('item/{item}/maju', [PesananController::class, 'majukanItem'])
+                ->middleware('izin:order.kelola')->name('item.maju');
+
+            Route::post('batal', [PesananController::class, 'batalkan'])
+                ->middleware('izin:order.batal')->name('batal');
+
+            Route::post('penyesuaian', [PenyesuaianController::class, 'store'])
+                ->middleware('izin:order.penyesuaian')->name('penyesuaian.simpan');
+            Route::delete('penyesuaian/{penyesuaian}', [PenyesuaianController::class, 'destroy'])
+                ->middleware('izin:order.penyesuaian')->name('penyesuaian.hapus');
+
+            Route::post('pembayaran', [PembayaranController::class, 'catat'])
+                ->middleware('izin:pembayaran.catat')->name('pembayaran.catat');
+            Route::post('pembayaran/{pembayaran}/verifikasi', [PembayaranController::class, 'verifikasi'])
+                ->middleware('izin:pembayaran.verifikasi')->name('pembayaran.verifikasi');
+            Route::post('pembayaran/{pembayaran}/tolak', [PembayaranController::class, 'tolak'])
+                ->middleware('izin:pembayaran.verifikasi')->name('pembayaran.tolak');
+
+            Route::post('serah-terima', [SerahTerimaController::class, 'proses'])
+                ->middleware('izin:serah_terima.proses')->name('serah-terima');
+        });
+
+        Route::get('serah-terima', [SerahTerimaController::class, 'form'])
+            ->middleware('izin:serah_terima.proses')->name('serah-terima');
 
         Route::middleware('izin:katalog.kelola')->group(function () {
             Route::resource('kategori', KategoriController::class)
