@@ -37,12 +37,12 @@
         <div class="min-w-0 lg:col-start-1 lg:row-start-1">
             @if ($produk->images->isNotEmpty())
                 <div x-data="{ aktif: 0 }">
-                    <div class="kartu flex aspect-4/3 items-center justify-center overflow-hidden bg-navy-50">
+                    <div class="kartu relative aspect-4/3 overflow-hidden bg-navy-50">
                         @foreach ($produk->images as $g)
                             <img x-show="aktif === {{ $loop->index }}" src="{{ $g->url }}"
                                  alt="{{ $g->alt ?? $produk->nama }}"
                                  width="{{ $g->lebar }}" height="{{ $g->tinggi }}"
-                                 class="h-full w-full object-cover"
+                                 class="absolute inset-0 h-full w-full object-cover"
                                  {{ $loop->first ? '' : 'loading=lazy' }} decoding="async">
                         @endforeach
                     </div>
@@ -52,9 +52,10 @@
                             @foreach ($produk->images as $g)
                                 <button type="button" @click="aktif = {{ $loop->index }}"
                                         :class="aktif === {{ $loop->index }} ? 'border-navy' : 'border-line hover:border-navy-300'"
-                                        class="size-16 overflow-hidden rounded-[7px] border-2 bg-navy-50"
+                                        class="relative size-16 overflow-hidden rounded-[7px] border-2 bg-navy-50"
                                         aria-label="Lihat gambar {{ $loop->iteration }}">
-                                    <img src="{{ $g->thumb_url }}" alt="" class="h-full w-full object-cover" loading="lazy">
+                                    <img src="{{ $g->thumb_url }}" alt=""
+                                         class="absolute inset-0 h-full w-full object-cover" loading="lazy">
                                 </button>
                             @endforeach
                         </div>

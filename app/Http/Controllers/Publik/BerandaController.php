@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Publik;
 
+use App\Enums\FulfillmentType;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
@@ -30,9 +31,16 @@ class BerandaController extends Controller
             ->aktif()
             ->with(['images', 'priceTiers'])
             ->latest('id')
-            ->take(6)
+            ->take(10)
             ->get();
 
-        return view('publik.beranda', compact('kategori', 'produk'));
+        $leadTime = Product::query()
+            ->aktif()
+            ->whereIn('fulfillment_type', [
+                FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value,
+            ])
+            ->min('lead_time_hari');
+
+        return view('publik.beranda', compact('kategori', 'produk', 'leadTime'));
     }
 }

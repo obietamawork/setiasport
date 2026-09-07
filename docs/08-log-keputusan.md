@@ -268,7 +268,7 @@ kustom. Halaman produknya menyediakan dua jalur: **Beli Ready Stock** dan **Pesa
 - **MOQ hanya berlaku di jalur kustom**
 - Roster dan alur desain hanya muncul di jalur kustom
 - UI harus membuat perbedaan waktu sangat jelas: "Siap diambil besok" vs
-  "Selesai ±14 hari kerja setelah desain disetujui". Ini beda ekspektasi paling tajam
+  "Selesai ±7 hari kerja setelah desain disetujui". Ini beda ekspektasi paling tajam
   di seluruh web, dan paling berpotensi jadi komplain kalau disamarkan
 
 ---

@@ -78,6 +78,15 @@ di jalan. Hasil auditnya ada di [13-audit-ui.md](13-audit-ui.md).
 - Tabel data boleh digeser di dalam pembungkusnya, tidak pernah menggeser halaman
 - Item grid yang memuat pembungkus `overflow-x-auto` wajib diberi `min-w-0`,
   karena `min-width: auto` bawaannya membuat pembungkus itu tidak pernah menyempit
+- Kotak berasio tidak pernah memuat gambar ber-`h-full`. Pakai `absolute
+  inset-0`, kalau tidak ukuran asli gambar diam-diam menentukan tinggi kotak
+
+### Kartu katalog
+
+Mengikuti kebiasaan marketplace, bukan kartu artikel: **dua kolom di HP**, empat
+sampai lima di layar lebar, gambar persegi, nama dipotong dua baris, dan satu
+frasa waktu. Penanda jalur ditempel di gambar karena setiap baris teks berharga
+di kartu selebar 160px. Kepadatan adalah fiturnya.
 
 ## Aturan penulisan
 

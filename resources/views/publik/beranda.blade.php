@@ -35,7 +35,7 @@
             <span class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-merah via-merah to-kuning"></span>
             <p class="text-sm font-semibold text-white/60">Dibuat untuk tim Anda</p>
             <p class="numeral mt-5 text-6xl sm:text-7xl">
-                14 <span class="text-3xl font-bold sm:text-4xl">hari</span>
+                {{ $leadTime ?? 7 }} <span class="text-3xl font-bold sm:text-4xl">hari</span>
             </p>
             <p class="mt-4 max-w-sm leading-relaxed text-white/75">
                 Hari kerja, dihitung sejak Anda menyetujui desain, bukan sejak pesanan
@@ -69,7 +69,7 @@
         <a href="{{ route('katalog') }}" class="tautan text-sm">Lihat semua</a>
     </div>
 
-    <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
         @foreach ($produk as $p)
             @include('komponen.kartu-produk', ['produk' => $p])
         @endforeach

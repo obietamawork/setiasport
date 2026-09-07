@@ -144,9 +144,9 @@
             <ul class="grid gap-px bg-line sm:grid-cols-3 lg:grid-cols-4">
                 @foreach ($produk->images as $g)
                     <li class="bg-field p-3">
-                        <div class="flex aspect-square items-center justify-center overflow-hidden rounded-[7px] bg-navy-50">
+                        <div class="relative aspect-square overflow-hidden rounded-[7px] bg-navy-50">
                             <img src="{{ $g->thumb_url }}" alt="{{ $g->alt }}"
-                                 class="h-full w-full object-cover" loading="lazy">
+                                 class="absolute inset-0 h-full w-full object-cover" loading="lazy">
                         </div>
 
                         <div class="mt-2 flex flex-wrap items-center gap-2">

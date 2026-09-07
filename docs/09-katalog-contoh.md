@@ -33,7 +33,7 @@ membeli sepatu terakhir yang sama.
 ---
 
 ## C. `JRS-FUTSAL-FP` — Jersey Futsal Full Printing
-**Tipe:** PREORDER · Kategori: Jersey › Futsal · **MOQ 12** · lead time **14 hari kerja
+**Tipe:** PREORDER · Kategori: Jersey › Futsal · **MOQ 12** · lead time **7 hari kerja
 sejak desain disetujui**
 
 **Tier harga**

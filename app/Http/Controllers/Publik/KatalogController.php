@@ -41,7 +41,7 @@ class KatalogController extends Controller
                 $q->where(fn ($w) => $w->where('nama', 'like', $cari)->orWhere('sku', 'like', $cari));
             })
             ->orderBy('nama')
-            ->paginate(12);
+            ->paginate(24);
 
         [$judul, $subjudul] = $this->judul($kategoriTerpilih, $jalur);
 

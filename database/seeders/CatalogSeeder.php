@@ -114,7 +114,7 @@ class CatalogSeeder extends Seeder
             'nama' => 'Jersey Futsal Full Printing',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'moq' => 12,
-            'lead_time_hari' => 14,
+            'lead_time_hari' => 7,
             'roster_wajib' => true,
         ]);
 

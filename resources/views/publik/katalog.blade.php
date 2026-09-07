@@ -9,15 +9,33 @@
         <p class="kolom-baca mt-3 leading-relaxed text-muted">{{ $subjudul }}</p>
     @endif
 
-    <form method="GET" action="{{ route('katalog') }}" class="mt-8 border border-line bg-field">
-        <div class="flex flex-wrap items-end gap-4 p-4">
-            <div class="min-w-45 flex-1">
-                <label for="q" class="label-form">Cari produk</label>
-                <input type="search" id="q" name="q" value="{{ request('q') }}"
-                       placeholder="Jersey, bola, sepatu…" class="kotak-input">
-            </div>
+    {{-- Di layar sempit filter diringkas jadi satu baris. Formulir bertumpuk
+         memakan hampir 300px sebelum produk pertama terlihat, padahal yang
+         dicari pelanggan ada di bawahnya. --}}
+    <form method="GET" action="{{ route('katalog') }}" class="mt-6"
+          x-data="{ buka: {{ request()->hasAny(['kategori', 'jalur']) ? 'true' : 'false' }} }">
 
-            <div class="min-w-40">
+        <div class="flex gap-2">
+            <label class="sr-only" for="q">Cari produk</label>
+            <input type="search" id="q" name="q" value="{{ request('q') }}"
+                   placeholder="Cari jersey, bola, sepatu" class="kotak-input flex-1">
+
+            <button type="button" @click="buka = !buka"
+                    class="tombol tombol-garis shrink-0 sm:hidden"
+                    :aria-expanded="buka">
+                Filter
+                @if (request()->hasAny(['kategori', 'jalur']))
+                    <span class="size-2 rounded-full bg-merah"></span>
+                @endif
+            </button>
+
+            <button type="submit" class="tombol tombol-navy shrink-0">Cari</button>
+        </div>
+
+        {{-- x-show hanya mengatur layar sempit; mulai sm dipaksa tampil lewat
+             CSS, karena !flex mengalahkan display none dari Alpine. --}}
+        <div x-show="buka" x-cloak class="mt-3 flex flex-wrap gap-3 sm:!flex">
+            <div class="min-w-44 flex-1 sm:max-w-56">
                 <label for="kategori" class="label-form">Kategori</label>
                 <select id="kategori" name="kategori" class="kotak-input">
                     <option value="">Semua kategori</option>
@@ -29,7 +47,7 @@
                 </select>
             </div>
 
-            <div class="min-w-40">
+            <div class="min-w-40 flex-1 sm:max-w-48">
                 <label for="jalur" class="label-form">Cara beli</label>
                 <select id="jalur" name="jalur" class="kotak-input">
                     <option value="">Semua</option>
@@ -38,11 +56,12 @@
                 </select>
             </div>
 
-            <button type="submit" class="tombol tombol-navy">Terapkan</button>
-
-            @if (request()->hasAny(['q', 'kategori', 'jalur']))
-                <a href="{{ route('katalog') }}" class="tautan self-center text-sm text-muted">Hapus filter</a>
-            @endif
+            <div class="flex items-end gap-3">
+                <button type="submit" class="tombol tombol-garis">Terapkan</button>
+                @if (request()->hasAny(['q', 'kategori', 'jalur']))
+                    <a href="{{ route('katalog') }}" class="tautan pb-2.5 text-sm text-muted">Hapus filter</a>
+                @endif
+            </div>
         </div>
     </form>
 
@@ -66,7 +85,7 @@
             </div>
         </div>
     @else
-        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
             @foreach ($produk as $p)
                 @include('komponen.kartu-produk', ['produk' => $p])
             @endforeach
