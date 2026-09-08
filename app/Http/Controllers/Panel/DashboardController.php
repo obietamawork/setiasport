@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EmailLog;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\KesehatanSistem;
 use App\Models\ProductVariant;
 use Illuminate\Contracts\View\View;
 
@@ -20,13 +21,15 @@ use Illuminate\Contracts\View\View;
  */
 class DashboardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(KesehatanSistem $kesehatan): View
     {
         $jalurKustom = [FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value];
 
         $peringatanHari = (int) \App\Models\Setting::ambil('ambil_peringatan_hari', 7);
 
         return view('panel.dashboard', [
+            // Kegagalan senyap didahulukan: yang tidak terlihat itulah yang mahal.
+            'masalahSistem' => $kesehatan->masalah(),
             // Pesanan lebih mendesak daripada katalog, jadi tampil lebih dulu.
             'perluVerifikasi' => Order::query()
                 ->with('customer')

@@ -5,12 +5,26 @@ use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Services\AlurPesanan;
 use App\Services\PengirimEmail;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
 /**
  * Di shared hosting tidak ada daemon; seluruh pekerjaan latar berjalan lewat
  * satu baris cron yang memanggil schedule:run tiap menit (docs/06).
  */
+
+/*
+ * Denyut penjadwal.
+ *
+ * Di shared hosting cron bisa berhenti karena apa saja: kuota terlampaui,
+ * penyedia mengubah konfigurasi, atau path berubah setelah deploy. Kalau
+ * berhenti, email tidak terkirim, pesanan tidak pernah kadaluarsa, dan stok
+ * terkunci selamanya. Semuanya senyap, dan toko baru sadar berhari-hari
+ * kemudian. Cap waktu ini yang membuat dashboard bisa menyalakan peringatan.
+ */
+Schedule::call(fn () => Cache::forever('denyut_penjadwal', now()->toIso8601String()))
+    ->everyMinute()
+    ->name('denyut-penjadwal');
 
 // Antrian email. Tanpa ini email hanya menumpuk di tabel jobs dan tidak pernah terkirim.
 Schedule::command('queue:work --stop-when-empty --max-time=50')

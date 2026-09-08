@@ -24,6 +24,7 @@
         ['panel.produk.index', 'Produk', 'katalog.kelola', 'panel.produk.*'],
         ['panel.kategori.index', 'Kategori', 'katalog.kelola', 'panel.kategori.*'],
         ['panel.stok.index', 'Stok', 'stok.kelola', 'panel.stok.*'],
+        ['panel.laporan', 'Laporan', 'laporan.lihat', 'panel.laporan'],
         ['panel.pengaturan.index', 'Pengaturan', 'pengaturan.kelola', 'panel.pengaturan.*'],
     ];
 @endphp

@@ -49,6 +49,14 @@ class KatalogController extends Controller
             'produk' => $produk,
             'judul' => $judul,
             'subjudul' => $subjudul,
+            // Jumlah awal diambil dari MOQ terkecil, jadi angkanya masuk akal
+            // sejak halaman dibuka dan tidak menampilkan peringatan minimum.
+            'qtyAwal' => (int) (Product::query()
+                ->aktif()
+                ->whereIn('fulfillment_type', [
+                    FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value,
+                ])
+                ->min('moq') ?: 12),
             'semuaKategori' => Category::with('parent')
                 ->whereNotNull('parent_id')
                 ->where('aktif', true)

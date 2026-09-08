@@ -5,6 +5,7 @@ use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Panel\KategoriController;
 use App\Http\Controllers\Panel\AntrianController;
 use App\Http\Controllers\Panel\GambarProdukController;
+use App\Http\Controllers\Panel\LaporanController;
 use App\Http\Controllers\Panel\MockupController;
 use App\Http\Controllers\Panel\PembayaranController;
 use App\Http\Controllers\Panel\PenyesuaianController;
@@ -106,6 +107,9 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::get('stok', [StokController::class, 'index'])->name('stok.index');
             Route::put('stok', [StokController::class, 'update'])->name('stok.update');
         });
+
+        Route::get('laporan', LaporanController::class)
+            ->middleware('izin:laporan.lihat')->name('laporan');
 
         Route::middleware('izin:pengaturan.kelola')->group(function () {
             Route::get('pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index');

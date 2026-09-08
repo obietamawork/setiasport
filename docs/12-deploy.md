@@ -103,8 +103,12 @@ tidak pernah dilepas** — stok tersedia akan menipis tanpa sebab yang terlihat.
 * * * * * cd /home/user/setiasport && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-Verifikasi setelah beberapa menit: `php artisan schedule:list` dan pastikan tabel
-`jobs` tidak menumpuk.
+Verifikasi setelah beberapa menit: buka **Dashboard panel**. Kalau cron berjalan,
+tidak ada peringatan apa pun. Kalau muncul kotak merah "Tugas otomatis berhenti
+berjalan", cron belum jalan dan harus diurus sebelum situs dipakai.
+
+Peringatan itu juga yang akan muncul kalau cron mati di kemudian hari, sehingga
+pemilik toko tahu tanpa perlu memeriksa apa pun secara teknis.
 
 ---
 

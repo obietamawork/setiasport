@@ -574,6 +574,56 @@ kehilangan apa pun, dan tidak ada yang menunggu email untuk melihat pesanannya.
 
 ---
 
+## KEP-022 — Paket penutup dipilih dari sudut biaya dukungan, bukan idealisme
+**Status:** TERKUNCI · 2026-09-08
+
+Anggaran klien terbatas, dan pekerjaan yang sudah selesai jauh melampauinya.
+Karena itu sisa lingkup tidak dipilih berdasarkan "apa yang paling bernilai bagi
+toko", melainkan pertanyaan yang berbeda:
+
+> **Apa yang mencegah klien menelepon setelah proyek diserahkan?**
+
+Dukungan pascaserah terima tidak dibayar, dan di situlah margin proyek kecil
+sebenarnya hilang. Kriteria itu menghasilkan lima item:
+
+| Item | Telepon yang dicegah |
+|---|---|
+| Denyut penjadwal | "Stok habis padahal barangnya ada" |
+| Proteksi kirim ganda | "Kenapa pesanannya dobel" |
+| Halaman galat kustom | "Web-nya rusak" |
+| Laporan sederhana | "Tolong hitungkan omzet bulan ini" (selamanya, gratis) |
+| Tab katalog berjumlah | Permintaan klien yang sudah dijanjikan |
+
+**Yang sengaja tidak dikerjakan** di anggaran ini: halaman kesehatan sistem
+terpisah (cukup satu blok di dashboard), perbandingan produk berdampingan,
+soft delete, dan notifikasi email saat penjadwal mati (ironis: kalau penjadwal
+mati, email itu sendiri tidak terkirim).
+
+### Denyut penjadwal
+
+Kegagalan paling berbahaya di shared hosting bukan galat, melainkan cron yang
+berhenti tanpa suara. Saat itu terjadi: email tidak terkirim, pesanan tidak
+pernah kadaluarsa, dan **stok terkunci selamanya** sehingga stok tersedia
+menipis tanpa sebab yang terlihat. Toko baru sadar berhari-hari kemudian.
+
+Penjadwal kini menuliskan cap waktu tiap menit, dan dashboard menyalakan
+peringatan bila capnya lebih tua dari sepuluh menit. Peringatannya ditulis untuk
+pemilik toko: menyebut akibatnya dan menyuruh menghubungi hosting, bukan
+menampilkan istilah teknis.
+
+### Tab katalog dengan kolom jumlah
+
+Stok toko dan Kustom bukan dua nilai filter, melainkan dua cara belanja. Yang
+pertama menjelajah dan membeli; yang kedua menyusun spesifikasi dan
+membandingkan.
+
+Karena itu tab Kustom punya kolom **"Untuk berapa pcs?"** yang menghitung ulang
+harga **semua kartu** sekaligus. Kapten tim tidak peduli "mulai Rp 82.000"; ia
+mau tahu harga di 24 pcs. Satu input mengubah katalog dari daftar menjadi alat
+penawaran, memakai rumus tier yang sama persis dengan server (KEP-009).
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -599,3 +649,4 @@ kehilangan apa pun, dan tidak ada yang menunggu email untuk melihat pesanannya.
 | KEP-019 | Identitas visual diturunkan dari logo | TERKUNCI |
 | KEP-020 | Akun pelanggan sebagai jalur kedua, bukan pengganti | TERKUNCI |
 | KEP-021 | Pendaftaran wajib dikonfirmasi lewat email | TERKUNCI |
+| KEP-022 | Paket penutup dipilih dari sudut biaya dukungan | TERKUNCI |

@@ -9,6 +9,13 @@
 
 <div class="mt-6 space-y-4">
 
+    @foreach ($masalahSistem as $m)
+        <section class="notis notis-galat">
+            <p class="font-bold">{{ $m['judul'] }}</p>
+            <p class="kolom-baca mt-1">{{ $m['isi'] }}</p>
+        </section>
+    @endforeach
+
     @if ($perluVerifikasi->isNotEmpty())
         <section class="border-l-2 border-merah bg-field p-5">
             <h2 class="font-bold">Bukti transfer menunggu diperiksa
@@ -116,7 +123,7 @@
         </section>
     @endif
 
-    @if ($tanpaTier->isEmpty() && $stokHabis->isEmpty() && $stokMenipis->isEmpty()
+    @if (empty($masalahSistem) && $tanpaTier->isEmpty() && $stokHabis->isEmpty() && $stokMenipis->isEmpty()
          && $perluVerifikasi->isEmpty() && $lamaBelumDiambil->isEmpty() && $emailBermasalah->isEmpty())
         <section class="border border-line bg-field p-8 text-center">
             <p class="text-lg font-bold">Tidak ada yang perlu ditangani</p>

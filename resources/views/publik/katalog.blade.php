@@ -9,11 +9,29 @@
         <p class="kolom-baca mt-3 leading-relaxed text-muted">{{ $subjudul }}</p>
     @endif
 
+    {{-- Stok toko dan Kustom adalah dua cara belanja yang berbeda, bukan
+         sekadar dua nilai filter. Dipisah sebagai tab supaya perbedaannya
+         terlihat sebelum pelanggan mulai menjelajah. --}}
+    <div class="mt-6 flex gap-1 border-b border-line" role="tablist">
+        @foreach ([['', 'Semua'], ['stok', 'Stok toko'], ['kustom', 'Kustom']] as [$nilai, $label])
+            @php $aktifTab = request('jalur', '') === $nilai; @endphp
+            <a href="{{ route('katalog', array_filter(['jalur' => $nilai, 'kategori' => request('kategori'), 'q' => request('q')])) }}"
+               role="tab" aria-selected="{{ $aktifTab ? 'true' : 'false' }}"
+               class="-mb-px px-4 py-2.5 text-sm font-semibold transition-colors
+                      {{ $aktifTab ? 'garis-aktif text-navy' : 'text-muted hover:text-ink' }}">
+                {{ $label }}
+            </a>
+        @endforeach
+    </div>
+
     {{-- Di layar sempit filter diringkas jadi satu baris. Formulir bertumpuk
          memakan hampir 300px sebelum produk pertama terlihat, padahal yang
          dicari pelanggan ada di bawahnya. --}}
     <form method="GET" action="{{ route('katalog') }}" class="mt-6"
-          x-data="{ buka: {{ request()->hasAny(['kategori', 'jalur']) ? 'true' : 'false' }} }">
+          x-data="{ buka: {{ request()->filled('kategori') ? 'true' : 'false' }} }">
+
+        {{-- Tab yang sedang aktif ikut terbawa saat filter dikirim. --}}
+        <input type="hidden" name="jalur" value="{{ request('jalur') }}">
 
         <div class="flex gap-2">
             <label class="sr-only" for="q">Cari produk</label>
@@ -47,27 +65,36 @@
                 </select>
             </div>
 
-            <div class="min-w-40 flex-1 sm:max-w-48">
-                <label for="jalur" class="label-form">Cara beli</label>
-                <select id="jalur" name="jalur" class="kotak-input">
-                    <option value="">Semua</option>
-                    <option value="stok" @selected(request('jalur') === 'stok')>Stok toko</option>
-                    <option value="kustom" @selected(request('jalur') === 'kustom')>Pesan kustom</option>
-                </select>
-            </div>
-
             <div class="flex items-end gap-3">
                 <button type="submit" class="tombol tombol-garis">Terapkan</button>
-                @if (request()->hasAny(['q', 'kategori', 'jalur']))
-                    <a href="{{ route('katalog') }}" class="tautan pb-2.5 text-sm text-muted">Hapus filter</a>
+                @if (request()->hasAny(['q', 'kategori']))
+                    <a href="{{ route('katalog', array_filter(['jalur' => request('jalur')])) }}"
+                       class="tautan pb-2.5 text-sm text-muted">Hapus filter</a>
                 @endif
             </div>
         </div>
     </form>
 
-    <p class="mt-6 text-sm text-muted tabular">
-        {{ $produk->total() }} produk
-    </p>
+@php $modeJumlah = request('jalur') === 'kustom'; @endphp
+
+    <div @if ($modeJumlah) x-data="katalogJumlah({{ $qtyAwal }})" @endif>
+
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-4">
+            <p class="tabular text-sm text-muted">{{ $produk->total() }} produk</p>
+
+            @if ($modeJumlah && $produk->isNotEmpty())
+                {{-- Satu kolom ini mengubah katalog dari daftar menjadi alat
+                     penawaran: kapten tim mengetik jumlah timnya, dan semua
+                     harga langsung menyesuaikan. --}}
+                <div class="flex items-center gap-2">
+                    <label for="qty-katalog" class="text-sm font-semibold whitespace-nowrap">
+                        Untuk berapa pcs?
+                    </label>
+                    <input type="number" id="qty-katalog" x-model.number="qty" min="1" max="100000"
+                           class="kotak-input tabular w-24 text-right">
+                </div>
+            @endif
+        </div>
 
     @if ($produk->isEmpty())
         {{-- Layar kosong sebagai ajakan bertindak, bukan sekadar kabar buruk. --}}
@@ -87,7 +114,7 @@
     @else
         <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
             @foreach ($produk as $p)
-                @include('komponen.kartu-produk', ['produk' => $p])
+                @include('komponen.kartu-produk', ['produk' => $p, 'modeJumlah' => $modeJumlah])
             @endforeach
         </div>
 
@@ -95,5 +122,26 @@
             {{ $produk->withQueryString()->links() }}
         </div>
     @endif
+    </div>
 </div>
+
+@push('skrip')
+<script>
+    function katalogJumlah(awal) {
+        return {
+            qty: awal,
+
+            rp(n) {
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n || 0));
+            },
+
+            // Rumus tier yang sama dengan PriceCalculator di server.
+            hargaDi(tiers) {
+                const t = tiers.find(t => this.qty >= t.min && (t.max === null || this.qty <= t.max));
+                return t ? t.harga : (tiers[0]?.harga ?? 0);
+            },
+        };
+    }
+</script>
+@endpush
 @endsection
