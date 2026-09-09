@@ -125,6 +125,77 @@ dan pilihannya dibuka saat dibutuhkan.
 | Tinggi kartu dalam satu baris | berbeda-beda | seragam |
 | Halaman diperiksa | | 21 |
 
+## Putaran ketiga: panel internal
+
+Dua putaran pertama menyisir sisi pelanggan. Panel diaudit tersendiri karena
+ukurannya berbeda: ia dipakai berjam-jam tiap hari oleh orang yang sama, jadi
+yang menentukan bukan kesan pertama melainkan berapa banyak gerakan yang
+dituntutnya.
+
+### Navigasi
+
+Delapan tautan datar memaksa membaca seluruh daftar setiap kali. Kini
+dikelompokkan **Operasional, Katalog, Toko**, dan tiga menu yang menyimpan
+pekerjaan tertunda memakai penghitung: pesanan berjalan, antrian divisi, dan
+pesanan siap diambil. Yang menunggu ditangani terlihat tanpa membuka halamannya.
+
+Angkanya disuntikkan lewat view composer, bukan lewat tiap controller, supaya
+tidak ada halaman yang menampilkan menu tanpa penghitung.
+
+### Dashboard
+
+Dulu langsung membuka dengan peringatan stok. Kini menjawab pertanyaan yang
+sebenarnya diajukan pemilik toko tiap pagi lebih dulu: **pesanan masuk hari
+ini, uang diterima hari ini, sedang dikerjakan, siap diambil**. Baru setelah
+itu daftar tindakan.
+
+Daftar tindakannya dipecah dua kolom di layar lebar. Baris data yang meregang
+sampai seribu piksel memaksa mata berjalan jauh dari nama barang ke angkanya.
+
+### Detail pesanan
+
+Layar terpadat dan paling sering dibuka, dan dulunya butuh menggulir dua layar
+penuh. Sekarang muat satu layar:
+
+- Rincian item punya hierarki: nama tebal, jumlah dan harga meredup, opsi jadi
+  penanda, dan **rincian ukuran ditonjolkan** karena itulah satu-satunya angka
+  di sana yang dipakai orang produksi saat memotong kain
+- Titik tahapan menunjukkan posisi item tanpa perlu membaca riwayat
+- Formulir yang jarang dipakai dilipat di balik ringkasan; kotak isian yang
+  menganggur membuat layar terlihat penuh padahal tidak ada yang dikerjakan
+- Riwayat dilipat karena ia rujukan, bukan pekerjaan
+- **Membatalkan pesanan turun ke zona tersendiri** yang diredam. Tindakan
+  berisiko tidak boleh sebobot kartu informasi di sebelahnya
+- Teks WhatsApp dapat tombol salin
+
+### Halaman produk
+
+Sangat panjang tanpa cara berpindah. Ditambah tautan lompat ke Keterangan,
+Gambar, Varian, Tier harga, dan Opsi, yang hanya menampilkan bagian yang
+memang berlaku untuk jalur produk itu.
+
+### Halaman masuk staf
+
+Kartu mengambang sendirian di bidang navy terasa belum jadi. Kini terbagi dua:
+sisi kiri memuat konteks pekerjaan yang bisa dilakukan di sana, sisi kanan
+formulirnya. Ditambah keterangan jalur pemulihan kata sandi, yang sebelumnya
+tidak ada sama sekali.
+
+### Bug yang ditemukan saat audit
+
+**`rupiah_ringkas(10000)` menghasilkan "Rp 1 rb".** Nol di belakang dipotong
+tanpa memeriksa ada tidaknya koma, sehingga nol signifikan ikut hilang. Angka
+uang yang salah jauh lebih buruk daripada angka yang panjang. Ditutup test.
+
+**Trek grid melar mengikuti max-content.** Di layar sempit, kolom `auto` pada
+detail pesanan tumbuh sampai 695px meski itemnya sudah diberi `min-w-0`.
+Diperbaiki dengan menjadikannya tumpukan biasa di bawah `lg`.
+
+### Konsistensi
+
+Kartu dan tabel di seluruh panel kini memakai kelas yang sama, dan setiap
+halaman punya kop dengan judul serta satu kalimat yang menjelaskan isinya.
+
 ## Aturan yang dipegang selanjutnya
 
 1. **Ukur, jangan kira.** Setiap layar baru diperiksa `scrollWidth`-nya di 375px.
@@ -137,3 +208,9 @@ dan pilihannya dibuka saat dibutuhkan.
    persegi, teks ringkas. Kepadatan adalah fiturnya, bukan kekurangannya.
 7. **Kotak berasio tidak pernah memuat gambar `h-full`.** Pakai `absolute
    inset-0`, kalau tidak ukuran asli gambar diam-diam menentukan tinggi kotak.
+8. **Grid dua kolom baru aktif mulai `lg`.** Di bawah itu pakai tumpukan biasa;
+   trek `auto` melar mengikuti max-content isinya meski itemnya sudah `min-w-0`.
+9. **Panel: satu kop halaman, satu kelas kartu, satu kelas tabel.** Halaman yang
+   dipakai berjam-jam tiap hari tidak boleh menuntut penyesuaian ulang.
+10. **Formulir yang jarang dipakai dilipat**, dan tindakan berisiko diletakkan
+    di zona tersendiri yang diredam.

@@ -2,19 +2,24 @@
 @section('judul', 'Kategori')
 
 @section('isi')
-<div class="flex items-center justify-between gap-4">
-    <h1 class="text-2xl font-extrabold">Kategori</h1>
+<div class="kop-halaman">
+    <div>
+        <h1 class="kop-judul">Kategori</h1>
+        <p class="kop-catatan">
+            Cara pelanggan menelusuri katalog. Kategori utama boleh punya subkategori.
+        </p>
+    </div>
     <a href="{{ route('panel.kategori.create') }}" class="tombol tombol-navy">Tambah kategori</a>
 </div>
 
 @if ($induk->isEmpty())
-    <div class="mt-6 border border-line bg-field p-8 text-center">
+    <div class="kartu mt-6 p-8 text-center">
         <p class="text-lg font-bold">Belum ada kategori</p>
         <p class="mt-2 text-sm text-muted">Kategori adalah cara pelanggan menelusuri katalog. Mulai dari yang paling besar, misalnya Jersey atau Sepatu.</p>
         <a href="{{ route('panel.kategori.create') }}" class="tombol tombol-navy mt-5">Tambah kategori pertama</a>
     </div>
 @else
-    <div class="mt-6 divide-y divide-line border border-line bg-field">
+    <div class="kartu mt-6 divide-y divide-line overflow-hidden">
         @foreach ($induk as $k)
             <div>
                 <div class="flex items-center gap-3 px-4 py-3">

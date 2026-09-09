@@ -2,11 +2,13 @@
 @section('judul', 'Serah terima')
 
 @section('isi')
-<h1 class="text-2xl font-extrabold">Serah terima</h1>
-<p class="mt-1 text-sm text-muted">
-    Pelunasan dan pengambilan diselesaikan di layar ini. Masukkan kode ambil yang
-    dibawa pelanggan, atau kode pesanannya.
-</p>
+<div class="kop-halaman">
+    <div>
+        <h1 class="kop-judul">Serah terima</h1>
+        <p class="kop-catatan">Pelunasan dan pengambilan diselesaikan di layar ini. Masukkan kode ambil yang
+    dibawa pelanggan, atau kode pesanannya.</p>
+    </div>
+</div>
 
 <form method="GET" class="mt-5 flex flex-wrap gap-2">
     <label class="sr-only" for="kode">Kode ambil atau kode pesanan</label>
@@ -24,7 +26,7 @@
 @endif
 
 @if ($order)
-    <section class="mt-6 max-w-2xl border border-line bg-field">
+    <section class="kartu mt-6 max-w-2xl overflow-hidden">
         <div class="border-b border-line px-5 py-4">
             <p class="text-sm text-muted tabular">{{ $order->kode }}</p>
             <h2 class="text-xl font-extrabold">{{ $order->customer->nama }}</h2>
@@ -94,7 +96,7 @@
 @if ($siapHariIni->isNotEmpty())
     <section class="mt-10 max-w-2xl">
         <h2 class="text-lg font-extrabold">Menunggu diambil</h2>
-        <ul class="mt-4 divide-y divide-line border border-line bg-field text-sm">
+        <ul class="kartu mt-4 divide-y divide-line overflow-hidden text-sm">
             @foreach ($siapHariIni as $o)
                 <li class="flex flex-wrap items-center gap-3 px-4 py-2.5">
                     <a href="{{ route('panel.serah-terima', ['kode' => $o->kode_ambil]) }}"

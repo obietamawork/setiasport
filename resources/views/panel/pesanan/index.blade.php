@@ -4,7 +4,12 @@
 @section('isi')
 @php use App\Enums\OrderStatus; @endphp
 
-<h1 class="text-2xl font-extrabold">Pesanan</h1>
+<div class="kop-halaman">
+    <div>
+        <h1 class="kop-judul">Pesanan</h1>
+        <p class="kop-catatan">Semua pesanan yang masuk lewat web, terbaru di atas.</p>
+    </div>
+</div>
 
 <div class="mt-5 flex flex-wrap gap-1 text-sm">
     @php
@@ -37,7 +42,7 @@
 </form>
 
 @if ($pesanan->isEmpty())
-    <div class="mt-6 border border-line bg-field p-8 text-center">
+    <div class="kartu mt-6 p-8 text-center">
         <p class="text-lg font-bold">Tidak ada pesanan di sini</p>
         <p class="mt-2 text-sm text-muted">
             {{ request('q') ? 'Coba kata kunci lain, atau hapus filter status.' : 'Pesanan yang masuk lewat web akan muncul di daftar ini.' }}
@@ -80,21 +85,21 @@
     </div>
 
     <div class="mt-5 hidden overflow-x-auto rounded-[10px] border border-line bg-field md:block">
-        <table class="w-full min-w-180 text-sm">
-            <thead class="border-b border-line bg-paper text-left">
+        <table class="tabel min-w-180">
+            <thead>
                 <tr>
-                    <th class="px-4 py-2.5 font-semibold">Kode</th>
-                    <th class="px-4 py-2.5 font-semibold">Pelanggan</th>
-                    <th class="px-4 py-2.5 font-semibold">Status</th>
-                    <th class="px-4 py-2.5 text-right font-semibold">Total</th>
-                    <th class="px-4 py-2.5 text-right font-semibold">Sisa</th>
-                    <th class="px-4 py-2.5 font-semibold">Masuk</th>
+                    <th>Kode</th>
+                    <th>Pelanggan</th>
+                    <th>Status</th>
+                    <th class="text-right">Total</th>
+                    <th class="text-right">Sisa</th>
+                    <th>Masuk</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-line">
+            <tbody>
                 @foreach ($pesanan as $o)
                     <tr>
-                        <td class="px-4 py-3">
+                        <td>
                             <a href="{{ route('panel.pesanan.show', $o) }}" class="tautan font-medium tabular">
                                 {{ $o->kode }}
                             </a>
@@ -102,20 +107,20 @@
                                 <div class="text-xs text-muted tabular">Ambil: {{ $o->kode_ambil }}</div>
                             @endif
                         </td>
-                        <td class="px-4 py-3">
+                        <td>
                             {{ $o->customer->nama }}
                             <div class="text-xs text-muted">{{ $o->customer->no_hp }}</div>
                         </td>
-                        <td class="px-4 py-3">
+                        <td>
                             <span class="chip {{ $o->status === OrderStatus::SIAP_DIAMBIL ? 'chip-merah' : 'chip-navy' }}">
                                 {{ $o->status->label() }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-right tabular">{{ rupiah($o->total) }}</td>
-                        <td class="px-4 py-3 text-right tabular {{ $o->sisa_tagihan > 0 ? 'text-merah' : 'text-muted' }}">
+                        <td class="text-right tabular">{{ rupiah($o->total) }}</td>
+                        <td class="text-right tabular {{ $o->sisa_tagihan > 0 ? 'text-merah' : 'text-muted' }}">
                             {{ $o->sisa_tagihan > 0 ? rupiah($o->sisa_tagihan) : 'Lunas' }}
                         </td>
-                        <td class="px-4 py-3 text-muted tabular">{{ $o->created_at->translatedFormat('j M, H:i') }}</td>
+                        <td class="text-muted tabular">{{ $o->created_at->translatedFormat('j M, H:i') }}</td>
                     </tr>
                 @endforeach
             </tbody>

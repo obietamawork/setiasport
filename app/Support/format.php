@@ -16,12 +16,23 @@ if (! function_exists('rupiah_ringkas')) {
     {
         $n = (float) ($nominal ?? 0);
 
+        /*
+         * Nol di belakang koma dibuang, nol di belakang angka bulat TIDAK.
+         * Memotongnya tanpa memeriksa koma mengubah "10 rb" menjadi "1 rb",
+         * dan angka uang yang salah jauh lebih buruk daripada angka yang panjang.
+         */
+        $rapikan = function (string $angka): string {
+            return str_contains($angka, ',')
+                ? rtrim(rtrim($angka, '0'), ',')
+                : $angka;
+        };
+
         if ($n >= 1_000_000) {
-            return 'Rp '.rtrim(rtrim(number_format($n / 1_000_000, 1, ',', '.'), '0'), ',').' jt';
+            return 'Rp '.$rapikan(number_format($n / 1_000_000, 1, ',', '.')).' jt';
         }
 
         if ($n >= 1_000) {
-            return 'Rp '.rtrim(rtrim(number_format($n / 1_000, 0, ',', '.'), '0'), ',').' rb';
+            return 'Rp '.$rapikan(number_format($n / 1_000, 0, ',', '.')).' rb';
         }
 
         return rupiah($n);

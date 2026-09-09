@@ -2,18 +2,22 @@
 @section('judul', 'Antrian kerja')
 
 @section('isi')
-<h1 class="text-2xl font-extrabold">Antrian kerja</h1>
-<p class="mt-1 text-sm text-muted">Divisi yang menjadi tanggung jawab Anda.</p>
+<div class="kop-halaman">
+    <div>
+        <h1 class="kop-judul">Antrian kerja</h1>
+        <p class="kop-catatan">Divisi yang menjadi tanggung jawab Anda.</p>
+    </div>
+</div>
 
 @if (empty($tahap))
-    <div class="mt-6 border border-line bg-field p-8 text-center">
+    <div class="kartu mt-6 p-8 text-center">
         <p class="text-lg font-bold">Anda belum memegang antrian mana pun</p>
         <p class="mt-2 text-sm text-muted">
             Minta pemilik toko menambahkan peran produksi ke akun Anda.
         </p>
     </div>
 @else
-    <div class="mt-6 grid gap-px border border-line bg-line sm:grid-cols-2">
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
         @foreach ($tahap as $t)
             <a href="{{ route('panel.antrian.tahap', strtolower($t->value)) }}"
                class="flex items-baseline justify-between gap-4 bg-field p-6 hover:bg-navy-50">

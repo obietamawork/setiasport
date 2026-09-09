@@ -2,20 +2,55 @@
 @section('judul', $produk->exists ? $produk->nama : 'Tambah produk')
 
 @section('isi')
-<div class="flex items-baseline justify-between gap-4">
-    <h1 class="text-2xl font-extrabold">
-        {{ $produk->exists ? $produk->nama : 'Tambah produk' }}
-    </h1>
+<a href="{{ route('panel.produk.index') }}" class="tautan text-sm text-muted">Kembali ke daftar produk</a>
+
+<div class="kop-halaman mt-3">
+    <div>
+        <h1 class="kop-judul">{{ $produk->exists ? $produk->nama : 'Tambah produk' }}</h1>
+        @if ($produk->exists)
+            <p class="kop-catatan tabular">
+                {{ $produk->sku }}, {{ $produk->fulfillment_type->label() }}
+            </p>
+        @else
+            <p class="kop-catatan">
+                Isi keterangan dasarnya dulu. Gambar, varian, harga, dan opsi diisi
+                setelah produk dibuat.
+            </p>
+        @endif
+    </div>
+
     @if ($produk->exists)
-        <a href="{{ route('produk', $produk) }}" target="_blank" rel="noopener" class="tautan text-sm">
+        <a href="{{ route('produk', $produk) }}" target="_blank" rel="noopener" class="tombol tombol-garis tombol-sm">
             Lihat di toko
         </a>
     @endif
 </div>
 
+{{-- Halaman ini panjang. Tautan lompat membuat bagian yang dituju bisa dicapai
+     tanpa menggulir lima layar. --}}
+@if ($produk->exists)
+    <nav class="mb-6 flex flex-wrap gap-1 text-sm" aria-label="Bagian halaman">
+        @php
+            $bagian = array_filter([
+                ['#detail', 'Keterangan'],
+                ['#gambar', 'Gambar'],
+                $produk->punyaJalurReadyStock() ? ['#varian', 'Varian & stok'] : null,
+                $produk->punyaJalurKustom() ? ['#harga', 'Tier harga'] : null,
+                $produk->punyaJalurKustom() ? ['#opsi', 'Opsi'] : null,
+            ]);
+        @endphp
+        @foreach ($bagian as [$anchor, $label])
+            <a href="{{ $anchor }}"
+               class="rounded-[7px] bg-field px-3 py-1.5 font-medium text-muted transition-colors hover:bg-navy-50 hover:text-ink">
+                {{ $label }}
+            </a>
+        @endforeach
+    </nav>
+@endif
+
 <form method="POST"
       action="{{ $produk->exists ? route('panel.produk.update', $produk) : route('panel.produk.store') }}"
-      class="mt-6 max-w-2xl space-y-4 border border-line bg-field p-6"
+      id="detail" class="kartu max-w-2xl space-y-4 scroll-mt-20 p-6"
       x-data="{ jalur: '{{ old('fulfillment_type', $produk->fulfillment_type?->value ?? 'READY_STOCK') }}' }">
     @csrf
     @if ($produk->exists) @method('PUT') @endif
@@ -126,7 +161,7 @@
 @endunless
 
 @if ($produk->exists)
-<section class="mt-10 max-w-4xl">
+<section id="gambar" class="mt-10 max-w-4xl scroll-mt-20">
     <h2 class="text-lg font-extrabold">Gambar produk</h2>
     <p class="mt-1 text-sm text-muted">
         Bisa diunggah langsung ke hosting, atau ditunjuk ke tautan CDN. Yang diunggah
@@ -233,46 +268,46 @@
 @if ($produk->exists)
 
 @if ($produk->punyaJalurReadyStock())
-<section class="mt-10 max-w-4xl">
+<section id="varian" class="mt-10 max-w-4xl scroll-mt-20">
     <h2 class="text-lg font-extrabold">Varian &amp; stok</h2>
     <p class="mt-1 text-sm text-muted">
         Setiap kombinasi ukuran dan warna berdiri sendiri, lengkap dengan stoknya.
     </p>
 
-    <div class="mt-4 border border-line bg-field">
+    <div class="kartu mt-4 overflow-hidden">
         @if ($produk->variants->isEmpty())
             <p class="p-5 text-sm text-muted">
                 Belum ada varian. Produk tanpa varian tidak bisa dibeli dari stok: tambahkan
                 minimal satu di bawah.
             </p>
         @else
-            <table class="w-full text-sm">
-                <thead class="border-b border-line bg-paper text-left">
+            <table class="tabel">
+                <thead>
                     <tr>
-                        <th class="px-4 py-2 font-semibold">SKU</th>
-                        <th class="px-4 py-2 font-semibold">Ukuran</th>
-                        <th class="px-4 py-2 font-semibold">Warna</th>
-                        <th class="px-4 py-2 text-right font-semibold">Selisih harga</th>
-                        <th class="px-4 py-2 text-right font-semibold">Stok</th>
-                        <th class="px-4 py-2"></th>
+                        <th>SKU</th>
+                        <th>Ukuran</th>
+                        <th>Warna</th>
+                        <th class="text-right">Selisih harga</th>
+                        <th class="text-right">Stok</th>
+                        <th></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-line">
+                <tbody>
                     @foreach ($produk->variants as $v)
                         <tr>
-                            <td class="px-4 py-2 tabular">{{ $v->sku }}</td>
-                            <td class="px-4 py-2">{{ $v->ukuran ?? '-' }}</td>
-                            <td class="px-4 py-2">{{ $v->warna ?? '-' }}</td>
-                            <td class="px-4 py-2 text-right tabular">
+                            <td class="tabular">{{ $v->sku }}</td>
+                            <td>{{ $v->ukuran ?? '-' }}</td>
+                            <td>{{ $v->warna ?? '-' }}</td>
+                            <td class="text-right tabular">
                                 {{ $v->tambahan_harga === 0 ? '-' : ($v->tambahan_harga > 0 ? '+' : '−').rupiah(abs($v->tambahan_harga)) }}
                             </td>
-                            <td class="px-4 py-2 text-right tabular">
+                            <td class="text-right tabular">
                                 {{ $v->stok }}
                                 @if ($v->stok_dipesan > 0)
                                     <span class="text-xs text-muted">({{ $v->stok_dipesan }} dipesan)</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-2 text-right">
+                            <td class="text-right">
                                 <form method="POST" action="{{ route('panel.produk.varian.hapus', [$produk, $v]) }}"
                                       onsubmit="return confirm('Hapus varian {{ $v->sku }}?')">
                                     @csrf @method('DELETE')
@@ -305,34 +340,34 @@
 @endif
 
 @if ($produk->punyaJalurKustom())
-<section class="mt-10 max-w-4xl">
+<section id="harga" class="mt-10 max-w-4xl scroll-mt-20">
     <h2 class="text-lg font-extrabold">Tier harga kustom</h2>
     <p class="mt-1 text-sm text-muted">
         Harga per pcs menurut jumlah pesanan. Tanpa ini, pelanggan tidak bisa menghitung
         biayanya sendiri dan akan bertanya ke admin.
     </p>
 
-    <div class="mt-4 border border-line bg-field">
+    <div class="kartu mt-4 overflow-hidden">
         @if ($produk->priceTiers->isEmpty())
             <p class="border-l-2 border-merah p-5 text-sm">
                 Belum ada tier harga. Produk kustom tidak bisa dihitung harganya sampai
                 minimal satu tier diisi.
             </p>
         @else
-            <table class="w-full text-sm">
-                <thead class="border-b border-line bg-paper text-left">
+            <table class="tabel">
+                <thead>
                     <tr>
-                        <th class="px-4 py-2 font-semibold">Jumlah</th>
-                        <th class="px-4 py-2 text-right font-semibold">Harga per pcs</th>
-                        <th class="px-4 py-2"></th>
+                        <th>Jumlah</th>
+                        <th class="text-right">Harga per pcs</th>
+                        <th></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-line">
+                <tbody>
                     @foreach ($produk->priceTiers as $t)
                         <tr>
-                            <td class="px-4 py-2 tabular">{{ $t->label }}</td>
-                            <td class="px-4 py-2 text-right tabular">{{ rupiah($t->harga_satuan) }}</td>
-                            <td class="px-4 py-2 text-right">
+                            <td class="tabular">{{ $t->label }}</td>
+                            <td class="text-right tabular">{{ rupiah($t->harga_satuan) }}</td>
+                            <td class="text-right">
                                 <form method="POST" action="{{ route('panel.produk.tier.hapus', [$produk, $t]) }}">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="tautan text-muted">Hapus</button>
@@ -358,7 +393,7 @@
     </div>
 </section>
 
-<section class="mt-10 max-w-4xl">
+<section id="opsi" class="mt-10 max-w-4xl scroll-mt-20">
     <h2 class="text-lg font-extrabold">Opsi produk</h2>
     <p class="mt-1 text-sm text-muted">
         Bahan, lengan, kerah, nameset, dan biaya setup. Perhatikan kolom cara hitung: biaya setup dikenakan sekali per pesanan, bukan per potong.
@@ -366,7 +401,7 @@
 
     <div class="mt-4 space-y-4">
         @foreach ($produk->options as $opsi)
-            <div class="border border-line bg-field">
+            <div class="kartu overflow-hidden">
                 <div class="flex items-center gap-3 border-b border-line px-4 py-2.5">
                     <span class="font-semibold">{{ $opsi->nama }}</span>
                     @unless ($opsi->wajib)
@@ -396,7 +431,7 @@
                             </form>
                         </li>
                     @empty
-                        <li class="px-4 py-3 text-muted">Belum ada pilihan untuk opsi ini.</li>
+                        <li class="text-muted">Belum ada pilihan untuk opsi ini.</li>
                     @endforelse
                 </ul>
 
@@ -418,7 +453,7 @@
         @endforeach
 
         <form method="POST" action="{{ route('panel.produk.opsi.simpan', $produk) }}"
-              class="flex flex-wrap items-end gap-3 border border-line bg-field p-4">
+              class="kartu flex flex-wrap items-end gap-3 p-4">
             @csrf
             <div class="w-56"><label class="label-form">Nama opsi baru</label>
                 <input type="text" name="nama" class="kotak-input" required placeholder="Bahan"></div>
@@ -433,7 +468,7 @@
 @endif
 
 <form method="POST" action="{{ route('panel.produk.destroy', $produk) }}"
-      class="mt-10 max-w-4xl border-t border-line pt-5"
+      class="zona-bahaya max-w-4xl"
       onsubmit="return confirm('Hapus produk {{ $produk->nama }}?')">
     @csrf @method('DELETE')
     <button type="submit" class="tautan text-sm text-muted">Hapus produk ini</button>

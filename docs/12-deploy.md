@@ -87,7 +87,16 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-Lalu **ganti kata sandi seluruh akun bawaan** — semuanya masih `password`.
+Lalu **ganti kata sandi kedua akun bawaan**, keduanya masih `password`:
+
+```bash
+php artisan staf:sandi owner@setiasport.test
+php artisan staf:sandi admin@setiasport.test
+```
+
+Perintah yang sama dipakai kalau pemilik toko lupa kata sandinya. Pemulihan
+lewat email sengaja tidak dibuat: ia bergantung pada cron dan Resend, dan
+keduanya justru bisa ikut bermasalah saat dibutuhkan.
 
 Izin tulis yang dibutuhkan: `storage/` dan `bootstrap/cache/`.
 

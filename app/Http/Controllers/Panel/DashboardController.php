@@ -8,9 +8,10 @@ use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\EmailLog;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
-use App\Services\KesehatanSistem;
 use App\Models\ProductVariant;
+use App\Services\KesehatanSistem;
 use Illuminate\Contracts\View\View;
 
 /**
@@ -27,9 +28,22 @@ class DashboardController extends Controller
 
         $peringatanHari = (int) \App\Models\Setting::ambil('ambil_peringatan_hari', 7);
 
+        $hariIni = now()->startOfDay();
+
         return view('panel.dashboard', [
             // Kegagalan senyap didahulukan: yang tidak terlihat itulah yang mahal.
             'masalahSistem' => $kesehatan->masalah(),
+
+            /*
+             * Pemilik toko membuka halaman ini tiap pagi. Pertanyaan pertamanya
+             * selalu sama: apa yang terjadi hari ini, dan apa yang menunggu.
+             */
+            'pesananHariIni' => Order::whereDate('created_at', $hariIni)->count(),
+            'uangHariIni' => (int) Payment::where('status', PaymentStatus::LUNAS)
+                ->whereDate('dibayar_pada', $hariIni)
+                ->sum('jumlah'),
+            'siapDiambil' => Order::where('status', OrderStatus::SIAP_DIAMBIL)->count(),
+            'sedangDikerjakan' => Order::where('status', OrderStatus::DIPROSES)->count(),
             // Pesanan lebih mendesak daripada katalog, jadi tampil lebih dulu.
             'perluVerifikasi' => Order::query()
                 ->with('customer')

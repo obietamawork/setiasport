@@ -44,6 +44,18 @@ class PriceCalculatorTest extends TestCase
             ->all();
     }
 
+    public function test_singkatan_rupiah_tidak_memotong_nol_signifikan(): void
+    {
+        // Memotong nol tanpa memeriksa koma mengubah "10 rb" menjadi "1 rb",
+        // dan angka uang yang salah jauh lebih buruk daripada angka yang panjang.
+        $this->assertSame('Rp 10 rb', rupiah_ringkas(10_000));
+        $this->assertSame('Rp 90 rb', rupiah_ringkas(90_000));
+        $this->assertSame('Rp 100 rb', rupiah_ringkas(100_000));
+        $this->assertSame('Rp 2 jt', rupiah_ringkas(2_000_000));
+        $this->assertSame('Rp 2,2 jt', rupiah_ringkas(2_235_000));
+        $this->assertSame('Rp 999', rupiah_ringkas(999));
+    }
+
     public function test_contoh_resmi_kep_009_menghasilkan_2_235_000(): void
     {
         $p = $this->jersey();

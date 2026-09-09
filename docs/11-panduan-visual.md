@@ -81,6 +81,19 @@ di jalan. Hasil auditnya ada di [13-audit-ui.md](13-audit-ui.md).
 - Kotak berasio tidak pernah memuat gambar ber-`h-full`. Pakai `absolute
   inset-0`, kalau tidak ukuran asli gambar diam-diam menentukan tinggi kotak
 
+### Panel internal
+
+Satu kop halaman, satu kelas kartu, satu kelas tabel. Halaman yang dipakai
+berjam-jam tiap hari tidak boleh menuntut penyesuaian ulang di tiap layar.
+
+- Menu dikelompokkan menurut jenis pekerjaan, dan yang menyimpan pekerjaan
+  tertunda memakai penghitung
+- Lebar kerja dibatasi `.kolom-kerja`, bukan mengikuti lebar layar
+- Formulir yang jarang dipakai dilipat di balik ringkasan
+- Tindakan berisiko turun ke `.zona-bahaya` yang diredam, tidak sebobot kartu
+  informasi di sebelahnya
+- Grid dua kolom baru aktif mulai `lg`; di bawah itu tumpukan biasa
+
 ### Kartu katalog
 
 Mengikuti kebiasaan marketplace, bukan kartu artikel: **dua kolom di HP**, empat

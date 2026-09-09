@@ -22,7 +22,7 @@
 @endif
 
 @if ($pekerjaan->isEmpty())
-    <div class="mt-6 border border-line bg-field p-8 text-center">
+    <div class="kartu mt-6 p-8 text-center">
         <p class="text-lg font-bold">Antrian kosong</p>
         <p class="mt-2 text-sm text-muted">
             Tidak ada pekerjaan {{ Str::lower($stage->label()) }} yang menunggu. Cek lagi nanti.
@@ -38,7 +38,7 @@
                 $dikerjakan = $job?->status === ProductionStatus::DIKERJAKAN;
             @endphp
 
-            <div class="border border-line bg-field {{ $dikerjakan ? 'border-l-2 border-l-merah' : '' }}">
+            <div class="kartu overflow-hidden {{ $dikerjakan ? 'border-l-2 border-l-merah' : '' }}">
                 <div class="flex flex-wrap items-start gap-3 p-4">
                     <div class="min-w-50 flex-1">
                         <p class="font-bold">{{ $item->nama_produk }}</p>

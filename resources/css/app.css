@@ -329,3 +329,122 @@
         border-radius: 2px;
     }
 }
+
+@layer components {
+
+    /* ------------------------------------------------ kerangka panel */
+
+    /* Baris data yang meregang sampai 1400px memaksa mata berjalan jauh dari
+       label ke angkanya. Lebar kerja dibatasi, bukan lebar layar. */
+    .kolom-kerja {
+        max-width: 78rem;
+    }
+
+    .kop-halaman {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .kop-judul {
+        font-size: 1.5rem;
+        font-weight: 800;
+        letter-spacing: -0.021em;
+        line-height: 1.2;
+    }
+
+    .kop-catatan {
+        margin-top: 0.3rem;
+        max-width: 62ch;
+        font-size: 0.875rem;
+        line-height: 1.55;
+        color: var(--color-muted);
+    }
+
+    /* Kelompok menu sidebar. Delapan tautan datar memaksa membaca semuanya
+       setiap kali; dikelompokkan, mata langsung ke bagian yang dituju. */
+    .grup-menu {
+        margin-top: 1.25rem;
+        margin-bottom: 0.35rem;
+        padding-inline: 0.75rem;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--color-navy-300);
+    }
+
+    .grup-menu:first-child {
+        margin-top: 0;
+    }
+
+    /* Penghitung di samping menu: yang menunggu ditangani harus terlihat
+       tanpa perlu membuka halamannya. */
+    .lencana-menu {
+        margin-left: auto;
+        display: inline-flex;
+        min-width: 1.25rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding-inline: 0.35rem;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ------------------------------------------------ bagian & aksi */
+
+    /* Formulir yang jarang dipakai disembunyikan di balik ringkasan, supaya
+       layar tidak dipenuhi kotak isian yang menganggur. */
+    .lipatan > summary {
+        cursor: pointer;
+        list-style: none;
+        padding: 0.7rem 1.15rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-navy-700);
+    }
+
+    .lipatan > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .lipatan > summary::before {
+        content: "+";
+        display: inline-block;
+        width: 1rem;
+        font-weight: 700;
+    }
+
+    .lipatan[open] > summary::before {
+        content: "\2212";
+    }
+
+    .lipatan > summary:hover {
+        background: var(--color-navy-50);
+    }
+
+    /* Zona tindakan berisiko: dipisah dan diredam, tidak sebobot kartu info. */
+    .zona-bahaya {
+        margin-top: 2.5rem;
+        border-top: 1px solid var(--color-line);
+        padding-top: 1.25rem;
+    }
+
+    /* Tahapan ringkas untuk staf. Pelanggan melihat garis waktu penuh; staf
+       cukup tahu posisi sekarang dan berapa langkah tersisa. */
+    .tahap-titik {
+        display: inline-block;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 999px;
+        background: var(--color-line-strong);
+    }
+
+    .tahap-titik-lewat { background: var(--color-navy); }
+    .tahap-titik-kini { background: var(--color-merah); box-shadow: 0 0 0 3px var(--color-merah-50); }
+}

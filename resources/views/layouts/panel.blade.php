@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('judul', 'Panel') | {{ setting('toko_nama', 'Setia Sport') }}</title>
     <meta name="theme-color" content="#0d1733">
+    <meta name="robots" content="noindex">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -16,16 +17,28 @@
 
 @php
     $u = auth('web')->user();
-    $menu = [
-        ['panel.dashboard', 'Dashboard', null, 'panel.dashboard'],
-        ['panel.pesanan.index', 'Pesanan', 'order.lihat', 'panel.pesanan.*'],
-        ['panel.antrian.index', 'Antrian kerja', null, 'panel.antrian.*'],
-        ['panel.serah-terima', 'Serah terima', 'serah_terima.proses', 'panel.serah-terima'],
-        ['panel.produk.index', 'Produk', 'katalog.kelola', 'panel.produk.*'],
-        ['panel.kategori.index', 'Kategori', 'katalog.kelola', 'panel.kategori.*'],
-        ['panel.stok.index', 'Stok', 'stok.kelola', 'panel.stok.*'],
-        ['panel.laporan', 'Laporan', 'laporan.lihat', 'panel.laporan'],
-        ['panel.pengaturan.index', 'Pengaturan', 'pengaturan.kelola', 'panel.pengaturan.*'],
+
+    /*
+     * Menu dikelompokkan menurut jenis pekerjaannya. Delapan tautan datar
+     * memaksa staf membaca semuanya setiap kali; dikelompokkan, mata langsung
+     * menuju bagian yang dicari.
+     */
+    $grup = [
+        'Operasional' => [
+            ['panel.dashboard', 'Dashboard', null, 'panel.dashboard', null],
+            ['panel.pesanan.index', 'Pesanan', 'order.lihat', 'panel.pesanan.*', $jumlahPesananAktif ?? null],
+            ['panel.antrian.index', 'Antrian kerja', null, 'panel.antrian.*', $jumlahAntrian ?? null],
+            ['panel.serah-terima', 'Serah terima', 'serah_terima.proses', 'panel.serah-terima', $jumlahSiapDiambil ?? null],
+        ],
+        'Katalog' => [
+            ['panel.produk.index', 'Produk', 'katalog.kelola', 'panel.produk.*', null],
+            ['panel.kategori.index', 'Kategori', 'katalog.kelola', 'panel.kategori.*', null],
+            ['panel.stok.index', 'Stok', 'stok.kelola', 'panel.stok.*', null],
+        ],
+        'Toko' => [
+            ['panel.laporan', 'Laporan', 'laporan.lihat', 'panel.laporan', null],
+            ['panel.pengaturan.index', 'Pengaturan', 'pengaturan.kelola', 'panel.pengaturan.*', null],
+        ],
     ];
 @endphp
 
@@ -46,15 +59,17 @@
             <span class="hidden text-xs font-medium text-white/45 sm:inline">Panel internal</span>
         </a>
 
-        <div class="ml-auto flex items-center gap-2 text-sm">
+        <div class="ml-auto flex items-center gap-1 text-sm">
             <a href="{{ route('beranda') }}" target="_blank" rel="noopener"
                class="hidden rounded-[7px] px-2.5 py-1.5 text-white/70 hover:bg-white/10 hover:text-white sm:block">
                 Lihat toko
             </a>
 
-            <div class="hidden items-center gap-2 border-l border-white/15 pl-3 sm:flex">
-                <span class="text-white/80">{{ $u->name }}</span>
-                <span class="chip bg-white/10 text-white/70">{{ $u->roles->pluck('nama')->implode(', ') }}</span>
+            {{-- Satu blok identitas saja. Nama dan peran berdampingan sebagai dua
+                 label terpisah hanya mengulang hal yang sama. --}}
+            <div class="mr-1 ml-2 hidden border-l border-white/15 pl-3 leading-tight sm:block">
+                <p class="font-medium">{{ $u->name }}</p>
+                <p class="text-xs text-white/50">{{ $u->roles->pluck('nama')->implode(', ') }}</p>
             </div>
 
             <form method="POST" action="{{ route('panel.keluar') }}">
@@ -65,41 +80,61 @@
     </div>
 </header>
 
-<div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:gap-7">
+<div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:gap-8">
     {{-- Di mobile sidebar tampil sebagai blok penuh di atas konten. Sebagai
          kolom sempit ia menghimpit isi layar sampai tidak terbaca. --}}
     <aside :class="menu ? 'block' : 'hidden'" class="w-full shrink-0 lg:block lg:w-52">
-        <nav class="space-y-0.5 text-sm" aria-label="Navigasi panel">
-            @foreach ($menu as [$rute, $label, $izin, $pola])
-                @continue($izin && ! $u->punyaIzin($izin))
-                @continue($rute === 'panel.antrian.index' && empty($u->tahapProduksi()))
-                @php $aktif = request()->routeIs($pola); @endphp
-                <a href="{{ route($rute) }}" @click="menu = false"
-                   class="block rounded-[7px] px-3 py-2.5 font-medium transition-colors lg:py-2
-                          {{ $aktif ? 'bg-navy text-white' : 'text-ink hover:bg-navy-50' }}">
-                    {{ $label }}
-                </a>
+        <nav class="text-sm" aria-label="Navigasi panel">
+            @foreach ($grup as $namaGrup => $tautan)
+                @php
+                    $terlihat = collect($tautan)->filter(function ($t) use ($u) {
+                        if ($t[2] && ! $u->punyaIzin($t[2])) {
+                            return false;
+                        }
+
+                        return ! ($t[0] === 'panel.antrian.index' && empty($u->tahapProduksi()));
+                    });
+                @endphp
+                @continue($terlihat->isEmpty())
+
+                <p class="grup-menu">{{ $namaGrup }}</p>
+
+                @foreach ($terlihat as [$rute, $label, $izin, $pola, $jumlah])
+                    @php $aktif = request()->routeIs($pola); @endphp
+                    <a href="{{ route($rute) }}" @click="menu = false"
+                       class="flex items-center gap-2 rounded-[7px] px-3 py-2.5 font-medium transition-colors lg:py-2
+                              {{ $aktif ? 'bg-navy text-white' : 'text-ink hover:bg-navy-50' }}">
+                        <span>{{ $label }}</span>
+                        @if ($jumlah)
+                            <span class="lencana-menu {{ $aktif ? 'bg-white/20 text-white' : 'bg-navy-100 text-navy-800' }}">
+                                {{ $jumlah }}
+                            </span>
+                        @endif
+                    </a>
+                @endforeach
             @endforeach
         </nav>
     </aside>
 
     <main class="min-w-0 flex-1">
-        @if (session('sukses'))
-            <p class="notis notis-ok mb-5">{{ session('sukses') }}</p>
-        @endif
+        <div class="kolom-kerja">
+            @if (session('sukses'))
+                <p class="notis notis-ok mb-5">{{ session('sukses') }}</p>
+            @endif
 
-        @if ($errors->any())
-            <div class="notis notis-galat mb-5">
-                <p class="font-semibold">Ada yang perlu diperbaiki</p>
-                <ul class="mt-1 list-inside list-disc space-y-0.5">
-                    @foreach ($errors->all() as $pesan)
-                        <li>{{ $pesan }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+            @if ($errors->any())
+                <div class="notis notis-galat mb-5">
+                    <p class="font-semibold">Ada yang perlu diperbaiki</p>
+                    <ul class="mt-1 list-inside list-disc space-y-0.5">
+                        @foreach ($errors->all() as $pesan)
+                            <li>{{ $pesan }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-        @yield('isi')
+            @yield('isi')
+        </div>
     </main>
 </div>
 

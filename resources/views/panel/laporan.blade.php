@@ -2,10 +2,10 @@
 @section('judul', 'Laporan')
 
 @section('isi')
-<div class="flex flex-wrap items-baseline justify-between gap-3">
+<div class="kop-halaman">
     <div>
-        <h1 class="text-2xl font-extrabold">Laporan</h1>
-        <p class="tabular mt-1 text-sm text-muted">
+        <h1 class="kop-judul">Laporan</h1>
+        <p class="kop-catatan tabular">
             {{ $labelPeriode }}: {{ $dari->translatedFormat('j M Y') }} sampai
             {{ $sampai->translatedFormat('j M Y') }}
         </p>

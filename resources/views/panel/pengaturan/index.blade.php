@@ -2,17 +2,19 @@
 @section('judul', 'Pengaturan')
 
 @section('isi')
-<h1 class="text-2xl font-extrabold">Pengaturan</h1>
-<p class="mt-1 text-sm text-muted">
-    Nilai-nilai ini dipakai di seluruh sistem: halaman produk, checkout, dan email
-    pelanggan ikut berubah begitu disimpan.
-</p>
+<div class="kop-halaman">
+    <div>
+        <h1 class="kop-judul">Pengaturan</h1>
+        <p class="kop-catatan">Nilai-nilai ini dipakai di seluruh sistem: halaman produk, checkout, dan email
+    pelanggan ikut berubah begitu disimpan.</p>
+    </div>
+</div>
 
 <form method="POST" action="{{ route('panel.pengaturan.update') }}" class="mt-6 max-w-2xl space-y-6">
     @csrf @method('PUT')
 
     @foreach ($grup as $namaGrup => $daftar)
-        <section class="border border-line bg-field">
+        <section class="kartu overflow-hidden">
             <h2 class="border-b border-line px-5 py-3 font-semibold capitalize">{{ $namaGrup }}</h2>
             <div class="space-y-4 p-5">
                 @foreach ($daftar as $s)

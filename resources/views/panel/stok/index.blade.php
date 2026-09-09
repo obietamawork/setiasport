@@ -2,11 +2,13 @@
 @section('judul', 'Stok')
 
 @section('isi')
-<h1 class="text-2xl font-extrabold">Stok</h1>
-<p class="mt-1 text-sm text-muted">
-    Hanya produk yang dijual dari rak. Angka dalam kurung adalah stok yang sudah
-    direservasi pesanan dan tidak boleh dijual ulang.
-</p>
+<div class="kop-halaman">
+    <div>
+        <h1 class="kop-judul">Stok</h1>
+        <p class="kop-catatan">Hanya produk yang dijual dari rak. Angka dalam kurung adalah stok yang sudah
+    direservasi pesanan dan tidak boleh dijual ulang.</p>
+    </div>
+</div>
 
 <form method="GET" class="mt-5 flex flex-wrap gap-2">
     <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari produk atau SKU"
@@ -19,7 +21,7 @@
 </form>
 
 @if ($varian->isEmpty())
-    <div class="mt-6 border border-line bg-field p-8 text-center">
+    <div class="kartu mt-6 p-8 text-center">
         <p class="text-lg font-bold">Tidak ada varian yang cocok</p>
         <p class="mt-2 text-sm text-muted">
             Varian ditambahkan dari halaman ubah produk, di bagian Varian &amp; stok.

@@ -8,7 +8,7 @@
 
 <form method="POST"
       action="{{ $kategori->exists ? route('panel.kategori.update', $kategori) : route('panel.kategori.store') }}"
-      class="mt-6 max-w-xl space-y-4 border border-line bg-field p-6">
+      class="kartu mt-6 max-w-xl space-y-4 p-6">
     @csrf
     @if ($kategori->exists) @method('PUT') @endif
 
