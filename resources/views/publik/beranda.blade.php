@@ -8,8 +8,12 @@
 @section('isi')
 
 @php
-    // Klien: pertanyaan dan konsultasi lewat chat CS di website, bukan WhatsApp (KEP-030).
-    $csAktif = setting('cs_aktif', true);
+    // Klien: konsultasi lewat chat CS di website (KEP-030). Kalau CS dimatikan
+    // (KEP-033), tombolnya jatuh ke WhatsApp supaya ajakan utama tidak hilang.
+    $csAktif = cs_aktif();
+    $waKonsultasi = $csAktif ? null : tautan_wa(
+        'Halo '.setting('toko_nama', 'Setia Sport').', saya mau tanya soal pemesanan jersey.'
+    );
 @endphp
 
 {{-- Halaman depan menjawab "kalian ini siapa" lebih dulu, bukan "beli apa"
@@ -38,6 +42,10 @@
                 <button type="button" x-data @click="$dispatch('buka-cs', { topik: 'KUSTOM' })" class="tombol tombol-utama">
                     Konsultasi dengan CS
                 </button>
+            @elseif ($waKonsultasi)
+                <a href="{{ $waKonsultasi }}" target="_blank" rel="noopener" class="tombol tombol-utama">
+                    Konsultasi lewat WhatsApp
+                </a>
             @endif
             <a href="{{ route('katalog') }}" class="tombol tombol-garis">Lihat katalog</a>
         </div>
@@ -126,7 +134,7 @@
 
     <ol class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ([
-            ['Bicarakan dulu', 'Kirim contoh desain atau ceritakan maunya lewat chat CS di website ini. Kami hitungkan harganya sesuai jumlah tim.'],
+            ['Bicarakan dulu', 'Kirim contoh desain atau ceritakan maunya lewat '.kanal_kontak().'. Kami hitungkan harganya sesuai jumlah tim.'],
             ['Setujui mockupnya', 'Kami kirim gambar jadi sebelum apa pun dicetak. Boleh direvisi sampai '.setting('revisi_gratis_maks', 3).' kali tanpa biaya.'],
             ['Kami kerjakan', 'Printing, jahit, sampai packing. Setiap tahapnya terlihat di halaman pesanan Anda sendiri.'],
             ['Lunasi, lalu ambil', 'Kami kabari begitu jadi. Lunasi sisanya lewat transfer atau di kasir, lalu ambil di toko dengan kode ambil.'],
@@ -219,7 +227,7 @@
         <div>
             <p class="font-semibold">Hubungi kami</p>
             <p class="mt-2 leading-relaxed text-muted">
-                Pertanyaan, konsultasi jersey, dan komplain dilayani lewat chat CS di website ini,
+                Pertanyaan, konsultasi jersey, dan komplain dilayani lewat {{ kanal_kontak() }},
                 {{ Str::lcfirst((string) setting('cs_jam_layanan')) }}.
             </p>
             @if (setting('toko_telepon'))
@@ -231,6 +239,10 @@
                 <button type="button" x-data @click="$dispatch('buka-cs', {})" class="tombol tombol-navy mt-5">
                     Chat dengan CS
                 </button>
+            @elseif ($waKonsultasi)
+                <a href="{{ $waKonsultasi }}" target="_blank" rel="noopener" class="tombol tombol-navy mt-5">
+                    Hubungi lewat WhatsApp
+                </a>
             @endif
         </div>
 
@@ -240,7 +252,7 @@
                 Jersey dan barang konveksi selalu diambil di toko. Ukurannya dicoba di tempat,
                 dan kalau ada yang meleset kami perbaiki saat itu juga. Perlengkapan olahraga
                 yang sudah ada di rak bisa dikirim untuk pelanggan yang jauh; ongkirnya disepakati
-                lewat chat CS lebih dulu.
+                lewat {{ kanal_kontak() }} lebih dulu.
             </p>
             <a href="{{ route('lacak') }}" class="tautan mt-3 inline-block text-sm">Lacak pesanan yang sudah masuk</a>
         </div>

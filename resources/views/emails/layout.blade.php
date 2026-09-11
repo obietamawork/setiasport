@@ -17,7 +17,7 @@
       <p style="margin:0 0 6px;">{{ setting('toko_alamat') }}</p>
       <p style="margin:0 0 6px;">Jam buka:<br>{{ baris_html(setting('toko_jam_buka')) }}</p>
       <p style="margin:0;">
-        Pesanan diambil sendiri di toko. Ada pertanyaan atau komplain? Hubungi kami lewat chat CS di website.
+        Pesanan diambil sendiri di toko. Ada pertanyaan atau komplain? Hubungi kami lewat {{ kanal_kontak() }}.
       </p>
     </div>
   </div>

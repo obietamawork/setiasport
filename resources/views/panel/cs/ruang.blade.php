@@ -14,7 +14,7 @@
 
         <div class="ml-auto flex items-center gap-1 text-sm">
             {{-- Pelanggan melihat status ini di jendela chat mereka (KEP-031). --}}
-            <button type="button" @click="gantiMenerima()" role="switch" :aria-checked="menerima"
+            <button type="button" x-show="{{ $awal['aktif'] ? 'true' : 'false' }}" @click="gantiMenerima()" role="switch" :aria-checked="menerima"
                     class="flex items-center gap-2 rounded-full px-3 py-1.5 font-medium transition-colors"
                     :class="menerima ? 'bg-white/10 hover:bg-white/15' : 'text-white/60 hover:bg-white/10'">
                 <span class="size-2 rounded-full" :class="menerima ? 'bg-emerald-400' : 'bg-white/40'"></span>
@@ -40,6 +40,15 @@
             </a>
         </div>
     </header>
+
+    @unless ($awal['aktif'])
+        {{-- CS dimatikan di Pengaturan (KEP-033). Riwayatnya tetap catatan resmi
+             komplain, jadi tetap bisa dibaca, tapi tidak bisa dibalas. --}}
+        <p class="shrink-0 border-b border-kuning/40 bg-kuning-50 px-4 py-2 text-sm">
+            Chat CS sedang dimatikan, jadi ini arsip: riwayat bisa dibaca tapi tidak bisa dibalas.
+            Nyalakan lagi di <a href="{{ route('panel.pengaturan.index') }}" class="tautan">Pengaturan</a>.
+        </p>
+    @endunless
 
     {{-- grid-cols-1 di dasar WAJIB: tanpa kolom eksplisit, satu-satunya kolom
          di HP melebar mengikuti isinya dan teks yang dipotong ikut meluber. --}}
@@ -201,7 +210,7 @@
                         <strong x-text="lamaMenunggu(terpilih.menunggu_sejak)"></strong>.
                     </p>
 
-                    <form @submit.prevent="kirim()" class="relative shrink-0 border-t border-line bg-field px-3 py-3 sm:px-5">
+                    <form x-show="{{ $awal['aktif'] ? 'true' : 'false' }}" @submit.prevent="kirim()" class="relative shrink-0 border-t border-line bg-field px-3 py-3 sm:px-5">
                         {{-- Template sebagai daftar yang bisa dicari, bukan deretan tombol
                              yang harus digeser. Mengetik "/" di awal kolom membukanya. --}}
                         <div x-show="popover" x-cloak @click.outside="popover = false" x-transition.opacity.duration.100ms

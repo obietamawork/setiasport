@@ -40,9 +40,14 @@ class PanelServiceProvider extends ServiceProvider
                 'jumlahAntrian' => $this->antrian($user),
 
                 // Chat CS (KEP-030): percakapan yang pesannya belum dibaca staf.
-                'csBelumDibaca' => $user->punyaIzin('cs.balas')
+                // Saat CS dimatikan (KEP-033) tidak ada bunyi dan tidak ada polling.
+                'csBelumDibaca' => cs_aktif() && $user->punyaIzin('cs.balas')
                     ? PercakapanCs::where('belum_dibaca_staf', '>', 0)->pluck('id')->all()
                     : null,
+
+                // Menu tetap ada selama masih ada arsip: log chat adalah catatan
+                // resmi komplain, jadi mematikan CS tidak boleh menyembunyikannya.
+                'csTampilMenu' => cs_aktif() || PercakapanCs::query()->exists(),
             ]);
         });
     }

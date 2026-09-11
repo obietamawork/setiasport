@@ -1049,6 +1049,36 @@ punya QRIS, jadi QRIS yang diganti lewat panel tidak tertimpa.
 
 ---
 
+## KEP-033 — Satu kode, dua versi: chat CS sebagai saklar
+**Status:** TERKUNCI · 2026-09-11
+
+Klien belum yakin akan memakai chat CS. Dua branch terpisah ("dengan CS" dan "tanpa CS")
+ditolak: setiap revisi harus dikerjakan dua kali dan kedua versi pasti berselisih diam-diam.
+Yang dipakai adalah **saklar "Tampilkan Chat CS" di Pengaturan**, sehingga klien bisa
+memutuskan kapan saja, bahkan setelah website berjalan, tanpa developer.
+
+Saklar yang ada sebelumnya belum tuntas, dan tesnya membuktikan itu: mematikannya membuat
+halaman depan dan halaman pesanan **error 500**, karena fungsi tautan WhatsApp sudah
+terhapus sebagai kode mati. Selain itu hanya dua dari enam endpoint chat pelanggan yang
+ikut saklar, dan belasan teks masih menyuruh pelanggan "hubungi lewat chat CS".
+
+**Saat CS dimatikan:**
+- Jendela chat hilang; semua endpoint chat pelanggan menjawab 404, termasuk untuk pelanggan
+  yang sudah punya percakapan, supaya tidak ada pesan yang masuk ke kotak yang tidak dibaca
+- Semua teks "hubungi kami lewat ..." di halaman dan email beralih ke WhatsApp toko lewat
+  satu helper, `kanal_kontak()`. Tombol konsultasi jadi tautan WhatsApp
+- Panel: tanpa bunyi, tanpa polling, tanpa email peringatan. Menu berganti jadi **Arsip
+  chat** selama masih ada riwayat, karena log chat adalah catatan resmi komplain; ruang CS
+  jadi baca-saja
+- WhatsApp hanya dipakai untuk **kontak**. Bukti bayar tetap diunggah di website (KEP-029),
+  dan halaman pembayaran tidak pernah menampilkan tautan WhatsApp
+
+**Yang perlu diketahui klien saat memutuskan:** tanpa CS, jalur kontak kembali ke WhatsApp,
+dan alasan klien sendiri untuk CS (komplain tercatat di satu tempat, pelanggan tidak dialihkan
+ke WhatsApp tempat penipu menyamar) tidak lagi berlaku.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1085,3 +1115,4 @@ punya QRIS, jadi QRIS yang diganti lewat panel tidak tertimpa.
 | KEP-030 | Chat CS: Pusher sebagai pengantar, UI dan catatan milik sendiri | TERKUNCI |
 | KEP-031 | Ruang CS: antarmuka tersendiri, akun yang sama | TERKUNCI |
 | KEP-032 | Data asli klien: dua lokasi, jam operasional, aset merek | TERKUNCI |
+| KEP-033 | Satu kode, dua versi: chat CS sebagai saklar | TERKUNCI |

@@ -134,13 +134,13 @@
         <div>
             <p class="text-sm font-semibold">Hubungi kami</p>
             <p class="mt-2 text-sm leading-relaxed text-muted">
-                Chat CS di website, {{ Str::lcfirst((string) setting('cs_jam_layanan')) }}.
+                {{ cs_aktif() ? 'Chat CS di website' : 'Lewat WhatsApp' }}, {{ Str::lcfirst((string) setting('cs_jam_layanan')) }}.
             </p>
             @if (setting('toko_telepon'))
                 <p class="tabular mt-1 text-sm text-muted">WhatsApp {{ setting('toko_telepon') }}</p>
             @endif
             <p class="mt-3 text-sm leading-relaxed text-muted">
-                Pesanan diambil sendiri di toko. Barang stok bisa dikirim, diatur lewat chat CS.
+                Pesanan diambil sendiri di toko. Barang stok bisa dikirim, diatur lewat {{ cs_aktif() ? 'chat CS' : 'WhatsApp' }}.
             </p>
         </div>
     </div>
@@ -152,7 +152,7 @@
     </div>
 </footer>
 
-@if (setting('cs_aktif', true))
+@if (cs_aktif())
     @include('komponen.widget-cs')
 @endif
 

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Publik;
 
 use App\Enums\TopikCs;
 use App\Http\Controllers\Controller;
+use Closure;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use App\Models\Order;
 use App\Models\PercakapanCs;
 use App\Models\PesanCs;
@@ -23,19 +25,33 @@ use Symfony\Component\HttpFoundation\Response;
  * yang tersimpan di database hanya hash-nya. Semua endpoint di sini memeriksa
  * token itu; nomor percakapan saja tidak membuka apa pun.
  */
-class CsController extends Controller
+class CsController extends Controller implements HasMiddleware
 {
     private const COOKIE = 'cs_percakapan';
 
     private const UMUR_COOKIE_MENIT = 60 * 24 * 60;
+
+    /*
+     * SEMUA endpoint pelanggan ikut saklar, bukan hanya pembuka percakapan.
+     * Kalau hanya "mulai" yang dijaga, pelanggan yang sudah punya percakapan
+     * tetap bisa mengirim pesan ke kotak yang tidak dibaca siapa pun (KEP-033).
+     */
+    public static function middleware(): array
+    {
+        return [
+            function ($request, Closure $next) {
+                abort_unless(cs_aktif(), 404);
+
+                return $next($request);
+            },
+        ];
+    }
 
     public function __construct(private LayananCs $cs) {}
 
     /** Keadaan widget saat dibuka: percakapan yang sedang berjalan, kalau ada. */
     public function status(Request $request): JsonResponse
     {
-        abort_unless(setting('cs_aktif', true), 404);
-
         $percakapan = $this->percakapan($request);
 
         if ($percakapan && $percakapan->belum_dibaca_pelanggan > 0) {
@@ -63,8 +79,6 @@ class CsController extends Controller
     /** Pesan pertama sekaligus membuka percakapan. */
     public function mulai(Request $request): JsonResponse
     {
-        abort_unless(setting('cs_aktif', true), 404);
-
         $customer = Auth::guard('pelanggan')->user();
 
         $data = $request->validate([

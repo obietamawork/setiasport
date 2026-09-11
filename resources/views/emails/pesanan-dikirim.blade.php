@@ -26,8 +26,8 @@
 @include('emails.komponen-rincian')
 
 <p style="margin:0 0 20px;">
-  Kalau setelah beberapa hari resinya masih belum bergerak, kabari kami lewat chat CS
-  di website dan akan kami tanyakan ke kurirnya.
+  Kalau setelah beberapa hari resinya masih belum bergerak, kabari kami lewat
+  {{ kanal_kontak() }} dan akan kami tanyakan ke kurirnya.
 </p>
 
 <a href="{{ $tautan }}"

@@ -109,6 +109,26 @@ if (! function_exists('nomor_wa')) {
     }
 }
 
+if (! function_exists('tautan_wa')) {
+    /**
+     * Tautan chat WhatsApp ke nomor toko, dengan pesan pembuka yang sudah terisi.
+     *
+     * Hanya untuk KONTAK saat chat CS dimatikan (KEP-033): pertanyaan dan
+     * komplain. Bukan untuk transaksi; bukti bayar tetap diunggah di website
+     * (KEP-029), dan halaman pembayaran tidak pernah memakai fungsi ini.
+     */
+    function tautan_wa(string $pesan = ''): ?string
+    {
+        $nomor = nomor_wa((string) setting('toko_telepon', ''));
+
+        if (! $nomor) {
+            return null;
+        }
+
+        return 'https://wa.me/'.$nomor.($pesan !== '' ? '?text='.rawurlencode($pesan) : '');
+    }
+}
+
 if (! function_exists('daftar_setting')) {
     /**
      * Pengaturan bertipe teks yang isinya daftar, satu per baris. Dipakai untuk
@@ -146,5 +166,35 @@ if (! function_exists('tautan_peta')) {
     function tautan_peta(string $alamat): string
     {
         return 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($alamat);
+    }
+}
+
+if (! function_exists('cs_aktif')) {
+    /**
+     * Saklar chat CS (KEP-033). Klien belum yakin akan memakai CS, jadi satu kode
+     * melayani dua versi: mematikan saklar di Pengaturan harus menghasilkan
+     * website yang bersih tanpa CS, bukan website yang masih menyuruh pelanggan
+     * chat ke CS yang tidak ada.
+     */
+    function cs_aktif(): bool
+    {
+        return (bool) setting('cs_aktif', true);
+    }
+}
+
+if (! function_exists('kanal_kontak')) {
+    /**
+     * Jalur kontak yang disebut di teks halaman dan email. Mengikuti saklar CS,
+     * supaya kalimat "hubungi kami lewat ..." tidak pernah menunjuk ke jalur mati.
+     */
+    function kanal_kontak(): string
+    {
+        if (cs_aktif()) {
+            return 'chat CS di website kami';
+        }
+
+        $wa = setting('toko_telepon');
+
+        return $wa ? 'WhatsApp toko '.$wa : 'telepon toko';
     }
 }

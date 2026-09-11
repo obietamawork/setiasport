@@ -154,7 +154,7 @@ class LayananCs
         // Di luar jam operasional tidak ada yang diharapkan menjawab. Chat yang
         // masuk malam hari tetap tercatat menunggu, dan diperingatkan begitu jam
         // operasional dimulai keesokan paginya.
-        if (! $this->dalamJamOperasional()) {
+        if (! cs_aktif() || ! $this->dalamJamOperasional()) {
             return 0;
         }
 

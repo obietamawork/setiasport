@@ -24,10 +24,14 @@
 
     {{-- Chat yang dibuka dari halaman ini membawa tautan pesanannya, jadi CS
          tahu pesanan mana yang dibicarakan dan bahwa penanya memang pemegangnya. --}}
-    @if (setting('cs_aktif', true))
+    @if (cs_aktif())
         <button type="button" x-data @click="$dispatch('buka-cs', {})" class="tautan mt-3 text-sm">
             Ada pertanyaan atau komplain soal pesanan ini? Chat dengan CS
         </button>
+    @elseif ($waPesanan = tautan_wa('Halo '.setting('toko_nama', 'Setia Sport').', saya mau tanya soal pesanan '.$order->kode.'.'))
+        <a href="{{ $waPesanan }}" target="_blank" rel="noopener" class="tautan mt-3 inline-block text-sm">
+            Ada pertanyaan atau komplain soal pesanan ini? Hubungi lewat WhatsApp
+        </a>
     @endif
 
     {{-- Tagihan yang sedang harus dibayar: instruksinya jadi hal pertama yang
@@ -131,7 +135,7 @@
 
                     @if (! setting('qris_path') && $rekening === [])
                         <p class="mt-3 text-sm text-muted">
-                            Tujuan transfer belum tercantum di sini. Tanyakan lebih dulu lewat chat CS,
+                            Tujuan transfer belum tercantum di sini. Tanyakan lebih dulu lewat {{ kanal_kontak() }},
                             dan jangan transfer ke rekening yang dikirim lewat jalur lain.
                         </p>
                     @endif

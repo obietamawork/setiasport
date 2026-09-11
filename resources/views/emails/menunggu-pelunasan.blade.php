@@ -25,7 +25,7 @@
 <p style="margin:0 0 20px;font-size:13px;color:#5c6b64;">
   Kami tidak pernah meminta transfer lewat WhatsApp atau ke rekening selain yang
   tertera di halaman pesanan. Kalau ada yang memintanya atas nama kami, abaikan
-  dan kabari kami lewat chat CS di website.
+  dan kabari kami lewat {{ kanal_kontak() }}.
 </p>
 
 <a href="{{ $tautan }}"

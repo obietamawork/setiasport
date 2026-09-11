@@ -33,7 +33,7 @@
             ['panel.pesanan.index', 'Pesanan', 'order.lihat', 'panel.pesanan.*', $jumlahPesananAktif ?? null],
             ['panel.antrian.index', 'Antrian kerja', null, 'panel.antrian.*', $jumlahAntrian ?? null],
             ['panel.serah-terima', 'Serah terima', 'serah_terima.proses', 'panel.serah-terima', $jumlahSiapDiambil ?? null],
-            ['panel.cs.index', 'Chat CS', 'cs.balas', 'panel.cs.*', null],
+            ...(($csTampilMenu ?? true) ? [['panel.cs.index', cs_aktif() ? 'Chat CS' : 'Arsip chat', 'cs.balas', 'panel.cs.*', null]] : []),
         ],
         'Katalog' => [
             ['panel.produk.index', 'Produk', 'katalog.kelola', 'panel.produk.*', null],

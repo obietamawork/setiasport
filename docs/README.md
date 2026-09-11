@@ -27,7 +27,7 @@ Tahap **implementasi fondasi**. Skema database, model, dan kalkulator harga
 sudah jalan dan tertutup test. Cara menjalankan proyeknya ada di
 [README.md di root](../README.md).
 
-- **31 keputusan terkunci**, satu dibatalkan (KEP-015, gerbang pembayaran)
+- **32 keputusan terkunci**, satu dibatalkan (KEP-015, gerbang pembayaran)
 - **Fase 0 s/d 3 selesai.** Fondasi data, katalog publik, panel internal,
   pesanan end-to-end, serta alur kustom penuh: konfigurator harga live, roster
   pemain, gerbang persetujuan desain, antrian kerja per divisi, dan worksheet
@@ -57,7 +57,9 @@ sudah jalan dan tertutup test. Cara menjalankan proyeknya ada di
   pelanggan menunggu, dan status "Menerima chat" yang terlihat pelanggan. 170 test lulus
 - **Data asli klien terpasang (KEP-032):** logo, QRIS (identik dengan aslinya), dua rekening
   Mandiri, toko dan konveksi dengan jam masing-masing, WhatsApp, dan jam operasional
-  website. Zona waktu aplikasi yang ternyata UTC ikut diperbaiki ke WIB. 175 test lulus
+  website. Zona waktu aplikasi yang ternyata UTC ikut diperbaiki ke WIB
+- **Chat CS jadi saklar (KEP-033):** satu kode melayani versi dengan dan tanpa CS; klien
+  memutuskan dari Pengaturan. 183 test lulus
 - Sisa pekerjaan bukan lagi kode: isi profil usaha dan portofolio,
   isi kedua rekening dan QRIS di Pengaturan, daftar jasa kirim yang dipakai, sesuaikan
   template balasan CS, daftar akun Pusher, koreksi harga katalog, pembelian hosting,

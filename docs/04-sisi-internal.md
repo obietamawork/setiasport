@@ -109,7 +109,11 @@ paling lama menunggu di urutan teratas; garis tepinya kuning selama masih dalam 
 wajar dan merah begitu lewat 15 menit. Komplain ditandai merah.
 
 Saklar **Menerima chat** di bilah atas menentukan apa yang dilihat pelanggan: online,
-atau offline dengan janji dibalas pada jam layanan. Matikan saat istirahat. Di samping percakapan tampil pesanan yang ditautkan, dengan penanda
+atau offline dengan janji dibalas pada jam layanan. Matikan saat istirahat.
+
+Chat CS secara keseluruhan bisa dimatikan di Pengaturan ("Tampilkan Chat CS", KEP-033).
+Website lalu mengarahkan pertanyaan ke WhatsApp toko, dan menu ini berganti jadi Arsip chat
+yang hanya bisa dibaca. Di samping percakapan tampil pesanan yang ditautkan, dengan penanda
 **terverifikasi** (dibuka dari tautan pesanan atau akun pemiliknya) atau **belum
 terverifikasi** (kode yang sekadar diketik). Jangan ubah apa pun di pesanan, misalnya nama
 pengambil, hanya berdasarkan chat yang belum terverifikasi.

@@ -6,7 +6,7 @@
     <h1 class="text-3xl font-extrabold">Data pemesan</h1>
     <p class="kolom-baca mt-3 text-muted">
         Kami tidak meminta alamat: pesanan diambil sendiri di toko. Kalau Anda jauh dan
-        ingin barang stok dikirim, kabari kami lewat chat CS setelah memesan.
+        ingin barang stok dikirim, kabari kami lewat {{ kanal_kontak() }} setelah memesan.
         Yang kami butuhkan hanya cara menghubungi Anda saat pesanan siap.
     </p>
 

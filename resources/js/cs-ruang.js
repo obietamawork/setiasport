@@ -118,8 +118,9 @@ export function ruangCs(awal) {
             this._jadwal.push(setInterval(() => { this.sekarang = Date.now(); }, 30000));
 
             // Kehadiran: denyut selama "Menerima chat" menyala (KEP-031).
-            this.denyut();
-            this._jadwal.push(setInterval(() => this.denyut(), DENYUT_MS));
+            // Saat CS dimatikan (KEP-033) ruang ini hanya arsip: tanpa denyut.
+            if (awal.aktif) this.denyut();
+            if (awal.aktif) this._jadwal.push(setInterval(() => this.denyut(), DENYUT_MS));
             window.addEventListener('beforeunload', () => {
                 navigator.sendBeacon?.(awal.url.hadir, new Blob(
                     [JSON.stringify({ menerima: false, _token: csrf() })],
@@ -137,7 +138,7 @@ export function ruangCs(awal) {
                 this._tundaCari = setTimeout(() => this.muatDaftar(), 300);
             });
 
-            this.sambungRealtime();
+            if (awal.aktif) this.sambungRealtime();
 
             this._jadwal.push(setInterval(() => {
                 if (this.realtime !== 'connected') {

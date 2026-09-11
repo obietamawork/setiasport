@@ -197,7 +197,7 @@
                                             <p class="mt-1 text-xs text-muted">
                                                 {{ $bayar->bukti_path
                                                     ? 'Pelanggan sudah mengunggah bukti. Kosongkan untuk memakainya.'
-                                                    : 'Untuk bukti yang diterima lewat chat CS atau di toko. Boleh dikosongkan.' }}
+                                                    : (cs_aktif() ? 'Untuk bukti yang diterima lewat chat CS atau di toko.' : 'Untuk bukti yang diterima di toko.').' Boleh dikosongkan.' }}
                                             </p>
                                         </div>
 

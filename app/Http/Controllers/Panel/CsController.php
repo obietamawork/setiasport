@@ -30,7 +30,9 @@ class CsController extends Controller
     public function index(Request $request, ?PercakapanCs $percakapan = null): View
     {
         // Membuka ruang CS berarti siap menerima chat; staf bisa mematikannya.
-        $this->cs->tandaiHadir($request->user('web'), true);
+        if (cs_aktif()) {
+            $this->cs->tandaiHadir($request->user('web'), true);
+        }
 
         return view('panel.cs.ruang', [
             'awal' => [
@@ -39,6 +41,8 @@ class CsController extends Controller
                 'terpilih' => $percakapan ? $this->detailUntuk($percakapan) : null,
                 'template' => TemplateBalasan::orderBy('urutan')->orderBy('judul')->get(['id', 'judul', 'isi']),
                 'slaMenit' => (int) setting('cs_peringatan_menit', 15),
+                // CS dimatikan (KEP-033): ruang ini jadi arsip baca-saja.
+                'aktif' => cs_aktif(),
                 'realtime' => config('broadcasting.default') === 'pusher' ? config('broadcasting.klien') : null,
                 'url' => [
                     'daftar' => route('panel.cs.daftar'),
@@ -69,6 +73,8 @@ class CsController extends Controller
 
     public function balas(Request $request, PercakapanCs $percakapan): JsonResponse
     {
+        abort_unless(cs_aktif(), 422, 'Chat CS sedang dimatikan, jadi balasan tidak akan terlihat pelanggan.');
+
         $data = $request->validate([
             'isi' => ['required_without:lampiran', 'nullable', 'string', 'max:2000'],
             'lampiran' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(setting('upload_maks_mb', 10) * 1024)],
