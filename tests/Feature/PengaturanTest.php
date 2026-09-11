@@ -30,19 +30,51 @@ class PengaturanTest extends TestCase
     {
         $this->actingAs($this->owner())->get(route('panel.pengaturan.index'))
             ->assertOk()
-            ->assertSeeInOrder(['Toko &amp; kontak', 'Pembayaran', 'Pesanan', 'Halaman depan', 'Chat CS'], false)
+            ->assertSeeInOrder(['Toko &amp; kontak', 'Pembayaran', 'Pesanan', 'Halaman depan'], false)
             ->assertSee('Rekening 2');
+    }
+
+    /**
+     * Klien membatalkan CS: saklar fitur yang tidak dipakai hanya membingungkan
+     * pemilik toko, jadi tabnya hilang dan isiannya tidak bisa diubah.
+     */
+    public function test_tab_chat_cs_hilang_selama_fiturnya_tidak_dipasang(): void
+    {
+        config(['fitur.cs' => false]);
+
+        $this->actingAs($this->owner())->get(route('panel.pengaturan.index'))
+            ->assertDontSee('Tampilkan Chat CS')
+            ->assertDontSee('Sapaan Pembuka')
+            ->assertDontSee('Lainnya');
+
+        $this->actingAs($this->owner())->put(route('panel.pengaturan.update'), ['setting' => ['cs_aktif' => '1']]);
+
+        $this->assertFalse((bool) Setting::ambil('cs_aktif'));
+        $this->assertFalse(cs_aktif());
+    }
+
+    public function test_tab_chat_cs_kembali_saat_fiturnya_dipasang(): void
+    {
+        config(['fitur.cs' => true]);
+
+        $this->actingAs($this->owner())->get(route('panel.pengaturan.index'))
+            ->assertSeeInOrder(['Halaman depan', 'Chat CS'])
+            ->assertSee('Tampilkan Chat CS');
     }
 
     /** Dulu tampil sebagai kotak teks berisi 0 atau 1. */
     public function test_isian_ya_tidak_tampil_sebagai_saklar(): void
     {
+        config(['fitur.cs' => true]);
+
         $this->actingAs($this->owner())->get(route('panel.pengaturan.index'))
             ->assertSee('type="checkbox" id="s-cs_aktif"', false);
     }
 
     public function test_saklar_bisa_dinyalakan_dan_dimatikan(): void
     {
+        config(['fitur.cs' => true]);
+
         $this->actingAs($this->owner())->put(route('panel.pengaturan.update'), ['setting' => ['cs_aktif' => '1']]);
         $this->assertTrue(cs_aktif());
 

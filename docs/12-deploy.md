@@ -68,6 +68,7 @@ RESEND_API_KEY=re_…
 RESEND_WEBHOOK_SECRET=whsec_…
 
 # Chat CS sedang dimatikan klien (KEP-034): biarkan blok Pusher ini KOSONG.
+FITUR_CS=false                # true hanya kalau chat CS dinyalakan kembali
 # Isi hanya kalau chat CS dinyalakan kembali, lihat "Menyalakan chat CS kembali".
 BROADCAST_CONNECTION=pusher
 PUSHER_APP_ID=
@@ -92,16 +93,20 @@ Klien membatalkan chat CS untuk sementara (KEP-034). Kodenya **tidak dihapus**: 
 ada, tetap ikut diuji setiap ada perubahan, dan mati sebagai bawaan. Kalau suatu hari
 dibutuhkan lagi:
 
-1. **Panel → Pengaturan → Tampilkan Chat CS**, centang, simpan. Hanya itu yang wajib.
-   Jendela chat langsung muncul di website, teks "hubungi kami" beralih dari WhatsApp ke
-   chat, dan menu Chat CS muncul di panel. Tanpa kunci Pusher, chat sudah berfungsi,
-   hanya dengan jeda sampai 15 detik
-2. Isi jam operasional dan template balasan di Pengaturan dan di Ruang CS
-3. Opsional, supaya pesan muncul seketika: isi kunci Pusher (langkah di bawah), lalu
-   `php artisan config:cache`
+1. Di `.env` server, ubah `FITUR_CS=false` menjadi `FITUR_CS=true`, lalu
+   `php artisan config:cache`. Ini memasang fiturnya: tab **Chat CS** muncul di
+   Pengaturan (KEP-036). Selama `false`, tab itu disembunyikan, supaya pemilik toko tidak
+   melihat saklar untuk fitur yang tidak dipakai
+2. **Panel → Pengaturan → Chat CS → Tampilkan Chat CS**, nyalakan, simpan. Jendela chat
+   langsung muncul di website, teks "hubungi kami" beralih dari WhatsApp ke chat, dan
+   menu Chat CS muncul di panel. Tanpa kunci Pusher, chat sudah berfungsi, hanya dengan
+   jeda sampai 15 detik
+3. Isi jam operasional dan template balasan di Pengaturan dan di Ruang CS
+4. Opsional, supaya pesan muncul seketika: isi kunci Pusher (langkah di bawah), lalu
+   `php artisan config:cache` lagi
 
-Mematikannya lagi sama mudahnya. Riwayat chat tidak ikut hilang; ia tetap bisa dibaca di
-menu Arsip chat.
+Mematikannya sementara cukup lewat saklar di Pengaturan. Riwayat chat tidak ikut hilang;
+ia tetap bisa dibaca di menu Arsip chat.
 
 #### Kunci Pusher
 

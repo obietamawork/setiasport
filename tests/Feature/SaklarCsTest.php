@@ -32,6 +32,9 @@ class SaklarCsTest extends TestCase
         parent::setUp();
         Mail::fake();
         $this->seed([SettingSeeder::class, RolePermissionSeeder::class, UserSeeder::class, CatalogSeeder::class]);
+
+        // Yang diuji di sini saklar di Pengaturan, jadi fiturnya dipasang.
+        config(['fitur.cs' => true]);
     }
 
     private function matikanCs(): void

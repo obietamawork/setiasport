@@ -72,8 +72,14 @@ class PengaturanController extends Controller
         $semua = Setting::all()->keyBy('key');
         $tab = self::TAB;
 
+        // Dihitung dari susunan lengkap, supaya isian CS yang tabnya
+        // disembunyikan tidak malah muncul di tab "Lainnya".
         $tertata = collect($tab)->flatMap(fn ($t) => collect($t['bagian'])->flatMap(fn ($b) => $b['kunci']));
         $lain = $semua->keys()->diff($tertata)->reject(fn ($k) => $semua[$k]->tipe === 'berkas')->values();
+
+        if (! config('fitur.cs')) {
+            unset($tab['cs']);
+        }
 
         if ($lain->isNotEmpty()) {
             $tab['lainnya'] = [
@@ -92,6 +98,12 @@ class PengaturanController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $masuk = $request->input('setting', []);
+
+        // Isian CS tidak tampil selama fiturnya tidak dipasang, jadi juga
+        // tidak boleh diubah lewat kiriman formulir buatan sendiri.
+        if (! config('fitur.cs')) {
+            $masuk = array_diff_key($masuk, array_flip(self::kunciTab('cs')));
+        }
 
         // Path berkas hanya boleh berubah lewat jalur unggahnya sendiri; kalau
         // tidak, satu POST bisa menunjuk gambar QRIS ke berkas lain.
@@ -137,6 +149,12 @@ class PengaturanController extends Controller
         return back()->with('sukses', $diubah === []
             ? 'Tidak ada pengaturan yang berubah.'
             : count($diubah).' pengaturan disimpan.');
+    }
+
+    /** @return list<string> */
+    private static function kunciTab(string $tab): array
+    {
+        return collect(self::TAB[$tab]['bagian'])->flatMap(fn ($b) => $b['kunci'])->all();
     }
 
     /**

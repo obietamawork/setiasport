@@ -110,6 +110,8 @@ class PembayaranManualTest extends TestCase
 
         $order = $this->buatPesanan();
 
+        config(['fitur.cs' => true]);
+
         foreach (['1', '0'] as $cs) {
             Setting::simpan('cs_aktif', $cs);
 

@@ -448,3 +448,62 @@
     .tahap-titik-lewat { background: var(--color-navy); }
     .tahap-titik-kini { background: var(--color-merah); box-shadow: 0 0 0 3px var(--color-merah-50); }
 }
+
+/*
+ * Sidebar panel. Di layar lebar ia kolom yang menempel di bawah bilah atas
+ * saat halaman digulir: di halaman panjang (pengaturan, pesanan) menu dulu
+ * ikut tergulung dan hilang. Di HP ia laci dari kiri, di atas konten, bukan
+ * blok yang mendorong isi halaman ke bawah.
+ */
+@layer components {
+    .sidebar-panel {
+        flex-shrink: 0;
+    }
+
+    @media (width < 64rem) {
+        .sidebar-panel {
+            position: fixed;
+            inset-block: 0;
+            left: 0;
+            z-index: 50;
+            width: min(18rem, 85vw);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            background: var(--color-paper);
+            padding: 1rem;
+            box-shadow: 0 10px 40px rgb(13 23 51 / 0.25);
+            translate: -100% 0;
+            visibility: hidden;
+            transition: translate 0.2s ease, visibility 0.2s;
+        }
+
+        .sidebar-panel.terbuka {
+            translate: 0 0;
+            visibility: visible;
+        }
+    }
+
+    @media (width >= 64rem) {
+        .sidebar-panel {
+            position: sticky;
+            top: 5rem;
+            align-self: flex-start;
+            width: 13rem;
+            max-height: calc(100dvh - 6rem);
+            overflow-y: auto;
+            /* Ruang untuk cincin fokus, supaya tidak terpotong oleh overflow. */
+            margin: -3px;
+            padding: 3px;
+        }
+
+        .sidebar-tutup .sidebar-panel {
+            display: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .sidebar-panel {
+            transition: none;
+        }
+    }
+}

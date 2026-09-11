@@ -175,10 +175,12 @@ if (! function_exists('cs_aktif')) {
      * melayani dua versi: mematikan saklar di Pengaturan harus menghasilkan
      * website yang bersih tanpa CS, bukan website yang masih menyuruh pelanggan
      * chat ke CS yang tidak ada.
+     *
+     * Saklar itu sendiri hanya berlaku kalau fiturnya dipasang (config/fitur.php).
      */
     function cs_aktif(): bool
     {
-        return (bool) setting('cs_aktif', true);
+        return config('fitur.cs', false) && (bool) setting('cs_aktif', true);
     }
 }
 

@@ -14,10 +14,36 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- Sidebar yang disembunyikan diingat per perangkat. Dipasang sebelum halaman
+         tergambar, supaya sidebar tidak sempat muncul lalu hilang. --}}
+    <script>
+        try {
+            if (localStorage.getItem('panel-sidebar') === 'tutup') document.documentElement.classList.add('sidebar-tutup');
+        } catch (e) {}
+    </script>
 </head>
 {{-- Register visual panel sengaja berbeda dari etalase: lebih padat, lebih
      tenang, tanpa hiasan. Ini alat kerja, bukan etalase. --}}
-<body class="min-h-screen bg-paper" x-data="{ menu: false }">
+{{-- Satu tombol, dua perilaku: di layar lebar menyembunyikan sidebar supaya
+     tabel lebar dapat ruang; di HP membuka menu sebagai laci dari kiri. --}}
+<body class="min-h-screen bg-paper"
+      x-data="{
+          menu: false,
+          lebar: window.matchMedia('(min-width: 64rem)').matches,
+          tutup: document.documentElement.classList.contains('sidebar-tutup'),
+          alihMenu() {
+              if (! this.lebar) {
+                  this.menu = ! this.menu;
+                  return;
+              }
+              this.tutup = ! this.tutup;
+              document.documentElement.classList.toggle('sidebar-tutup', this.tutup);
+              try { localStorage.setItem('panel-sidebar', this.tutup ? 'tutup' : 'buka'); } catch (e) {}
+          },
+      }"
+      x-init="window.matchMedia('(min-width: 64rem)').addEventListener('change', (e) => { lebar = e.matches; menu = false; })"
+      @keydown.escape.window="menu = false"
+      :class="{ 'overflow-hidden': menu }">
 
 @php
     $u = auth('web')->user();
@@ -66,9 +92,12 @@
 
 <header class="sticky top-0 z-30 bg-navy-900 text-white">
     <div class="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
-        <button type="button" @click="menu = !menu"
-                class="-ml-1 rounded-[7px] p-2 hover:bg-white/10 lg:hidden"
-                :aria-expanded="menu" aria-label="Buka menu">
+        <button type="button" @click="alihMenu()" aria-controls="sidebar-panel"
+                class="-ml-1 rounded-[7px] p-2 hover:bg-white/10"
+                :aria-expanded="(lebar ? ! tutup : menu).toString()"
+                :aria-label="lebar ? (tutup ? 'Tampilkan menu samping' : 'Sembunyikan menu samping') : (menu ? 'Tutup menu' : 'Buka menu')"
+                :title="lebar ? (tutup ? 'Tampilkan menu samping' : 'Sembunyikan menu samping') : null"
+                aria-label="Menu">
             <svg class="size-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
                  stroke-linecap="round" aria-hidden="true">
                 <path x-show="!menu" d="M3 6h14M3 10h14M3 14h14" />
@@ -108,10 +137,23 @@
     </div>
 </header>
 
-<div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 lg:flex-row lg:gap-8">
-    {{-- Di mobile sidebar tampil sebagai blok penuh di atas konten. Sebagai
-         kolom sempit ia menghimpit isi layar sampai tidak terbaca. --}}
-    <aside :class="menu ? 'block' : 'hidden'" class="w-full shrink-0 lg:block lg:w-52">
+<div class="mx-auto flex max-w-7xl gap-8 px-4 py-6">
+    {{-- Latar gelap di belakang laci menu HP; mengetuknya menutup laci. --}}
+    <div x-show="menu" x-transition.opacity x-cloak @click="menu = false"
+         class="fixed inset-0 z-40 bg-navy-900/50 lg:hidden" aria-hidden="true"></div>
+
+    {{-- Layar lebar: kolom yang menempel saat halaman digulir, jadi menu tidak
+         pernah hilang di halaman panjang. HP: laci dari kiri (lihat .sidebar-panel). --}}
+    <aside id="sidebar-panel" class="sidebar-panel" :class="{ 'terbuka': menu }">
+        <div class="mb-4 flex items-center justify-between lg:hidden">
+            <p class="px-3 text-sm font-semibold">Menu</p>
+            <button type="button" @click="menu = false" class="rounded-[7px] p-2 text-muted hover:bg-navy-50 hover:text-ink"
+                    aria-label="Tutup menu">
+                <svg class="size-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
+                     stroke-linecap="round" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" /></svg>
+            </button>
+        </div>
+
         <nav class="text-sm" aria-label="Navigasi panel">
             @foreach ($grup as $namaGrup => $tautan)
                 @php
@@ -145,6 +187,13 @@
                 @endforeach
             @endforeach
         </nav>
+
+        {{-- Di HP nama pengguna dan "Lihat toko" tidak muat di bilah atas. --}}
+        <div class="mt-6 border-t border-line px-3 pt-4 text-sm sm:hidden">
+            <p class="font-medium">{{ $u->name }}</p>
+            <p class="text-xs text-muted">{{ $u->roles->pluck('nama')->implode(', ') }}</p>
+            <a href="{{ route('beranda') }}" target="_blank" rel="noopener" class="tautan mt-3 inline-block">Lihat toko</a>
+        </div>
     </aside>
 
     <main class="min-w-0 flex-1">

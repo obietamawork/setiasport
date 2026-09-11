@@ -45,6 +45,7 @@ class ChatCsTest extends TestCase
         $this->seed([SettingSeeder::class, RolePermissionSeeder::class, UserSeeder::class, CatalogSeeder::class]);
 
         // CS mati sebagai bawaan (KEP-034); tes ini menguji fiturnya saat dinyalakan.
+        config(['fitur.cs' => true]);
         Setting::simpan('cs_aktif', '1');
 
         // Widget memanggil server dengan credentials: 'same-origin', jadi cookie

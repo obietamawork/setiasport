@@ -1128,6 +1128,27 @@ fakta yang hanya klien yang tahu.
 
 ---
 
+## KEP-036 — Chat CS dipasang lewat `.env`, bukan hanya saklar di Pengaturan
+**Status:** TERKUNCI · 2026-09-12
+
+Setelah KEP-034, saklar CS masih tampil di Pengaturan beserta sapaan dan jam
+operasionalnya. Pemilik toko melihat tab untuk fitur yang sudah dibatalkan dan bertanya
+kenapa masih ada.
+
+**Keputusan:** dua lapis. `FITUR_CS` di `.env` (bawaan `false`) memasang atau melepas
+fiturnya; saklar di Pengaturan menyalakan atau mematikannya sementara. Selama
+`FITUR_CS=false`:
+
+- Tab Chat CS tidak tampil di Pengaturan, dan isiannya juga tidak masuk tab "Lainnya"
+- Kiriman formulir yang memuat isian CS diabaikan
+- `cs_aktif()` selalu `false`, apa pun isi saklarnya, jadi seluruh jalur KEP-033 (widget,
+  endpoint, notifikasi, teks "hubungi kami") ikut mati
+
+Kodenya tetap ada dan tetap diuji. Menyalakan kembali: `FITUR_CS=true`, `config:cache`,
+lalu saklar di Pengaturan (docs/12-deploy.md, "Menyalakan chat CS kembali").
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1167,3 +1188,4 @@ fakta yang hanya klien yang tahu.
 | KEP-033 | Satu kode, dua versi: chat CS sebagai saklar | TERKUNCI |
 | KEP-034 | Chat CS dibatalkan klien sementara, mati sebagai bawaan | TERKUNCI |
 | KEP-035 | Contoh portofolio dan testimoni untuk demo, dengan pagar | TERKUNCI |
+| KEP-036 | Chat CS dipasang lewat `.env`, bukan hanya saklar di Pengaturan | TERKUNCI |
