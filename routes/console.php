@@ -4,6 +4,7 @@ use App\Enums\EmailStatus;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Services\AlurPesanan;
+use App\Services\LayananCs;
 use App\Services\PengirimEmail;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
@@ -65,3 +66,12 @@ Schedule::call(function (PengirimEmail $email) {
         ->with('customer')
         ->each(fn (Order $order) => $email->kirim($order, 'pengingat-ambil'));
 })->dailyAt('09:00')->name('pengingat-ambil')->withoutOverlapping();
+
+/**
+ * Chat CS yang belum dibalas dikirimkan ke email staf (KEP-030). Bunyi dan
+ * badge di panel hanya bekerja selama halamannya terbuka; email sampai di HP.
+ */
+Schedule::call(fn (LayananCs $cs) => $cs->peringatkanYangMenunggu())
+    ->everyFiveMinutes()
+    ->name('peringatan-cs')
+    ->withoutOverlapping();

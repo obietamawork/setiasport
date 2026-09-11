@@ -6,6 +6,7 @@ use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\PercakapanCs;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -37,6 +38,11 @@ class PanelServiceProvider extends ServiceProvider
                     : null,
 
                 'jumlahAntrian' => $this->antrian($user),
+
+                // Chat CS (KEP-030): percakapan yang pesannya belum dibaca staf.
+                'csBelumDibaca' => $user->punyaIzin('cs.balas')
+                    ? PercakapanCs::where('belum_dibaca_staf', '>', 0)->pluck('id')->all()
+                    : null,
             ]);
         });
     }
@@ -49,17 +55,8 @@ class PanelServiceProvider extends ServiceProvider
             return null;
         }
 
-        // Status item menyatakan divisi yang memegang barang (KEP-014).
-        $dipegang = [
-            'DESAIN' => [OrderItemStatus::ANTRIAN_DESAIN, OrderItemStatus::PROSES_DESAIN],
-            'PRINT' => [OrderItemStatus::ANTRIAN_PRODUKSI, OrderItemStatus::PRINTING],
-            'JAHIT' => [OrderItemStatus::JAHIT],
-            'QC' => [OrderItemStatus::QC],
-            'PACKING' => [OrderItemStatus::PACKING],
-        ];
-
         $status = collect($tahap)
-            ->flatMap(fn ($t) => $dipegang[$t->value] ?? [])
+            ->flatMap(fn ($t) => $t->statusDipegang())
             ->map(fn (OrderItemStatus $s) => $s->value)
             ->unique()
             ->all();

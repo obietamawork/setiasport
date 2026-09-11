@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\BuktiBayarController;
 use App\Http\Controllers\Panel\AuthController;
+use App\Http\Controllers\Panel\CsController;
+use App\Http\Controllers\Panel\TemplateBalasanController;
 use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Panel\KategoriController;
 use App\Http\Controllers\Panel\AntrianController;
@@ -10,12 +13,15 @@ use App\Http\Controllers\Panel\MockupController;
 use App\Http\Controllers\Panel\PembayaranController;
 use App\Http\Controllers\Panel\PenyesuaianController;
 use App\Http\Controllers\Panel\PengaturanController;
+use App\Http\Controllers\Panel\PengirimanController;
+use App\Http\Controllers\Panel\PortofolioController;
 use App\Http\Controllers\Panel\PesananController;
 use App\Http\Controllers\Panel\SerahTerimaController;
 use App\Http\Controllers\Panel\WorksheetController;
 use App\Http\Controllers\Panel\ProdukController;
 use App\Http\Controllers\Panel\ProdukKomponenController;
 use App\Http\Controllers\Panel\StokController;
+use App\Http\Controllers\Panel\TestimoniController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('panel')->name('panel.')->group(function () {
@@ -67,9 +73,19 @@ Route::prefix('panel')->name('panel.')->group(function () {
                 ->middleware('izin:pembayaran.verifikasi')->name('pembayaran.verifikasi');
             Route::post('pembayaran/{pembayaran}/tolak', [PembayaranController::class, 'tolak'])
                 ->middleware('izin:pembayaran.verifikasi')->name('pembayaran.tolak');
+            Route::get('pembayaran/{pembayaran}/bukti', [BuktiBayarController::class, 'lihatStaf'])
+                ->middleware('izin:order.lihat')->name('pembayaran.bukti');
 
             Route::post('serah-terima', [SerahTerimaController::class, 'proses'])
                 ->middleware('izin:serah_terima.proses')->name('serah-terima');
+
+            // Pengiriman memakai izin yang sama dengan serah terima: keduanya
+            // sama-sama "barang keluar dari toko" (KEP-026).
+            Route::middleware('izin:serah_terima.proses')->group(function () {
+                Route::post('pengiriman', [PengirimanController::class, 'atur'])->name('pengiriman.atur');
+                Route::post('pengiriman/kirim', [PengirimanController::class, 'kirim'])->name('pengiriman.kirim');
+                Route::post('pengiriman/diterima', [PengirimanController::class, 'diterima'])->name('pengiriman.diterima');
+            });
         });
 
         Route::get('serah-terima', [SerahTerimaController::class, 'form'])
@@ -103,6 +119,38 @@ Route::prefix('panel')->name('panel.')->group(function () {
             });
         });
 
+        // Chat CS (KEP-030). Template didaftarkan lebih dulu supaya "template"
+        // tidak ditangkap sebagai nomor percakapan.
+        Route::middleware('izin:cs.balas')->prefix('cs')->name('cs.')->group(function () {
+            Route::resource('template', TemplateBalasanController::class)
+                ->only(['index', 'store', 'edit', 'update', 'destroy'])
+                ->parameters(['template' => 'template']);
+
+            Route::post('auth', [CsController::class, 'otorisasi'])->name('auth');
+            Route::get('ringkasan', [CsController::class, 'ringkasan'])->name('ringkasan');
+            Route::get('daftar', [CsController::class, 'daftar'])->name('daftar');
+            Route::post('hadir', [CsController::class, 'hadir'])->name('hadir');
+            Route::get('/', [CsController::class, 'index'])->name('index');
+            Route::get('{percakapan}', [CsController::class, 'index'])->whereNumber('percakapan')->name('show');
+            Route::get('{percakapan}/detail', [CsController::class, 'detail'])->whereNumber('percakapan')->name('detail');
+            Route::get('{percakapan}/pesan', [CsController::class, 'pesanBaru'])->whereNumber('percakapan')->name('pesan');
+            Route::post('{percakapan}/balas', [CsController::class, 'balas'])->whereNumber('percakapan')->name('balas');
+            Route::post('{percakapan}/tutup', [CsController::class, 'tutup'])->whereNumber('percakapan')->name('tutup');
+            Route::post('{percakapan}/tautkan', [CsController::class, 'tautkan'])->whereNumber('percakapan')->name('tautkan');
+            Route::get('{percakapan}/lampiran/{pesan}', [CsController::class, 'lampiran'])->whereNumber('percakapan')->name('lampiran');
+        });
+
+        // Profil usaha: halaman depan bercerita lebih dulu, katalog belakangan (KEP-024).
+        Route::middleware('izin:profil.kelola')->group(function () {
+            Route::resource('portofolio', PortofolioController::class)
+                ->except('show')
+                ->parameters(['portofolio' => 'portofolio']);
+
+            Route::resource('testimoni', TestimoniController::class)
+                ->except('show')
+                ->parameters(['testimoni' => 'testimoni']);
+        });
+
         Route::middleware('izin:stok.kelola')->group(function () {
             Route::get('stok', [StokController::class, 'index'])->name('stok.index');
             Route::put('stok', [StokController::class, 'update'])->name('stok.update');
@@ -114,6 +162,8 @@ Route::prefix('panel')->name('panel.')->group(function () {
         Route::middleware('izin:pengaturan.kelola')->group(function () {
             Route::get('pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index');
             Route::put('pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
+            Route::post('pengaturan/qris', [PengaturanController::class, 'unggahQris'])->name('pengaturan.qris');
+            Route::delete('pengaturan/qris', [PengaturanController::class, 'hapusQris'])->name('pengaturan.qris.hapus');
         });
     });
 });

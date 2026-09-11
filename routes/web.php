@@ -1,15 +1,15 @@
 <?php
 
+use App\Http\Controllers\BuktiBayarController;
 use App\Http\Controllers\Publik\AkunController;
 use App\Http\Controllers\Publik\BerandaController;
 use App\Http\Controllers\Publik\CheckoutController;
+use App\Http\Controllers\Publik\CsController;
 use App\Http\Controllers\Publik\KatalogController;
 use App\Http\Controllers\Publik\KeranjangController;
 use App\Http\Controllers\Publik\LacakController;
-use App\Http\Controllers\Publik\PembayaranOnlineController;
 use App\Http\Controllers\Publik\PesananItemController;
 use App\Http\Controllers\Publik\PesananSayaController;
-use App\Http\Controllers\Webhook\MidtransController;
 use App\Http\Controllers\Webhook\ResendController;
 use Illuminate\Support\Facades\Route;
 
@@ -52,9 +52,29 @@ Route::middleware('auth:pelanggan')->group(function () {
 Route::get('/lacak', [LacakController::class, 'form'])->name('lacak');
 Route::post('/lacak', [LacakController::class, 'cari'])->name('lacak.cari');
 Route::get('/lacak/{token}', [LacakController::class, 'show'])->name('lacak.token');
-Route::post('/lacak/{token}/bukti', [LacakController::class, 'buktiTransfer'])->name('lacak.bukti');
 
-Route::post('/lacak/{token}/bayar', [PembayaranOnlineController::class, 'mulai'])->name('lacak.bayar');
+/*
+ * Bukti bayar dari pelanggan (KEP-029). Dibatasi ketat karena rute ini publik:
+ * tanpa batas, siapa pun yang memegang satu tautan bisa memenuhi disk hosting.
+ */
+Route::post('/lacak/{token}/bukti', [BuktiBayarController::class, 'unggah'])
+    ->middleware('throttle:6,10')->name('lacak.bukti');
+Route::get('/lacak/{token}/pembayaran/{pembayaran}/bukti', [BuktiBayarController::class, 'lihatPelanggan'])
+    ->middleware('throttle:30,1')->name('lacak.bukti.lihat');
+
+/*
+ * Chat CS (KEP-030). Batasnya ketat karena semuanya publik: membuka percakapan
+ * dibatasi per jam supaya kotak masuk staf tidak bisa dibanjiri, dan polling
+ * cadangan dibatasi supaya widget yang macet tidak menghantam hosting.
+ */
+Route::prefix('/cs')->name('cs.')->group(function () {
+    Route::get('/', [CsController::class, 'status'])->middleware('throttle:30,1')->name('status');
+    Route::post('/mulai', [CsController::class, 'mulai'])->middleware('throttle:5,60')->name('mulai');
+    Route::post('/pesan', [CsController::class, 'kirim'])->middleware('throttle:20,1')->name('kirim');
+    Route::get('/pesan', [CsController::class, 'pesanBaru'])->middleware('throttle:20,1')->name('pesan');
+    Route::post('/auth', [CsController::class, 'otorisasi'])->middleware('throttle:20,1')->name('auth');
+    Route::get('/lampiran/{pesan}', [CsController::class, 'lampiran'])->middleware('throttle:30,1')->name('lampiran');
+});
 
 Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->group(function () {
     Route::post('roster', [PesananItemController::class, 'simpanRoster'])->name('roster');
@@ -64,11 +84,10 @@ Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->group(function
 });
 
 /*
- * Webhook. Pengirimnya bukan browser pelanggan, jadi tidak ada sesi maupun
- * token CSRF; keabsahannya sepenuhnya bergantung pada pemeriksaan tanda tangan
- * di dalam masing-masing controller.
+ * Webhook status email. Pengirimnya bukan browser pelanggan, jadi tidak ada
+ * sesi maupun token CSRF; keabsahannya sepenuhnya bergantung pada pemeriksaan
+ * tanda tangan di dalam controller.
  */
-Route::post('/webhook/midtrans', MidtransController::class)->name('webhook.midtrans');
 Route::post('/webhook/resend', ResendController::class)->name('webhook.resend');
 
 require __DIR__.'/panel.php';

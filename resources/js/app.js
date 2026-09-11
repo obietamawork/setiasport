@@ -1,6 +1,16 @@
 import Alpine from 'alpinejs';
+import { widgetCs } from './cs-widget.js';
+import { notifikasiCs } from './cs-panel.js';
+import { ruangCs } from './cs-ruang.js';
 
 window.Alpine = Alpine;
+
+// Chat CS (KEP-030). Sambungan realtime-nya sendiri dimuat terpisah, hanya
+// saat dibutuhkan; lihat realtime.js.
+Alpine.data('widgetCs', widgetCs);
+Alpine.data('notifikasiCs', notifikasiCs);
+Alpine.data('ruangCs', ruangCs);
+
 Alpine.start();
 
 /*

@@ -33,6 +33,8 @@ class RolePermissionSeeder extends Seeder
             'produksi' => [
                 'produksi.desain' => 'Antrian Desain',
                 'produksi.print' => 'Antrian Printing',
+                'produksi.potong' => 'Antrian Potong Kain',
+                'produksi.press' => 'Antrian Press / Sublime',
                 'produksi.jahit' => 'Antrian Jahit',
                 'produksi.qc' => 'Antrian QC',
                 'produksi.packing' => 'Antrian Packing',
@@ -40,6 +42,10 @@ class RolePermissionSeeder extends Seeder
             'katalog' => [
                 'katalog.kelola' => 'Kelola Produk & Kategori',
                 'stok.kelola' => 'Kelola Stok',
+                'profil.kelola' => 'Kelola Portofolio & Testimoni',
+            ],
+            'cs' => [
+                'cs.balas' => 'Balas Chat CS',
             ],
             'sistem' => [
                 'pengguna.kelola' => 'Kelola Pengguna & Peran',
@@ -67,9 +73,9 @@ class RolePermissionSeeder extends Seeder
                 [
                     'order.lihat', 'order.kelola', 'order.batal', 'order.penyesuaian',
                     'pembayaran.catat', 'pembayaran.verifikasi', 'serah_terima.proses',
-                    'produksi.desain', 'produksi.print', 'produksi.jahit',
-                    'produksi.qc', 'produksi.packing',
-                    'katalog.kelola', 'stok.kelola',
+                    'produksi.desain', 'produksi.print', 'produksi.potong',
+                    'produksi.press', 'produksi.jahit', 'produksi.qc', 'produksi.packing',
+                    'katalog.kelola', 'stok.kelola', 'profil.kelola', 'cs.balas',
                 ],
             ],
         ];
