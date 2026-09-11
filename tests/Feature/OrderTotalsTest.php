@@ -143,7 +143,7 @@ class OrderTotalsTest extends TestCase
         // DP 50% lewat gateway, barang tetap diproduksi, tapi belum boleh diserahkan.
         $order->payments()->create([
             'jenis' => PaymentType::DP,
-            'metode' => PaymentMethod::GATEWAY,
+            'metode' => PaymentMethod::TRANSFER,
             'status' => PaymentStatus::LUNAS,
             'jumlah' => 570_000,
             'dibayar_pada' => now(),
@@ -174,7 +174,7 @@ class OrderTotalsTest extends TestCase
 
         $order->payments()->create([
             'jenis' => PaymentType::FULL,
-            'metode' => PaymentMethod::GATEWAY,
+            'metode' => PaymentMethod::TRANSFER,
             'status' => PaymentStatus::MENUNGGU,
             'jumlah' => 285_000,
         ]);

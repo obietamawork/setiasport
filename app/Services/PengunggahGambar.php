@@ -24,9 +24,13 @@ class PengunggahGambar
     private const MUTU = 82;
 
     /**
-     * @return array{path: string, thumb_path: string, lebar: int, tinggi: int}
+     * Bukti pembayaran memakai disk 'local' (privat) dan tanpa versi kecil
+     * (KEP-029): isinya nama dan nomor rekening pelanggan, jadi tidak boleh bisa
+     * dibuka siapa pun yang kebetulan menebak alamatnya.
+     *
+     * @return array{path: string, thumb_path: ?string, lebar: int, tinggi: int}
      */
-    public function simpan(UploadedFile $berkas, string $folder = 'produk'): array
+    public function simpan(UploadedFile $berkas, string $folder = 'produk', string $disk = 'public', bool $denganThumb = true): array
     {
         $sumber = $this->baca($berkas);
         [$lebarAsli, $tinggiAsli] = [imagesx($sumber), imagesy($sumber)];
@@ -35,20 +39,24 @@ class PengunggahGambar
         $ext = $this->webpTersedia() ? 'webp' : 'jpg';
 
         $utama = $this->kecilkan($sumber, self::LEBAR_MAKS);
-        $thumb = $this->kecilkan($sumber, self::LEBAR_THUMB);
 
         $path = "{$folder}/{$nama}.{$ext}";
-        $thumbPath = "{$folder}/{$nama}-kecil.{$ext}";
+        $thumbPath = null;
 
-        Storage::disk('public')->put($path, $this->kodekan($utama));
-        Storage::disk('public')->put($thumbPath, $this->kodekan($thumb));
+        Storage::disk($disk)->put($path, $this->kodekan($utama));
+
+        if ($denganThumb) {
+            $thumb = $this->kecilkan($sumber, self::LEBAR_THUMB);
+            $thumbPath = "{$folder}/{$nama}-kecil.{$ext}";
+            Storage::disk($disk)->put($thumbPath, $this->kodekan($thumb));
+            imagedestroy($thumb);
+        }
 
         $lebar = imagesx($utama);
         $tinggi = imagesy($utama);
 
         imagedestroy($sumber);
         imagedestroy($utama);
-        imagedestroy($thumb);
 
         return [
             'path' => $path,
@@ -62,6 +70,13 @@ class PengunggahGambar
     {
         foreach (array_filter($path) as $p) {
             Storage::disk('public')->delete($p);
+        }
+    }
+
+    public function hapusDari(string $disk, ?string ...$path): void
+    {
+        foreach (array_filter($path) as $p) {
+            Storage::disk($disk)->delete($p);
         }
     }
 

@@ -9,18 +9,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Pembayaran offline (tunai di kasir) dan online (gateway) diperlakukan setara;
- * yang membedakan hanya metode, provider, dan dicatat_oleh (KEP-003).
+ * Seluruh pembayaran diverifikasi manual (KEP-023).
  *
- * Kolom provider/provider_ref/payload_json dibiarkan kosong sampai fase gateway.
- * Justru itu yang membuat pemasangan Midtrans atau Xendit nanti jadi pekerjaan
- * kecil, bukan refactor besar.
+ * Pelanggan membayar lewat QRIS statis atau transfer bank, mengirim buktinya
+ * lewat WhatsApp, lalu admin mencatat dan memverifikasinya di panel. Kolom
+ * dicatat_oleh dan diverifikasi_oleh wajib terisi: ini titik rawan uang kas,
+ * dan setiap pencatatan masuk audit log.
  */
 class Payment extends Model
 {
     protected $fillable = [
         'order_id', 'jenis', 'metode', 'status', 'jumlah', 'bukti_path',
-        'provider', 'provider_ref', 'payload_json',
         'dicatat_oleh', 'diverifikasi_oleh', 'dibayar_pada', 'kadaluarsa_pada',
     ];
 
@@ -31,7 +30,6 @@ class Payment extends Model
             'metode' => PaymentMethod::class,
             'status' => PaymentStatus::class,
             'jumlah' => 'integer',
-            'payload_json' => 'array',
             'dibayar_pada' => 'datetime',
             'kadaluarsa_pada' => 'datetime',
         ];

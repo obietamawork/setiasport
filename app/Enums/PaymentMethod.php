@@ -3,29 +3,22 @@
 namespace App\Enums;
 
 /**
- * Pembayaran offline dan online diperlakukan setara (KEP-003); yang membedakan
- * hanya nilai enum ini beserta kolom provider dan dicatat_oleh.
+ * Seluruh pembayaran diterima dan diverifikasi manual (KEP-023). Toko memakai
+ * QRIS statis dan transfer bank, dan buktinya dikirim pelanggan lewat WhatsApp.
  */
 enum PaymentMethod: string
 {
     case TUNAI = 'TUNAI';
     case TRANSFER = 'TRANSFER';
-    case QRIS_EDC = 'QRIS_EDC';
-    case GATEWAY = 'GATEWAY';
+    case QRIS = 'QRIS';
 
     public function label(): string
     {
         return match ($this) {
             self::TUNAI => 'Tunai',
             self::TRANSFER => 'Transfer Bank',
-            self::QRIS_EDC => 'QRIS / EDC di Toko',
-            self::GATEWAY => 'Pembayaran Online',
+            self::QRIS => 'QRIS',
         };
     }
 
-    /** Dicatat manual oleh kasir, sehingga wajib mengisi dicatat_oleh. */
-    public function offline(): bool
-    {
-        return $this !== self::GATEWAY;
-    }
 }

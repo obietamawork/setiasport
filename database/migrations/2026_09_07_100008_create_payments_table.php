@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Schema;
  * gateway baru dipasang di fase akhir. Kolom provider/provider_ref/payload_json
  * dibiarkan kosong dulu, itulah yang membuat pemasangan Midtrans atau Xendit
  * nanti menjadi pekerjaan kecil, bukan refactor besar.
+ *
+ * CATATAN: gerbang pembayaran akhirnya tidak jadi dipakai. Ketiga kolom itu
+ * sudah dibuang oleh migrasi 2026_09_09_100001 (KEP-023); berkas ini dibiarkan
+ * apa adanya karena migrasi menceritakan sejarah, bukan keadaan sekarang.
  */
 return new class extends Migration
 {
