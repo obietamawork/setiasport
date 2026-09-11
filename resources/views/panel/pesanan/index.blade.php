@@ -11,18 +11,40 @@
     </div>
 </div>
 
-<div class="mt-5 flex flex-wrap gap-1 text-sm">
+{{-- Kustom dan stok toko dipisah karena alurnya berbeda (KEP-027). Ini tab,
+     bukan sekadar filter, supaya perbedaannya terlihat sebelum dipilih. --}}
+<div class="mt-5 flex gap-1 border-b border-line" role="tablist">
+    @foreach ([['', 'Semua'], ['kustom', 'Kustom / konveksi'], ['stok', 'Stok toko']] as [$nilai, $label])
+        @php $aktifJalur = $jalur === $nilai; @endphp
+        <a href="{{ route('panel.pesanan.index', array_filter(['jalur' => $nilai, 'status' => $status, 'q' => request('q')])) }}"
+           role="tab" aria-selected="{{ $aktifJalur ? 'true' : 'false' }}"
+           class="-mb-px px-4 py-2.5 text-sm font-semibold transition-colors
+                  {{ $aktifJalur ? 'garis-aktif text-navy' : 'text-muted hover:text-ink' }}">
+            {{ $label }}
+            @if (($jumlahJalur[$nilai] ?? 0) > 0)
+                <span class="tabular font-normal text-muted">{{ $jumlahJalur[$nilai] }}</span>
+            @endif
+        </a>
+    @endforeach
+</div>
+
+<div class="mt-4 flex flex-wrap gap-1 text-sm">
     @php
         $saringan = [
             '' => 'Semua',
             'aktif' => 'Masih berjalan',
             OrderStatus::MENUNGGU_PEMBAYARAN->value => 'Menunggu pembayaran',
             OrderStatus::DIPROSES->value => 'Diproses',
+            OrderStatus::MENUNGGU_PELUNASAN->value => 'Menunggu pelunasan',
             OrderStatus::SIAP_DIAMBIL->value => 'Siap diambil',
+            OrderStatus::DIKIRIM->value => 'Dalam pengiriman',
         ];
     @endphp
     @foreach ($saringan as $nilai => $label)
-        <a href="{{ route('panel.pesanan.index', array_filter(['status' => $nilai, 'q' => request('q')])) }}"
+        {{-- Status yang kosong di tab ini disembunyikan, kecuali yang sedang dibuka. --}}
+        @continue($nilai !== '' && $status !== $nilai && ($jumlahStatus[$nilai] ?? 0) === 0)
+
+        <a href="{{ route('panel.pesanan.index', array_filter(['jalur' => $jalur, 'status' => $nilai, 'q' => request('q')])) }}"
            class="rounded-sm px-3 py-1.5 font-medium {{ $status === $nilai ? 'bg-navy text-white' : 'bg-field hover:bg-navy-50' }}">
             {{ $label }}
             @if (isset($jumlahStatus[$nilai]) && $jumlahStatus[$nilai] > 0)
@@ -35,6 +57,7 @@
 </div>
 
 <form method="GET" class="mt-4 flex gap-2">
+    <input type="hidden" name="jalur" value="{{ $jalur }}">
     <input type="hidden" name="status" value="{{ $status }}">
     <input type="search" name="q" value="{{ request('q') }}"
            placeholder="Kode pesanan, nama, email, atau nomor HP" class="kotak-input max-w-sm">
@@ -63,6 +86,12 @@
 
                 <p class="mt-2 font-medium">{{ $o->customer->nama }}</p>
                 <p class="tabular text-sm text-muted">{{ $o->customer->no_hp }}</p>
+
+                @if ($o->punyaKustom() || $o->dikirim())
+                    <div class="mt-2 flex flex-wrap gap-1.5">
+                        @include('panel.pesanan.penanda-jalur', ['o' => $o])
+                    </div>
+                @endif
 
                 <div class="mt-3 flex flex-wrap items-baseline justify-between gap-2 border-t border-line pt-3">
                     <span class="tabular text-sm text-muted">
@@ -105,6 +134,11 @@
                             </a>
                             @if ($o->kode_ambil)
                                 <div class="text-xs text-muted tabular">Ambil: {{ $o->kode_ambil }}</div>
+                            @endif
+                            @if ($o->punyaKustom() || $o->dikirim())
+                                <div class="mt-1 flex flex-wrap gap-1.5">
+                                    @include('panel.pesanan.penanda-jalur', ['o' => $o])
+                                </div>
                             @endif
                         </td>
                         <td>

@@ -1,0 +1,107 @@
+<?php
+
+namespace App\Http\Controllers\Panel;
+
+use App\Enums\MetodeAmbil;
+use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use App\Models\Order;
+use App\Services\AlurPesanan;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+/**
+ * Pengiriman terbatas untuk barang stok toko (KEP-026).
+ *
+ * Semuanya dikerjakan dari halaman pesanan, bukan dari layar kasir, karena
+ * kesepakatan mengirim terjadi lewat WhatsApp jauh sebelum barangnya siap, bukan
+ * di depan meja kasir. Yang dicatat di sini hanya apa yang benar-benar diketahui
+ * orang di toko: alamat yang disepakati, nama jasa kirim, dan nomor resi.
+ *
+ * Ongkirnya TIDAK dicatat di sini. Ia masuk sebagai baris penyesuaian biaya
+ * (KEP-007) supaya pelanggan melihatnya sebagai angka yang bisa dijelaskan,
+ * bukan sebagai selisih yang muncul entah dari mana.
+ */
+class PengirimanController extends Controller
+{
+    public function __construct(private AlurPesanan $alur) {}
+
+    /** Menyetel pesanan ini akan diambil atau dikirim, berikut alamatnya. */
+    public function atur(Request $request, Order $pesanan): RedirectResponse
+    {
+        $pesanan->load('items');
+
+        abort_if($pesanan->status->final(), 422, 'Pesanan ini sudah selesai atau dibatalkan.');
+        abort_if($pesanan->dikirim_pada !== null, 422, 'Paketnya sudah berangkat, penyetelan tidak bisa diubah lagi.');
+
+        $data = $request->validate([
+            'metode_ambil' => ['required', Rule::enum(MetodeAmbil::class)],
+            'alamat_kirim' => ['nullable', 'string', 'max:500'],
+        ], [], ['metode_ambil' => 'cara pengambilan', 'alamat_kirim' => 'alamat pengiriman']);
+
+        $metode = MetodeAmbil::from($data['metode_ambil']);
+
+        /*
+         * Barang kustom dicoba dulu di toko; kalau ukurannya meleset kami
+         * perbaiki saat itu juga. Dijaga di sini, bukan hanya disembunyikan di
+         * tampilan, karena inilah satu-satunya tempat yang pasti dilewati.
+         */
+        if ($metode === MetodeAmbil::KIRIM && $pesanan->punyaKustom()) {
+            return back()->withErrors(
+                'Pesanan ini memuat barang kustom, dan barang kustom diambil di toko. '
+                .'Kalau pelanggan tetap ingin dikirim, pisahkan barang stoknya jadi pesanan tersendiri.'
+            );
+        }
+
+        if ($metode === MetodeAmbil::KIRIM && trim((string) ($data['alamat_kirim'] ?? '')) === '') {
+            return back()->withErrors('Tulis alamat lengkapnya. Tanpa itu paket tidak bisa dibuatkan resi.');
+        }
+
+        $pesanan->update([
+            'metode_ambil' => $metode,
+            'alamat_kirim' => $metode === MetodeAmbil::KIRIM ? $data['alamat_kirim'] : null,
+        ]);
+
+        ActivityLog::catat('pesanan.pengiriman-disetel', $pesanan, ['metode' => $metode->value]);
+
+        return back()->with('sukses', $metode === MetodeAmbil::KIRIM
+            ? 'Pesanan ini akan dikirim. Jangan lupa catat ongkirnya sebagai penyesuaian biaya.'
+            : 'Pesanan ini kembali ke pengambilan di toko.');
+    }
+
+    /** Paket sudah diserahkan ke kurir dan resinya sudah di tangan. */
+    public function kirim(Request $request, Order $pesanan): RedirectResponse
+    {
+        $pesanan->load(['items.options', 'payments', 'adjustments']);
+
+        $data = $request->validate([
+            'jasa_kirim' => ['required', 'string', 'max:50'],
+            'no_resi' => ['required', 'string', 'max:60'],
+        ], [
+            'no_resi.required' => 'Nomor resi wajib diisi: tanpa itu pelanggan tidak bisa melacak apa pun.',
+        ], ['jasa_kirim' => 'jasa kirim', 'no_resi' => 'nomor resi']);
+
+        if (! $pesanan->bolehDikirim()) {
+            return back()->withErrors($pesanan->alasanBelumBisaDikirim() ?? 'Pesanan ini belum bisa dikirim.');
+        }
+
+        $this->alur->kirimkan($pesanan, $data['jasa_kirim'], $data['no_resi'], auth('web')->id());
+
+        ActivityLog::catat('pesanan.dikirim', $pesanan, $data);
+
+        return back()->with('sukses',
+            'Resi dicatat dan pelanggan dikabari lewat email. Pesanan tetap di daftar aktif sampai paketnya sampai.');
+    }
+
+    public function diterima(Order $pesanan): RedirectResponse
+    {
+        $pesanan->load(['items.options', 'payments', 'adjustments']);
+
+        $this->alur->tandaiDiterima($pesanan, auth('web')->id());
+
+        ActivityLog::catat('pesanan.diterima', $pesanan, ['no_resi' => $pesanan->no_resi]);
+
+        return back()->with('sukses', 'Pesanan ditutup. Paketnya tercatat sudah sampai.');
+    }
+}

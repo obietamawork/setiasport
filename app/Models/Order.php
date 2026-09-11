@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\MetodeAmbil;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,6 +23,8 @@ class Order extends Model
         'kode', 'customer_id', 'status', 'access_token', 'tipe_pembayaran', 'diskon',
         'target_siap_pada', 'kadaluarsa_pada', 'siap_pada', 'diambil_pada',
         'kode_ambil', 'diambil_oleh', 'diserahkan_oleh', 'catatan',
+        'metode_ambil', 'alamat_kirim', 'jasa_kirim', 'no_resi',
+        'dikirim_pada', 'diterima_pada',
     ];
 
     protected $hidden = ['access_token'];
@@ -30,11 +33,14 @@ class Order extends Model
     {
         return [
             'status' => OrderStatus::class,
+            'metode_ambil' => MetodeAmbil::class,
             'diskon' => 'integer',
             'target_siap_pada' => 'date',
             'kadaluarsa_pada' => 'datetime',
             'siap_pada' => 'datetime',
             'diambil_pada' => 'datetime',
+            'dikirim_pada' => 'datetime',
+            'diterima_pada' => 'datetime',
         ];
     }
 
@@ -105,10 +111,57 @@ class Order extends Model
      * Penjaga KEP-006: order tidak boleh Selesai selama masih ada sisa tagihan.
      * Pelunasan terjadi di kasir saat serah terima, jadi inilah satu-satunya
      * tempat aturan itu bisa ditegakkan.
+     *
+     * Pesanan yang disetel untuk dikirim tidak lewat meja kasir sama sekali
+     * (KEP-026). Dijaga di sini, bukan sekadar disembunyikan di tampilan, supaya
+     * barang tidak bisa keluar tanpa nomor resi yang tercatat.
      */
     public function bolehDiserahkan(): bool
     {
-        return $this->status === OrderStatus::SIAP_DIAMBIL && $this->lunas();
+        return $this->status === OrderStatus::SIAP_DIAMBIL
+            && ! $this->dikirim()
+            && $this->lunas();
+    }
+
+    /**
+     * Pesanan ini memuat barang yang dikerjakan di workshop. Dipakai di dua
+     * tempat yang alurnya memang berbeda: pemisahan tab di panel (KEP-027) dan
+     * larangan mengirim barang kustom (KEP-026).
+     */
+    public function punyaKustom(): bool
+    {
+        return $this->items->contains(fn (OrderItem $i) => $i->kustom());
+    }
+
+    public function dikirim(): bool
+    {
+        return $this->metode_ambil === MetodeAmbil::KIRIM;
+    }
+
+    /**
+     * Penjaga KEP-026. Barang kustom TIDAK boleh dikirim: ukurannya dicoba dulu
+     * di toko, dan kalau meleset kami perbaiki saat itu juga. Selain itu paket
+     * hanya berangkat setelah lunas, karena tidak ada kasir di depan pintu
+     * pelanggan yang bisa menagih sisanya.
+     */
+    public function bolehDikirim(): bool
+    {
+        return $this->dikirim()
+            && ! $this->punyaKustom()
+            && $this->status === OrderStatus::SIAP_DIAMBIL
+            && $this->lunas();
+    }
+
+    public function alasanBelumBisaDikirim(): ?string
+    {
+        return match (true) {
+            ! $this->dikirim() => 'Pesanan ini disetel untuk diambil di toko.',
+            $this->punyaKustom() => 'Pesanan ini memuat barang kustom, dan barang kustom diambil di toko.',
+            $this->status !== OrderStatus::SIAP_DIAMBIL => 'Barangnya belum siap.',
+            ! $this->lunas() => 'Masih ada sisa tagihan '.rupiah($this->sisa_tagihan)
+                .'. Paket hanya berangkat setelah lunas.',
+            default => null,
+        };
     }
 
     public static function kodeBaru(): string
@@ -128,6 +181,17 @@ class Order extends Model
     public static function kodeAmbilBaru(): string
     {
         return strtoupper(Str::random(3)).'-'.random_int(1000, 9999);
+    }
+
+    /** Pesanan yang memuat setidaknya satu barang kustom (KEP-027). */
+    public function scopeAdaKustom(Builder $q): Builder
+    {
+        return $q->whereHas('items', fn ($i) => $i->where('fulfillment_type', 'PREORDER'));
+    }
+
+    public function scopeHanyaStok(Builder $q): Builder
+    {
+        return $q->whereDoesntHave('items', fn ($i) => $i->where('fulfillment_type', 'PREORDER'));
     }
 
     public function scopeAktif(Builder $q): Builder
