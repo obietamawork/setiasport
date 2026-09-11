@@ -46,7 +46,7 @@
             {{ rupiah($sisaTertahan) }}
         </p>
         <p class="tabular mt-2 text-xs leading-relaxed text-muted">
-            Dari {{ $pesananBerjalan }} pesanan yang masih berjalan. Ditagih saat pengambilan.
+            Dari {{ $pesananBerjalan }} pesanan yang masih berjalan. Ditagih setelah barang jadi, atau saat pengambilan.
         </p>
     </div>
 

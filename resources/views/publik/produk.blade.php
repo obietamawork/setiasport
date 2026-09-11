@@ -196,7 +196,8 @@
 
                         <p class="border-l-2 border-merah bg-merah-50 p-3 text-sm leading-relaxed">
                             Waktu pengerjaan dihitung sejak Anda menyetujui mockup, bukan sejak
-                            pesanan masuk. Sisa pembayaran dilunasi saat mengambil barang.
+                            pesanan masuk. Sisa pembayaran dilunasi setelah barang selesai dikerjakan,
+                            lewat transfer atau di kasir, lalu barang siap diambil.
                         </p>
 
                         @if ($produk->priceTiers->isEmpty())

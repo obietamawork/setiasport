@@ -3,8 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('judul', 'Panel') | {{ setting('toko_nama', 'Setia Sport') }}</title>
     <meta name="theme-color" content="#0d1733">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <meta name="robots" content="noindex">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,11 +33,16 @@
             ['panel.pesanan.index', 'Pesanan', 'order.lihat', 'panel.pesanan.*', $jumlahPesananAktif ?? null],
             ['panel.antrian.index', 'Antrian kerja', null, 'panel.antrian.*', $jumlahAntrian ?? null],
             ['panel.serah-terima', 'Serah terima', 'serah_terima.proses', 'panel.serah-terima', $jumlahSiapDiambil ?? null],
+            ['panel.cs.index', 'Chat CS', 'cs.balas', 'panel.cs.*', null],
         ],
         'Katalog' => [
             ['panel.produk.index', 'Produk', 'katalog.kelola', 'panel.produk.*', null],
             ['panel.kategori.index', 'Kategori', 'katalog.kelola', 'panel.kategori.*', null],
             ['panel.stok.index', 'Stok', 'stok.kelola', 'panel.stok.*', null],
+        ],
+        'Profil usaha' => [
+            ['panel.portofolio.index', 'Portofolio', 'profil.kelola', 'panel.portofolio.*', null],
+            ['panel.testimoni.index', 'Testimoni', 'profil.kelola', 'panel.testimoni.*', null],
         ],
         'Toko' => [
             ['panel.laporan', 'Laporan', 'laporan.lihat', 'panel.laporan', null],
@@ -41,6 +50,19 @@
         ],
     ];
 @endphp
+
+@php
+    $csNotif = ($csBelumDibaca ?? null) !== null ? [
+        'belumDibaca' => $csBelumDibaca,
+        'realtime' => config('broadcasting.default') === 'pusher' ? config('broadcasting.klien') : null,
+        'url' => ['auth' => route('panel.cs.auth'), 'ringkasan' => route('panel.cs.ringkasan')],
+    ] : null;
+@endphp
+
+{{-- Chat yang tidak dijawab lebih buruk daripada tidak ada chat (KEP-030).
+     Sambungannya dipasang di SEMUA halaman panel, supaya admin yang sedang
+     mengurus stok tetap mendengar bunyi saat pelanggan menulis. --}}
+<div @if ($csNotif) x-data="notifikasiCs(@js($csNotif))" @endif>
 
 <header class="sticky top-0 z-30 bg-navy-900 text-white">
     <div class="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
@@ -60,6 +82,12 @@
         </a>
 
         <div class="ml-auto flex items-center gap-1 text-sm">
+            @if ($csNotif)
+                <a href="{{ route('panel.cs.index') }}" x-show="jumlah > 0" x-cloak
+                   class="flex items-center gap-1.5 rounded-[7px] bg-merah px-2.5 py-1.5 font-semibold text-white hover:bg-merah/90">
+                    Chat baru <span class="tabular" x-text="jumlah"></span>
+                </a>
+            @endif
             <a href="{{ route('beranda') }}" target="_blank" rel="noopener"
                class="hidden rounded-[7px] px-2.5 py-1.5 text-white/70 hover:bg-white/10 hover:text-white sm:block">
                 Lihat toko
@@ -105,7 +133,10 @@
                        class="flex items-center gap-2 rounded-[7px] px-3 py-2.5 font-medium transition-colors lg:py-2
                               {{ $aktif ? 'bg-navy text-white' : 'text-ink hover:bg-navy-50' }}">
                         <span>{{ $label }}</span>
-                        @if ($jumlah)
+                        @if ($rute === 'panel.cs.index' && $csNotif)
+                            <span x-show="jumlah > 0" x-text="jumlah" @if (! count($csNotif['belumDibaca'])) x-cloak @endif
+                                  class="lencana-menu bg-merah text-white">{{ count($csNotif['belumDibaca']) }}</span>
+                        @elseif ($jumlah)
                             <span class="lencana-menu {{ $aktif ? 'bg-white/20 text-white' : 'bg-navy-100 text-navy-800' }}">
                                 {{ $jumlah }}
                             </span>
@@ -136,6 +167,8 @@
             @yield('isi')
         </div>
     </main>
+</div>
+
 </div>
 
 @stack('skrip')

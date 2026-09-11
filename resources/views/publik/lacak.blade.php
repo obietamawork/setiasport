@@ -22,71 +22,205 @@
         Atas nama {{ $order->customer->nama }} &middot; {{ $order->customer->email_samar }}
     </p>
 
-    {{-- Menunggu pembayaran: instruksi harus jadi hal pertama yang terlihat. --}}
-    @if ($menungguBayar)
+    {{-- Chat yang dibuka dari halaman ini membawa tautan pesanannya, jadi CS
+         tahu pesanan mana yang dibicarakan dan bahwa penanya memang pemegangnya. --}}
+    @if (setting('cs_aktif', true))
+        <button type="button" x-data @click="$dispatch('buka-cs', {})" class="tautan mt-3 text-sm">
+            Ada pertanyaan atau komplain soal pesanan ini? Chat dengan CS
+        </button>
+    @endif
+
+    {{-- Tagihan yang sedang harus dibayar: instruksinya jadi hal pertama yang
+         terlihat. Berlaku untuk DP di awal maupun pelunasan setelah barang jadi
+         (KEP-028). Tidak ada gerbang pembayaran (KEP-023) dan tidak ada jalur
+         WhatsApp (KEP-029): pelanggan transfer ke rekening yang tertera di sini,
+         mengunggah buktinya di sini, dan admin mencocokkannya dengan mutasi. --}}
+    @if ($tagihan)
+        @php $buktiAda = $tagihan['pembayaran']?->bukti_path; @endphp
+
         <section class="mt-8 border border-line bg-field">
-            <h2 class="border-b border-line px-5 py-3 font-semibold">Yang perlu dibayar sekarang</h2>
-            <div class="space-y-4 p-5">
-                <p class="numeral text-4xl text-merah">{{ rupiah($menungguBayar->jumlah) }}</p>
-
-                @if ($order->kadaluarsa_pada)
-                    <p class="text-sm">
-                        Batas pembayaran
-                        <strong>{{ $order->kadaluarsa_pada->translatedFormat('l, j F Y H:i') }}</strong>.
-                        Lewat itu pesanan otomatis dibatalkan dan barangnya kembali dijual.
-                    </p>
-                @endif
-
-                @if ($gerbangAktif)
-                    <form method="POST" action="{{ route('lacak.bayar', $order->access_token) }}">
-                        @csrf
-                        <button type="submit" class="tombol tombol-utama w-full sm:w-auto">
-                            Bayar online sekarang
-                        </button>
-                        <p class="mt-2 text-sm text-muted">
-                            Kartu, transfer virtual account, QRIS, atau e-wallet. Pembayaran
-                            terverifikasi otomatis dalam hitungan menit.
+            <h2 class="border-b border-line px-5 py-3 font-semibold">
+                {{ $tagihan['jenis'] === 'pelunasan' ? 'Pelunasan' : 'Yang perlu dibayar sekarang' }}
+            </h2>
+            <div class="space-y-5 p-5">
+                <div>
+                    @if ($tagihan['jenis'] === 'pelunasan')
+                        <p class="mb-2 text-sm leading-relaxed">
+                            Barang Anda sudah selesai dikerjakan. Setelah sisa ini lunas,
+                            kode ambil terbit dan barang bisa diambil.
                         </p>
-                    </form>
+                    @endif
 
-                    <p class="border-t border-line pt-4 text-sm font-medium">Atau transfer manual</p>
-                @endif
+                    <p class="numeral text-4xl text-merah">{{ rupiah($tagihan['jumlah']) }}</p>
 
-                <div class="border-l-2 border-navy bg-navy-50 p-4 text-sm leading-relaxed">
-                    Transfer ke rekening toko, lalu unggah bukti di bawah. Kami memeriksanya
-                    pada jam kerja dan mengabari lewat email begitu masuk.
+                    @if ($tagihan['batas'])
+                        <p class="mt-2 text-sm">
+                            Batas pembayaran
+                            <strong>{{ $tagihan['batas']->translatedFormat('l, j F Y H:i') }}</strong>.
+                            Lewat itu pesanan otomatis dibatalkan dan barangnya kembali dijual.
+                        </p>
+                    @elseif ($tagihan['jenis'] === 'pelunasan')
+                        <p class="mt-2 text-sm text-muted">
+                            Bisa juga dibayar tunai atau QRIS langsung di kasir saat datang.
+                        </p>
+                    @endif
                 </div>
 
-                @if ($menungguBayar->bukti_path)
-                    <p class="text-sm">
-                        Bukti transfer sudah kami terima dan sedang diperiksa.
-                        <a href="{{ asset('storage/'.$menungguBayar->bukti_path) }}" target="_blank"
-                           rel="noopener" class="tautan">Lihat berkas yang Anda kirim</a>
-                    </p>
-                @endif
+                {{-- Langkah 1 --}}
+                <div class="border-t border-line pt-5">
+                    <p class="text-xs font-semibold tracking-wide text-muted uppercase">Langkah 1</p>
+                    <p class="mt-1 font-semibold">Transfer sejumlah di atas</p>
 
-                <form method="POST" action="{{ route('lacak.bukti', $order->access_token) }}"
-                      enctype="multipart/form-data" class="flex flex-wrap items-end gap-3 border-t border-line pt-4">
-                    @csrf
-                    <div class="min-w-56 flex-1">
-                        <label for="bukti" class="label-form">
-                            {{ $menungguBayar->bukti_path ? 'Ganti bukti transfer' : 'Unggah bukti transfer' }}
-                        </label>
-                        <input type="file" id="bukti" name="bukti" accept=".jpg,.jpeg,.png,.pdf"
-                               class="kotak-input" required>
-                        <p class="mt-1 text-xs text-muted">
-                            Foto atau PDF, maksimal {{ setting('upload_maks_mb', 10) }} MB.
-                        </p>
+                    <div class="mt-4 grid gap-5 sm:grid-cols-2">
+                        @if (setting('qris_path'))
+                            <div>
+                                <p class="text-sm text-muted">Scan QRIS</p>
+                                <a href="{{ asset('storage/'.setting('qris_path')) }}" target="_blank" rel="noopener" class="mt-2 block">
+                                    <img src="{{ asset('storage/'.setting('qris_path')) }}"
+                                         alt="Kode QRIS {{ setting('toko_nama') }}"
+                                         class="w-full max-w-72 border border-line bg-white p-2">
+                                </a>
+                                {{-- Membayar dari HP berarti tidak bisa memindai layar sendiri.
+                                     Aplikasi bank di Indonesia umumnya bisa memindai dari galeri. --}}
+                                <p class="mt-2 text-xs leading-relaxed text-muted">
+                                    Bisa dari aplikasi bank atau e-wallet mana pun. Membayar dari HP ini?
+                                    Simpan gambarnya (tekan lama, atau
+                                    <a href="{{ asset('storage/'.setting('qris_path')) }}" target="_blank" rel="noopener" class="tautan">buka ukuran penuh</a>),
+                                    lalu pilih pindai dari galeri di aplikasi bank.
+                                </p>
+                            </div>
+                        @endif
+
+                        @php
+                            // Toko memakai dua rekening; yang kedua boleh kosong.
+                            $rekening = array_values(array_filter([
+                                ['nama' => setting('bank_nama'), 'no' => setting('bank_rekening'), 'an' => setting('bank_atas_nama')],
+                                ['nama' => setting('bank2_nama'), 'no' => setting('bank2_rekening'), 'an' => setting('bank2_atas_nama')],
+                            ], fn ($r) => trim((string) $r['no']) !== ''));
+                        @endphp
+
+                        @if ($rekening !== [])
+                            <div>
+                                <p class="text-sm text-muted">
+                                    Transfer bank
+                                    @if (count($rekening) > 1)
+                                        <span class="text-muted">(pilih salah satu)</span>
+                                    @endif
+                                </p>
+
+                                <div class="mt-2 space-y-4">
+                                    @foreach ($rekening as $r)
+                                        <div @class(['border-t border-line pt-4' => ! $loop->first])>
+                                            <p class="font-semibold">{{ $r['nama'] }}</p>
+                                            {{-- Yang disalin angkanya saja: sebagian aplikasi bank menolak
+                                                 nomor berspasi saat ditempel. --}}
+                                            <div class="mt-1 flex flex-wrap items-center gap-3" x-data="{ tersalin: false }">
+                                                <p class="numeral text-2xl">{{ $r['no'] }}</p>
+                                                <button type="button" class="tombol tombol-garis tombol-sm"
+                                                        @click="navigator.clipboard.writeText('{{ preg_replace('/\D/', '', $r['no']) }}'); tersalin = true; setTimeout(() => tersalin = false, 2000)">
+                                                    <span x-text="tersalin ? 'Tersalin' : 'Salin'">Salin</span>
+                                                </button>
+                                            </div>
+                                            <p class="mt-1 text-sm text-muted">a.n. {{ $r['an'] }}</p>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
-                    <button type="submit" class="tombol tombol-utama">Kirim bukti</button>
-                </form>
+
+                    @if (! setting('qris_path') && $rekening === [])
+                        <p class="mt-3 text-sm text-muted">
+                            Tujuan transfer belum tercantum di sini. Tanyakan lebih dulu lewat chat CS,
+                            dan jangan transfer ke rekening yang dikirim lewat jalur lain.
+                        </p>
+                    @endif
+
+                    {{-- Penipu yang menyamar sebagai toko biasanya bekerja lewat
+                         WhatsApp dengan rekening pengganti. Halaman ini, di
+                         domain toko, adalah satu-satunya sumber rekening yang sah. --}}
+                    <p class="mt-4 border-l-2 border-kuning bg-kuning-50 p-3 text-sm leading-relaxed">
+                        <strong>Hanya transfer ke rekening dan QRIS di halaman ini.</strong>
+                        Kami tidak pernah meminta pembayaran lewat WhatsApp atau ke rekening lain.
+                        Kalau ada yang memintanya atas nama kami, jangan dibayar.
+                    </p>
+                </div>
+
+                {{-- Langkah 2 --}}
+                <div class="border-t border-line pt-5">
+                    <p class="text-xs font-semibold tracking-wide text-muted uppercase">Langkah 2</p>
+                    <p class="mt-1 font-semibold">Unggah bukti transfernya</p>
+
+                    @if ($buktiAda)
+                        <div class="mt-3 border-l-2 border-navy bg-navy-50 p-4 text-sm leading-relaxed">
+                            Bukti sudah kami terima dan sedang dicocokkan dengan mutasi rekening.
+                            Kami kabari lewat email begitu tercatat.
+                            <a href="{{ route('lacak.bukti.lihat', [$order->access_token, $tagihan['pembayaran']]) }}"
+                               target="_blank" rel="noopener" class="tautan">Lihat yang Anda kirim</a>
+                        </div>
+                    @else
+                        <p class="mt-2 text-sm leading-relaxed text-muted">
+                            Foto atau tangkapan layar dari aplikasi bank. Kami mencocokkannya dengan
+                            mutasi rekening pada jam operasional
+                            ({{ Str::lcfirst((string) setting('cs_jam_layanan')) }}), lalu mengabari lewat email.
+                        </p>
+                    @endif
+
+                    <form method="POST" action="{{ route('lacak.bukti', $order->access_token) }}"
+                          enctype="multipart/form-data" class="mt-4 flex flex-wrap items-end gap-3">
+                        @csrf
+                        <div class="min-w-56 flex-1">
+                            <label for="bukti" class="label-form">
+                                {{ $buktiAda ? 'Salah kirim? Ganti buktinya' : 'Bukti transfer' }}
+                            </label>
+                            <input type="file" id="bukti" name="bukti" accept="image/*" class="kotak-input" required>
+                            <p class="mt-1 text-xs text-muted">
+                                JPG atau PNG, maksimal {{ setting('upload_maks_mb', 10) }} MB.
+                            </p>
+                        </div>
+                        <button type="submit" class="tombol {{ $buktiAda ? 'tombol-garis' : 'tombol-utama' }}">
+                            {{ $buktiAda ? 'Ganti bukti' : 'Kirim bukti' }}
+                        </button>
+                    </form>
+                </div>
             </div>
         </section>
     @endif
 
+    {{-- Sudah dikirim: nomor resi adalah satu-satunya hal yang dicari pelanggan
+         di halaman ini, jadi ia yang paling besar (KEP-026). --}}
+    @if ($order->dikirim_pada)
+        <section class="mt-8 border border-line bg-field">
+            <h2 class="border-b border-line px-5 py-3 font-semibold">
+                {{ $order->diterima_pada ? 'Sudah sampai' : 'Sedang dikirim' }}
+            </h2>
+            <div class="space-y-4 p-5">
+                <div>
+                    <p class="text-sm text-muted">{{ $order->jasa_kirim }}</p>
+                    <p class="numeral mt-2 text-4xl break-all">{{ $order->no_resi }}</p>
+                    <p class="mt-3 text-sm text-muted">
+                        Diserahkan ke kurir {{ $order->dikirim_pada->translatedFormat('l, j F Y, H:i') }}.
+                    </p>
+                </div>
+
+                @if (setting('panduan_resi'))
+                    <p class="border-l-2 border-navy bg-navy-50 p-4 text-sm leading-relaxed">
+                        {{ setting('panduan_resi') }}
+                    </p>
+                @endif
+
+                @if ($order->alamat_kirim)
+                    <div class="border-t border-line pt-4 text-sm">
+                        <p class="text-muted">Dikirim ke</p>
+                        <p class="mt-1 leading-relaxed">{{ $order->alamat_kirim }}</p>
+                    </div>
+                @endif
+            </div>
+        </section>
+
     {{-- Siap diambil: kode ambil dan sisa tagihan adalah dua hal yang dicari
          pelanggan saat berdiri di depan toko. --}}
-    @if ($order->status === OrderStatus::SIAP_DIAMBIL)
+    @elseif ($order->status === OrderStatus::SIAP_DIAMBIL && ! $order->dikirim())
         <section class="mt-8 border border-line bg-field">
             <h2 class="border-b border-line px-5 py-3 font-semibold">Ambil di toko</h2>
             <div class="grid gap-5 p-5 sm:grid-cols-2">
@@ -110,24 +244,83 @@
                 </div>
             </div>
             <div class="border-t border-line px-5 py-4 text-sm leading-relaxed text-muted">
+                <span class="font-medium text-ink">Toko {{ setting('toko_nama', 'Setia Sport') }}</span><br>
                 {{ setting('toko_alamat') }}<br>
-                Jam buka: {{ setting('toko_jam_buka') }}
+                <span class="mt-2 inline-block">{{ baris_html(setting('toko_jam_buka')) }}</span><br>
+                <a href="{{ setting('maps_embed') ?: tautan_peta((string) setting('toko_alamat')) }}" target="_blank" rel="noopener"
+                   class="tautan mt-2 inline-block">Buka di Google Maps</a>
+            </div>
+        </section>
+
+    {{-- Sudah siap tapi akan dikirim: yang ditunggu bukan kode ambil,
+         melainkan nomor resi yang belum terbit. --}}
+    @elseif ($order->status === OrderStatus::SIAP_DIAMBIL && $order->dikirim())
+        <section class="mt-8 border border-line bg-field">
+            <h2 class="border-b border-line px-5 py-3 font-semibold">Menunggu dikirim</h2>
+            <div class="space-y-3 p-5 text-sm leading-relaxed">
+                <p>
+                    Barangnya sudah selesai dan sedang kami siapkan untuk dikirim.
+                    Nomor resinya muncul di halaman ini, dan kami kirim juga lewat email,
+                    begitu paket diserahkan ke kurir.
+                </p>
+                @if ($order->sisa_tagihan > 0)
+                    <p class="border-l-2 border-merah bg-merah-50 p-4">
+                        Masih ada sisa <strong>{{ rupiah($order->sisa_tagihan) }}</strong>.
+                        Paket berangkat setelah pelunasannya kami terima.
+                    </p>
+                @endif
+                @if ($order->alamat_kirim)
+                    <div class="border-t border-line pt-3">
+                        <p class="text-muted">Dikirim ke</p>
+                        <p class="mt-1">{{ $order->alamat_kirim }}</p>
+                    </div>
+                @endif
             </div>
         </section>
     @endif
 
     {{-- Timeline per item, bukan satu timeline tunggal: satu order boleh memuat
-         barang stok dan barang kustom yang jalannya berbeda (KEP-001). --}}
+         barang stok dan barang kustom yang jalannya berbeda (KEP-001).
+         
+         Sejak KEP-027 keduanya juga DIPISAH jadi dua kelompok. Menaruhnya
+         berurutan membuat pelanggan mengira semuanya menunggu hal yang sama,
+         padahal jersey menunggu persetujuan desain sementara bolanya sudah ada
+         di rak sejak hari pertama. --}}
+    @php
+        $kelompok = $order->items->partition(fn ($i) => $i->kustom());
+        $grup = array_values(array_filter([
+            [
+                'judul' => 'Dibuat di workshop',
+                'catatan' => 'Melewati desain, persetujuan Anda, lalu produksi. Diambil di toko.',
+                'items' => $kelompok[0],
+            ],
+            [
+                'judul' => 'Stok toko',
+                'catatan' => $order->dikirim()
+                    ? 'Barang yang sudah ada di rak. Pesanan ini dikirim ke alamat Anda.'
+                    : 'Barang yang sudah ada di rak, tinggal disiapkan.',
+                'items' => $kelompok[1],
+            ],
+        ], fn ($g) => $g['items']->isNotEmpty()));
+    @endphp
+
     <section class="mt-8">
         <h2 class="text-xl font-extrabold">Progres</h2>
 
-        <div class="mt-4 space-y-4">
-            @foreach ($order->items as $item)
-                @php
-                    $alur = OrderItemStatus::alur($item->fulfillment_type);
-                    $posisi = array_search($item->status_item, $alur, true);
-                    $batal = $item->status_item === OrderItemStatus::DIBATALKAN;
-                @endphp
+        @foreach ($grup as $g)
+        <div class="mt-6">
+            {{-- Judul kelompok disembunyikan kalau isinya cuma satu jenis:
+                 memberi label pada satu-satunya kelompok tidak menjelaskan apa pun. --}}
+            @if (count($grup) > 1)
+                <div class="border-b border-line pb-2">
+                    <h3 class="font-bold">{{ $g['judul'] }}</h3>
+                    <p class="mt-0.5 text-sm text-muted">{{ $g['catatan'] }}</p>
+                </div>
+            @endif
+
+            <div class="mt-4 space-y-4">
+            @foreach ($g['items'] as $item)
+                @php $linimasa = App\Support\LinimasaItem::untuk($item, $order); @endphp
 
                 <div class="border border-line bg-field">
                     <div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-5 py-3">
@@ -135,17 +328,17 @@
                         <span class="text-sm text-muted tabular">{{ $item->qty }} pcs</span>
                     </div>
 
-                    @if ($batal)
+                    @if ($linimasa['batal'])
                         <p class="px-5 py-4 text-sm text-muted">Item ini dibatalkan.</p>
                     @else
+                        {{-- Tahap besar saja (KEP-028). Status internal yang rinci
+                             tetap ada, tapi hanya Produksi yang membuka subprogresnya:
+                             di situlah penungguan paling lama terasa. --}}
                         <ol class="px-5 py-4">
-                            @foreach ($alur as $i => $tahap)
+                            @foreach ($linimasa['fase'] as $f)
                                 @php
-                                    $lewat = $posisi !== false && $i < $posisi;
-                                    $kini = $posisi !== false && $i === $posisi;
-                                    $waktu = $order->statusLogs
-                                        ->where('order_item_id', $item->id)
-                                        ->firstWhere('ke', $tahap->value)?->created_at;
+                                    $lewat = $f['keadaan'] === 'lewat';
+                                    $kini = $f['keadaan'] === 'kini';
                                 @endphp
                                 <li class="flex gap-3 {{ $loop->last ? '' : 'pb-4' }}">
                                     <div class="flex flex-col items-center">
@@ -155,14 +348,47 @@
                                             <span class="w-px flex-1 {{ $lewat ? 'bg-navy' : 'bg-line' }}"></span>
                                         @endunless
                                     </div>
-                                    <div class="-mt-0.5 pb-1">
-                                        <p class="text-sm {{ $kini ? 'font-bold' : ($lewat ? '' : 'text-muted') }}">
-                                            {{ $tahap->label() }}
-                                        </p>
-                                        @if ($waktu)
-                                            <p class="text-xs text-muted tabular">
-                                                {{ $waktu->translatedFormat('j M Y, H:i') }}
+
+                                    <div class="-mt-0.5 min-w-0 flex-1 pb-1">
+                                        <div class="flex flex-wrap items-baseline justify-between gap-x-3">
+                                            <p class="text-sm {{ $kini ? 'font-bold' : ($lewat ? '' : 'text-muted') }}">
+                                                {{ $f['label'] }}
                                             </p>
+                                            @if ($f['waktu'])
+                                                <p class="text-xs text-muted tabular">
+                                                    {{ $f['waktu']->translatedFormat('j M Y, H:i') }}
+                                                </p>
+                                            @endif
+                                        </div>
+
+                                        @if ($f['catatan'])
+                                            <p class="mt-1 text-sm leading-relaxed text-muted">{{ $f['catatan'] }}</p>
+                                        @endif
+
+                                        {{-- Subprogres ditampilkan selama produksi berjalan dan
+                                             sesudahnya. Sebelum produksi dimulai, lima baris
+                                             abu-abu hanya menambah panjang tanpa menjawab apa pun. --}}
+                                        @if ($f['subtahap'] !== [] && $f['keadaan'] !== 'nanti')
+                                            <ol class="mt-3 grid gap-1.5 border-l-2 border-line pl-3 text-sm">
+                                                @foreach ($f['subtahap'] as $sub)
+                                                    <li class="flex flex-wrap items-baseline justify-between gap-x-3">
+                                                        <span class="flex items-center gap-2
+                                                            {{ $sub['keadaan'] === 'kini' ? 'font-semibold text-ink' : ($sub['keadaan'] === 'lewat' ? 'text-ink' : 'text-muted') }}">
+                                                            <span class="inline-block size-1.5 shrink-0 rounded-full
+                                                                {{ $sub['keadaan'] === 'kini' ? 'bg-merah' : ($sub['keadaan'] === 'lewat' ? 'bg-navy' : 'bg-line-strong') }}"></span>
+                                                            {{ $sub['label'] }}
+                                                            @if ($sub['keadaan'] === 'kini')
+                                                                <span class="text-xs font-normal text-merah">sedang dikerjakan</span>
+                                                            @endif
+                                                        </span>
+                                                        @if ($sub['waktu'])
+                                                            <span class="text-xs text-muted tabular">
+                                                                {{ $sub['waktu']->translatedFormat('j M, H:i') }}
+                                                            </span>
+                                                        @endif
+                                                    </li>
+                                                @endforeach
+                                            </ol>
                                         @endif
                                     </div>
                                 </li>
@@ -170,7 +396,7 @@
                         </ol>
                     @endif
 
-                    @if ($item->kustom() && ! $batal)
+                    @if ($item->kustom() && ! $linimasa['batal'])
                         @include('komponen.desain', ['item' => $item, 'order' => $order])
 
                         @if ($item->product->roster_wajib || $item->rosters->isNotEmpty())
@@ -179,7 +405,9 @@
                     @endif
                 </div>
             @endforeach
+            </div>
         </div>
+        @endforeach
     </section>
 
     <section class="mt-8 border border-line bg-field">

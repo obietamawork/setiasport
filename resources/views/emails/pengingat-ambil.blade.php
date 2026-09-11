@@ -21,11 +21,11 @@
 
 <p style="margin:0 0 20px;">
   Alamat: {{ setting('toko_alamat') }}<br>
-  Jam buka: {{ setting('toko_jam_buka') }}
+  Jam buka:<br>{{ baris_html(setting('toko_jam_buka')) }}
 </p>
 
 <a href="{{ $tautan }}"
-   style="display:inline-block;background:#14523a;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:3px;">
+   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:3px;">
   Lihat detail pesanan
 </a>
 @endsection

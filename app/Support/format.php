@@ -82,3 +82,69 @@ if (! function_exists('urutkan_ukuran')) {
         return $daftar;
     }
 }
+
+if (! function_exists('nomor_wa')) {
+    /**
+     * Nomor HP dalam bentuk yang diterima wa.me: kode negara, tanpa tanda baca,
+     * tanpa nol di depan. Orang mengetik "0812-3456-7890" atau "+62 812..."
+     * cepat atau lambat, jadi kami yang merapikan.
+     *
+     * Dipakai tombol "Kabari lewat WhatsApp" di panel, yaitu toko yang
+     * menghubungi pelanggan saat email tidak sampai (KEP-004). Arah sebaliknya,
+     * pelanggan bertransaksi lewat WhatsApp, sengaja tidak ada lagi (KEP-029).
+     */
+    function nomor_wa(?string $mentah): ?string
+    {
+        $angka = preg_replace('/\D/', '', (string) $mentah);
+
+        if ($angka === '' || $angka === null) {
+            return null;
+        }
+
+        return match (true) {
+            str_starts_with($angka, '62') => $angka,
+            str_starts_with($angka, '0') => '62'.substr($angka, 1),
+            default => '62'.$angka,
+        };
+    }
+}
+
+if (! function_exists('daftar_setting')) {
+    /**
+     * Pengaturan bertipe teks yang isinya daftar, satu per baris. Dipakai untuk
+     * hal-hal yang jumlahnya berubah sesuai kesepakatan toko, seperti jasa kirim
+     * yang sedang bekerja sama (KEP-026), dan tidak cukup penting untuk punya
+     * tabel sendiri.
+     *
+     * @return list<string>
+     */
+    function daftar_setting(string $key): array
+    {
+        $baris = preg_split('/\R/', (string) setting($key, '')) ?: [];
+
+        return array_values(array_filter(array_map('trim', $baris), fn ($b) => $b !== ''));
+    }
+}
+
+if (! function_exists('baris_html')) {
+    /**
+     * Teks pengaturan yang ditulis berbaris (jam buka toko: Senin-Sabtu di satu
+     * baris, Minggu di baris berikutnya) ditampilkan dengan pindah barisnya.
+     * Isinya tetap di-escape; hanya pindah baris yang diubah jadi <br>.
+     */
+    function baris_html(?string $teks): Illuminate\Support\HtmlString
+    {
+        return new Illuminate\Support\HtmlString(nl2br(e((string) $teks), false));
+    }
+}
+
+if (! function_exists('tautan_peta')) {
+    /**
+     * Tautan Google Maps untuk sebuah alamat, dengan format pencarian resmi
+     * Google. Dipakai selama pemilik toko belum menempelkan tautan peta sendiri.
+     */
+    function tautan_peta(string $alamat): string
+    {
+        return 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($alamat);
+    }
+}

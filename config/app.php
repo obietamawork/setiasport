@@ -65,7 +65,10 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // Toko ini beroperasi di WIB. Dulu nilai ini tertulis 'UTC' langsung, sehingga
+    // APP_TIMEZONE di .env diabaikan dan semua jam yang dilihat pelanggan (batas
+    // bayar, waktu kirim, riwayat) mundur tujuh jam, begitu juga jadwal pengingat.
+    'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
 
     /*
     |--------------------------------------------------------------------------

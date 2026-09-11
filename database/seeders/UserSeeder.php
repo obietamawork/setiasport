@@ -17,7 +17,13 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($daftar as [$nama, $email, $peran]) {
-            $user = User::updateOrCreate(['email' => $email], [
+            /*
+             * Kata sandi HANYA diisi saat akunnya baru dibuat. Dulu seeder ini
+             * menulisnya ulang setiap kali dijalankan, sehingga `db:seed` saat
+             * pembaruan di hosting mengembalikan akun owner ke "password", kata
+             * sandi yang tercantum di README. Itu pintu panel yang terbuka lebar.
+             */
+            $user = User::firstOrCreate(['email' => $email], [
                 'name' => $nama,
                 'password' => Hash::make('password'),
                 'aktif' => true,

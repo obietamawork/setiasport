@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Masuk staf | {{ setting('toko_nama', 'Setia Sport') }}</title>
     <meta name="theme-color" content="#0d1733">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <meta name="robots" content="noindex">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +25,7 @@
 
     <div class="hidden flex-col justify-between p-12 text-white lg:flex xl:p-16">
         <a href="{{ route('beranda') }}">
-            <x-logo :terang="true" />
+            <x-logo :terang="true" tinggi="h-12" />
         </a>
 
         <div>

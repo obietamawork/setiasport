@@ -5,7 +5,8 @@
 <div class="mx-auto max-w-4xl px-5 py-10">
     <h1 class="text-3xl font-extrabold">Data pemesan</h1>
     <p class="kolom-baca mt-3 text-muted">
-        Kami tidak meminta alamat pengiriman: pesanan diambil sendiri di toko.
+        Kami tidak meminta alamat: pesanan diambil sendiri di toko. Kalau Anda jauh dan
+        ingin barang stok dikirim, kabari kami lewat chat CS setelah memesan.
         Yang kami butuhkan hanya cara menghubungi Anda saat pesanan siap.
     </p>
 
@@ -51,7 +52,7 @@
                             <span>
                                 <strong>Uang muka {{ $persenDp }}%</strong>
                                 <span class="tabular">{{ rupiah((int) ceil($total * $persenDp / 100)) }}</span> sekarang,
-                                sisanya dibayar saat mengambil barang di toko.
+                                sisanya dilunasi setelah barang selesai dikerjakan, lewat transfer atau di kasir.
                             </span>
                         </label>
                         <label class="flex items-start gap-2 text-sm">
@@ -135,7 +136,7 @@
                         <span class="font-semibold">Total</span>
                         <span class="numeral text-2xl text-merah">{{ rupiah($total) }}</span>
                     </div>
-                    <p class="mt-2 text-xs text-muted">Tanpa ongkos kirim.</p>
+                    <p class="mt-2 text-xs text-muted">Diambil di toko, tanpa ongkos kirim.</p>
                 </div>
             </div>
         </aside>

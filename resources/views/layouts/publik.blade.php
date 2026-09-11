@@ -3,9 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('judul', 'Perlengkapan tim, siap hari ini atau dibuat dari nol') | {{ setting('toko_nama', 'Setia Sport') }}</title>
-    <meta name="description" content="@yield('deskripsi', 'Toko alat olahraga dan workshop jersey kustom di Wonogiri. Diambil sendiri di toko, tanpa ongkos kirim.')">
+    <meta name="description" content="@yield('deskripsi', 'Toko alat olahraga dan workshop jersey kustom di Wonogiri. Pesanan diambil sendiri di toko.')">
     <meta name="theme-color" content="#16255b">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,7 +39,7 @@
         x-data="{ menu: false }" @keydown.escape.window="menu = false">
     <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-5">
         <a href="{{ route('beranda') }}" class="shrink-0" aria-label="Beranda Setia Sport">
-            <x-logo />
+            <x-logo tinggi="h-9 sm:h-10" />
         </a>
 
         {{-- Navigasi penuh hanya muat mulai layar sedang. Di bawah itu ia
@@ -106,23 +110,37 @@
 </main>
 
 <footer class="mt-20 border-t border-line bg-field">
-    <div class="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-3">
+    {{-- Dua lokasi dengan tugas berbeda: toko tempat pesanan diambil, konveksi
+         tempat jersey dikerjakan. Keduanya punya jam buka sendiri. --}}
+    <div class="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-            <x-logo />
-            <p class="mt-3 text-sm leading-relaxed text-muted">{{ setting('toko_alamat') }}</p>
+            <x-logo tinggi="h-10" />
+            <p class="mt-4 text-sm leading-relaxed text-muted">
+                Toko perlengkapan olahraga dan konveksi jersey di Wonogiri.
+            </p>
         </div>
         <div>
-            <p class="text-sm font-semibold">Jam buka</p>
-            <p class="mt-2 text-sm text-muted">{{ setting('toko_jam_buka') }}</p>
-            @if (setting('toko_telepon'))
-                <p class="tabular mt-1 text-sm text-muted">{{ setting('toko_telepon') }}</p>
-            @endif
+            <p class="text-sm font-semibold">Toko</p>
+            <p class="mt-2 text-sm leading-relaxed text-muted">{{ setting('toko_alamat') }}</p>
+            <p class="tabular mt-2 text-sm leading-relaxed text-muted">{{ baris_html(setting('toko_jam_buka')) }}</p>
         </div>
+        @if (setting('konveksi_alamat'))
+            <div>
+                <p class="text-sm font-semibold">Konveksi</p>
+                <p class="mt-2 text-sm leading-relaxed text-muted">{{ setting('konveksi_alamat') }}</p>
+                <p class="tabular mt-2 text-sm leading-relaxed text-muted">{{ baris_html(setting('konveksi_jam_buka')) }}</p>
+            </div>
+        @endif
         <div>
-            <p class="text-sm font-semibold">Pengambilan</p>
+            <p class="text-sm font-semibold">Hubungi kami</p>
             <p class="mt-2 text-sm leading-relaxed text-muted">
-                Semua pesanan diambil sendiri di toko. Kami belum melayani pengiriman,
-                jadi tidak ada ongkos kirim.
+                Chat CS di website, {{ Str::lcfirst((string) setting('cs_jam_layanan')) }}.
+            </p>
+            @if (setting('toko_telepon'))
+                <p class="tabular mt-1 text-sm text-muted">WhatsApp {{ setting('toko_telepon') }}</p>
+            @endif
+            <p class="mt-3 text-sm leading-relaxed text-muted">
+                Pesanan diambil sendiri di toko. Barang stok bisa dikirim, diatur lewat chat CS.
             </p>
         </div>
     </div>
@@ -133,6 +151,10 @@
         </div>
     </div>
 </footer>
+
+@if (setting('cs_aktif', true))
+    @include('komponen.widget-cs')
+@endif
 
 @stack('skrip')
 </body>

@@ -2,6 +2,10 @@ FROM php:8.2-apache
 
 # Apache dipakai (bukan nginx) agar sedekat mungkin dengan shared hosting:
 # .htaccess dan mod_rewrite berperilaku sama seperti di produksi nanti.
+#
+# pcntl hanya untuk Reverb, server websocket lokal pengganti Pusher (KEP-030).
+# Kode aplikasi tidak memakainya, jadi ketiadaannya di shared hosting tidak
+# mengubah perilaku apa pun.
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git curl unzip zip \
@@ -9,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libzip-dev libonig-dev libicu-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j"$(nproc)" \
-        pdo_mysql mbstring bcmath gd zip exif intl \
+        pdo_mysql mbstring bcmath gd zip exif intl pcntl \
     && a2enmod rewrite headers \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 

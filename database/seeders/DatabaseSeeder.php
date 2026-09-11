@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             UserSeeder::class,
             CatalogSeeder::class,
+            TemplateBalasanSeeder::class,
         ]);
     }
 }

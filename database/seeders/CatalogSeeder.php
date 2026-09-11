@@ -26,6 +26,16 @@ class CatalogSeeder extends Seeder
 {
     public function run(): void
     {
+        /*
+         * Katalog contoh hanya untuk instalasi yang masih kosong. Menjalankannya
+         * lagi setelah pemilik toko mengoreksi harga akan menimpa harga asli
+         * dengan angka draft ini, tanpa ada yang sadar sampai pelanggan membayar
+         * dengan harga yang salah.
+         */
+        if (Product::exists()) {
+            return;
+        }
+
         $k = $this->kategori();
 
         $this->bola($k['bola-futsal']);

@@ -75,7 +75,7 @@
             <div>
                 <p class="text-sm text-muted">Total</p>
                 <p class="numeral mt-1 text-3xl text-merah">{{ rupiah($total) }}</p>
-                <p class="mt-2 text-sm text-muted">Tanpa ongkos kirim: semua pesanan diambil di toko.</p>
+                <p class="mt-2 text-sm text-muted">Diambil di toko, tanpa ongkos kirim.</p>
             </div>
             <div class="flex flex-wrap gap-3">
                 <a href="{{ route('katalog') }}" class="tombol tombol-garis">Tambah barang lain</a>
