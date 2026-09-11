@@ -52,6 +52,13 @@ class SerahTerimaController extends Controller
             'diambil_oleh.required' => 'Tulis nama orang yang mengambil: termasuk bila diwakilkan.',
         ], ['diambil_oleh' => 'nama pengambil']);
 
+        if ($pesanan->dikirim()) {
+            return back()->withErrors(
+                'Pesanan ini disetel untuk dikirim, bukan diambil. Catat jasa kirim dan '
+                .'nomor resinya di halaman pesanan.'
+            );
+        }
+
         if ($pesanan->sisa_tagihan > 0) {
             return back()->withErrors(
                 'Masih ada sisa tagihan '.rupiah($pesanan->sisa_tagihan).'. '

@@ -50,13 +50,40 @@ class AlurPesanan
                 );
             }
 
+            $this->lepaskanPelunasan($order->fresh(['items.options', 'payments', 'adjustments']), $olehUserId);
+
             // Batas waktu bayar tidak lagi berlaku begitu uangnya masuk.
             $order->update(['kadaluarsa_pada' => null]);
 
             $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']));
         });
 
-        $this->email->kirim($payment->order->fresh(), 'pembayaran-diterima');
+        // Pelunasan yang membuat pesanan siap sudah diwakili email "pesanan
+        // siap". Mengirim dua email untuk satu kejadian hanya melatih
+        // pelanggan mengabaikan email kita.
+        $order = $payment->order->fresh();
+
+        if ($order->status !== OrderStatus::SIAP_DIAMBIL) {
+            $this->email->kirim($order, 'pembayaran-diterima');
+        }
+    }
+
+    /**
+     * Gerbang pelunasan terbuka dengan sendirinya begitu pesanan lunas
+     * (KEP-028). Tidak ada tombol untuk ini di panel: satu-satunya cara
+     * melewatinya adalah uangnya benar-benar tercatat masuk.
+     */
+    private function lepaskanPelunasan(Order $order, ?int $olehUserId): void
+    {
+        if (! $order->lunas()) {
+            return;
+        }
+
+        foreach ($order->items as $item) {
+            if ($item->status_item === OrderItemStatus::MENUNGGU_PELUNASAN) {
+                $this->setStatusItem($item, OrderItemStatus::SIAP, 'Pelunasan diterima.', $olehUserId);
+            }
+        }
     }
 
     /** Operator menyelesaikan satu tahap; status pelanggan naik sebagai akibatnya. */
@@ -83,6 +110,24 @@ class AlurPesanan
             'Hanya pelanggan yang bisa menyetujui desain, dari halaman pesanannya. '
             .'Kirim ulang tautannya kalau mereka belum merespons.'
         );
+
+        /*
+         * Gerbang pelunasan juga tidak punya tombol (KEP-028). Barang kustom
+         * dikerjakan dengan modal DP; kalau staf bisa menaikkannya ke Siap,
+         * kode ambil terbit dan barang bisa keluar sebelum uangnya masuk.
+         */
+        abort_if(
+            $item->status_item === OrderItemStatus::MENUNGGU_PELUNASAN,
+            422,
+            'Item ini menunggu pelunasan. Ia naik ke Siap dengan sendirinya begitu '
+            .'pembayarannya dicatat atau diverifikasi.'
+        );
+
+        // Pesanan yang sudah lunas di muka tidak perlu berhenti di gerbang.
+        if ($berikutnya === OrderItemStatus::MENUNGGU_PELUNASAN
+            && $item->order->fresh(['items.options', 'payments', 'adjustments'])->lunas()) {
+            $berikutnya = OrderItemStatus::SIAP;
+        }
 
         DB::transaction(function () use ($item, $berikutnya, $olehUserId) {
             // Tahap yang DITINGGALKAN-lah yang selesai; tahap yang dimasuki baru dimulai.
@@ -139,6 +184,67 @@ class AlurPesanan
             ]);
 
             $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']));
+        });
+    }
+
+    /**
+     * Padanan serah terima untuk pesanan yang dikirim (KEP-026). Barangnya
+     * keluar dari stok di sini, sama seperti saat diserahkan di kasir: yang
+     * berbeda cuma siapa yang membawanya pergi.
+     *
+     * Statusnya berhenti di DIKIRIM, bukan SELESAI, karena paket yang sudah
+     * berangkat belum tentu sampai, dan pesanan yang nyangkut di kurir harus
+     * tetap terlihat di daftar aktif.
+     */
+    public function kirimkan(Order $order, string $jasaKirim, string $noResi, ?int $olehUserId = null): void
+    {
+        $order->load(['items.options', 'payments', 'adjustments']);
+
+        abort_unless(
+            $order->bolehDikirim(),
+            422,
+            $order->alasanBelumBisaDikirim() ?? 'Pesanan ini belum bisa dikirim.'
+        );
+
+        DB::transaction(function () use ($order, $jasaKirim, $noResi, $olehUserId) {
+            foreach ($order->items as $item) {
+                if ($item->status_item === OrderItemStatus::SIAP) {
+                    $this->setStatusItem($item, OrderItemStatus::SELESAI, 'Diserahkan ke jasa kirim.', $olehUserId);
+                }
+            }
+
+            $this->reservasi->keluarkan($order);
+
+            $order->update([
+                'jasa_kirim' => $jasaKirim,
+                'no_resi' => $noResi,
+                'dikirim_pada' => now(),
+                'diserahkan_oleh' => $olehUserId,
+            ]);
+
+            $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']));
+        });
+
+        // Nomor resi tidak ada gunanya kalau pelanggan harus bertanya dulu untuk
+        // mendapatkannya. Dikirim di luar transaksi supaya kegagalan email tidak
+        // membatalkan pencatatan paket yang sudah benar-benar berangkat.
+        $this->email->kirim($order->fresh(), 'pesanan-dikirim');
+    }
+
+    /** Konfirmasi paket sampai. Sampai ini ditekan, pesanan tetap DIKIRIM. */
+    public function tandaiDiterima(Order $order, ?int $olehUserId = null): void
+    {
+        abort_unless($order->status === OrderStatus::DIKIRIM, 422, 'Pesanan ini tidak sedang dalam pengiriman.');
+
+        DB::transaction(function () use ($order, $olehUserId) {
+            $order->update(['diterima_pada' => now()]);
+
+            $this->sinkronkan(
+                $order->fresh(['items.options', 'payments', 'adjustments']),
+                'Paket dikonfirmasi sudah diterima pelanggan.'
+            );
+
+            unset($olehUserId);
         });
     }
 
@@ -220,6 +326,11 @@ class AlurPesanan
 
         if ($sesudah === OrderStatus::SIAP_DIAMBIL && $sebelum !== OrderStatus::SIAP_DIAMBIL) {
             $this->email->kirim($order->fresh(), 'pesanan-siap');
+        }
+
+        // Tanpa kabar ini pelanggan tidak tahu bahwa kini gilirannya membayar.
+        if ($sesudah === OrderStatus::MENUNGGU_PELUNASAN && $sebelum !== OrderStatus::MENUNGGU_PELUNASAN) {
+            $this->email->kirim($order->fresh(), 'menunggu-pelunasan');
         }
     }
 }

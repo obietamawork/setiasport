@@ -111,7 +111,10 @@ class PesananFlowTest extends TestCase
         $kasir = User::where('email', 'admin@setiasport.test')->firstOrFail();
 
         $this->actingAs($kasir)
-            ->post(route('panel.pesanan.pembayaran.verifikasi', [$order, $order->payments->first()]))
+            ->post(route('panel.pesanan.pembayaran.verifikasi', [$order, $order->payments->first()]), [
+                'metode' => 'TRANSFER',
+                'cek_mutasi' => '1',
+            ])
             ->assertSessionHas('sukses');
 
         $order->refresh()->load('items');

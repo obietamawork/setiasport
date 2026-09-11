@@ -23,7 +23,9 @@ class PengirimEmail
     private const SUBJEK = [
         'order-dibuat' => 'Pesanan %s diterima: menunggu pembayaran',
         'pembayaran-diterima' => 'Pembayaran pesanan %s sudah kami terima',
-        'pesanan-siap' => 'Pesanan %s siap diambil di toko',
+        'menunggu-pelunasan' => 'Pesanan %s sudah jadi, tinggal pelunasan',
+        'pesanan-siap' => 'Pesanan %s sudah siap',
+        'pesanan-dikirim' => 'Pesanan %s sudah dikirim, ini nomor resinya',
         'pengingat-ambil' => 'Pengingat: pesanan %s masih menunggu diambil',
     ];
 
@@ -88,9 +90,18 @@ class PengirimEmail
 
             'pembayaran-diterima' => "Halo {$nama}, pembayaran untuk pesanan {$order->kode} sudah kami terima. "
                 .($order->sisa_tagihan > 0
-                    ? "Sisa ".rupiah($order->sisa_tagihan)." dibayar saat pengambilan. "
+                    ? "Sisa ".rupiah($order->sisa_tagihan)." dilunasi setelah barang selesai dikerjakan. "
                     : '')
                 ."Pantau progresnya di sini: {$tautan}",
+
+            // Rekening sengaja tidak ditulis di pesan (KEP-029): halaman pesanan
+            // di domain toko adalah satu-satunya sumber rekening yang sah.
+            'menunggu-pelunasan' => "Halo {$nama}, pesanan {$order->kode} sudah selesai dikerjakan. "
+                ."Tinggal pelunasan ".rupiah($order->sisa_tagihan).". Rekening resmi dan tempat "
+                ."unggah buktinya ada di halaman pesanan: {$tautan}",
+
+            'pesanan-dikirim' => "Halo {$nama}, pesanan {$order->kode} sudah dikirim lewat {$order->jasa_kirim}. "
+                ."Nomor resi: {$order->no_resi}. Detail: {$tautan}",
 
             'pesanan-siap' => "Halo {$nama}, pesanan {$order->kode} sudah siap diambil di toko. "
                 ."Kode ambil: {$order->kode_ambil}. "

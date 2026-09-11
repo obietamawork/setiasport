@@ -20,15 +20,6 @@ use Illuminate\Http\RedirectResponse;
  */
 class AntrianController extends Controller
 {
-    /** Status item yang berada di tangan tiap divisi. */
-    private const PEGANGAN = [
-        'DESAIN' => [OrderItemStatus::ANTRIAN_DESAIN, OrderItemStatus::PROSES_DESAIN],
-        'PRINT' => [OrderItemStatus::ANTRIAN_PRODUKSI, OrderItemStatus::PRINTING],
-        'JAHIT' => [OrderItemStatus::JAHIT],
-        'QC' => [OrderItemStatus::QC],
-        'PACKING' => [OrderItemStatus::PACKING],
-    ];
-
     public function __construct(private AlurPesanan $alur) {}
 
     public function index()
@@ -103,7 +94,7 @@ class AntrianController extends Controller
     private function pastikanBoleh(OrderItem $item): void
     {
         $stage = collect(ProductionStage::cases())->first(
-            fn (ProductionStage $t) => in_array($item->status_item, self::PEGANGAN[$t->value], true)
+            fn (ProductionStage $t) => in_array($item->status_item, $t->statusDipegang(), true)
         );
 
         abort_unless($stage, 422, 'Item ini sedang tidak berada di antrian produksi mana pun.');
@@ -117,7 +108,7 @@ class AntrianController extends Controller
             ->with(['order.customer', 'product', 'productionJobs', 'rosters'])
             ->whereIn('status_item', array_map(
                 fn (OrderItemStatus $s) => $s->value,
-                self::PEGANGAN[$stage->value]
+                $stage->statusDipegang()
             ))
             ->whereHas('order', fn ($q) => $q->aktif())
             ->orderBy('order_id');

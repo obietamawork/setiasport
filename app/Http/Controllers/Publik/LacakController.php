@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Publik;
 
+use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\PaymentType;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
@@ -72,39 +74,34 @@ class LacakController extends Controller
             ])
             ->firstOrFail();
 
+        $menunggu = $order->payments->firstWhere('status', PaymentStatus::MENUNGGU);
+
+        /*
+         * Tagihan yang sedang harus dibayar pelanggan, kalau ada. DP punya baris
+         * pembayaran sejak checkout. Pelunasan (KEP-028) belum: nominalnya
+         * dibaca langsung dari sisa tagihan, supaya penyesuaian biaya yang
+         * menyusul, ongkir misalnya, ikut terhitung tanpa ada angka yang basi.
+         */
+        $tagihan = match (true) {
+            $menunggu !== null => [
+                'jenis' => $menunggu->jenis === PaymentType::PELUNASAN ? 'pelunasan' : 'awal',
+                'jumlah' => $menunggu->jumlah,
+                'batas' => $order->kadaluarsa_pada,
+                'pembayaran' => $menunggu,
+            ],
+            $order->status === OrderStatus::MENUNGGU_PELUNASAN && $order->sisa_tagihan > 0 => [
+                'jenis' => 'pelunasan',
+                'jumlah' => $order->sisa_tagihan,
+                'batas' => null,
+                'pembayaran' => null,
+            ],
+            default => null,
+        };
+
         return view('publik.lacak', [
             'order' => $order,
-            'menungguBayar' => $order->payments
-                ->firstWhere('status', PaymentStatus::MENUNGGU),
-            'gerbangAktif' => app(\App\Services\Pembayaran\GerbangPembayaran::class)->aktif(),
+            'tagihan' => $tagihan,
         ]);
     }
 
-    /** Pelanggan mengunggah bukti transfer; kasir yang memverifikasi. */
-    public function buktiTransfer(Request $request, string $token): RedirectResponse
-    {
-        $order = Order::where('access_token', $token)->firstOrFail();
-
-        $maks = (int) setting('upload_maks_mb', 10) * 1024;
-
-        $request->validate([
-            'bukti' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', "max:{$maks}"],
-        ], [
-            'bukti.mimes' => 'Bukti transfer harus berupa foto (JPG/PNG) atau PDF.',
-            'bukti.max' => "Ukuran berkas maksimal {$maks} KB.",
-        ], ['bukti' => 'bukti transfer']);
-
-        $payment = $order->payments()->where('status', PaymentStatus::MENUNGGU)->first();
-
-        if (! $payment) {
-            return back()->withErrors('Tidak ada tagihan yang menunggu pembayaran pada pesanan ini.');
-        }
-
-        $payment->update([
-            'bukti_path' => $request->file('bukti')->store('bukti', 'public'),
-        ]);
-
-        return back()->with('sukses',
-            'Bukti transfer terkirim. Kami memeriksanya pada jam kerja dan akan mengabari lewat email.');
-    }
 }

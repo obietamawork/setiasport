@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\OrderItemStatus;
+use App\Enums\OrderStatus;
 use App\Enums\PaymentType;
 use App\Models\OptionValue;
 use App\Models\Order;
@@ -10,6 +11,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\AlurPesanan;
+use App\Support\LinimasaItem;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SettingSeeder;
@@ -119,11 +121,16 @@ class KustomFlowTest extends TestCase
         $this->assertSame(2_235_000, $order->sisa_tagihan);
     }
 
-    public function test_item_kustom_mendapat_lima_tahap_produksi(): void
+    public function test_item_kustom_mendapat_enam_tahap_produksi(): void
     {
         $order = $this->buatPesanan();
 
-        $this->assertSame(5, $order->items->first()->productionJobs()->count());
+        // Desain, printing, potong, press, jahit, finishing (KEP-028).
+        // Packing tidak lagi dilewati barang kustom.
+        $this->assertSame(
+            ['DESAIN', 'PRINT', 'POTONG', 'PRESS', 'JAHIT', 'QC'],
+            $order->items->first()->productionJobs()->orderBy('urutan')->pluck('tahap')->map->value->all()
+        );
 
         app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
 
@@ -279,29 +286,201 @@ class KustomFlowTest extends TestCase
         $this->assertSame(OrderItemStatus::MENUNGGU_PERSETUJUAN, $item->fresh()->status_item);
     }
 
-    public function test_antrian_produksi_membawa_item_sampai_siap_diambil(): void
+    /** Menjalankan antrian produksi sampai item meninggalkan Finishing / QC. */
+    private function kerjakanProduksi(OrderItem $item): void
+    {
+        $operator = $this->staf('admin@setiasport.test');
+
+        // ANTRIAN_PRODUKSI -> PRINTING -> POTONG -> PRESS -> JAHIT -> QC -> (gerbang)
+        foreach (range(1, 6) as $_) {
+            $this->actingAs($operator)
+                ->post(route('panel.antrian.selesai', $item->fresh()))
+                ->assertSessionHasNoErrors();
+        }
+
+        auth()->logout();
+    }
+
+    private function setujui(OrderItem $item): void
+    {
+        $this->post(route('lacak.item.setujui', [$item->order->access_token, $item]), [
+            'nama' => 'Budi Santoso', 'paham' => '1',
+        ])->assertSessionHas('sukses');
+    }
+
+    public function test_produksi_melewati_lima_subtahap_lalu_menunggu_pelunasan(): void
     {
         $item = $this->siapkanMenungguPersetujuan();
         $order = $item->order;
 
-        $this->post(route('lacak.item.setujui', [$order->access_token, $item]), [
-            'nama' => 'Budi Santoso', 'paham' => '1',
-        ]);
+        $this->setujui($item);
+        $this->kerjakanProduksi($item);
 
-        $operator = $this->staf('admin@setiasport.test');
-        $gudang = $this->staf('admin@setiasport.test');
+        // Pesanan DP: barang jadi, tapi uangnya belum (KEP-028).
+        $this->assertSame(OrderItemStatus::MENUNGGU_PELUNASAN, $item->fresh()->status_item);
+        $this->assertSame(OrderStatus::MENUNGGU_PELUNASAN, $order->fresh()->status);
 
-        $this->actingAs($operator)->post(route('panel.antrian.selesai', $item->fresh())); // -> PRINTING
-        $this->actingAs($operator)->post(route('panel.antrian.selesai', $item->fresh())); // -> JAHIT
-        $this->actingAs($operator)->post(route('panel.antrian.selesai', $item->fresh())); // -> QC
-        $this->actingAs($gudang)->post(route('panel.antrian.selesai', $item->fresh()));   // -> PACKING
-        $this->actingAs($gudang)->post(route('panel.antrian.selesai', $item->fresh()));   // -> SIAP
+        // Kode ambil belum boleh terbit: itu yang membuat barang bisa keluar.
+        $this->assertNull($order->fresh()->kode_ambil);
+
+        // Desain, printing, potong, press, jahit, finishing: enam tahap tercatat
+        // selesai sebagai akibat pekerjaan operator, bukan diketik terpisah.
+        $this->assertSame(6, $item->productionJobs()->where('status', 'SELESAI')->count());
+
+        // Tanpa kabar ini pelanggan tidak tahu bahwa kini gilirannya membayar.
+        $this->assertTrue($order->emailLogs()->where('template', 'menunggu-pelunasan')->exists());
+    }
+
+    public function test_staf_tidak_bisa_melewati_gerbang_pelunasan(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+        $this->setujui($item);
+        $this->kerjakanProduksi($item);
+
+        $this->actingAs($this->staf('owner@setiasport.test'))
+            ->post(route('panel.pesanan.item.maju', [$item->order, $item->fresh()]))
+            ->assertStatus(422);
+
+        $this->assertSame(OrderItemStatus::MENUNGGU_PELUNASAN, $item->fresh()->status_item);
+        $this->assertNull($item->order->fresh()->kode_ambil);
+    }
+
+    public function test_pelunasan_di_kasir_menaikkan_ke_siap_diambil(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+        $order = $item->order;
+
+        $this->setujui($item);
+        $this->kerjakanProduksi($item);
+
+        $sisa = $order->fresh(['items.options', 'payments', 'adjustments'])->sisa_tagihan;
+
+        $this->actingAs($this->staf('admin@setiasport.test'))
+            ->post(route('panel.pesanan.pembayaran.catat', $order), [
+                'jumlah' => $sisa,
+                'metode' => 'TUNAI',
+                'jenis' => 'PELUNASAN',
+            ])
+            ->assertSessionHas('sukses');
 
         $this->assertSame(OrderItemStatus::SIAP, $item->fresh()->status_item);
+        $this->assertSame(OrderStatus::SIAP_DIAMBIL, $order->fresh()->status);
         $this->assertNotNull($order->fresh()->kode_ambil);
+    }
 
-        // Setiap tahap tercatat selesai sebagai akibat pekerjaan operator.
-        $this->assertSame(5, $item->productionJobs()->where('status', 'SELESAI')->count());
+    public function test_pelunasan_lewat_bukti_unggahan_pelanggan(): void
+    {
+        Storage::fake('local');
+
+        $item = $this->siapkanMenungguPersetujuan();
+        $order = $item->order;
+
+        $this->setujui($item);
+        $this->kerjakanProduksi($item);
+
+        $sisa = $order->fresh(['items.options', 'payments', 'adjustments'])->sisa_tagihan;
+
+        // Pelanggan menyatakan sudah membayar dengan mengunggah bukti.
+        $this->post(route('lacak.bukti', $order->access_token), [
+            'bukti' => UploadedFile::fake()->image('transfer.jpg', 700, 1400),
+        ])->assertSessionHas('sukses');
+
+        $tagihan = $order->payments()->where('jenis', 'PELUNASAN')->firstOrFail();
+
+        // Nominalnya diambil dari sisa tagihan SAAT ITU, bukan disimpan jauh hari.
+        $this->assertSame($sisa, $tagihan->jumlah);
+        $this->assertNotNull($tagihan->bukti_path);
+
+        // Bukti bukan verifikasi: barang tetap tertahan sampai admin memeriksa mutasi.
+        $this->assertSame(OrderItemStatus::MENUNGGU_PELUNASAN, $item->fresh()->status_item);
+
+        $this->actingAs($this->staf('admin@setiasport.test'))
+            ->post(route('panel.pesanan.pembayaran.verifikasi', [$order, $tagihan]), [
+                'metode' => 'TRANSFER',
+                'cek_mutasi' => '1',
+            ])
+            ->assertSessionHas('sukses');
+
+        $this->assertSame(OrderStatus::SIAP_DIAMBIL, $order->fresh()->status);
+    }
+
+    public function test_pesanan_lunas_di_muka_tidak_berhenti_di_pelunasan(): void
+    {
+        $order = $this->buatPesanan(12, 'LUNAS');
+        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
+
+        $item = $order->items()->first();
+        $this->isiRoster($order, $item, 12);
+
+        $this->actingAs($this->staf('admin@setiasport.test'))
+            ->post(route('panel.mockup.simpan', $item), [
+                'preview' => UploadedFile::fake()->image('mockup.jpg'),
+            ])->assertSessionHasNoErrors();
+        auth()->logout();
+
+        $this->setujui($item->fresh(['order']));
+        $this->kerjakanProduksi($item);
+
+        $this->assertSame(OrderItemStatus::SIAP, $item->fresh()->status_item);
+        $this->assertSame(OrderStatus::SIAP_DIAMBIL, $order->fresh()->status);
+    }
+
+    public function test_timeline_pelanggan_hanya_membuka_subprogres_produksi(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+        $this->setujui($item);
+
+        $operator = $this->staf('admin@setiasport.test');
+
+        // ANTRIAN_PRODUKSI -> PRINTING -> POTONG -> PRESS -> JAHIT
+        foreach (range(1, 4) as $_) {
+            $this->actingAs($operator)->post(route('panel.antrian.selesai', $item->fresh()));
+        }
+
+        $order = $item->order->fresh(['items.options', 'payments', 'adjustments', 'statusLogs']);
+        $linimasa = LinimasaItem::untuk($item->fresh(), $order);
+
+        $fase = collect($linimasa['fase'])->keyBy(fn ($f) => $f['fase']->value);
+
+        // Tahap besar persis seperti yang diminta klien.
+        $this->assertSame(
+            ['Pesanan Masuk', 'Pembayaran', 'Desain & Data', 'Produksi', 'Pelunasan', 'Siap Diambil', 'Selesai'],
+            collect($linimasa['fase'])->pluck('label')->all()
+        );
+
+        $this->assertSame('kini', $fase['PRODUKSI']['keadaan']);
+        $this->assertSame('lewat', $fase['DESAIN']['keadaan']);
+        $this->assertSame('nanti', $fase['PELUNASAN']['keadaan']);
+
+        $sub = collect($fase['PRODUKSI']['subtahap'])->pluck('keadaan', 'label')->all();
+
+        $this->assertSame([
+            'Printing Jersey' => 'lewat',
+            'Potong Kain' => 'lewat',
+            'Press / Sublime' => 'lewat',
+            'Jahit' => 'kini',
+            'Finishing / QC' => 'nanti',
+        ], $sub);
+
+        // Fase lain tidak membuka rinciannya.
+        $this->assertSame([], $fase['DESAIN']['subtahap']);
+    }
+
+    public function test_halaman_pesanan_menampilkan_subprogres_produksi(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+        $this->setujui($item);
+
+        $this->actingAs($this->staf('admin@setiasport.test'))
+            ->post(route('panel.antrian.selesai', $item->fresh())); // -> PRINTING
+        auth()->logout();
+
+        $this->get(route('lacak.token', $item->order->access_token))
+            ->assertOk()
+            ->assertSee('Desain &amp; Data', false)
+            ->assertSee('Potong Kain')
+            ->assertSee('Press / Sublime')
+            ->assertSee('sedang dikerjakan');
     }
 
     public function test_toko_tidak_bisa_melewati_gerbang_persetujuan(): void

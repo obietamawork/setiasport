@@ -44,6 +44,7 @@ class DashboardController extends Controller
                 ->sum('jumlah'),
             'siapDiambil' => Order::where('status', OrderStatus::SIAP_DIAMBIL)->count(),
             'sedangDikerjakan' => Order::where('status', OrderStatus::DIPROSES)->count(),
+            'menungguPelunasan' => Order::where('status', OrderStatus::MENUNGGU_PELUNASAN)->count(),
             // Pesanan lebih mendesak daripada katalog, jadi tampil lebih dulu.
             'perluVerifikasi' => Order::query()
                 ->with('customer')

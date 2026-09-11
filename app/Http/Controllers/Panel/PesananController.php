@@ -22,9 +22,27 @@ class PesananController extends Controller
     {
         $status = $request->string('status')->toString();
 
+        /*
+         * Kustom dan stok toko dipisah karena alurnya memang berbeda (KEP-027):
+         * yang satu melewati desain, persetujuan, printing, dan jahit; yang lain
+         * cuma diambil dari rak. Mencampurnya di satu daftar membuat orang yang
+         * sedang mengurus konveksi harus menyaring sendiri setiap kali.
+         *
+         * Pesanan campuran masuk ke tab Kustom, karena bagian kustomnya yang
+         * menentukan kapan seluruh pesanan bisa diserahkan. Ia diberi penanda
+         * sendiri di daftar supaya tidak ada yang kaget menemukan barang stok
+         * di dalamnya.
+         */
+        $jalur = $request->string('jalur')->toString();
+
+        $saring = fn ($q) => $q
+            ->when($jalur === 'kustom', fn ($w) => $w->adaKustom())
+            ->when($jalur === 'stok', fn ($w) => $w->hanyaStok());
+
         return view('panel.pesanan.index', [
             'pesanan' => Order::query()
                 ->with(['customer', 'items', 'payments', 'adjustments'])
+                ->tap($saring)
                 ->when($status === 'aktif', fn ($q) => $q->aktif())
                 ->when($status && $status !== 'aktif', fn ($q) => $q->where('status', $status))
                 ->when($request->filled('q'), function ($q) use ($request) {
@@ -38,11 +56,21 @@ class PesananController extends Controller
                 ->paginate(20)
                 ->withQueryString(),
             'status' => $status,
+            'jalur' => $jalur,
+            // Hitungan status mengikuti tab yang sedang dibuka; kalau tidak,
+            // angkanya menjanjikan hasil yang tidak akan muncul saat diklik.
             'jumlahStatus' => [
-                'aktif' => Order::aktif()->count(),
-                OrderStatus::MENUNGGU_PEMBAYARAN->value => Order::where('status', OrderStatus::MENUNGGU_PEMBAYARAN)->count(),
-                OrderStatus::DIPROSES->value => Order::where('status', OrderStatus::DIPROSES)->count(),
-                OrderStatus::SIAP_DIAMBIL->value => Order::where('status', OrderStatus::SIAP_DIAMBIL)->count(),
+                'aktif' => Order::query()->tap($saring)->aktif()->count(),
+                OrderStatus::MENUNGGU_PEMBAYARAN->value => Order::query()->tap($saring)->where('status', OrderStatus::MENUNGGU_PEMBAYARAN)->count(),
+                OrderStatus::DIPROSES->value => Order::query()->tap($saring)->where('status', OrderStatus::DIPROSES)->count(),
+                OrderStatus::MENUNGGU_PELUNASAN->value => Order::query()->tap($saring)->where('status', OrderStatus::MENUNGGU_PELUNASAN)->count(),
+                OrderStatus::SIAP_DIAMBIL->value => Order::query()->tap($saring)->where('status', OrderStatus::SIAP_DIAMBIL)->count(),
+                OrderStatus::DIKIRIM->value => Order::query()->tap($saring)->where('status', OrderStatus::DIKIRIM)->count(),
+            ],
+            'jumlahJalur' => [
+                '' => Order::count(),
+                'kustom' => Order::adaKustom()->count(),
+                'stok' => Order::hanyaStok()->count(),
             ],
         ]);
     }
@@ -91,16 +119,15 @@ class PesananController extends Controller
     {
         $template = match ($order->status) {
             OrderStatus::MENUNGGU_PEMBAYARAN => 'order-dibuat',
+            OrderStatus::MENUNGGU_PELUNASAN => 'menunggu-pelunasan',
             OrderStatus::SIAP_DIAMBIL => 'pesanan-siap',
+            OrderStatus::DIKIRIM => 'pesanan-dikirim',
             default => 'pembayaran-diterima',
         };
 
-        $nomor = preg_replace('/[^0-9]/', '', $order->customer->no_hp);
-        $nomor = str_starts_with($nomor, '0') ? '62'.substr($nomor, 1) : $nomor;
-
         return [
             'teks' => $this->email->teksWhatsApp($order, $template),
-            'url' => 'https://wa.me/'.$nomor,
+            'url' => 'https://wa.me/'.nomor_wa($order->customer->no_hp),
         ];
     }
 }

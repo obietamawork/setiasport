@@ -128,13 +128,19 @@ class Checkout
      * Item kustom langsung mendapat antrian pekerjaannya. Inilah yang membuat
      * status pelanggan bisa naik sebagai efek samping pekerjaan operator,
      * bukan sebagai input terpisah (docs/04).
+     *
+     * Daftarnya DITURUNKAN dari urutan status, bukan ditulis ulang di sini.
+     * Dua daftar yang dijaga terpisah pasti berselisih suatu hari: begitu alur
+     * kustom mendapat potong dan press (KEP-028), daftar tulisan tangan di sini
+     * masih menyiapkan packing yang tidak lagi dilewati.
      */
     private function siapkanJobProduksi(\App\Models\OrderItem $item): void
     {
-        $tahap = $item->fulfillment_type === FulfillmentType::PREORDER
-            ? [ProductionStage::DESAIN, ProductionStage::PRINT, ProductionStage::JAHIT,
-                ProductionStage::QC, ProductionStage::PACKING]
-            : [ProductionStage::PACKING];
+        $tahap = collect(OrderItemStatus::alur($item->fulfillment_type))
+            ->map(fn (OrderItemStatus $s) => $s->tahapProduksi())
+            ->filter()
+            ->unique(fn (ProductionStage $t) => $t->value)
+            ->values();
 
         foreach ($tahap as $urutan => $t) {
             $item->productionJobs()->create([

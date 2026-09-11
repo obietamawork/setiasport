@@ -36,7 +36,29 @@ class OrderStatusResolver
         }
 
         if ($aktif->every(fn (OrderItemStatus $s) => $s === OrderItemStatus::SELESAI)) {
-            return OrderStatus::SELESAI;
+            /*
+             * Barang sudah keluar dari toko, tapi untuk pesanan yang dikirim itu
+             * belum berarti sampai (KEP-026). Selama belum ada konfirmasi
+             * diterima, pesanan berhenti di DIKIRIM dan tetap terhitung aktif,
+             * supaya paket yang nyangkut di kurir tidak hilang dari pandangan.
+             */
+            return $order->dikirim() && $order->diterima_pada === null
+                ? OrderStatus::DIKIRIM
+                : OrderStatus::SELESAI;
+        }
+
+        /*
+         * Pekerjaan sudah beres, tapi uangnya belum (KEP-028). Satu item kustom
+         * yang menunggu pelunasan menahan seluruh pesanan, termasuk barang stok
+         * di dalamnya: pelanggan datang sekali dan mengambil semuanya, dan kode
+         * ambil baru terbit setelah lunas.
+         */
+        $beres = $aktif->every(fn (OrderItemStatus $s) => in_array(
+            $s, [OrderItemStatus::MENUNGGU_PELUNASAN, OrderItemStatus::SIAP, OrderItemStatus::SELESAI], true
+        ));
+
+        if ($beres && $aktif->contains(OrderItemStatus::MENUNGGU_PELUNASAN)) {
+            return OrderStatus::MENUNGGU_PELUNASAN;
         }
 
         $siap = $aktif->every(fn (OrderItemStatus $s) => in_array(

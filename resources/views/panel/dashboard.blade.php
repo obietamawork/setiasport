@@ -13,7 +13,7 @@
 
 {{-- Pemilik toko membuka halaman ini tiap pagi. Pertanyaan pertamanya selalu
      sama: apa yang terjadi hari ini, dan apa yang sedang menunggu. --}}
-<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+<div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
     <div class="kartu p-4">
         <p class="text-xs text-muted">Pesanan masuk hari ini</p>
         <p class="numeral mt-2 text-2xl">{{ $pesananHariIni }}</p>
@@ -26,7 +26,13 @@
         <p class="text-xs text-muted">Sedang dikerjakan</p>
         <p class="numeral mt-2 text-2xl">{{ $sedangDikerjakan }}</p>
     </a>
-    <a href="{{ route('panel.serah-terima') }}" class="kartu kartu-tautan p-4">
+    {{-- Barang sudah jadi tapi uangnya belum (KEP-028). Ditaruh di antara
+         "dikerjakan" dan "siap" karena memang di situlah ia berada. --}}
+    <a href="{{ route('panel.pesanan.index', ['status' => 'MENUNGGU_PELUNASAN']) }}" class="kartu kartu-tautan p-4">
+        <p class="text-xs text-muted">Menunggu pelunasan</p>
+        <p class="numeral mt-2 text-2xl">{{ $menungguPelunasan }}</p>
+    </a>
+    <a href="{{ route('panel.serah-terima') }}" class="kartu kartu-tautan col-span-2 p-4 lg:col-span-1">
         <p class="text-xs text-muted">Siap diambil</p>
         <p class="numeral mt-2 text-2xl {{ $siapDiambil > 0 ? 'text-merah' : '' }}">{{ $siapDiambil }}</p>
     </a>

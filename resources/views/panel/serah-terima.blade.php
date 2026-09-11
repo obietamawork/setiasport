@@ -51,7 +51,25 @@
             </div>
         </div>
 
-        @if ($order->sisa_tagihan > 0)
+        @php
+            $klaimMenunggu = $order->payments
+                ->where('status', \App\Enums\PaymentStatus::MENUNGGU)
+                ->whereNotNull('bukti_path')
+                ->first();
+        @endphp
+
+        @if ($klaimMenunggu)
+            {{-- Pelanggan yang sudah transfer lalu datang ke toko adalah jalan
+                 tercepat menuju pembayaran tercatat dua kali (KEP-029). --}}
+            <div class="border-t border-line bg-kuning-50 px-5 py-4 text-sm leading-relaxed">
+                <strong>Pelanggan sudah mengunggah bukti transfer {{ rupiah($klaimMenunggu->jumlah) }}.</strong>
+                Cocokkan dengan mutasi lalu verifikasi di halaman pesanan. Jangan dicatat ulang
+                di sini, nanti pembayarannya terhitung dua kali.
+                <a href="{{ route('panel.pesanan.show', $order) }}" class="tautan">Buka halaman pesanan</a>
+            </div>
+        @endif
+
+        @if ($order->sisa_tagihan > 0 && ! $klaimMenunggu)
             {{-- Pelunasan dulu, baru serah terima. Order tidak boleh Selesai
                  selama sisa tagihan masih ada (KEP-006). --}}
             <form method="POST" action="{{ route('panel.pesanan.pembayaran.catat', $order) }}"
@@ -63,12 +81,21 @@
                 <div class="w-40"><label class="label-form">Metode</label>
                     <select name="metode" class="kotak-input">
                         <option value="TUNAI">Tunai</option>
-                        <option value="QRIS_EDC">QRIS / EDC</option>
+                        <option value="QRIS">QRIS</option>
                         <option value="TRANSFER">Transfer bank</option>
                     </select></div>
                 <input type="hidden" name="jenis" value="PELUNASAN">
                 <button type="submit" class="tombol tombol-utama">Catat pelunasan</button>
             </form>
+        @elseif ($order->dikirim())
+            {{-- Pesanan yang dikirim tidak lewat meja kasir (KEP-026). Resinya
+                 dicatat di halaman pesanan, dan menyediakan tombol "serahkan"
+                 di sini justru membuka jalan barang keluar tanpa resi. --}}
+            <div class="border-t border-line bg-kuning-50 px-5 py-4 text-sm leading-relaxed">
+                Pesanan ini <strong>dikirim</strong>, tidak diambil di toko.
+                Catat jasa kirim dan nomor resinya di halaman pesanan.
+                <a href="{{ route('panel.pesanan.show', $order) }}" class="tautan">Buka halaman pesanan</a>
+            </div>
         @elseif ($order->bolehDiserahkan())
             <form method="POST" action="{{ route('panel.pesanan.serah-terima', $order) }}"
                   class="flex flex-wrap items-end gap-3 border-t border-line bg-paper p-4">
@@ -101,7 +128,12 @@
                 <li class="flex flex-wrap items-center gap-3 px-4 py-2.5">
                     <a href="{{ route('panel.serah-terima', ['kode' => $o->kode_ambil]) }}"
                        class="tautan tabular font-medium">{{ $o->kode_ambil }}</a>
-                    <span class="min-w-32 flex-1">{{ $o->customer->nama }}</span>
+                    <span class="min-w-32 flex-1">
+                        {{ $o->customer->nama }}
+                        @if ($o->dikirim())
+                            <span class="chip chip-kuning">Dikirim</span>
+                        @endif
+                    </span>
                     <span class="text-muted tabular">
                         siap {{ $o->siap_pada?->diffForHumans(short: true) }}
                     </span>

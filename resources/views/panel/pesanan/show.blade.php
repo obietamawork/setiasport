@@ -3,8 +3,10 @@
 
 @section('isi')
 @php
+    use App\Enums\MetodeAmbil;
     use App\Enums\OrderItemStatus;
     use App\Enums\OrderStatus;
+    use App\Enums\PaymentMethod;
     use App\Enums\PaymentStatus;
     $izin = auth('web')->user();
 @endphp
@@ -45,7 +47,14 @@
                         $posisi = array_search($item->status_item, $alur, true);
                         $lanjut = $item->status_item->berikutnya($item->fulfillment_type);
                         $menungguPelanggan = $item->status_item === OrderItemStatus::MENUNGGU_PERSETUJUAN;
+                        $menungguLunas = $item->status_item === OrderItemStatus::MENUNGGU_PELUNASAN;
                         $batal = $item->status_item === OrderItemStatus::DIBATALKAN;
+
+                        // "Tandai Menunggu Pelunasan" tidak menjelaskan apa-apa ke
+                        // operator. Yang ia lakukan sebenarnya menutup produksi.
+                        $labelLanjut = $lanjut === OrderItemStatus::MENUNGGU_PELUNASAN
+                            ? 'produksi selesai'
+                            : $lanjut?->label();
                     @endphp
 
                     <div class="p-5">
@@ -103,12 +112,18 @@
                                     <span class="ml-auto text-sm text-muted">
                                         Hanya pelanggan yang bisa menyetujui desain
                                     </span>
+                                @elseif ($menungguLunas)
+                                    {{-- Gerbang tanpa tombol (KEP-028): item naik sendiri begitu
+                                         uangnya tercatat, tidak ada jalan pintas dari panel. --}}
+                                    <span class="ml-auto text-sm text-muted">
+                                        Naik ke Siap begitu sisa {{ rupiah($pesanan->sisa_tagihan) }} tercatat
+                                    </span>
                                 @elseif ($lanjut && $lanjut !== OrderItemStatus::SELESAI && $izin->punyaIzin('order.kelola'))
                                     <form method="POST" action="{{ route('panel.pesanan.item.maju', [$pesanan, $item]) }}"
                                           class="ml-auto">
                                         @csrf
                                         <button type="submit" class="tombol tombol-garis tombol-sm">
-                                            Tandai {{ $lanjut->label() }}
+                                            Tandai {{ $labelLanjut }}
                                         </button>
                                     </form>
                                 @elseif ($lanjut === OrderItemStatus::SELESAI)
@@ -149,15 +164,78 @@
                         </span>
 
                         @if ($bayar->bukti_path)
-                            <a href="{{ asset('storage/'.$bayar->bukti_path) }}" target="_blank" rel="noopener"
-                               class="tautan">Bukti</a>
+                            {{-- Lewat rute berizin, bukan alamat berkas: bukti memuat nama
+                                 dan nomor rekening pelanggan (KEP-029). --}}
+                            <a href="{{ route('panel.pesanan.pembayaran.bukti', [$pesanan, $bayar]) }}" target="_blank" rel="noopener"
+                               class="tautan">Lihat bukti</a>
                         @endif
 
                         @if ($bayar->status === PaymentStatus::MENUNGGU && $izin->punyaIzin('pembayaran.verifikasi'))
-                            <form method="POST" action="{{ route('panel.pesanan.pembayaran.verifikasi', [$pesanan, $bayar]) }}">
-                                @csrf
-                                <button type="submit" class="tombol tombol-navy tombol-sm">Verifikasi</button>
-                            </form>
+                            {{-- Tidak ada gerbang yang mengabari kami (KEP-023): admin
+                                 mencocokkan sendiri mutasi rekening dengan bukti yang
+                                 masuk lewat WhatsApp, lalu mencatat hasilnya di sini. --}}
+                            <details class="lipatan w-full">
+                                <summary>Verifikasi pembayaran ini</summary>
+                                <div class="grid gap-4 bg-navy-50 p-4 sm:grid-cols-2">
+                                    <form method="POST" enctype="multipart/form-data" class="contents"
+                                          action="{{ route('panel.pesanan.pembayaran.verifikasi', [$pesanan, $bayar]) }}">
+                                        @csrf
+                                        <div>
+                                            <label for="metode-{{ $bayar->id }}" class="label-form">Uang masuk lewat</label>
+                                            <select id="metode-{{ $bayar->id }}" name="metode" class="kotak-input">
+                                                <option value="TRANSFER" @selected($bayar->metode === PaymentMethod::TRANSFER)>Transfer bank</option>
+                                                <option value="QRIS" @selected($bayar->metode === PaymentMethod::QRIS)>QRIS</option>
+                                                <option value="TUNAI" @selected($bayar->metode === PaymentMethod::TUNAI)>Tunai</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="bukti-{{ $bayar->id }}" class="label-form">
+                                                {{ $bayar->bukti_path ? 'Ganti bukti' : 'Lampirkan bukti' }}
+                                            </label>
+                                            <input type="file" id="bukti-{{ $bayar->id }}" name="bukti"
+                                                   accept="image/*" class="kotak-input">
+                                            <p class="mt-1 text-xs text-muted">
+                                                {{ $bayar->bukti_path
+                                                    ? 'Pelanggan sudah mengunggah bukti. Kosongkan untuk memakainya.'
+                                                    : 'Untuk bukti yang diterima lewat chat CS atau di toko. Boleh dikosongkan.' }}
+                                            </p>
+                                        </div>
+
+                                        {{-- Bukti bisa diedit dalam semenit; mutasi tidak (KEP-029). --}}
+                                        <label class="flex items-start gap-2 border-l-2 border-kuning bg-kuning-50 p-3 text-sm leading-relaxed sm:col-span-2">
+                                            <input type="checkbox" name="cek_mutasi" value="1" required
+                                                   class="mt-1 size-4 shrink-0 accent-navy">
+                                            <span>
+                                                Saya sudah melihat <strong>{{ rupiah($bayar->jumlah) }}</strong> benar-benar masuk
+                                                di mutasi rekening atau riwayat QRIS toko, atau menerimanya tunai.
+                                                Bukti transfer saja tidak cukup.
+                                            </span>
+                                        </label>
+
+                                        <div class="sm:col-span-2">
+                                            <button type="submit" class="tombol tombol-navy">
+                                                Uang sudah masuk, verifikasi
+                                            </button>
+                                            <p class="mt-2 text-xs leading-relaxed text-muted">
+                                                Setelah ini pesanan berlanjut ke tahap berikutnya dan pelanggan dikabari
+                                                lewat email. Nama Anda tercatat sebagai yang memverifikasi.
+                                            </p>
+                                        </div>
+                                    </form>
+
+                                    <form method="POST" class="sm:col-span-2 flex flex-wrap items-end gap-3 border-t border-line pt-4"
+                                          action="{{ route('panel.pesanan.pembayaran.tolak', [$pesanan, $bayar]) }}">
+                                        @csrf
+                                        <div class="min-w-56 flex-1">
+                                            <label for="alasan-{{ $bayar->id }}" class="label-form">Atau tandai gagal, alasannya</label>
+                                            <input type="text" id="alasan-{{ $bayar->id }}" name="alasan"
+                                                   class="kotak-input" maxlength="150"
+                                                   placeholder="Misal: nominal kurang, bukti tidak cocok">
+                                        </div>
+                                        <button type="submit" class="tombol tombol-garis">Tandai gagal</button>
+                                    </form>
+                                </div>
+                            </details>
                         @endif
                     </li>
                 @endforeach
@@ -180,7 +258,7 @@
                             <label for="metode" class="label-form">Metode</label>
                             <select id="metode" name="metode" class="kotak-input">
                                 <option value="TUNAI">Tunai</option>
-                                <option value="QRIS_EDC">QRIS / EDC</option>
+                                <option value="QRIS">QRIS</option>
                                 <option value="TRANSFER">Transfer bank</option>
                             </select>
                         </div>
@@ -198,6 +276,136 @@
                     </form>
                 </details>
             @endif
+        </section>
+
+        {{-- Pengambilan vs pengiriman (KEP-026). Disetel di sini, bukan di layar
+             kasir: kesepakatan mengirim terjadi lewat WhatsApp jauh sebelum
+             barangnya siap, bukan di depan meja kasir. --}}
+        <section class="kartu overflow-hidden">
+            <h2 class="kartu-kop">Pengambilan</h2>
+
+            <div class="space-y-4 p-5">
+                <div class="flex flex-wrap items-center gap-3">
+                    <span class="chip {{ $pesanan->dikirim() ? 'chip-kuning' : 'chip-netral' }}">
+                        {{ $pesanan->metode_ambil->label() }}
+                    </span>
+                    @if ($pesanan->punyaKustom())
+                        <span class="text-sm text-muted">
+                            Memuat barang kustom, jadi hanya bisa diambil di toko.
+                        </span>
+                    @endif
+                </div>
+
+                @if ($pesanan->dikirim_pada)
+                    <dl class="grid gap-3 border-t border-line pt-4 text-sm sm:grid-cols-2">
+                        <div>
+                            <dt class="text-muted">Jasa kirim</dt>
+                            <dd class="font-semibold">{{ $pesanan->jasa_kirim }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-muted">Nomor resi</dt>
+                            <dd class="numeral text-lg">{{ $pesanan->no_resi }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-muted">Diserahkan ke kurir</dt>
+                            <dd class="tabular">{{ $pesanan->dikirim_pada->translatedFormat('j M Y, H:i') }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-muted">Alamat</dt>
+                            <dd class="leading-relaxed">{{ $pesanan->alamat_kirim }}</dd>
+                        </div>
+                    </dl>
+
+                    @if ($pesanan->status === OrderStatus::DIKIRIM && $izin->punyaIzin('serah_terima.proses'))
+                        <form method="POST" action="{{ route('panel.pesanan.pengiriman.diterima', $pesanan) }}"
+                              class="border-t border-line pt-4">
+                            @csrf
+                            <button type="submit" class="tombol tombol-navy">Paket sudah diterima pelanggan</button>
+                            <p class="mt-2 text-xs leading-relaxed text-muted">
+                                Selama belum ditekan, pesanan ini tetap muncul di daftar aktif. Itu disengaja:
+                                paket yang nyangkut di kurir tidak boleh hilang dari pandangan.
+                            </p>
+                        </form>
+                    @elseif ($pesanan->diterima_pada)
+                        <p class="border-t border-line pt-4 text-sm text-ok">
+                            Diterima {{ $pesanan->diterima_pada->translatedFormat('j M Y, H:i') }}.
+                        </p>
+                    @endif
+                @elseif ($izin->punyaIzin('serah_terima.proses') && ! $pesanan->status->final())
+                    @if ($pesanan->dikirim())
+                        <div class="border-t border-line pt-4">
+                            <p class="text-sm leading-relaxed">
+                                Dikirim ke:<br>
+                                <span class="font-medium">{{ $pesanan->alamat_kirim }}</span>
+                            </p>
+
+                            @if ($pesanan->bolehDikirim())
+                                <form method="POST" action="{{ route('panel.pesanan.pengiriman.kirim', $pesanan) }}"
+                                      class="mt-4 grid gap-4 bg-navy-50 p-4 sm:grid-cols-2">
+                                    @csrf
+                                    <div>
+                                        <label for="jasa_kirim" class="label-form">Jasa kirim</label>
+                                        <select id="jasa_kirim" name="jasa_kirim" class="kotak-input">
+                                            @foreach (daftar_setting('jasa_kirim_daftar') as $jasa)
+                                                <option value="{{ $jasa }}">{{ $jasa }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="no_resi" class="label-form">Nomor resi</label>
+                                        <input type="text" id="no_resi" name="no_resi" class="kotak-input tabular"
+                                               maxlength="60" required autocomplete="off">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <button type="submit" class="tombol tombol-navy">Catat resi, tandai dikirim</button>
+                                        <p class="mt-2 text-xs leading-relaxed text-muted">
+                                            Tekan setelah paket benar-benar diserahkan ke kurir. Pelanggan langsung
+                                            menerima email berisi resi ini.
+                                        </p>
+                                    </div>
+                                </form>
+                            @else
+                                <p class="mt-3 border-l-2 border-kuning bg-kuning-50 p-3 text-sm leading-relaxed">
+                                    Belum bisa dikirim. {{ $pesanan->alasanBelumBisaDikirim() }}
+                                </p>
+                            @endif
+                        </div>
+                    @endif
+
+                    <details class="lipatan border-t border-line" @if ($errors->has('alamat_kirim') || $errors->has('metode_ambil')) open @endif>
+                        <summary>{{ $pesanan->dikirim() ? 'Ubah alamat atau kembalikan ke ambil di toko' : 'Pesanan ini mau dikirim' }}</summary>
+                        <form method="POST" action="{{ route('panel.pesanan.pengiriman.atur', $pesanan) }}"
+                              class="space-y-4 bg-navy-50 p-4">
+                            @csrf
+                            <div>
+                                <label for="metode_ambil" class="label-form">Cara pengambilan</label>
+                                <select id="metode_ambil" name="metode_ambil" class="kotak-input">
+                                    @foreach (MetodeAmbil::cases() as $m)
+                                        <option value="{{ $m->value }}" @selected(old('metode_ambil', $pesanan->metode_ambil->value) === $m->value)>
+                                            {{ $m->label() }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label for="alamat_kirim" class="label-form">Alamat lengkap</label>
+                                <textarea id="alamat_kirim" name="alamat_kirim" rows="3" class="kotak-input leading-relaxed"
+                                          maxlength="500" placeholder="Nama penerima, alamat, kecamatan, kota, kode pos, nomor HP">{{ old('alamat_kirim', $pesanan->alamat_kirim) }}</textarea>
+                                <p class="mt-1 text-xs leading-relaxed text-muted">
+                                    Salin apa adanya dari WhatsApp pelanggan. Hanya dipakai kalau pesanan dikirim.
+                                </p>
+                            </div>
+                            <div>
+                                <button type="submit" class="tombol tombol-navy">Simpan</button>
+                                <p class="mt-2 text-xs leading-relaxed text-muted">
+                                    Ongkirnya dicatat terpisah sebagai penyesuaian biaya di bawah, supaya pelanggan
+                                    melihatnya sebagai angka yang bisa dijelaskan.
+                                </p>
+                            </div>
+                        </form>
+                    </details>
+                @endif
+            </div>
         </section>
 
         <section class="kartu overflow-hidden">
