@@ -50,15 +50,34 @@ Yang harus ada:
 - Boleh campur ready stock + kustom (lihat 02 — perlu keputusan)
 - Checkout menampilkan **rincian pembayaran yang jujur**: total, DP yang harus dibayar
   sekarang, sisa pelunasan
-- **Tidak ada form alamat pengiriman.** Ganti dengan: pilihan estimasi tanggal ambil +
-  info alamat & jam operasional toko
+- **Tidak ada form alamat pengiriman di checkout**, bahkan setelah KEP-026. Pelanggan
+  yang jauh menyepakati pengiriman lewat chat CS, lalu admin yang memasukkan alamatnya
+  di panel. Alasannya: pengiriman adalah pengecualian, dan menaruh kolom alamat di
+  checkout membuatnya terbaca sebagai layanan biasa yang selalu tersedia
 - **Tanpa pendaftaran akun** (KEP-008). Cukup: nama, **email (wajib)**, no HP.
   Email wajib karena ia satu-satunya kanal notifikasi otomatis
 
-### 4. Pembayaran
-- Fase 1: transfer manual + upload bukti → diverifikasi kasir
-- Fase akhir: Midtrans/Xendit (VA, QRIS, e-wallet). QRIS hampir wajib untuk pasar ini
-- Batas waktu bayar yang jelas (mis. 24 jam), setelah itu order kadaluarsa & stok dilepas
+### 4. Pembayaran — manual, diverifikasi orang (KEP-023)
+- Halaman pesanan menampilkan **QRIS statis** dan **nomor rekening** toko apa adanya
+- Pelanggan transfer sendiri (DP di awal, pelunasan setelah barang jadi), lalu
+  **mengunggah buktinya di halaman pesanan** (KEP-029). Tidak ada transaksi lewat
+  WhatsApp: di sanalah penipu menyamar sebagai toko
+- Halaman pesanan menyatakan terang-terangan bahwa toko tidak pernah meminta transfer
+  lewat WhatsApp atau ke rekening lain. Ia satu-satunya sumber rekening yang sah
+- Admin mencocokkannya dengan mutasi, lalu menekan Verifikasi di panel. Metode dan
+  bukti dicatat di langkah itu, bukan saat checkout
+- Batas waktu bayar yang jelas (mis. 24 jam), setelah itu order kadaluarsa & stok dilepas.
+  Tanpa gerbang, inilah satu-satunya penjaga stok yang direservasi
+
+### 4b. Chat CS (KEP-030)
+- Tombol chat di pojok kanan bawah setiap halaman publik. Pertanyaan stok, konsultasi
+  jersey custom, dan **komplain** semuanya lewat sini; klien menetapkan komplain hanya
+  dilayani lewat chat ini
+- Tanpa akun cukup nama dan email atau nomor HP. Percakapan dikenali lewat cookie, jadi
+  bisa dilanjutkan setelah halaman ditutup
+- Dibuka dari halaman pesanan, chat otomatis membawa pesanannya dan dianggap
+  terverifikasi
+- Foto boleh dilampirkan, misalnya jahitan yang lepas atau ukuran yang salah
 
 ### 5. Tracking — halaman terpenting di seluruh web
 - Diakses dengan **kode order + no HP**, tanpa login. Link langsung bisa dishare ke grup tim

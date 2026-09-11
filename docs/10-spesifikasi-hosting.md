@@ -13,7 +13,7 @@ memverifikasinya, dan panduan memilih paket.
 | **MySQL / MariaDB** | MySQL 8.0 atau MariaDB 10.6+ | Butuh dukungan JSON & CTE |
 | **Cron job** | Tersedia, interval 1 menit | **Nyawa sistem.** Tanpa ini: order tidak pernah kadaluarsa, stok tidak dilepas, email tidak terkirim, pengingat tidak jalan |
 | **Document root bisa diarahkan** | Ke subfolder (`public/`) | Kalau tidak bisa, `.env` & `storage/` berisiko terekspos — kebocoran paling umum di shared hosting |
-| **HTTPS keluar (port 443)** | Tidak diblokir | Resend, lalu Midtrans/Xendit |
+| **HTTPS keluar (port 443)** | Tidak diblokir | Resend dan Pusher (chat CS) |
 | **Disk** | **≥ 10 GB** | Foto produk + preview desain. Paket 1–3 GB akan sesak dalam setahun |
 | **SSL** | Let's Encrypt gratis | Atau cukup lewat Cloudflare |
 | **Ekstensi PHP** | bcmath, ctype, curl, dom, fileinfo, gd/imagick, mbstring, openssl, pdo_mysql, tokenizer, xml, zip | Kebutuhan Laravel + pemrosesan gambar |
@@ -115,7 +115,7 @@ foreach (['bcmath','ctype','curl','dom','fileinfo','gd','imagick','mbstring',
     printf("%-12s %s<br>", $e, extension_loaded($e) ? 'ADA' : '>>> TIDAK ADA <<<');
 }
 
-// uji HTTPS keluar (untuk Resend & payment gateway)
+// uji HTTPS keluar (untuk Resend)
 $c = curl_init('https://api.resend.com');
 curl_setopt_array($c, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10]);
 curl_exec($c);

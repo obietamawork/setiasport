@@ -67,11 +67,37 @@ MAIL_FROM_ADDRESS="noreply@setiasport.example"
 RESEND_API_KEY=re_…
 RESEND_WEBHOOK_SECRET=whsec_…
 
-PEMBAYARAN_GERBANG=           # kosongkan sampai merchant disetujui
-MIDTRANS_SERVER_KEY=
-MIDTRANS_CLIENT_KEY=
-MIDTRANS_PRODUKSI=true
+BROADCAST_CONNECTION=pusher   # chat CS realtime (KEP-030)
+PUSHER_APP_ID=…
+PUSHER_APP_KEY=…
+PUSHER_APP_SECRET=…
+PUSHER_APP_CLUSTER=ap1        # Singapura, terdekat dari Indonesia
+PUSHER_HOST=                  # KOSONGKAN di produksi; hanya untuk Reverb lokal
+PUSHER_PORT=443
+PUSHER_SCHEME=https
+PUSHER_CLIENT_HOST=           # KOSONGKAN di produksi
+PUSHER_CLIENT_PORT=
+PUSHER_CLIENT_TLS=true
 ```
+
+Tidak ada kunci payment gateway: pembayaran diverifikasi manual (KEP-023). Nomor
+rekening, gambar QRIS, dan nomor WhatsApp diisi lewat **Panel → Pengaturan**, bukan
+lewat `.env`, supaya pemilik toko bisa menggantinya sendiri tanpa deploy ulang.
+
+### Kunci Pusher untuk chat CS
+
+1. Daftar di pusher.com, buat aplikasi **Channels** baru dengan paket **Sandbox** (gratis),
+   klaster `ap1`.
+2. Salin `app_id`, `key`, dan `secret` dari tab *App Keys* ke `.env` di atas.
+3. Di tab *App Settings*, pastikan **Enable client events dalam keadaan mati**. Kalau
+   menyala, browser bisa saling mengirim pesan langsung lewat channel tanpa melewati
+   server, dan pesan seperti itu tidak tersimpan maupun diperiksa.
+4. Setelah `config:cache`, buka website, kirim satu chat, dan pastikan balasan dari panel
+   muncul tanpa memuat ulang halaman.
+
+Kalau kuncinya dikosongkan atau kuota gratisnya habis, chat **tetap berjalan** lewat
+polling 15 detik selama jendela chat terbuka. Yang hilang hanya kecepatannya. Ketiadaan
+kunci tidak pernah membuat pesan pelanggan hilang.
 
 ---
 
@@ -100,6 +126,20 @@ keduanya justru bisa ikut bermasalah saat dibutuhkan.
 
 Izin tulis yang dibutuhkan: `storage/` dan `bootstrap/cache/`.
 
+### Saat memperbarui aplikasi
+
+```bash
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan db:seed --force        # aman diulang, lihat di bawah
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+```
+
+`db:seed` **aman dijalankan ulang**: ia menambahkan pengaturan, izin, dan template yang
+baru tanpa menimpa apa pun yang sudah diisi toko. Rekening dan QRIS tetap, harga katalog
+yang sudah dikoreksi tetap, dan kata sandi owner serta admin tidak kembali ke `password`.
+Ketiganya dulu ikut tertimpa dan kini dikunci oleh tes (`SeedUlangAmanTest`).
+
 ---
 
 ## 5. Cron — nyawa sistem
@@ -123,13 +163,12 @@ pemilik toko tahu tanpa perlu memeriksa apa pun secara teknis.
 
 ## 6. Webhook
 
-Dua endpoint perlu didaftarkan ke penyedia. Keduanya memeriksa tanda tangan dan
-**menolak permintaan tanpa rahasia yang benar**, jadi aman dibuka ke publik.
+Satu endpoint perlu didaftarkan. Ia memeriksa tanda tangan dan **menolak permintaan
+tanpa rahasia yang benar**, jadi aman dibuka ke publik.
 
 | Penyedia | URL | Peristiwa |
 |---|---|---|
 | Resend | `https://setiasport.example/webhook/resend` | `email.delivered`, `email.opened`, `email.bounced`, `email.complained` |
-| Midtrans | `https://setiasport.example/webhook/midtrans` | Payment Notification URL di dashboard |
 
 Salin *signing secret* Resend ke `RESEND_WEBHOOK_SECRET`. Selama variabel itu
 kosong, seluruh notifikasi ditolak — disengaja (KEP-016).
@@ -174,6 +213,11 @@ salin ke luar server:
 0 2 * * * mysqldump -u USER -pPASS DBNAME | gzip > /home/user/backup/db-$(date +\%F).sql.gz
 ```
 
-Simpan juga `storage/app/public` — di situlah bukti transfer, preview desain, dan
-mockup berada. File mentah siap cetak tidak ada di sini karena memang tidak pernah
-masuk sistem (KEP-002).
+Simpan juga **dua** folder berkas, bukan hanya satu:
+
+- `storage/app/public`: foto produk, gambar QRIS, preview desain, mockup, portofolio
+- `storage/app/private`: **bukti pembayaran dan foto lampiran chat CS** (KEP-029,
+  KEP-030). Ini catatan resmi untuk sengketa uang dan komplain; sengaja tidak bisa
+  dibuka lewat URL, jadi mudah terlupa saat mencadangkan
+
+File mentah siap cetak tidak ada di sini karena memang tidak pernah masuk sistem (KEP-002).

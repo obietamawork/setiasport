@@ -67,9 +67,65 @@ dengan biaya implementasi sangat rendah — cukup halaman HTML dengan CSS print.
 ### Serah terima (satu layar, dua aksi)
 Konsekuensi KEP-006: pelunasan terjadi di kasir saat pengambilan. Maka layar ini
 menggabungkan **catat pelunasan + tandai diambil** dalam satu alur:
-cari/scan kode ambil → tampil sisa tagihan → pilih metode (Tunai/Transfer/QRIS EDC) →
+cari/scan kode ambil → tampil sisa tagihan → pilih metode (Tunai/Transfer/QRIS) →
 nominal terisi otomatis → simpan → order `Selesai`.
 Order **tidak boleh** menjadi `Selesai` selama sisa tagihan > 0.
+
+### Verifikasi pembayaran (konsekuensi KEP-023)
+Tidak ada gerbang yang mengabari sistem bahwa uang sudah masuk. Admin membuka mutasi
+rekening atau riwayat QRIS, mencocokkannya dengan bukti yang diunggah pelanggan di
+halaman pesanannya (KEP-029), lalu menekan Verifikasi di detail order. Tombol itu
+mewajibkan pernyataan bahwa uangnya sudah terlihat di mutasi: bukti bisa diedit,
+mutasi tidak. Di situ pula **metode sebenarnya**
+dan **gambar buktinya** dicatat, karena saat checkout belum ada yang tahu pelanggan
+akan membayar lewat apa. Buktinya disimpan sebagai jejak kalau kelak ada selisih setoran.
+
+Alternatifnya satu tombol lagi: **tandai gagal** dengan alasan yang wajib ditulis,
+supaya ada yang bisa dijelaskan ke pelanggan.
+
+### Pengiriman (konsekuensi KEP-026)
+Khusus pesanan yang isinya murni stok toko. Disetel dari halaman pesanan, bukan dari
+layar kasir, karena kesepakatan mengirim terjadi lewat chat CS jauh sebelum barangnya
+siap. Admin mengisi alamat yang disepakati, lalu setelah paket diserahkan ke kurir ia
+memilih jasa kirim dan mengetik nomor resinya. Pelanggan langsung menerima email berisi
+resi itu.
+
+Ongkirnya dicatat terpisah sebagai **penyesuaian biaya**, bukan kolom tersendiri, supaya
+pelanggan melihatnya sebagai angka yang bisa dijelaskan.
+
+Pesanan berhenti di **Dalam Pengiriman** sampai ada yang menekan "paket sudah diterima".
+Itu disengaja: selama belum ditekan, pesanan tetap muncul di daftar aktif, dan paket yang
+nyangkut di kurir tidak hilang dari pandangan.
+
+### Daftar pesanan dipisah dua tab (konsekuensi KEP-027)
+Kustom dan stok toko punya tabnya sendiri, karena yang mengurus konveksi dan yang
+mengambil barang dari rak sedang mengerjakan pekerjaan berbeda. Pesanan campuran masuk
+ke tab Kustom dengan penanda "Campuran".
+
+### Ruang CS (konsekuensi KEP-030 dan KEP-031)
+Antarmuka kerja tersendiri di `/panel/cs`, layar penuh tanpa sidebar panel, dengan akun
+dan izin yang sama. Tiga panel: daftar percakapan, percakapan, dan info pelanggan. Yang
+paling lama menunggu di urutan teratas; garis tepinya kuning selama masih dalam batas
+wajar dan merah begitu lewat 15 menit. Komplain ditandai merah.
+
+Saklar **Menerima chat** di bilah atas menentukan apa yang dilihat pelanggan: online,
+atau offline dengan janji dibalas pada jam layanan. Matikan saat istirahat. Di samping percakapan tampil pesanan yang ditautkan, dengan penanda
+**terverifikasi** (dibuka dari tautan pesanan atau akun pemiliknya) atau **belum
+terverifikasi** (kode yang sekadar diketik). Jangan ubah apa pun di pesanan, misalnya nama
+pengambil, hanya berdasarkan chat yang belum terverifikasi.
+
+Template balasan dipilih lewat tombol Template atau dengan mengetik `/` di awal kolom
+balasan, dan dikelola dari "Kelola template" di bilah atas.
+
+Sambungan chat terpasang di **semua** halaman panel: admin yang sedang mengurus stok tetap
+mendengar bunyi dan melihat angka merah saat pelanggan menulis. Chat yang belum dibalas
+lebih dari 15 menit dikirim ke email staf.
+
+### Portofolio dan testimoni (konsekuensi KEP-024)
+Halaman depan adalah profil usaha, dan isinya dikelola dari panel: pekerjaan yang
+pernah selesai (lengkap dengan foto, instansi, tahun, jumlah pcs) dan kutipan
+pelanggan. Nama instansi diketik manual, hanya untuk yang sudah mengizinkan; tidak
+ada yang ditarik otomatis dari tabel `orders`.
 
 ### Tindak lanjut email (konsekuensi KEP-004)
 Karena tidak ada WhatsApp API, sistem harus tahu kapan menyerah dan menyerahkan urusan

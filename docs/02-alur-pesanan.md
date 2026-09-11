@@ -104,7 +104,10 @@ Implikasi teknis yang harus dipegang sejak awal:
   `payment_status` tunggal di `orders`.
 - `total`, `sudah_dibayar`, dan `sisa_tagihan` **selalu dihitung ulang**, tidak pernah
   disimpan sebagai kolom yang bisa basi.
-- Pembayaran offline (tunai di kasir) dan online (gateway) diperlakukan setara —
+- Barang stok toko boleh dikirim, barang kustom tidak (KEP-026). Pesanan yang dikirim
+  melewati serah terima di kasir dan berhenti di **Dalam Pengiriman** sampai paketnya
+  dikonfirmasi sampai
+- Seluruh pembayaran diverifikasi manual, tunai di kasir maupun transfer (KEP-023) —
   bedanya hanya di kolom `metode`, `provider`, dan `dicatat_oleh`.
 - Layar serah terima menggabungkan **catat pelunasan + tandai diambil** dalam satu aksi.
 - Order tidak boleh berstatus `Selesai` selama `sisa_tagihan > 0`.

@@ -1,19 +1,23 @@
 # 07 — Keputusan Terbuka
 
-Sebelas keputusan sudah terkunci — lihat [08-log-keputusan.md](08-log-keputusan.md).
-Tidak ada lagi item yang mengubah skema database secara mendasar; sisanya adalah aturan
-bisnis dan data yang bisa diisi sambil jalan.
+Tiga puluh satu keputusan sudah terkunci — lihat [08-log-keputusan.md](08-log-keputusan.md).
+Tidak ada lagi item yang mengubah skema database secara mendasar.
+
+Sebagian besar pertanyaan di bawah **sudah punya jawaban teknisnya di kode**; yang
+tersisa adalah angka dan kebijakan yang diisi pemilik toko lewat Panel → Pengaturan,
+bukan lewat deploy. Yang masih benar-benar terbuka ditandai **BELUM DIPUTUSKAN**.
 
 ---
 
 ## 1. Aturan revisi desain
-- Berapa kali revisi gratis sebelum kena biaya?
-- Setelah pelanggan menyetujui: benar-benar terkunci, atau masih bisa diubah dengan
-  biaya (yang otomatis jadi `order_adjustment`)?
+Jumlah revisi gratis sudah jadi pengaturan (`revisi_gratis_maks`, bawaan 3). Yang
+**BELUM DIPUTUSKAN**: berapa biaya revisi ke-4 dan seterusnya, dan apakah desain yang
+sudah disetujui masih boleh diubah dengan biaya (yang otomatis jadi `order_adjustment`).
 
-## 2. Roster / nameset — siapa yang mengisi?
-Pelanggan sendiri di web, atau admin yang menginput dari data WA? Perlu unggah
-Excel/CSV, atau cukup form dinamis? Ini menentukan berapa besar porsi UI konfigurator.
+## 2. Roster / nameset — SELESAI
+Pelanggan mengisinya sendiri di halaman pesanannya, lewat form dinamis, dan roster
+terkunci begitu desain disetujui (KEP-013). Unggah Excel/CSV tidak dibangun: untuk
+ukuran tim 12-30 orang, mengetik langsung lebih cepat daripada menyiapkan berkas.
 
 ## 3. Kebijakan pembatalan setelah DP masuk
 Usulan bertingkat:
@@ -24,13 +28,16 @@ Kebijakan ini harus tampil sebagai centang persetujuan **di halaman checkout**, 
 disembunyikan di halaman syarat & ketentuan.
 
 ## 4. Batas waktu
-- Order belum dibayar kadaluarsa setelah berapa jam? (mempengaruhi pelepasan stok)
-- Barang siap tapi belum diambil: pengingat kapan, dan setelah berapa lama dianggap hangus?
+Ketiganya sudah jadi pengaturan dengan nilai bawaan yang masuk akal:
+`batas_bayar_jam` (24), `pengingat_ambil_hari` (3), `ambil_peringatan_hari` (7).
+Pemilik toko tinggal mengoreksi angkanya. Yang **BELUM DIPUTUSKAN**: setelah berapa
+lama barang yang tidak pernah diambil dianggap hangus, dan apa yang terjadi pada DP-nya.
 
-## 5. Kedalaman tracking yang ditampilkan ke pelanggan
-Berapa tahap yang benar-benar ingin diperlihatkan? Tahap terlalu detail menciptakan
-ekspektasi bahwa semuanya diperbarui tepat waktu — itu beban operator.
-**Sedikit tahap yang selalu akurat lebih baik daripada banyak tahap yang sering basi.**
+## 5. Kedalaman tracking — SELESAI
+Lima tahap: desain, printing, jahit, QC/packing, siap diambil. Masing-masing berubah
+karena ada orang yang benar-benar menekan tombol saat mengerjakannya, bukan karena
+timer. **Sedikit tahap yang selalu akurat lebih baik daripada banyak tahap yang sering
+basi**, dan itulah kenapa tidak ditambah lagi.
 
 ## 6. Foto progres
 Apakah operator benar-benar akan memfoto hasil printing/jahitan? Bernilai tinggi untuk
@@ -56,11 +63,9 @@ shared hosting (KEP-012).
 Domain sudah ada? DNS-nya di mana? Resend butuh verifikasi domain (record SPF/DKIM) —
 mudah kalau DNS sudah di Cloudflare, dan Cloudflare memang direkomendasikan (lihat 06).
 
-## 10. Pendaftaran merchant payment gateway
-Pilihan teknisnya sudah selesai: **Midtrans** diimplementasikan lebih dulu karena QRIS
-sudah termasuk (KEP-015), dan Xendit tetap bisa menggantikannya dengan satu kelas.
+## 10. Pendaftaran merchant payment gateway — SELESAI, tidak jadi dipakai
+Toko memutuskan tetap memakai QRIS statis dan rekening yang sudah ada, dengan
+verifikasi manual (KEP-023). KEP-015 dibatalkan dan kodenya dihapus.
 
-Yang tersisa adalah urusan administratif, bukan teknis: **syarat pendaftaran merchant**
-(badan usaha vs perorangan, rekening atas nama siapa, dokumen yang diminta). Ini sering
-jadi penghambat sesungguhnya. Selama merchant belum disetujui, toko tetap beroperasi
-penuh dengan transfer manual.
+Yang perlu disiapkan pemilik toko sekarang cuma isi Pengaturan: nama bank, nomor
+rekening, atas nama siapa, gambar QRIS, dan nomor WhatsApp yang benar-benar dibaca.

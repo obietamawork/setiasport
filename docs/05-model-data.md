@@ -53,7 +53,9 @@ customers           id, nama, no_hp, email, user_id (nullable — guest didukung
 orders              id, kode, customer_id, status, access_token,
                     diskon, tipe_pembayaran (LUNAS | DP),
                     target_siap_pada, siap_pada, diambil_pada,
-                    kode_ambil, diambil_oleh, catatan
+                    kode_ambil, diambil_oleh, catatan,
+                    metode_ambil (AMBIL_TOKO | KIRIM), alamat_kirim,
+                    jasa_kirim, no_resi, dikirim_pada, diterima_pada
 order_items         id, order_id, product_id, variant_id, 
                     fulfillment_type, qty, harga_satuan, status_item,
                     approved_design_asset_id, approved_at,
@@ -95,19 +97,54 @@ mengisi antrian per divisi di dokumen 04, dan inilah sumber kebenaran status pel
 
 ```
 payments            id, order_id, jenis (DP | PELUNASAN | FULL), 
-                    metode (TUNAI | TRANSFER | QRIS_EDC | GATEWAY), 
+                    metode (TUNAI | TRANSFER | QRIS), 
                     jumlah, status (MENUNGGU|LUNAS|GAGAL|KADALUARSA),
-                    bukti_path, provider, provider_ref, payload_json,
-                    dicatat_oleh, diverifikasi_oleh, dibayar_pada
+                    bukti_path, dicatat_oleh, diverifikasi_oleh, dibayar_pada
 ```
 
-Pembayaran offline (tunai di kasir) dan online (gateway) diperlakukan **setara** -
-bedanya hanya `metode`, `provider`, dan `dicatat_oleh`. Kolom `dicatat_oleh` wajib untuk
-pembayaran tunai: ini titik rawan uang kas, dan setiap pencatatan masuk audit log.
+Seluruh pembayaran diverifikasi manual (KEP-023): tidak ada gerbang, jadi tidak ada
+kolom penyedia. Yang membedakan satu baris dari lainnya hanya `metode` dan siapa yang
+mencatatnya. Kolom `dicatat_oleh` wajib untuk pembayaran tunai: ini titik rawan uang
+kas, dan setiap pencatatan masuk audit log.
 
-**Satu order → banyak payment, sejak hari pertama**, meskipun gateway baru dipasang di
-akhir. Kolom `provider`, `provider_ref`, `payload_json` dibiarkan kosong dulu. Ini yang
-membuat pemasangan Midtrans/Xendit nanti jadi pekerjaan kecil, bukan refactor besar.
+`metode` dan `bukti_path` diisi **saat verifikasi**, bukan saat checkout. Sebelum
+uangnya masuk, tidak ada yang tahu pelanggan akan membayar lewat apa.
+
+**Satu order → banyak payment**: DP lebih dulu, pelunasan saat pengambilan.
+
+## Chat CS (KEP-030)
+
+```
+percakapan_cs       id, token_hash, customer_id, order_id, order_terverifikasi,
+                    nama, kontak, topik (STOK|KUSTOM|KOMPLAIN|LAIN),
+                    status (TERBUKA|SELESAI), belum_dibaca_staf,
+                    belum_dibaca_pelanggan, pesan_terakhir_pada,
+                    menunggu_sejak, diperingatkan_pada, ip
+
+pesan_cs            id, percakapan_id, pengirim (PELANGGAN|STAF|SISTEM),
+                    user_id, isi, lampiran_path, created_at
+
+template_balasan    id, judul, isi, urutan
+```
+
+Pesan disimpan di sini, bukan dititipkan ke Pusher: log chat adalah catatan resmi
+komplain. `token_hash` menyimpan hash token cookie, bukan tokennya.
+
+## Profil usaha
+
+```
+portofolios         id, judul, slug, instansi, kategori, tahun, jumlah_pcs,
+                    ringkasan, gambar_path, thumb_path, aktif, urutan
+
+testimonis          id, nama, peran, isi, bintang, aktif, urutan
+```
+
+Keduanya berdiri sendiri, **tidak diturunkan dari `orders`** (KEP-024). Pesanan yang
+layak dipamerkan belum tentu masih ada datanya, dan nama pemesan tidak otomatis boleh
+disebut di halaman publik: `instansi` diketik manual, hanya untuk yang sudah mengizinkan.
+
+Tidak ada jalur publik untuk menulis testimoni. Tanpa moderasi ia jadi sasaran spam, dan
+moderasi berarti antrian kerja yang tidak dibayar.
 
 ## Sistem & Audit
 

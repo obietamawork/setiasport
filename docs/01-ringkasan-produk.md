@@ -26,18 +26,26 @@ dari pekerjaan nyata yang diselesaikan operator.
 - Serah terima di toko (kode ambil + bukti)
 - RBAC internal yang bisa dikonfigurasi (role & kategori diisi belakangan)
 - Notifikasi email otomatis lewat Resend (tanpa WhatsApp API)
-- Payment gateway (Midtrans/Xendit) — **fase akhir**, tapi model datanya disiapkan dari awal
+- Pembayaran diverifikasi manual: QRIS statis dan dua rekening, bukti diunggah di halaman pesanan (KEP-023, KEP-029)
+- Halaman depan berupa profil usaha (portofolio instansi, testimoni, lokasi), katalog belakangan (KEP-024)
 
 ## Yang TIDAK ada di lingkup
 
-- Pengiriman, ongkir, kurir, resi, retur barang — **tidak ada sama sekali**
+- Hitung ongkir otomatis, integrasi API kurir, dan retur barang — **tidak ada**.
+  Pengiriman yang ADA sengaja seminimal mungkin: khusus barang stok, admin mengetik
+  nomor resi dan pelanggan melacaknya sendiri di situs pihak ketiga (KEP-026)
 - Multi-toko / multi-cabang / multi-vendor
 - Aplikasi mobile native
 - Chat in-app (WhatsApp tetap kanal percakapan, dikirim manual oleh admin)
 
-> Ketiadaan pengiriman adalah **keuntungan besar**. Ongkir, alamat, integrasi kurir, dan
-> retur adalah ~40% kerumitan e-commerce biasa. Yang menggantikannya jauh lebih murah:
-> estimasi tanggal siap ambil + kode ambil + verifikasi saat serah terima.
+> Pengambilan di toko sebagai norma adalah **keuntungan besar**. Ongkir, alamat,
+> integrasi kurir, dan retur adalah ~40% kerumitan e-commerce biasa. Yang
+> menggantikannya jauh lebih murah: estimasi tanggal siap ambil + kode ambil +
+> verifikasi saat serah terima.
+>
+> Pengiriman untuk barang stok (KEP-026) tidak membatalkan itu, justru menegaskannya:
+> yang ditambahkan cuma satu kolom nomor resi dan satu kolom alamat, bukan mesin ongkir.
+> Barang kustom tetap wajib diambil di toko, karena ukurannya perlu dicoba.
 
 ## Dua sisi, satu masalah yang sama
 
@@ -50,4 +58,4 @@ dari pekerjaan nyata yang diselesaikan operator.
 
 Perhatikan: **keduanya menginginkan hal yang sama, dari arah berlawanan.** Fitur tracking
 yang benar melayani dua-duanya sekaligus. Itulah fitur bernilai tertinggi di project ini —
-lebih tinggi daripada payment gateway.
+lebih tinggi daripada otomatisasi pembayaran.
