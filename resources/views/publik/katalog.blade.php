@@ -9,6 +9,39 @@
         <p class="kolom-baca mt-3 leading-relaxed text-muted">{{ $subjudul }}</p>
     @endif
 
+    {{-- Perbedaan dua jalur ini dulu ada di halaman depan. Sejak halaman depan
+         jadi profil usaha (KEP-024), tempatnya di sini: tepat sebelum orang
+         mulai memilih, dan hanya saat ia belum menyaring apa pun. --}}
+    @unless (request()->hasAny(['jalur', 'kategori', 'q']))
+        <div class="mt-8 grid border border-line lg:grid-cols-2">
+            <div class="border-b border-line p-6 lg:border-r lg:border-b-0 lg:p-8">
+                <p class="text-sm font-semibold text-muted">Ambil dari stok toko</p>
+                <p class="numeral mt-4 text-5xl text-navy">Besok</p>
+                <p class="mt-3 max-w-sm text-sm leading-relaxed text-muted">
+                    Barang yang sudah ada di rak. Bayar hari ini, ambil besok pada jam buka.
+                </p>
+                <a href="{{ route('katalog', ['jalur' => 'stok']) }}" class="tombol tombol-garis mt-5">
+                    Lihat stok toko
+                </a>
+            </div>
+
+            <div class="relative overflow-hidden bg-navy p-6 text-white lg:p-8">
+                <span class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-merah via-merah to-kuning"></span>
+                <p class="text-sm font-semibold text-white/60">Dibuat untuk tim Anda</p>
+                <p class="numeral mt-4 text-5xl">
+                    {{ $leadTime ?? 7 }} <span class="text-2xl font-bold">hari</span>
+                </p>
+                <p class="mt-3 max-w-sm text-sm leading-relaxed text-white/75">
+                    Hari kerja, dihitung sejak Anda menyetujui desain, bukan sejak pesanan
+                    masuk. Sampai desain disetujui, jam produksi belum berjalan.
+                </p>
+                <a href="{{ route('katalog', ['jalur' => 'kustom']) }}" class="tombol tombol-utama mt-5">
+                    Mulai pesan kustom
+                </a>
+            </div>
+        </div>
+    @endunless
+
     {{-- Stok toko dan Kustom adalah dua cara belanja yang berbeda, bukan
          sekadar dua nilai filter. Dipisah sebagai tab supaya perbedaannya
          terlihat sebelum pelanggan mulai menjelajah. --}}

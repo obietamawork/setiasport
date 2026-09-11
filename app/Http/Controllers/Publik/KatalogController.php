@@ -57,6 +57,13 @@ class KatalogController extends Controller
                     FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value,
                 ])
                 ->min('moq') ?: 12),
+            // Pembeda dua jalur pindah ke sini dari halaman depan (KEP-024).
+            'leadTime' => Product::query()
+                ->aktif()
+                ->whereIn('fulfillment_type', [
+                    FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value,
+                ])
+                ->min('lead_time_hari'),
             'semuaKategori' => Category::with('parent')
                 ->whereNotNull('parent_id')
                 ->where('aktif', true)

@@ -4,36 +4,24 @@ namespace App\Http\Controllers\Publik;
 
 use App\Enums\FulfillmentType;
 use App\Http\Controllers\Controller;
-use App\Models\Category;
+use App\Models\Portofolio;
 use App\Models\Product;
+use App\Models\Testimoni;
 use Illuminate\Contracts\View\View;
 
+/**
+ * Halaman depan adalah profil usaha, bukan etalase (KEP-024).
+ *
+ * Pembeli terbesar di sini bukan orang yang iseng menelusuri produk, melainkan
+ * pengurus sekolah, dinas, atau klub yang sedang memutuskan konveksi mana yang
+ * dipercaya memegang anggaran mereka. Yang mereka cari lebih dulu adalah bukti
+ * pekerjaan, alamat yang bisa didatangi, dan orang yang bisa dihubungi. Katalog
+ * baru berguna setelah pertanyaan itu terjawab, jadi ia diletakkan belakangan.
+ */
 class BerandaController extends Controller
 {
     public function __invoke(): View
     {
-        $kategori = Category::query()
-            ->whereNull('parent_id')
-            ->where('aktif', true)
-            ->withCount(['products' => fn ($q) => $q->where('aktif', true)])
-            ->orderBy('urutan')
-            ->get();
-
-        // Kategori induk tidak memuat produk secara langsung; hitung lewat anaknya.
-        $kategori->each(function (Category $k) {
-            $k->products_count = Product::query()
-                ->where('aktif', true)
-                ->whereIn('category_id', Category::where('parent_id', $k->id)->pluck('id')->push($k->id))
-                ->count();
-        });
-
-        $produk = Product::query()
-            ->aktif()
-            ->with(['images', 'priceTiers'])
-            ->latest('id')
-            ->take(10)
-            ->get();
-
         $leadTime = Product::query()
             ->aktif()
             ->whereIn('fulfillment_type', [
@@ -41,6 +29,19 @@ class BerandaController extends Controller
             ])
             ->min('lead_time_hari');
 
-        return view('publik.beranda', compact('kategori', 'produk', 'leadTime'));
+        return view('publik.beranda', [
+            'portofolio' => Portofolio::tampilan()->take(6)->get(),
+            'testimoni' => Testimoni::tampilan()->take(3)->get(),
+
+            // Sekadar cuplikan. Penelusuran sesungguhnya terjadi di katalog.
+            'produk' => Product::query()
+                ->aktif()
+                ->with(['images', 'priceTiers'])
+                ->latest('id')
+                ->take(5)
+                ->get(),
+
+            'leadTime' => $leadTime,
+        ]);
     }
 }
