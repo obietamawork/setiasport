@@ -11,45 +11,122 @@ use Illuminate\Http\Request;
 
 class PengaturanController extends Controller
 {
+    /*
+     * Susunan halaman pengaturan: tab menurut tugasnya, bukan menurut kolom
+     * `grup` di database. Tiga puluh isian yang ditumpuk ke bawah memaksa
+     * pemilik toko menggulir melewati setelan email untuk mencari rekening.
+     * Kunci yang belum terdaftar di sini tetap tampil di tab "Lainnya", jadi
+     * pengaturan baru tidak pernah hilang dari layar hanya karena lupa ditata.
+     */
+    private const TAB = [
+        'toko' => [
+            'judul' => 'Toko & kontak',
+            'catatan' => 'Tampil di halaman depan, halaman pesanan, dan email pelanggan.',
+            'bagian' => [
+                ['judul' => 'Toko', 'catatan' => 'Tempat pesanan diambil dan dilunasi.',
+                    'kunci' => ['toko_nama', 'toko_telepon', 'toko_alamat', 'toko_jam_buka', 'maps_embed']],
+                ['judul' => 'Konveksi', 'catatan' => 'Tempat jersey dikerjakan.',
+                    'kunci' => ['konveksi_alamat', 'konveksi_jam_buka']],
+                ['judul' => 'Website', 'kunci' => ['cs_jam_layanan']],
+            ],
+        ],
+        'pembayaran' => [
+            'judul' => 'Pembayaran',
+            'catatan' => 'Rekening dan QRIS tampil apa adanya di halaman pesanan. Periksa ulang angkanya.',
+            'bagian' => [
+                ['judul' => 'Rekening 1', 'baris' => 'rekening', 'kunci' => ['bank_nama', 'bank_rekening', 'bank_atas_nama']],
+                ['judul' => 'Rekening 2', 'baris' => 'rekening', 'kunci' => ['bank2_nama', 'bank2_rekening', 'bank2_atas_nama']],
+                ['judul' => 'Aturan pembayaran', 'kunci' => ['dp_minimum_persen', 'batas_bayar_jam']],
+            ],
+        ],
+        'pesanan' => [
+            'judul' => 'Pesanan',
+            'catatan' => 'Batas dan pengingat yang dipakai selama pesanan berjalan.',
+            'bagian' => [
+                ['judul' => 'Desain & produksi', 'kunci' => ['revisi_gratis_maks', 'upload_maks_mb']],
+                ['judul' => 'Pengambilan', 'kunci' => ['pengingat_ambil_hari', 'ambil_peringatan_hari']],
+                ['judul' => 'Pengiriman', 'kunci' => ['jasa_kirim_daftar', 'panduan_resi']],
+                ['judul' => 'Email', 'kunci' => ['email_tindak_lanjut_hari']],
+            ],
+        ],
+        'beranda' => [
+            'judul' => 'Halaman depan',
+            'catatan' => 'Teks pembuka dan cerita usaha. Portofolio dan testimoni punya menunya sendiri.',
+            'bagian' => [
+                ['judul' => 'Teks', 'kunci' => ['tentang_judul', 'tentang_ringkas', 'tentang_lengkap']],
+            ],
+        ],
+        'cs' => [
+            'judul' => 'Chat CS',
+            'catatan' => 'Chat di website untuk pertanyaan dan komplain. Selama dimatikan, pelanggan diarahkan ke WhatsApp toko.',
+            'bagian' => [
+                ['judul' => '', 'kunci' => ['cs_aktif']],
+                ['judul' => 'Saat chat CS menyala', 'hanyaSaatCs' => true,
+                    'kunci' => ['cs_sapaan', 'cs_jam_mulai', 'cs_jam_selesai', 'cs_peringatan_menit']],
+            ],
+        ],
+    ];
+
     public function index()
     {
+        $semua = Setting::all()->keyBy('key');
+        $tab = self::TAB;
+
+        $tertata = collect($tab)->flatMap(fn ($t) => collect($t['bagian'])->flatMap(fn ($b) => $b['kunci']));
+        $lain = $semua->keys()->diff($tertata)->reject(fn ($k) => $semua[$k]->tipe === 'berkas')->values();
+
+        if ($lain->isNotEmpty()) {
+            $tab['lainnya'] = [
+                'judul' => 'Lainnya',
+                'catatan' => 'Pengaturan yang belum dikelompokkan.',
+                'bagian' => [['judul' => '', 'kunci' => $lain->all()]],
+            ];
+        }
+
         return view('panel.pengaturan.index', [
-            'grup' => Setting::orderBy('grup')->orderBy('key')->get()->groupBy('grup'),
+            'tab' => $tab,
+            'setting' => $semua,
         ]);
     }
 
     public function update(Request $request): RedirectResponse
     {
         $masuk = $request->input('setting', []);
-        $diubah = [];
 
-        foreach (Setting::whereIn('key', array_keys($masuk))->get() as $baris) {
-            // Path berkas hanya boleh berubah lewat jalur unggahnya sendiri;
-            // kalau tidak, satu POST bisa menunjuk gambar QRIS ke berkas lain.
-            if ($baris->tipe === 'berkas') {
-                continue;
-            }
+        // Path berkas hanya boleh berubah lewat jalur unggahnya sendiri; kalau
+        // tidak, satu POST bisa menunjuk gambar QRIS ke berkas lain.
+        $baris = Setting::whereIn('key', array_keys($masuk))->where('tipe', '!=', 'berkas')->get();
 
-            $nilai = $masuk[$baris->key];
+        $aturan = [];
+        $nama = [];
 
-            $aturan = match ($baris->tipe) {
+        foreach ($baris as $b) {
+            $aturan['setting.'.$b->key] = match ($b->tipe) {
                 'int' => ['required', 'integer', 'min:0', 'max:1000000'],
-                'bool' => ['nullable'],
+                'bool' => ['required', 'in:0,1'],
                 // Profil usaha ditulis berparagraf, tidak muat di batas satu baris.
                 'teks' => ['nullable', 'string', 'max:5000'],
                 default => ['nullable', 'string', 'max:500'],
             };
+            $nama['setting.'.$b->key] = $b->label;
+        }
 
-            validator(
-                ['nilai' => $nilai],
-                ['nilai' => $aturan],
-                [],
-                ['nilai' => $baris->label]
-            )->validate();
+        /*
+         * Semua divalidasi DULU, baru disimpan. Dulu setiap isian divalidasi
+         * sambil disimpan, sehingga kesalahan di isian kesepuluh meninggalkan
+         * sembilan isian sebelumnya telanjur tersimpan sementara layar
+         * mengatakan penyimpanan gagal.
+         */
+        $request->validate($aturan, [], $nama);
 
-            if ((string) $baris->value !== (string) $nilai) {
-                $diubah[$baris->key] = ['dari' => $baris->value, 'ke' => $nilai];
-                Setting::simpan($baris->key, $nilai);
+        $diubah = [];
+
+        foreach ($baris as $b) {
+            $nilai = $masuk[$b->key];
+
+            if ((string) $b->value !== (string) $nilai) {
+                $diubah[$b->key] = ['dari' => $b->value, 'ke' => $nilai];
+                Setting::simpan($b->key, $nilai);
             }
         }
 

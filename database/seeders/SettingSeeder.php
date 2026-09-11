@@ -47,20 +47,20 @@ Minggu 08.00-14.00", 'teks', 'toko', 'Jam Buka Toko',
                 'Diunggah lewat tombol di bawah, bukan diketik.'],
 
             ['dp_minimum_persen', '50', 'int', 'pembayaran', 'DP Minimum (%)',
-                'Batas bawah DP untuk order kustom. 50% dipilih karena menutup biaya produksi (KEP-005).'],
+                'Batas bawah uang muka untuk pesanan custom. 50% dipilih karena cukup menutup biaya produksi.'],
             ['batas_bayar_jam', '24', 'int', 'pembayaran', 'Batas Waktu Pembayaran (jam)',
                 'Order yang belum dibayar melewati batas ini kadaluarsa dan reservasi stoknya dilepas.'],
 
             ['revisi_gratis_maks', '3', 'int', 'produksi', 'Jumlah Revisi Desain Gratis'],
             ['upload_maks_mb', '10', 'int', 'produksi', 'Batas Ukuran Upload Preview (MB)',
-                'Hanya preview yang disimpan di sistem; file mentah lewat tautan Drive (KEP-002).'],
+                'Berlaku untuk preview desain dan foto. File mentah siap cetak dikirim lewat tautan Drive, bukan diunggah.'],
 
             ['pengingat_ambil_hari', '3', 'int', 'pengambilan', 'Pengingat Belum Diambil (hari)'],
             ['ambil_peringatan_hari', '7', 'int', 'pengambilan', 'Tandai di Dashboard Setelah (hari)',
                 'Pesanan siap tapi belum diambil selewat hari ini memakan rak toko dan sering terlupakan.'],
 
             ['email_tindak_lanjut_hari', '2', 'int', 'notifikasi', 'Tandai Email Tanpa Respons (hari)',
-                'Tanpa WhatsApp API (KEP-004), sistem harus tahu kapan menyerah dan menyerahkan ke admin.'],
+                'Email yang tidak dibuka selama ini ditandai di dashboard, supaya pelanggannya bisa dihubungi lewat WhatsApp.'],
 
             /*
              * Pengiriman terbatas untuk barang stok toko (KEP-026). Tidak ada
