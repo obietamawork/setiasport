@@ -110,10 +110,22 @@ class PembayaranManualTest extends TestCase
 
         $order = $this->buatPesanan();
 
-        $this->get(route('lacak.token', $order->access_token))
-            ->assertOk()
-            ->assertDontSee('wa.me', false)
-            ->assertSee('Hanya transfer ke rekening dan QRIS di halaman ini.');
+        foreach (['1', '0'] as $cs) {
+            Setting::simpan('cs_aktif', $cs);
+
+            $html = $this->get(route('lacak.token', $order->access_token))
+                ->assertOk()
+                ->assertSee('Hanya transfer ke rekening dan QRIS di halaman ini.')
+                ->getContent();
+
+            $awal = strpos($html, 'Yang perlu dibayar sekarang');
+            $akhir = strpos($html, 'Kirim bukti', $awal);
+            $this->assertNotFalse($awal);
+            $this->assertNotFalse($akhir);
+
+            $this->assertStringNotContainsString('wa.me', substr($html, $awal, $akhir - $awal),
+                'Blok pembayaran tidak boleh mengarah ke WhatsApp (KEP-029), apa pun keadaan saklar CS.');
+        }
     }
 
     public function test_nomor_whatsapp_dirapikan_ke_bentuk_internasional(): void

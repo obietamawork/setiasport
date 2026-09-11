@@ -76,7 +76,9 @@ Pos Indonesia", 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
                 'Muncul di halaman pesanan pelanggan, tepat di bawah nomor resinya.'],
 
             // Chat CS di website (KEP-030).
-            ['cs_aktif', '1', 'bool', 'cs', 'Tampilkan Chat CS',
+            // Klien membatalkan CS untuk sementara (KEP-034): mati sebagai bawaan,
+            // kodenya tetap ada dan teruji supaya bisa dinyalakan kapan saja.
+            ['cs_aktif', '0', 'bool', 'cs', 'Tampilkan Chat CS',
                 'Kalau dimatikan: jendela chat hilang, semua teks "hubungi kami" beralih ke WhatsApp toko, dan tidak ada notifikasi chat di panel. Riwayat chat tetap bisa dibaca di menu Arsip chat.'],
             ['cs_jam_mulai', '07:00', 'string', 'cs', 'Jam Operasional Mulai (JJ:MM)',
                 'Peringatan email untuk chat yang belum dibalas hanya dikirim di antara jam mulai dan selesai.'],

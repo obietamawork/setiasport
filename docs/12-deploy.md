@@ -67,10 +67,12 @@ MAIL_FROM_ADDRESS="noreply@setiasport.example"
 RESEND_API_KEY=re_…
 RESEND_WEBHOOK_SECRET=whsec_…
 
-BROADCAST_CONNECTION=pusher   # chat CS realtime (KEP-030)
-PUSHER_APP_ID=…
-PUSHER_APP_KEY=…
-PUSHER_APP_SECRET=…
+# Chat CS sedang dimatikan klien (KEP-034): biarkan blok Pusher ini KOSONG.
+# Isi hanya kalau chat CS dinyalakan kembali, lihat "Menyalakan chat CS kembali".
+BROADCAST_CONNECTION=pusher
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
 PUSHER_APP_CLUSTER=ap1        # Singapura, terdekat dari Indonesia
 PUSHER_HOST=                  # KOSONGKAN di produksi; hanya untuk Reverb lokal
 PUSHER_PORT=443
@@ -84,7 +86,24 @@ Tidak ada kunci payment gateway: pembayaran diverifikasi manual (KEP-023). Nomor
 rekening, gambar QRIS, dan nomor WhatsApp diisi lewat **Panel → Pengaturan**, bukan
 lewat `.env`, supaya pemilik toko bisa menggantinya sendiri tanpa deploy ulang.
 
-### Kunci Pusher untuk chat CS
+### Menyalakan chat CS kembali
+
+Klien membatalkan chat CS untuk sementara (KEP-034). Kodenya **tidak dihapus**: ia tetap
+ada, tetap ikut diuji setiap ada perubahan, dan mati sebagai bawaan. Kalau suatu hari
+dibutuhkan lagi:
+
+1. **Panel → Pengaturan → Tampilkan Chat CS**, centang, simpan. Hanya itu yang wajib.
+   Jendela chat langsung muncul di website, teks "hubungi kami" beralih dari WhatsApp ke
+   chat, dan menu Chat CS muncul di panel. Tanpa kunci Pusher, chat sudah berfungsi,
+   hanya dengan jeda sampai 15 detik
+2. Isi jam operasional dan template balasan di Pengaturan dan di Ruang CS
+3. Opsional, supaya pesan muncul seketika: isi kunci Pusher (langkah di bawah), lalu
+   `php artisan config:cache`
+
+Mematikannya lagi sama mudahnya. Riwayat chat tidak ikut hilang; ia tetap bisa dibaca di
+menu Arsip chat.
+
+#### Kunci Pusher
 
 1. Daftar di pusher.com, buat aplikasi **Channels** baru dengan paket **Sandbox** (gratis),
    klaster `ap1`.

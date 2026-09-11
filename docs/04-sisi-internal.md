@@ -102,7 +102,12 @@ Kustom dan stok toko punya tabnya sendiri, karena yang mengurus konveksi dan yan
 mengambil barang dari rak sedang mengerjakan pekerjaan berbeda. Pesanan campuran masuk
 ke tab Kustom dengan penanda "Campuran".
 
-### Ruang CS (konsekuensi KEP-030 dan KEP-031)
+### Ruang CS (konsekuensi KEP-030 dan KEP-031), saat ini DIMATIKAN (KEP-034)
+
+> Klien membatalkan chat CS untuk sementara. Website memakai WhatsApp toko sebagai jalur
+> kontak, dan semua yang di bawah ini baru berlaku kalau CS dinyalakan kembali lewat
+> Pengaturan. Caranya ada di docs/12, bagian "Menyalakan chat CS kembali".
+
 Antarmuka kerja tersendiri di `/panel/cs`, layar penuh tanpa sidebar panel, dengan akun
 dan izin yang sama. Tiga panel: daftar percakapan, percakapan, dan info pelanggan. Yang
 paling lama menunggu di urutan teratas; garis tepinya kuning selama masih dalam batas

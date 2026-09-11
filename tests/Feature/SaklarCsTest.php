@@ -39,6 +39,12 @@ class SaklarCsTest extends TestCase
         Setting::simpan('cs_aktif', '0');
     }
 
+    /** Untuk tes yang butuh percakapan yang sudah ada sebelum CS dimatikan. */
+    private function nyalakanCs(): void
+    {
+        Setting::simpan('cs_aktif', '1');
+    }
+
     private function admin(): User
     {
         return User::where('email', 'admin@setiasport.test')->firstOrFail();
@@ -59,6 +65,15 @@ class SaklarCsTest extends TestCase
     {
         $this->assertDoesNotMatchRegularExpression('/chat cs/i', $html,
             "Halaman $halaman masih menyebut chat CS padahal CS dimatikan.");
+    }
+
+    /** Keputusan klien (KEP-034): tanpa CS sampai diputuskan lain. */
+    public function test_instalasi_baru_tanpa_cs(): void
+    {
+        $this->assertFalse(cs_aktif());
+
+        $this->tidakMenyebutChatCs($this->get(route('beranda'))->getContent(), 'beranda');
+        $this->getJson(route('cs.status'))->assertNotFound();
     }
 
     public function test_halaman_publik_bersih_dari_chat_cs_dan_beralih_ke_whatsapp(): void
@@ -107,6 +122,8 @@ class SaklarCsTest extends TestCase
      */
     public function test_semua_jalur_chat_pelanggan_tertutup(): void
     {
+        $this->nyalakanCs();
+
         $this->postJson(route('cs.mulai'), [
             'nama' => 'Pak Warno', 'kontak' => 'warno@contoh.test', 'topik' => 'STOK', 'isi' => 'Ada stok bola?',
         ])->assertCreated();
@@ -124,6 +141,8 @@ class SaklarCsTest extends TestCase
 
     public function test_riwayat_tetap_bisa_dibaca_sebagai_arsip_tapi_tidak_dibalas(): void
     {
+        $this->nyalakanCs();
+
         $this->postJson(route('cs.mulai'), [
             'nama' => 'Bu Sri', 'kontak' => 'sri@contoh.test', 'topik' => 'KOMPLAIN', 'isi' => 'Jahitan lepas.',
         ])->assertCreated();
@@ -155,6 +174,7 @@ class SaklarCsTest extends TestCase
     public function test_tidak_ada_peringatan_email_saat_cs_mati(): void
     {
         $this->travelTo(now()->setTime(10, 0));
+        $this->nyalakanCs();
 
         $this->postJson(route('cs.mulai'), [
             'nama' => 'Pak Warno', 'kontak' => 'warno@contoh.test', 'topik' => 'STOK', 'isi' => 'Ada stok?',

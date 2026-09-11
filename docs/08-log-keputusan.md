@@ -1079,6 +1079,29 @@ ke WhatsApp tempat penipu menyamar) tidak lagi berlaku.
 
 ---
 
+## KEP-034 — Chat CS dibatalkan klien untuk sementara: mati sebagai bawaan
+**Status:** TERKUNCI · 2026-09-11 · memakai saklar KEP-033
+
+Klien resmi membatalkan chat CS untuk saat ini, dengan kemungkinan dibutuhkan lagi nanti.
+Kodenya **tidak dihapus**, hanya dimatikan sebagai bawaan:
+
+- Instalasi baru dimulai **tanpa CS**. Jalur kontak di halaman dan email adalah WhatsApp
+  toko (KEP-033)
+- Menyalakan kembali cukup satu centang di Pengaturan, tanpa developer. Kunci Pusher hanya
+  diperlukan kalau ingin seketika; tanpa itu chat berjalan lewat polling
+- Tes CS tetap berjalan pada setiap perubahan dengan saklar dinyalakan di dalam tesnya.
+  Itulah yang menjamin fitur ini masih bekerja saat dibutuhkan, bukan sekadar masih ada
+
+**Ditolak: menghapus kodenya lalu mengembalikannya lewat git.** Makin lama CS disimpan di
+luar kode utama, makin banyak bagian website yang berubah di sekitarnya, dan pengembaliannya
+berubah dari satu perintah jadi pekerjaan baru. Biaya menyimpannya dalam keadaan mati hampir
+nol: tidak ada yang tampil, endpoint menjawab 404, dan Pusher tidak perlu didaftarkan.
+
+Percakapan uji di database lokal dihapus supaya demo ke klien tidak menampilkan menu Arsip
+chat berisi data uji. Template balasan dipertahankan untuk dipakai kalau CS dinyalakan.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1116,3 +1139,4 @@ ke WhatsApp tempat penipu menyamar) tidak lagi berlaku.
 | KEP-031 | Ruang CS: antarmuka tersendiri, akun yang sama | TERKUNCI |
 | KEP-032 | Data asli klien: dua lokasi, jam operasional, aset merek | TERKUNCI |
 | KEP-033 | Satu kode, dua versi: chat CS sebagai saklar | TERKUNCI |
+| KEP-034 | Chat CS dibatalkan klien sementara, mati sebagai bawaan | TERKUNCI |
