@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BuktiBayarController;
 use App\Http\Controllers\Panel\AuthController;
+use App\Http\Controllers\Panel\ContohProfilController;
 use App\Http\Controllers\Panel\CsController;
 use App\Http\Controllers\Panel\TemplateBalasanController;
 use App\Http\Controllers\Panel\DashboardController;
@@ -149,6 +150,8 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::resource('testimoni', TestimoniController::class)
                 ->except('show')
                 ->parameters(['testimoni' => 'testimoni']);
+
+            Route::delete('profil/contoh', [ContohProfilController::class, 'hapus'])->name('profil.contoh.hapus');
         });
 
         Route::middleware('izin:stok.kelola')->group(function () {

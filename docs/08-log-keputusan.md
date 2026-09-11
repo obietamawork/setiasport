@@ -1102,6 +1102,32 @@ chat berisi data uji. Template balasan dipertahankan untuk dipakai kalau CS diny
 
 ---
 
+## KEP-035 — Contoh portofolio dan testimoni untuk demo, dengan pagar
+**Status:** TERKUNCI · 2026-09-12
+
+Klien ingin melihat seperti apa halaman depan yang sudah terisi sebelum punya isinya
+sendiri. Contohnya dibuat, tapi dengan pagar, karena testimoni dan portofolio karangan yang
+tayang di website asli sama dengan ulasan palsu di depan pelanggan:
+
+- **Tidak ada nama lembaga sungguhan.** Instansi ditulis sebagai jenisnya ("Tim futsal SMA
+  di Wonogiri", "Sekolah dasar di Wonogiri"), bukan nama sekolah atau dinas yang tidak pernah
+  memesan. Nama tim di gambar pun fiktif. Tes memeriksa pola nama lembaga resmi
+- **Gambarnya ilustrasi mockup**, tampak depan dan belakang, berlabel "Contoh ilustrasi".
+  Bukan foto stok, karena itu sama dengan mengaku pekerjaan orang lain
+- **Setiap baris bertanda `contoh`.** Panel menampilkan tanda Contoh, dashboard
+  memperingatkan selama masih ada, dan satu tombol menghapus semuanya beserta gambarnya
+  tanpa menyentuh isian asli
+- **Tidak ikut instalasi.** `ContohProfilSeeder` tidak dipanggil `DatabaseSeeder` dan menolak
+  berjalan di produksi, termasuk dengan `--force`
+- **Tanda contoh lepas hanya kalau isinya diganti** (teks, nama, atau foto). Sekadar mengubah
+  urutan atau menyembunyikan tidak melepasnya, supaya isi karangan tidak kehilangan tanda
+  diam-diam; sebaliknya isian yang sudah diganti pemilik toko tidak ikut terhapus
+
+Bagian "Tentang kami" sengaja tidak diberi contoh: tahun berdiri dan sejarah usaha adalah
+fakta yang hanya klien yang tahu.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1140,3 +1166,4 @@ chat berisi data uji. Template balasan dipertahankan untuk dipakai kalau CS diny
 | KEP-032 | Data asli klien: dua lokasi, jam operasional, aset merek | TERKUNCI |
 | KEP-033 | Satu kode, dua versi: chat CS sebagai saklar | TERKUNCI |
 | KEP-034 | Chat CS dibatalkan klien sementara, mati sebagai bawaan | TERKUNCI |
+| KEP-035 | Contoh portofolio dan testimoni untuk demo, dengan pagar | TERKUNCI |

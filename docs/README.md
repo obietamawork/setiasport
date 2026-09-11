@@ -27,7 +27,7 @@ Tahap **implementasi fondasi**. Skema database, model, dan kalkulator harga
 sudah jalan dan tertutup test. Cara menjalankan proyeknya ada di
 [README.md di root](../README.md).
 
-- **33 keputusan terkunci**, satu dibatalkan (KEP-015, gerbang pembayaran)
+- **34 keputusan terkunci**, satu dibatalkan (KEP-015, gerbang pembayaran)
 - **Fase 0 s/d 3 selesai.** Fondasi data, katalog publik, panel internal,
   pesanan end-to-end, serta alur kustom penuh: konfigurator harga live, roster
   pemain, gerbang persetujuan desain, antrian kerja per divisi, dan worksheet
@@ -60,7 +60,9 @@ sudah jalan dan tertutup test. Cara menjalankan proyeknya ada di
   website. Zona waktu aplikasi yang ternyata UTC ikut diperbaiki ke WIB
 - **Chat CS jadi saklar (KEP-033), lalu dibatalkan klien untuk sementara (KEP-034):**
   website memakai WhatsApp sebagai jalur kontak; CS tinggal dicentang di Pengaturan kalau
-  dibutuhkan lagi. 184 test lulus
+  dibutuhkan lagi
+- **Contoh portofolio dan testimoni untuk demo (KEP-035):** enam masing-masing, bertanda
+  contoh, dengan peringatan di dashboard dan tombol hapus sekali klik. 193 test lulus
 - Sisa pekerjaan bukan lagi kode: isi profil usaha dan portofolio,
   isi kedua rekening dan QRIS di Pengaturan, daftar jasa kirim yang dipakai, sesuaikan
   template balasan CS, daftar akun Pusher, koreksi harga katalog, pembelian hosting,

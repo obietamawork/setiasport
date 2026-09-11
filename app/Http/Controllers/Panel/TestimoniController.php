@@ -43,7 +43,13 @@ class TestimoniController extends Controller
 
     public function update(Request $request, Testimoni $testimoni): RedirectResponse
     {
-        $testimoni->update($this->validasi($request));
+        $data = $this->validasi($request);
+
+        // Tanda contoh lepas hanya kalau isinya diganti, bukan sekadar urutan
+        // atau tampil-sembunyi (KEP-035). Lihat PortofolioController::update.
+        $isiDiganti = $data['nama'] !== $testimoni->nama || $data['isi'] !== $testimoni->isi;
+
+        $testimoni->update([...$data, 'contoh' => $testimoni->contoh && ! $isiDiganti]);
 
         ActivityLog::catat('testimoni.diubah', $testimoni, ['nama' => $testimoni->nama]);
 

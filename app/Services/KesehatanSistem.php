@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Enums\EmailStatus;
 use App\Models\EmailLog;
+use App\Models\Portofolio;
+use App\Models\Testimoni;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -61,6 +63,24 @@ class KesehatanSistem
                         ? 'Terakhir berjalan '.$denyut->diffForHumans().'. '
                         : 'Belum pernah tercatat berjalan sama sekali. ')
                     .'Hubungi penyedia hosting dan sebutkan bahwa cron job situs ini berhenti.',
+            ];
+        }
+
+        /*
+         * Data contoh (KEP-035) hanya untuk memperlihatkan tampilan ke klien.
+         * Kalau lupa dihapus, halaman depan memuat testimoni dan portofolio
+         * karangan, dan itu sama dengan ulasan palsu di depan pelanggan.
+         */
+        $contohPortofolio = Portofolio::where('contoh', true)->count();
+        $contohTestimoni = Testimoni::where('contoh', true)->count();
+
+        if ($contohPortofolio + $contohTestimoni > 0) {
+            $masalah[] = [
+                'judul' => 'Halaman depan masih memuat data contoh',
+                'isi' => $contohPortofolio.' portofolio dan '.$contohTestimoni.' testimoni di halaman '
+                    .'depan adalah contoh karangan, bukan pekerjaan dan pelanggan sungguhan. '
+                    .'Hapus di menu Portofolio atau Testimoni sebelum website dibuka untuk umum, '
+                    .'lalu isi dengan yang asli.',
             ];
         }
 

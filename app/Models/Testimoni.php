@@ -11,11 +11,11 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Testimoni extends Model
 {
-    protected $fillable = ['nama', 'peran', 'isi', 'bintang', 'aktif', 'urutan'];
+    protected $fillable = ['nama', 'peran', 'isi', 'bintang', 'aktif', 'urutan', 'contoh'];
 
     protected function casts(): array
     {
-        return ['aktif' => 'boolean', 'bintang' => 'integer'];
+        return ['aktif' => 'boolean', 'bintang' => 'integer', 'contoh' => 'boolean'];
     }
 
     public function scopeAktif(Builder $q): Builder

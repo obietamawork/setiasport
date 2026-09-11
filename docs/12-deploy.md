@@ -220,6 +220,10 @@ beban shared hosting. Yang perlu diperhatikan:
 4. Pastikan email pesanan masuk (cek status di detail pesanan panel)
 5. Cetak worksheet dari antrian produksi
 6. Pastikan `storage/logs/laravel.log` bersih
+7. **Dashboard tidak menampilkan peringatan "Halaman depan masih memuat data contoh".**
+   Data contoh portofolio dan testimoni (KEP-035) hanya untuk demo di lokal; jangan
+   jalankan `ContohProfilSeeder` di server. Seeder itu menolak berjalan di produksi,
+   tapi database lokal yang disalin ke server akan membawa contohnya ikut serta
 
 ---
 

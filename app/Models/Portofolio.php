@@ -12,13 +12,14 @@ class Portofolio extends Model
 {
     protected $fillable = [
         'judul', 'slug', 'instansi', 'kategori', 'tahun', 'jumlah_pcs',
-        'ringkasan', 'gambar_path', 'thumb_path', 'aktif', 'urutan',
+        'ringkasan', 'gambar_path', 'thumb_path', 'aktif', 'urutan', 'contoh',
     ];
 
     protected function casts(): array
     {
         return [
             'aktif' => 'boolean',
+            'contoh' => 'boolean',
             'tahun' => 'integer',
             'jumlah_pcs' => 'integer',
         ];

@@ -13,6 +13,8 @@
     <a href="{{ route('panel.testimoni.create') }}" class="tombol tombol-navy">Tambah testimoni</a>
 </div>
 
+@include('panel.komponen.banner-contoh')
+
 @if ($daftar->isEmpty())
     <div class="kartu mt-6 p-8 text-center">
         <p class="text-lg font-bold">Belum ada testimoni</p>
@@ -40,6 +42,9 @@
                     <span class="tabular shrink-0 text-sm text-muted">{{ $t->bintang }}/5</span>
                 @endif
 
+                @if ($t->contoh)
+                    <span class="chip chip-kuning shrink-0">Contoh</span>
+                @endif
                 @unless ($t->aktif)
                     <span class="chip chip-netral shrink-0">Disembunyikan</span>
                 @endunless

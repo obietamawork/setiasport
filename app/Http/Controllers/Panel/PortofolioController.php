@@ -54,6 +54,19 @@ class PortofolioController extends Controller
         $data = $this->validasi($request, $portofolio);
         $baru = $this->simpanGambar($request, $pengunggah);
 
+        /*
+         * Contoh yang ISINYA diganti pemilik toko sudah jadi miliknya (KEP-035);
+         * tanpa ini, tombol "hapus semua data contoh" ikut menghapus hasil
+         * kerjanya. Sekadar mengubah urutan atau menyembunyikan tidak melepas
+         * tandanya: isi karangan tidak boleh kehilangan tanda diam-diam.
+         */
+        $isiDiganti = $baru !== []
+            || $data['judul'] !== $portofolio->judul
+            || ($data['instansi'] ?? null) !== $portofolio->instansi
+            || ($data['ringkasan'] ?? null) !== $portofolio->ringkasan;
+
+        $data['contoh'] = $portofolio->contoh && ! $isiDiganti;
+
         if ($baru !== []) {
             // Yang lama baru dibuang setelah yang baru tersimpan; kalau unggahan
             // gagal di tengah jalan, halaman depan tetap punya gambar.

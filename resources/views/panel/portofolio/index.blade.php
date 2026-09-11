@@ -14,6 +14,8 @@
     <a href="{{ route('panel.portofolio.create') }}" class="tombol tombol-navy">Tambah pekerjaan</a>
 </div>
 
+@include('panel.komponen.banner-contoh')
+
 @if ($daftar->isEmpty())
     <div class="kartu mt-6 p-8 text-center">
         <p class="text-lg font-bold">Belum ada portofolio</p>
@@ -39,6 +41,9 @@
                     </p>
                 </div>
 
+                @if ($p->contoh)
+                    <span class="chip chip-kuning">Contoh</span>
+                @endif
                 @unless ($p->aktif)
                     <span class="chip chip-netral">Disembunyikan</span>
                 @endunless

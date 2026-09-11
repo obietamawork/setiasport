@@ -1,6 +1,6 @@
 # 07 — Keputusan Terbuka
 
-Tiga puluh tiga keputusan sudah terkunci — lihat [08-log-keputusan.md](08-log-keputusan.md).
+Tiga puluh empat keputusan sudah terkunci — lihat [08-log-keputusan.md](08-log-keputusan.md).
 Tidak ada lagi item yang mengubah skema database secara mendasar.
 
 Sebagian besar pertanyaan di bawah **sudah punya jawaban teknisnya di kode**; yang
