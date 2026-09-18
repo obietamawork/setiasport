@@ -13,6 +13,15 @@
     $ukuran = collect(urutkan_ukuran($produk->variants->pluck('ukuran')));
     $warna = $produk->variants->pluck('warna')->filter()->unique()->sort()->values();
     $matriks = $ukuran->isNotEmpty() && $warna->isNotEmpty();
+
+    // Dipakai pilihan kotak di bawah: satu baris per kombinasi yang benar-benar
+    // ada, lengkap dengan sisa stoknya.
+    $dataVarian = $produk->variants->map(fn ($v) => [
+        'id' => $v->id,
+        'warna' => $v->warna ?? '',
+        'ukuran' => $v->ukuran ?? '',
+        'stok' => $v->stok_tersedia,
+    ])->values();
 @endphp
 
 <div class="mx-auto max-w-6xl px-5 py-8">
@@ -115,7 +124,8 @@
                                 kustom, atau hubungi toko untuk menanyakan stok masuk berikutnya.
                             </p>
                         @else
-                            <form method="POST" action="{{ route('keranjang.tambah') }}" class="space-y-3">
+                            <form method="POST" action="{{ route('keranjang.tambah') }}" class="space-y-3"
+                                  x-data="pilihVarian(@js($dataVarian), @js($warna->values()), @js($ukuran->values()))">
                                 @csrf
 
                                 @if ($tersedia->count() === 1 && ! $matriks)
@@ -124,15 +134,46 @@
                                         Stok tersedia: <strong>{{ $tersedia->first()->stok_tersedia }}</strong>
                                     </p>
                                 @else
-                                    <div>
-                                        <label for="variant_id" class="label-form">Pilih ukuran &amp; warna</label>
-                                        <select id="variant_id" name="variant_id" class="kotak-input" required>
-                                            @foreach ($tersedia as $v)
-                                                <option value="{{ $v->id }}">
-                                                    {{ $v->label }} ({{ $v->stok_tersedia }} tersedia)
-                                                </option>
-                                            @endforeach
-                                        </select>
+                                    {{-- Kotak pilihan, bukan dropdown (KEP-045). Ukuran yang
+                                         habis tetap ditampilkan dalam keadaan mati: pembeli
+                                         perlu tahu ukurannya memang ada tapi sedang kosong,
+                                         bukan mengira toko tidak pernah menjualnya. --}}
+                                    <div class="space-y-4">
+                                        <template x-if="warna.length > 0">
+                                            <div>
+                                                <p class="label-form">Warna: <span class="font-normal" x-text="warnaDipilih"></span></p>
+                                                <div class="flex flex-wrap gap-2">
+                                                    <template x-for="w in warna" :key="w">
+                                                        <button type="button" @click="pilihWarna(w)"
+                                                                class="rounded-[8px] border px-3 py-2 text-sm transition-colors"
+                                                                :class="warnaDipilih === w
+                                                                    ? 'border-navy bg-navy-50 font-medium text-navy-800'
+                                                                    : 'border-line hover:border-navy-300'"
+                                                                x-text="w"></button>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <div>
+                                            <p class="label-form">Ukuran</p>
+                                            <div class="flex flex-wrap gap-2">
+                                                <template x-for="u in ukuran" :key="u">
+                                                    <button type="button" @click="ukuranDipilih = u"
+                                                            :disabled="stokUntuk(u) < 1"
+                                                            class="min-w-12 rounded-[8px] border px-3 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:text-muted disabled:line-through"
+                                                            :class="ukuranDipilih === u
+                                                                ? 'border-navy bg-navy-50 font-medium text-navy-800'
+                                                                : 'border-line hover:border-navy-300'"
+                                                            x-text="u"></button>
+                                                </template>
+                                            </div>
+                                            <p class="mt-2 text-sm text-muted" x-show="ukuranDipilih" x-cloak>
+                                                Sisa <span class="tabular" x-text="stokUntuk(ukuranDipilih)"></span> pcs.
+                                            </p>
+                                        </div>
+
+                                        <input type="hidden" name="variant_id" :value="varianId">
                                     </div>
                                 @endif
 
@@ -142,7 +183,8 @@
                                            class="kotak-input w-24 tabular text-right" required>
                                 </div>
 
-                                <button type="submit" class="tombol tombol-utama w-full">
+                                <button type="submit" class="tombol tombol-utama w-full"
+                                        @if ($tersedia->count() !== 1 || $matriks) x-bind:disabled="!varianId" @endif>
                                     Masukkan ke keranjang
                                 </button>
                             </form>
@@ -151,19 +193,29 @@
                 @endif
 
                 @if ($adaKustom)
-                    @php $termurah = $produk->priceTiers->min('harga_satuan'); @endphp
+                    @php
+                        $perUkuran = $produk->prices->isNotEmpty();
+                        $termurah = $perUkuran
+                            ? $produk->prices->min('harga_satuan')
+                            : $produk->priceTiers->min('harga_satuan');
+                    @endphp
                     <div x-show="jalur === 'kustom'" class="space-y-5 p-5">
                         <div>
                             <p class="numeral text-4xl text-merah">
                                 {{ rupiah($termurah) }}<span class="text-base font-medium text-muted"> / pcs</span>
                             </p>
                             <p class="mt-2 text-sm text-muted">
-                                Harga terendah, berlaku mulai
-                                {{ $produk->priceTiers->firstWhere('harga_satuan', $termurah)?->min_qty }} pcs.
+                                @if ($perUkuran)
+                                    Harga terendah. Harga akhirnya mengikuti bahan, model, dan ukuran
+                                    yang Anda pilih, dan langsung terlihat saat memesan.
+                                @else
+                                    Harga terendah, berlaku mulai
+                                    {{ $produk->priceTiers->firstWhere('harga_satuan', $termurah)?->min_qty }} pcs.
+                                @endif
                             </p>
                         </div>
 
-                        @if ($produk->priceTiers->isNotEmpty())
+                        @if (! $perUkuran && $produk->priceTiers->isNotEmpty())
                             <div>
                                 <p class="text-sm font-semibold">Harga per jumlah</p>
                                 <ul class="mt-2 divide-y divide-line border border-line">
@@ -310,4 +362,40 @@
         </div>
     </div>
 </div>
+@push('skrip')
+<script>
+    function pilihVarian(varian, warna, ukuran) {
+        return {
+            varian, warna, ukuran,
+            // Warna pertama yang benar-benar punya stok; membuka halaman pada
+            // warna yang habis membuat semua ukuran tampak mati.
+            warnaDipilih: warna.find(w => varian.some(v => v.warna === w && v.stok > 0)) ?? (warna[0] ?? ''),
+            ukuranDipilih: '',
+
+            init() {
+                const adaStok = this.ukuran.filter(u => this.stokUntuk(u) > 0);
+                if (adaStok.length === 1) this.ukuranDipilih = adaStok[0];
+            },
+
+            pilihWarna(w) {
+                this.warnaDipilih = w;
+                if (this.stokUntuk(this.ukuranDipilih) < 1) this.ukuranDipilih = '';
+            },
+
+            cari(u) {
+                return this.varian.find(v => v.ukuran === u
+                    && (this.warna.length === 0 || v.warna === this.warnaDipilih));
+            },
+
+            stokUntuk(u) {
+                return u ? (this.cari(u)?.stok ?? 0) : 0;
+            },
+
+            get varianId() {
+                return this.ukuranDipilih ? (this.cari(this.ukuranDipilih)?.id ?? '') : '';
+            },
+        };
+    }
+</script>
+@endpush
 @endsection

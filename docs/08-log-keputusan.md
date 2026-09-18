@@ -1367,6 +1367,27 @@ potongan harga reseller, atau kompensasi.
 
 ---
 
+## KEP-045 — Ukuran dan warna dipilih lewat kotak, bukan dropdown
+**Status:** TERKUNCI · 2026-09-19
+
+Klien mengirim contoh halaman produk toko besar: warna dan ukuran berupa kotak yang
+langsung terlihat, dan ukuran yang habis tetap ditampilkan dalam keadaan dicoret.
+
+**Keputusan:** dropdown varian diganti kotak pilihan.
+
+- **Ukuran yang habis tetap digambar, tetapi mati.** Menyembunyikannya membuat pembeli
+  mengira toko tidak pernah menjual ukuran itu, padahal hanya sedang kosong.
+- **Warna yang dipilih menentukan ukuran mana yang hidup**, dan halaman dibuka pada warna
+  yang benar-benar punya stok, supaya tidak semua ukuran tampak mati sejak awal.
+- **Tombol keranjang mati sampai ukurannya dipilih**, jadi tidak ada lagi pesanan yang
+  terkirim dengan varian yang kebetulan berada di urutan pertama dropdown.
+
+Sekalian diperbaiki: produk berharga per ukuran (KEP-039) tidak punya tier harga, dan
+halaman produk dulu menampilkannya sebagai **Rp 0**. Sekarang tampil harga terendah dari
+matriksnya, dengan catatan bahwa harga akhirnya mengikuti bahan, model, dan ukuran.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1415,3 +1436,4 @@ potongan harga reseller, atau kompensasi.
 | KEP-042 | Rapikan tampilan publik menurut kebiasaan marketplace | TERKUNCI |
 | KEP-043 | Barang tidak diambil 30 hari dinyatakan hangus, oleh admin | TERKUNCI |
 | KEP-044 | Isi pesanan bisa ditambah dan dikurangi, bukan cuma tagihannya | TERKUNCI |
+| KEP-045 | Ukuran dan warna dipilih lewat kotak, bukan dropdown | TERKUNCI |

@@ -68,6 +68,42 @@ class TampilanPublikTest extends TestCase
             ->assertSee('Salin tautan pesanan');
     }
 
+    /**
+     * Ukuran dipilih lewat kotak, bukan dropdown (KEP-045). Ukuran yang habis
+     * tetap tampil dalam keadaan mati, supaya pembeli tahu ukurannya memang ada
+     * tapi sedang kosong.
+     */
+    public function test_ukuran_dipilih_lewat_kotak_bukan_dropdown(): void
+    {
+        $produk = \App\Models\Product::where('sku', 'JRS-POLOS-01')->firstOrFail();
+
+        $habis = $produk->variants()->where('ukuran', 'S')->first();
+        $habis->update(['stok' => 0]);
+
+        $html = $this->get(route('produk', $produk))->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('<select id="variant_id"', $html);
+        $this->assertStringContainsString('pilihVarian(', $html);
+
+        // Ukuran yang habis tetap digambar, tetapi kotaknya mati: sisa stok tiap
+        // ukuran ikut dikirim ke halaman, dan nol berarti tidak bisa diklik.
+        $this->assertStringContainsString('disabled="stokUntuk(u) < 1"', $html);
+        $this->assertSame(0, $habis->fresh()->stok_tersedia);
+    }
+
+    /** Produk berharga per ukuran tidak punya tier, dan dulu tampil Rp 0. */
+    public function test_produk_harga_per_ukuran_menampilkan_harga_terendah(): void
+    {
+        $produk = \App\Models\Product::where('sku', 'CUST-JRS-ATASAN')->firstOrFail();
+
+        $this->get(route('produk', $produk))
+            ->assertOk()
+            ->assertSee(rupiah(45_000))
+            ->assertDontSee('Harga per jumlah')
+            // Keterangan produk kustom ikut tampil (permintaan klien).
+            ->assertSee('Harga mengikuti bahan dan ukuran');
+    }
+
     /** Pelanggan yang ragu di langkah terakhir menutup halaman kalau tidak ada jalan bertanya. */
     public function test_checkout_menawarkan_bantuan_whatsapp(): void
     {
