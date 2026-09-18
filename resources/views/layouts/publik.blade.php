@@ -31,7 +31,6 @@
         : [
             ['katalog', 'Katalog', ['katalog', 'produk']],
             ['lacak', 'Lacak pesanan', ['lacak*']],
-            ['masuk', 'Masuk', ['masuk', 'daftar']],
         ];
 @endphp
 
@@ -56,16 +55,31 @@
         </nav>
 
         {{-- Keranjang tetap terlihat di semua ukuran: ia satu-satunya aksi yang
-             sedang dikejar pelanggan, jadi tidak boleh disembunyikan di menu. --}}
-        <a href="{{ route('keranjang') }}"
-           class="ml-auto flex items-center gap-2 rounded-[7px] border border-line-strong px-3 py-2 text-sm font-semibold transition-colors hover:border-navy-300 hover:bg-navy-50 md:ml-2">
-            Keranjang
+             sedang dikejar pelanggan, jadi tidak boleh disembunyikan di menu.
+             Berupa ikon supaya muat berdampingan dengan tombol masuk di layar
+             HP; namanya tetap terbaca pembaca layar dan muncul sebagai tooltip. --}}
+        <a href="{{ route('keranjang') }}" title="Keranjang"
+           class="relative ml-auto rounded-[7px] p-2 text-muted transition-colors hover:bg-navy-50 hover:text-ink md:ml-2">
+            <span class="sr-only">Keranjang</span>
+            <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L20 7H6" />
+                <circle cx="10" cy="19.5" r="1.3" />
+                <circle cx="17" cy="19.5" r="1.3" />
+            </svg>
             @if ($isiKeranjang)
-                <span class="tabular inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-merah px-1 text-xs text-white">
+                <span class="tabular absolute -top-0.5 -right-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-merah px-1 text-xs font-semibold text-white">
                     {{ $isiKeranjang }}
                 </span>
             @endif
         </a>
+
+        @unless ($pelanggan)
+            <a href="{{ route('masuk') }}"
+               class="rounded-[7px] border border-line-strong px-3 py-2 text-sm font-semibold transition-colors hover:border-navy-300 hover:bg-navy-50">
+                Masuk
+            </a>
+        @endunless
 
         <button type="button" @click="menu = !menu"
                 class="-mr-1 rounded-[7px] p-2 text-muted transition-colors hover:bg-navy-50 hover:text-ink md:hidden"
@@ -89,9 +103,32 @@
                     {{ $label }}
                 </a>
             @endforeach
+
+            @unless ($pelanggan)
+                <a href="{{ route('masuk') }}"
+                   class="block border-l-2 py-3 pl-3 font-medium transition-colors
+                          {{ request()->routeIs('masuk', 'daftar') ? 'border-kuning text-navy' : 'border-transparent text-muted hover:text-ink' }}">
+                    Masuk
+                </a>
+            @endunless
         </div>
     </nav>
 </header>
+
+{{-- Di HP, judul halaman ikut menempel di bawah bilah atas. Setelah menggulir
+     beberapa layar, pelanggan kehilangan jejak sedang ada di halaman apa, dan
+     bilah atas hanya berisi logo. Di layar lebar judulnya sudah terbaca utuh di
+     badan halaman, jadi bilah ini tidak dipasang di sana. --}}
+@hasSection('subjudul')
+    <div class="sticky top-16 z-20 border-b border-line bg-field/95 backdrop-blur md:hidden">
+        <div class="mx-auto max-w-6xl px-5 py-2.5">
+            <p class="text-sm font-semibold">@yield('subjudul')</p>
+            @hasSection('subcatatan')
+                <p class="mt-0.5 text-xs leading-relaxed text-muted">@yield('subcatatan')</p>
+            @endif
+        </div>
+    </div>
+@endif
 
 <main class="flex-1">
     @if (session('sukses') && ! request()->routeIs('lacak.token'))

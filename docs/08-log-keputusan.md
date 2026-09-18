@@ -1294,6 +1294,28 @@ selama menggantung konveksi mengerjakan kain yang mungkin tidak jadi dipakai.
 
 ---
 
+## KEP-042 — Rapikan tampilan publik menurut kebiasaan marketplace
+**Status:** TERKUNCI · 2026-09-19
+
+Klien membandingkan web ini dengan toko besar yang biasa dipakai pelanggannya, lalu
+meminta beberapa perubahan kecil yang semuanya soal kebiasaan, bukan selera.
+
+- **Keranjang jadi ikon** dan berdiri sebelum tombol Masuk. Sebagai tombol bertuliskan
+  teks, ia dan tombol Masuk berebut tempat di layar HP. Namanya tetap dibawa untuk
+  pembaca layar dan muncul sebagai tooltip, jadi yang hilang cuma lebarnya.
+- **Judul halaman ikut menempel di bawah bilah atas, hanya di HP.** Setelah menggulir
+  beberapa layar, bilah atas cuma berisi logo dan pelanggan kehilangan jejak sedang ada
+  di halaman apa. Di layar lebar judulnya sudah terbaca utuh, jadi bilah ini tidak
+  dipasang di sana.
+- **Tautan pesanan bisa disalin satu tombol.** Tautan itu satu-satunya kunci pesanan
+  (KEP-008), dan pelanggan sering mengirimkannya ke bendahara tim. Menyalin dari bilah
+  alamat di HP jauh lebih repot.
+- **Bantuan WhatsApp di samping tombol terakhir checkout.** Di situlah keraguan muncul:
+  ukuran, bahan, cara bayar. Tanpa jalan bertanya, pelanggan yang ragu menutup halaman
+  dan pesanannya hilang tanpa jejak. Tetap bantuan, bukan jalur pemesanan (KEP-040).
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1339,3 +1361,4 @@ selama menggantung konveksi mengerjakan kain yang mungkin tidak jadi dipakai.
 | KEP-039 | Harga per potong menurut kategori ukuran | TERKUNCI |
 | KEP-040 | Pemesanan kustom empat langkah, WhatsApp hanya bantuan | TERKUNCI |
 | KEP-041 | Pembatalan diajukan pelanggan, diputuskan toko | TERKUNCI |
+| KEP-042 | Rapikan tampilan publik menurut kebiasaan marketplace | TERKUNCI |

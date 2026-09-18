@@ -1,5 +1,6 @@
 @extends('layouts.publik')
 @section('judul', 'Data pemesan')
+@section('subjudul', 'Data pemesan')
 
 @section('isi')
 <div class="mx-auto max-w-4xl px-5 py-10">
@@ -112,6 +113,24 @@
             </label>
 
             <button type="submit" class="tombol tombol-utama w-full">Buat pesanan</button>
+
+            {{-- Bantuan diletakkan tepat di samping tombol terakhir, karena di
+                 situlah keraguan muncul: ukuran, bahan, atau cara bayar. Tanpa
+                 jalan bertanya, pelanggan yang ragu menutup halaman, dan
+                 pesanannya hilang tanpa jejak. WhatsApp di sini BANTUAN, bukan
+                 jalur pemesanan (KEP-040); pesanannya tetap dibuat di sini. --}}
+            @if ($bantuanWa = tautan_wa('Halo '.setting('toko_nama', 'Setia Sport').', saya sedang mengisi pesanan di web dan mau bertanya.'))
+                <div class="flex flex-wrap items-center justify-center gap-2 text-sm text-muted">
+                    <span>Ada yang ingin ditanyakan dulu?</span>
+                    <a href="{{ $bantuanWa }}" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-1.5 font-medium text-ink underline decoration-line-strong underline-offset-4 hover:text-navy">
+                        <svg class="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2zm0 2a8 8 0 1 1-4.2 14.8l-.3-.2-2.5.7.7-2.4-.2-.3A8 8 0 0 1 12 4zm-3.3 4c-.2 0-.5.1-.7.4-.2.3-.8.8-.8 1.9s.8 2.2.9 2.4c.1.2 1.6 2.6 4 3.5 1.9.7 2.3.6 2.7.6.4 0 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1l-.6-.3-1.4-.7c-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.5 6.5 0 0 1-1.9-1.2 7.3 7.3 0 0 1-1.3-1.7c-.1-.2 0-.4.1-.5l.4-.5.3-.5v-.5l-.7-1.6c-.2-.4-.4-.4-.5-.4h-.5z" />
+                        </svg>
+                        Tanya lewat WhatsApp
+                    </a>
+                </div>
+            @endif
         </form>
 
         <aside class="lg:sticky lg:top-6 lg:self-start">

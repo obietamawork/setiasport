@@ -1,5 +1,7 @@
 @extends('layouts.publik')
 @section('judul', 'Pesanan '.$order->kode)
+@section('subjudul', 'Pesanan '.$order->kode)
+@section('subcatatan', $order->status->label())
 
 @section('isi')
 @php
@@ -21,6 +23,23 @@
     <p class="mt-2 text-sm text-muted">
         Atas nama {{ $order->customer->nama }} &middot; {{ $order->customer->email_samar }}
     </p>
+
+    {{-- Tautan halaman ini adalah satu-satunya kunci pesanan (KEP-008), dan
+         pelanggan sering perlu mengirimkannya ke bendahara tim atau menyimpannya
+         sendiri. Menyalin dari bilah alamat di HP jauh lebih repot daripada
+         satu tombol. --}}
+    <div class="mt-4" x-data="{ tersalin: false }">
+        <button type="button"
+                @click="navigator.clipboard.writeText(@js(route('lacak.token', $order->access_token)))
+                        .then(() => { tersalin = true; setTimeout(() => tersalin = false, 2500) })"
+                class="tombol tombol-garis tombol-sm">
+            <span x-show="!tersalin">Salin tautan pesanan</span>
+            <span x-show="tersalin" x-cloak>Tautan tersalin</span>
+        </button>
+        <p class="mt-1.5 text-xs leading-relaxed text-muted">
+            Boleh dibagikan ke anggota tim yang ingin ikut memantau; tidak ada data pribadi di sini.
+        </p>
+    </div>
 
     {{-- Chat yang dibuka dari halaman ini membawa tautan pesanannya, jadi CS
          tahu pesanan mana yang dibicarakan dan bahwa penanya memang pemegangnya. --}}
@@ -563,11 +582,6 @@
             </form>
         </details>
     @endif
-
-    <p class="mt-8 text-sm leading-relaxed text-muted">
-        Simpan tautan halaman ini. Boleh dibagikan ke anggota tim yang ingin ikut
-        memantau, tidak ada data pribadi yang tampil di sini.
-    </p>
 
     {{-- Ditawarkan di sini karena inilah saat pelanggan paling mungkin mau:
          pesanannya sudah nyata dan mereka sedang melihat manfaatnya. --}}

@@ -1,6 +1,8 @@
 @extends('layouts.publik')
 @section('judul', $produk->nama)
 @section('deskripsi', Str::limit(strip_tags($produk->deskripsi ?? $produk->nama), 150))
+@section('subjudul', $produk->nama)
+@section('subcatatan', 'Lihat rincian produk, harga, dan cara memesannya.')
 
 @section('isi')
 @php

@@ -1,6 +1,8 @@
 @extends('layouts.publik')
 @section('judul', 'Pesan '.$produk->nama)
 @section('deskripsi', 'Atur bahan, model, ukuran, dan daftar pemain, lalu lihat harganya langsung.')
+@section('subjudul', 'Pesan '.$produk->nama)
+@section('subcatatan', 'Empat langkah: produk, desain, data pemain, cek pesanan.')
 
 @section('isi')
 @php

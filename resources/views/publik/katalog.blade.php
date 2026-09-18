@@ -1,5 +1,7 @@
 @extends('layouts.publik')
 @section('judul', $judul)
+@section('subjudul', 'Katalog')
+@section('subcatatan', 'Pilih produk, lihat harganya, lalu pesan dari halaman produknya.')
 
 @section('isi')
 <div class="mx-auto max-w-6xl px-5 py-10">

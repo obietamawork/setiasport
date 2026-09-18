@@ -1,5 +1,6 @@
 @extends('layouts.publik')
 @section('judul', 'Keranjang')
+@section('subjudul', 'Keranjang')
 
 @section('isi')
 <div class="mx-auto max-w-4xl px-5 py-10">
