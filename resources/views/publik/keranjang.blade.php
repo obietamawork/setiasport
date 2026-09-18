@@ -36,6 +36,21 @@
                             <p class="text-sm text-muted">{{ $b['varian']->label }}</p>
                         @endif
 
+                        {{-- Baris kustom berharga per ukuran (KEP-039): jumlahnya
+                             berasal dari daftar ukuran, jadi daftar itu yang
+                             ditampilkan, bukan satu angka jumlah. --}}
+                        @if ($b['ukuran'] ?? null)
+                            <ul class="mt-1 space-y-0.5 text-sm text-muted">
+                                @foreach ($b['rincian']?->baris ?? [] as $u)
+                                    <li class="tabular">
+                                        {{ $u['jumlah'] }} pcs
+                                        {{ \App\Enums\KategoriUkuran::tryFrom($u['kategori'])?->labelUkuran($u['ukuran']) ?? $u['ukuran'] }}
+                                        &middot; {{ rupiah($u['harga_satuan']) }} / pcs
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+
                         @foreach ($b['rincian']?->komponenPerItem ?? [] as $k)
                             <p class="text-sm text-muted tabular">
                                 {{ $k['label'] }}: {{ rupiah($k['jumlah']) }} (sekali)
@@ -47,18 +62,27 @@
                         @endif
                     </div>
 
-                    <form method="POST" action="{{ route('keranjang.ubah') }}" class="flex items-center gap-2">
-                        @csrf @method('PUT')
-                        <input type="hidden" name="kunci" value="{{ $b['kunci'] }}">
-                        <label class="sr-only" for="qty-{{ $b['kunci'] }}">Jumlah {{ $b['produk']->nama }}</label>
-                        <input type="number" id="qty-{{ $b['kunci'] }}" name="qty" value="{{ $b['qty'] }}"
-                               min="1" class="kotak-input w-20 tabular text-right">
-                        <button type="submit" class="tautan text-sm">Perbarui</button>
-                    </form>
+                    @if ($b['ukuran'] ?? null)
+                        {{-- Jumlahnya diubah dengan menyusun ulang daftar ukurannya,
+                             supaya jumlah potong dan daftar pemain tidak berselisih. --}}
+                        <div class="text-sm">
+                            <p class="tabular font-medium">{{ $b['qty'] }} pcs</p>
+                            <a href="{{ route('kustom.buat', $b['produk']) }}" class="tautan text-xs">Ubah pesanan</a>
+                        </div>
+                    @else
+                        <form method="POST" action="{{ route('keranjang.ubah') }}" class="flex items-center gap-2">
+                            @csrf @method('PUT')
+                            <input type="hidden" name="kunci" value="{{ $b['kunci'] }}">
+                            <label class="sr-only" for="qty-{{ $b['kunci'] }}">Jumlah {{ $b['produk']->nama }}</label>
+                            <input type="number" id="qty-{{ $b['kunci'] }}" name="qty" value="{{ $b['qty'] }}"
+                                   min="1" class="kotak-input w-20 tabular text-right">
+                            <button type="submit" class="tautan text-sm">Perbarui</button>
+                        </form>
+                    @endif
 
                     <div class="w-32 text-right">
                         <p class="tabular font-semibold">{{ rupiah($b['rincian']?->subtotal ?? 0) }}</p>
-                        @if ($b['rincian'])
+                        @if ($b['rincian'] && ! ($b['ukuran'] ?? null))
                             <p class="text-xs text-muted tabular">{{ rupiah($b['rincian']->hargaSatuan) }} / pcs</p>
                         @endif
                         <form method="POST" action="{{ route('keranjang.hapus') }}" class="mt-1">

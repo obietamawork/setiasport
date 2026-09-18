@@ -1225,6 +1225,36 @@ dikerjakan konveksi.
 
 ---
 
+## KEP-040 — Pemesanan kustom empat langkah, WhatsApp hanya bantuan
+**Status:** TERKUNCI · 2026-09-18
+
+Klien mengirim rancangan alurnya: pilih produk, desain & detail, data pemain, cek
+pesanan. Satu kotak jumlah tidak lagi cukup, karena harga baru diketahui setelah daftar
+ukurannya terisi (KEP-039).
+
+**Keputusan:**
+
+- **Satu halaman, empat langkah**, bukan empat halaman terpisah. Seluruh pilihan tetap
+  ada di memori sampai pesanan dibuat, jadi memperbaiki bahan tidak menghapus daftar
+  pemain yang sudah diketik. Langkah yang sudah dilewati bisa diklik untuk mundur.
+- **Pilihan berupa kartu, bukan dropdown**, sesuai contoh klien. Harganya ikut tertulis
+  di kartu, jadi pelanggan tahu akibat setiap pilihan sebelum memilih.
+- **Data pemain: isi manual atau tempel dari Excel.** Yang dipasang penempelan, bukan
+  unggah berkas: pelanggan menyalin dari Excel, Sheets, atau WPS, hasilnya langsung
+  tampil sebagai baris yang masih bisa diperbaiki. Berkas yang judul kolomnya diubah
+  sendiri, selnya digabung, atau dikirim sebagai foto selalu berakhir jadi keluhan ke
+  admin. Unggah CSV bisa ditambahkan nanti kalau memang diminta.
+- **WhatsApp di halaman ini adalah bantuan, bukan jalur pemesanan.** Klien sempat minta
+  langkah terakhir menyambung ke WhatsApp, tetapi itu bertabrakan dengan aturan klien
+  sendiri: tidak ada transaksi lewat WhatsApp (KEP-029). Pesanan tetap dibuat di web
+  supaya punya kode, tagihan, halaman lacak, dan lembar kerja; tanpa itu produksi
+  kehilangan sumber datanya. Tombolnya tetap ada untuk bertanya sebelum memesan.
+
+Minimum pemesanan 6 pcs. Contoh rancangan klien menulis 4 pcs, dan itu dikoreksi lewat
+jawaban terakhirnya.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1268,3 +1298,4 @@ dikerjakan konveksi.
 | KEP-037 | Urutan produksi mengikuti meja kerja konveksi | TERKUNCI |
 | KEP-038 | Revisi desain dibatasi tiga kali, tanpa revisi berbayar | TERKUNCI |
 | KEP-039 | Harga per potong menurut kategori ukuran | TERKUNCI |
+| KEP-040 | Pemesanan kustom empat langkah, WhatsApp hanya bantuan | TERKUNCI |

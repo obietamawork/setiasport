@@ -99,8 +99,12 @@ class Keranjang
      * @param  array<int, array{kategori:string, ukuran:string, jumlah:int, nama_punggung?:?string, nomor?:?string}>  $daftarUkuran
      * @param  array<int, int>  $optionValueIds
      */
-    public function tambahKustomPerUkuran(Product $produk, array $daftarUkuran, array $optionValueIds): void
-    {
+    public function tambahKustomPerUkuran(
+        Product $produk,
+        array $daftarUkuran,
+        array $optionValueIds,
+        ?string $catatan = null,
+    ): void {
         $rincian = $this->kalkulator->kustomPerUkuran($produk, $daftarUkuran, $optionValueIds);
 
         $baris = $this->baris();
@@ -111,6 +115,7 @@ class Keranjang
             'qty' => $rincian->qty,
             'jalur' => FulfillmentType::PREORDER->value,
             'opsi' => array_values($optionValueIds),
+            'catatan' => $catatan,
             'ukuran' => array_map(fn (array $b) => [
                 'kategori' => (string) ($b['kategori'] ?? ''),
                 'ukuran' => (string) $b['ukuran'],
@@ -208,6 +213,7 @@ class Keranjang
                 + [
                     'qty' => $rincian?->qty ?? $b['qty'],
                     'opsi' => $b['opsi'],
+                    'catatan' => $b['catatan'] ?? null,
                     'ukuran' => $b['ukuran'] ?? null,
                 ];
         })->filter()->values();

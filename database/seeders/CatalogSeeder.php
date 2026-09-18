@@ -8,6 +8,8 @@ use App\Models\Category;
 use App\Models\OptionValue;
 use App\Models\Product;
 use App\Models\ProductOption;
+use App\Models\ProductPrice;
+use App\Models\ProductSizeSurcharge;
 use App\Models\ProductPriceTier;
 use App\Models\ProductVariant;
 use Illuminate\Database\Seeder;
@@ -24,19 +26,30 @@ use Illuminate\Support\Str;
  */
 class CatalogSeeder extends Seeder
 {
+    private const SKU_KUSTOM = 'CUST-JRS-ATASAN';
+
     public function run(): void
     {
+        $k = $this->kategori();
+
         /*
-         * Katalog contoh hanya untuk instalasi yang masih kosong. Menjalankannya
-         * lagi setelah pemilik toko mengoreksi harga akan menimpa harga asli
-         * dengan angka draft ini, tanpa ada yang sadar sampai pelanggan membayar
-         * dengan harga yang salah.
+         * Produk kustom berharga per ukuran ikut dipasang di instalasi yang
+         * sudah jalan (KEP-039): ia susunan baru yang dipakai toko, bukan
+         * sekadar contoh etalase. Yang sudah ada tidak disentuh.
          */
-        if (Product::exists()) {
-            return;
+        if (! Product::where('sku', self::SKU_KUSTOM)->exists()) {
+            $this->jerseyAtasanKustom($k['jersey-futsal']);
         }
 
-        $k = $this->kategori();
+        /*
+         * Sisanya katalog contoh, hanya untuk instalasi yang masih kosong.
+         * Menjalankannya lagi setelah pemilik toko mengoreksi harga akan
+         * menimpa harga asli dengan angka draft, tanpa ada yang sadar sampai
+         * pelanggan membayar dengan harga yang salah.
+         */
+        if (Product::where('sku', '!=', self::SKU_KUSTOM)->exists()) {
+            return;
+        }
 
         $this->bola($k['bola-futsal']);
         $this->sepatu($k['sepatu-futsal']);
@@ -114,6 +127,42 @@ class CatalogSeeder extends Seeder
         }
 
         $this->varian($p, $varian);
+    }
+
+    /**
+     * Produk kustom dengan harga per kategori ukuran (KEP-039). Angkanya
+     * diambil dari daftar harga asli klien, bukan karangan: harga per potong
+     * berbeda untuk SD, SMP, dan dewasa, dan satu tim boleh memesan ketiganya.
+     */
+    private function jerseyAtasanKustom(Category $kategori): void
+    {
+        $p = $this->produk($kategori, [
+            'sku' => 'CUST-JRS-ATASAN',
+            'nama' => 'Custom Jersey Atasan',
+            'fulfillment_type' => FulfillmentType::PREORDER,
+            'moq' => 6,
+            'lead_time_hari' => 7,
+            'roster_wajib' => true,
+            'deskripsi' => 'Jersey atasan full printing. Harga mengikuti bahan dan ukuran, '
+                .'dan satu pesanan boleh memuat ukuran anak sampai dewasa sekaligus.',
+        ]);
+
+        // Bahan tidak menambah harga sendiri: ia memilih baris matriks harga.
+        $this->opsi($p, 'Bahan', [
+            ['Serena', 0], ['Jarum', 0], ['Milano', 0], ['Wafel', 0], ['Embos', 0],
+        ]);
+        $this->opsi($p, 'Model Baju', [['Oblong', 0], ['Pakai Kerah', 10_000]]);
+        $this->opsi($p, 'Model Lengan', [['Pendek', 0], ['Panjang', 10_000]]);
+        $this->opsi($p, 'Saku', [['Tanpa Saku', 0], ['Pakai Saku', 5_000]]);
+
+        // Harga pendek oblong per kategori dan bahan, apa adanya dari klien.
+        $this->matriksHarga($p, [
+            'SD' => ['Serena' => 45_000, 'Jarum' => 55_000, 'Milano' => 65_000, 'Wafel' => 70_000, 'Embos' => 70_000],
+            'SMP' => ['Serena' => 55_000, 'Jarum' => 65_000, 'Milano' => 75_000, 'Wafel' => 80_000, 'Embos' => 80_000],
+            'DEWASA' => ['Serena' => 60_000, 'Jarum' => 70_000, 'Milano' => 80_000, 'Wafel' => 85_000, 'Embos' => 90_000],
+        ]);
+
+        $this->tambahanUkuran($p, ['3XL' => 5_000, '5XL' => 10_000]);
     }
 
     /** C, produk terpenting: tier, dua basis biaya, roster wajib. */
@@ -249,6 +298,39 @@ class CatalogSeeder extends Seeder
             ProductPriceTier::updateOrCreate(
                 ['product_id' => $p->id, 'min_qty' => $min],
                 ['max_qty' => $max, 'harga_satuan' => $harga]
+            );
+        }
+    }
+
+    /**
+     * Matriks harga per kategori ukuran dan bahan (KEP-039).
+     *
+     * @param  array<string, array<string, int>>  $matriks
+     */
+    private function matriksHarga(Product $p, array $matriks): void
+    {
+        foreach ($matriks as $kategori => $baris) {
+            foreach ($baris as $bahan => $harga) {
+                $value = OptionValue::whereHas(
+                    'option',
+                    fn ($q) => $q->where('product_id', $p->id)->where('nama', 'Bahan')
+                )->where('label', $bahan)->firstOrFail();
+
+                ProductPrice::updateOrCreate(
+                    ['product_id' => $p->id, 'kategori' => $kategori, 'option_value_id' => $value->id],
+                    ['harga_satuan' => $harga]
+                );
+            }
+        }
+    }
+
+    /** @param array<string, int> $daftar */
+    private function tambahanUkuran(Product $p, array $daftar): void
+    {
+        foreach ($daftar as $ukuran => $tambahan) {
+            ProductSizeSurcharge::updateOrCreate(
+                ['product_id' => $p->id, 'ukuran' => $ukuran],
+                ['tambahan_harga' => $tambahan]
             );
         }
     }

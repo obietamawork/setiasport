@@ -7,6 +7,7 @@ use App\Http\Controllers\Publik\CheckoutController;
 use App\Http\Controllers\Publik\CsController;
 use App\Http\Controllers\Publik\KatalogController;
 use App\Http\Controllers\Publik\KeranjangController;
+use App\Http\Controllers\Publik\KustomController;
 use App\Http\Controllers\Publik\LacakController;
 use App\Http\Controllers\Publik\PesananItemController;
 use App\Http\Controllers\Publik\PesananSayaController;
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', BerandaController::class)->name('beranda');
 Route::get('/katalog', [KatalogController::class, 'index'])->name('katalog');
 Route::get('/produk/{produk:slug}', [KatalogController::class, 'show'])->name('produk');
+
+// Pemesanan kustom empat langkah (KEP-040).
+Route::get('/pesan/{produk:slug}', [KustomController::class, 'form'])->name('kustom.buat');
+Route::post('/pesan/{produk:slug}', [KustomController::class, 'simpan'])->name('kustom.simpan');
 
 Route::get('/keranjang', [KeranjangController::class, 'index'])->name('keranjang');
 Route::post('/keranjang', [KeranjangController::class, 'tambah'])->name('keranjang.tambah');

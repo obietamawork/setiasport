@@ -114,7 +114,7 @@ class PengirimanTest extends TestCase
 
     public function test_barang_kustom_tidak_boleh_dikirim(): void
     {
-        $jersey = Product::where('fulfillment_type', 'PREORDER')->firstOrFail();
+        $jersey = Product::where('sku', 'JRS-FUTSAL-FP')->firstOrFail();
 
         $this->post(route('keranjang.kustom', $jersey), [
             'qty' => $jersey->moq,

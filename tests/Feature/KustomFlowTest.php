@@ -43,9 +43,17 @@ class KustomFlowTest extends TestCase
         return Product::with(['priceTiers', 'options.values'])->where('sku', 'JRS-FUTSAL-FP')->firstOrFail();
     }
 
+    /**
+     * Dibatasi ke produknya. Label bahan seperti "Milano" dipakai beberapa
+     * produk sekaligus, dan pencarian tanpa penyaring produk mengembalikan
+     * opsi milik produk lain, yang lalu ditolak kalkulator harga.
+     */
     private function opsi(string ...$label): array
     {
-        return OptionValue::whereIn('label', $label)->pluck('id')->all();
+        return OptionValue::whereIn('label', $label)
+            ->whereHas('option', fn ($q) => $q->where('product_id', $this->jersey()->id))
+            ->pluck('id')
+            ->all();
     }
 
     private function staf(string $email): User

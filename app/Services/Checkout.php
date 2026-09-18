@@ -80,6 +80,7 @@ class Checkout
                         ? $baris['rincian']->hargaRataRata()
                         : $baris['rincian']->hargaSatuan,
                     'status_item' => OrderItemStatus::MENUNGGU_PEMBAYARAN,
+                    'catatan' => $baris['catatan'] ?? null,
                 ]);
 
                 $this->simpanDaftarUkuran($item, $baris);

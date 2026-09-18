@@ -39,7 +39,7 @@ class PemisahanJalurTest extends TestCase
 
     private function jersey(): Product
     {
-        return Product::where('fulfillment_type', 'PREORDER')->firstOrFail();
+        return Product::where('sku', 'JRS-FUTSAL-FP')->firstOrFail();
     }
 
     private function checkout(array $tambahan = []): Order

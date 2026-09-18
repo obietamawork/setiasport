@@ -200,7 +200,19 @@
                             lewat transfer atau di kasir, lalu barang siap diambil.
                         </p>
 
-                        @if ($produk->priceTiers->isEmpty())
+                        @if ($produk->prices->isNotEmpty())
+                            {{-- Harganya per ukuran (KEP-039), jadi jumlah pesanan baru
+                                 diketahui setelah daftar ukurannya diisi. Pemesanannya
+                                 lewat alur empat langkah, bukan satu kotak jumlah. --}}
+                            <a href="{{ route('kustom.buat', $produk) }}"
+                               class="tombol tombol-navy w-full justify-center">
+                                Buat pesanan
+                            </a>
+                            <p class="text-xs leading-relaxed text-muted">
+                                Pilih bahan dan model, isi daftar ukuran, lalu harganya muncul
+                                sebelum Anda memutuskan. Minimal {{ $produk->moq }} pcs.
+                            </p>
+                        @elseif ($produk->priceTiers->isEmpty())
                             <p class="border-l-2 border-line-strong bg-paper p-3 text-sm leading-relaxed">
                                 Harga produk ini belum lengkap di sistem. Hubungi toko untuk penawaran.
                             </p>
