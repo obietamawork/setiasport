@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusLog;
 use App\Models\Payment;
+use App\Models\Setting;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -269,6 +270,30 @@ class AlurPesanan
 
             $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']), $alasan);
         });
+    }
+
+    /**
+     * Barang yang tidak pernah diambil (KEP-043).
+     *
+     * Sengaja BUKAN pekerjaan penjadwal: menghanguskan uang pelanggan secara
+     * otomatis di tengah malam adalah keputusan yang tidak bisa ditarik lagi,
+     * dan alasannya sering ada di luar sistem (pelanggan sakit, sudah menelepon,
+     * barang sudah diambil tapi lupa dicatat). Sistem menandai, admin memutuskan.
+     */
+    public function hanguskan(Order $order, ?int $olehUserId = null): void
+    {
+        abort_unless($order->status === OrderStatus::SIAP_DIAMBIL, 422,
+            'Hanya pesanan yang sudah siap diambil yang bisa dihanguskan.');
+
+        $hari = (int) Setting::ambil('hangus_hari', 30);
+
+        $this->batalkan(
+            $order,
+            "Barang tidak diambil lebih dari {$hari} hari, dinyatakan hangus.",
+            $olehUserId,
+        );
+
+        $order->update(['status' => OrderStatus::KADALUARSA]);
     }
 
     private function setStatusItem(OrderItem $item, OrderItemStatus $ke, ?string $catatan, ?int $oleh): void

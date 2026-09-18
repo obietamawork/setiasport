@@ -77,6 +77,30 @@
         </section>
     @endif
 
+    @if ($bolehHangus->isNotEmpty())
+        <section class="kartu overflow-hidden">
+            <div class="kartu-kop flex items-center gap-2">
+                <span class="tahap-titik tahap-titik-kini"></span>
+                Lewat batas pengambilan
+                <span class="chip chip-merah ml-auto">{{ $bolehHangus->count() }}</span>
+            </div>
+            <p class="border-b border-line px-5 py-2.5 text-sm text-muted">
+                Lebih dari {{ $hangusHari }} hari belum diambil. Hubungi dulu sebelum dihanguskan.
+            </p>
+            <ul class="divide-y divide-line text-sm">
+                @foreach ($bolehHangus as $o)
+                    <li>
+                        <a href="{{ route('panel.pesanan.show', $o) }}"
+                           class="flex items-center justify-between gap-4 px-5 py-2.5 hover:bg-navy-50">
+                            <span class="tabular font-medium">{{ $o->kode }}</span>
+                            <span class="text-muted">{{ $o->customer->nama }}</span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     @if ($perluVerifikasi->isNotEmpty())
         <section class="kartu overflow-hidden">
             <div class="kartu-kop flex items-center gap-2">
@@ -196,7 +220,7 @@
 
     @if (empty($masalahSistem) && $tanpaTier->isEmpty() && $stokHabis->isEmpty() && $stokMenipis->isEmpty()
          && $perluVerifikasi->isEmpty() && $lamaBelumDiambil->isEmpty() && $emailBermasalah->isEmpty()
-         && $pembatalanMenunggu->isEmpty())
+         && $pembatalanMenunggu->isEmpty() && $bolehHangus->isEmpty())
         <section class="kartu p-8 text-center">
             <p class="text-lg font-bold">Tidak ada yang perlu ditangani</p>
             <p class="kolom-baca mx-auto mt-2 text-sm text-muted">

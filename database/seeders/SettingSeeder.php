@@ -57,6 +57,10 @@ Minggu 08.00-14.00", 'teks', 'toko', 'Jam Buka Toko',
                 'Berlaku untuk preview desain dan foto. File mentah siap cetak dikirim lewat tautan Drive, bukan diunggah.'],
 
             ['pengingat_ambil_hari', '3', 'int', 'pengambilan', 'Pengingat Belum Diambil (hari)'],
+            ['hangus_hari', '30', 'int', 'pengambilan', 'Barang Hangus Setelah (hari)',
+                'Barang yang tidak pernah diambil selama ini dianggap hangus dan uangnya tidak kembali. '
+                .'Sistem hanya menandainya; yang menghanguskan tetap admin.'],
+
             ['ambil_peringatan_hari', '7', 'int', 'pengambilan', 'Tandai di Dashboard Setelah (hari)',
                 'Pesanan siap tapi belum diambil selewat hari ini memakan rak toko dan sering terlupakan.'],
 

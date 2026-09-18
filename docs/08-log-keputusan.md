@@ -1316,6 +1316,29 @@ meminta beberapa perubahan kecil yang semuanya soal kebiasaan, bukan selera.
 
 ---
 
+## KEP-043 — Barang tidak diambil 30 hari dinyatakan hangus, oleh admin
+**Status:** TERKUNCI · 2026-09-19
+
+Klien memutuskan barang yang tidak pernah diambil dianggap hangus setelah satu bulan dan
+uangnya tidak kembali.
+
+**Keputusan:** batasnya jadi pengaturan (`hangus_hari`, bawaan 30), tetapi **yang
+menghanguskan tetap admin, bukan penjadwal.** Sistem menandai, admin memutuskan.
+
+Alasannya: menghanguskan uang pelanggan otomatis di tengah malam adalah keputusan yang
+tidak bisa ditarik lagi, sementara alasan barang belum diambil sering ada di luar sistem.
+Pelanggan sakit, sudah menelepon toko, atau barangnya sudah diambil tapi lupa dicatat.
+Penjadwal tidak tahu apa pun tentang itu.
+
+Tombolnya baru muncul setelah batasnya benar-benar lewat, jadi tidak tersedia
+"untuk berjaga-jaga", dan dashboard memisahkan daftar ini dari daftar "belum diambil"
+biasa karena tindakannya berbeda: yang satu menelepon, yang lain menghanguskan uang.
+
+Tanggal batasnya ditulis di halaman pesanan pelanggan, di dalam kartu "Ambil di toko",
+bukan disembunyikan di halaman syarat.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1362,3 +1385,4 @@ meminta beberapa perubahan kecil yang semuanya soal kebiasaan, bukan selera.
 | KEP-040 | Pemesanan kustom empat langkah, WhatsApp hanya bantuan | TERKUNCI |
 | KEP-041 | Pembatalan diajukan pelanggan, diputuskan toko | TERKUNCI |
 | KEP-042 | Rapikan tampilan publik menurut kebiasaan marketplace | TERKUNCI |
+| KEP-043 | Barang tidak diambil 30 hari dinyatakan hangus, oleh admin | TERKUNCI |

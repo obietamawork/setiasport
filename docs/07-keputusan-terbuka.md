@@ -29,9 +29,9 @@ Ketiganya sudah jadi pengaturan dengan nilai bawaan yang masuk akal:
 `batas_bayar_jam` (24), `pengingat_ambil_hari` (3), `ambil_peringatan_hari` (7).
 Pemilik toko tinggal mengoreksi angkanya.
 
-Barang yang tidak pernah diambil: klien memutuskan **satu bulan, lalu uangnya hangus**
-(pertemuan 2026-09-18). **BELUM DIPASANG** di sistem; sekarang barang yang menganggur
-hanya ditandai di dashboard setelah `ambil_peringatan_hari`.
+Barang yang tidak pernah diambil: **satu bulan, lalu uangnya hangus** (KEP-043). Sudah
+terpasang sebagai pengaturan `hangus_hari`, dengan tombol yang hanya muncul setelah
+batasnya lewat.
 
 ## 5. Kedalaman tracking — SELESAI
 Enam tahap produksi: desain, printing, press, potong, jahit, finishing & packing (KEP-037). Masing-masing berubah

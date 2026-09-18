@@ -266,6 +266,17 @@
                     @endif
                 </div>
             </div>
+            {{-- Batas pengambilan disebut di tempat pelanggan pasti membacanya,
+                 bukan di halaman syarat terpisah (KEP-043). --}}
+            @if ($order->siap_pada)
+                <p class="border-t border-line px-5 py-3 text-sm leading-relaxed">
+                    Diambil paling lambat
+                    <strong>{{ $order->siap_pada->copy()->addDays((int) setting('hangus_hari', 30))->translatedFormat('j F Y') }}</strong>.
+                    Lewat dari itu pesanan dianggap hangus dan pembayaran tidak dikembalikan.
+                    Kalau berhalangan, kabari kami sebelum tanggal tersebut.
+                </p>
+            @endif
+
             <div class="border-t border-line px-5 py-4 text-sm leading-relaxed text-muted">
                 <span class="font-medium text-ink">Toko {{ setting('toko_nama', 'Setia Sport') }}</span><br>
                 {{ setting('toko_alamat') }}<br>

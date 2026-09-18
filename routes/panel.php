@@ -64,6 +64,9 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::post('batal', [PesananController::class, 'batalkan'])
                 ->middleware('izin:order.batal')->name('batal');
 
+            Route::post('hangus', [PesananController::class, 'hanguskan'])
+                ->middleware('izin:order.batal')->name('hangus');
+
             Route::middleware('izin:order.batal')->group(function () {
                 Route::post('pembatalan/{pembatalan}/setujui', [PembatalanController::class, 'setujui'])
                     ->name('pembatalan.setujui');

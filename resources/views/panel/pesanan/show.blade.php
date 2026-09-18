@@ -670,6 +670,24 @@
                    placeholder="Dibatalkan pelanggan lewat telepon">
             <button type="submit" class="tombol tombol-utama tombol-sm mt-3">Ya, batalkan</button>
         </form>
+
+        {{-- Menghanguskan hanya muncul setelah batasnya benar-benar lewat
+             (KEP-043). Uang pelanggan tidak kembali, jadi tombol ini tidak
+             boleh tersedia "untuk berjaga-jaga". --}}
+        @if ($pesanan->bolehDihanguskan())
+            <form method="POST" action="{{ route('panel.pesanan.hangus', $pesanan) }}" class="mt-5"
+                  onsubmit="return confirm('Tandai pesanan {{ $pesanan->kode }} hangus? Uang yang sudah dibayar tidak dikembalikan.')">
+                @csrf
+                <p class="text-sm leading-relaxed text-muted">
+                    Barang sudah siap sejak {{ $pesanan->siap_pada->translatedFormat('j F Y') }} dan belum diambil,
+                    melewati batas {{ setting('hangus_hari', 30) }} hari. Pastikan pelanggan sudah dihubungi
+                    sebelum menghanguskan.
+                </p>
+                <button type="submit" class="tombol tombol-garis tombol-sm mt-2 text-merah">
+                    Tandai hangus
+                </button>
+            </form>
+        @endif
     </div>
 @endif
 @endsection

@@ -107,6 +107,16 @@ class Order extends Model
         return (int) ceil($this->total * $persen / 100);
     }
 
+    /** Sudah melewati batas hari pengambilan (KEP-043). */
+    public function bolehDihanguskan(): bool
+    {
+        $hari = (int) Setting::ambil('hangus_hari', 30);
+
+        return $this->status === OrderStatus::SIAP_DIAMBIL
+            && $this->siap_pada !== null
+            && $this->siap_pada->lt(now()->subDays($hari));
+    }
+
     public function lunas(): bool
     {
         return $this->sisa_tagihan === 0;

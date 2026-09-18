@@ -96,6 +96,20 @@ class PesananController extends Controller
         ]);
     }
 
+    /**
+     * Barang yang tidak pernah diambil (KEP-043). Uang pelanggan hangus, jadi
+     * tombolnya hanya muncul setelah batas waktunya benar-benar lewat.
+     */
+    public function hanguskan(Order $pesanan): RedirectResponse
+    {
+        abort_unless($pesanan->bolehDihanguskan(), 422,
+            'Pesanan ini belum melewati batas waktu pengambilan.');
+
+        $this->alur->hanguskan($pesanan, auth('web')->id());
+
+        return back()->with('sukses', 'Pesanan ditandai hangus dan reservasi stoknya dilepas.');
+    }
+
     public function majukanItem(Order $pesanan, OrderItem $item): RedirectResponse
     {
         abort_unless($item->order_id === $pesanan->id, 404);

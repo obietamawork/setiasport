@@ -73,6 +73,20 @@ class DashboardController extends Controller
                 ->get(),
             'peringatanHari' => $peringatanHari,
 
+            /*
+             * Sudah melewati batas hangus (KEP-043). Dipisah dari daftar di
+             * atasnya karena tindakannya berbeda: yang ini bukan lagi "tolong
+             * ditelepon", melainkan keputusan menghanguskan uang pelanggan.
+             */
+            'bolehHangus' => Order::query()
+                ->with('customer')
+                ->where('status', OrderStatus::SIAP_DIAMBIL)
+                ->whereNotNull('siap_pada')
+                ->where('siap_pada', '<', now()->subDays((int) \App\Models\Setting::ambil('hangus_hari', 30)))
+                ->orderBy('siap_pada')
+                ->get(),
+            'hangusHari' => (int) \App\Models\Setting::ambil('hangus_hari', 30),
+
             'emailBermasalah' => EmailLog::perluTindakLanjut()
                 ->with('order.customer')
                 ->latest()

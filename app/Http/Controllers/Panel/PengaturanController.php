@@ -44,7 +44,7 @@ class PengaturanController extends Controller
             'catatan' => 'Batas dan pengingat yang dipakai selama pesanan berjalan.',
             'bagian' => [
                 ['judul' => 'Desain & produksi', 'kunci' => ['revisi_gratis_maks', 'upload_maks_mb']],
-                ['judul' => 'Pengambilan', 'kunci' => ['pengingat_ambil_hari', 'ambil_peringatan_hari']],
+                ['judul' => 'Pengambilan', 'kunci' => ['pengingat_ambil_hari', 'ambil_peringatan_hari', 'hangus_hari']],
                 ['judul' => 'Pengiriman', 'kunci' => ['jasa_kirim_daftar', 'panduan_resi']],
                 ['judul' => 'Email', 'kunci' => ['email_tindak_lanjut_hari']],
             ],
