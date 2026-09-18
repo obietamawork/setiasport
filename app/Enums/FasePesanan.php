@@ -47,8 +47,8 @@ enum FasePesanan: string
 
             OrderItemStatus::ANTRIAN_PRODUKSI,
             OrderItemStatus::PRINTING,
-            OrderItemStatus::POTONG,
             OrderItemStatus::PRESS,
+            OrderItemStatus::POTONG,
             OrderItemStatus::JAHIT,
             OrderItemStatus::QC => self::PRODUKSI,
 
@@ -113,8 +113,8 @@ enum FasePesanan: string
         return $this === self::PRODUKSI
             ? [
                 OrderItemStatus::PRINTING,
-                OrderItemStatus::POTONG,
                 OrderItemStatus::PRESS,
+                OrderItemStatus::POTONG,
                 OrderItemStatus::JAHIT,
                 OrderItemStatus::QC,
             ]

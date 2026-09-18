@@ -25,8 +25,8 @@ enum OrderItemStatus: string
     case MENUNGGU_PERSETUJUAN = 'MENUNGGU_PERSETUJUAN';
     case ANTRIAN_PRODUKSI = 'ANTRIAN_PRODUKSI';
     case PRINTING = 'PRINTING';
-    case POTONG = 'POTONG';
     case PRESS = 'PRESS';
+    case POTONG = 'POTONG';
     case JAHIT = 'JAHIT';
     case QC = 'QC';
 
@@ -54,10 +54,10 @@ enum OrderItemStatus: string
             self::MENUNGGU_PERSETUJUAN => 'Menunggu Persetujuan Anda',
             self::ANTRIAN_PRODUKSI => 'Antrian Produksi',
             self::PRINTING => 'Printing Jersey',
-            self::POTONG => 'Potong Kain',
             self::PRESS => 'Press / Sublime',
+            self::POTONG => 'Potong Kain',
             self::JAHIT => 'Jahit',
-            self::QC => 'Finishing / QC',
+            self::QC => 'Finishing & Packing',
             self::MENUNGGU_PELUNASAN => 'Menunggu Pelunasan',
             self::PACKING => 'Packing',
             self::SIAP => 'Siap',
@@ -83,8 +83,8 @@ enum OrderItemStatus: string
                 self::MENUNGGU_PERSETUJUAN,
                 self::ANTRIAN_PRODUKSI,
                 self::PRINTING,
-                self::POTONG,
                 self::PRESS,
+                self::POTONG,
                 self::JAHIT,
                 self::QC,
                 self::MENUNGGU_PELUNASAN,
@@ -107,8 +107,8 @@ enum OrderItemStatus: string
         return match ($this) {
             self::PROSES_DESAIN => ProductionStage::DESAIN,
             self::PRINTING => ProductionStage::PRINT,
-            self::POTONG => ProductionStage::POTONG,
             self::PRESS => ProductionStage::PRESS,
+            self::POTONG => ProductionStage::POTONG,
             self::JAHIT => ProductionStage::JAHIT,
             self::QC => ProductionStage::QC,
             self::PACKING => ProductionStage::PACKING,

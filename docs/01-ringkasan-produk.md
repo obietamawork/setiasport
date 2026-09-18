@@ -6,7 +6,8 @@ Dari luar, Setia Sport terlihat seperti **marketplace/toko online**. Secara tekn
 sebenarnya **dua sistem yang digabung**:
 
 1. **Toko ritel** — katalog, keranjang, stok, bayar, ambil. (Alur Biasa)
-2. **Sistem job order pabrik kecil** — antrian desain, printing, jahit, QC. (Alur PreOrder)
+2. **Sistem job order pabrik kecil** — antrian desain, printing, press, potong, jahit,
+   finishing & packing. (Alur PreOrder)
 
 Kesalahan paling umum di project sejenis: **bikin e-commerce dulu, produksi ditempel
 belakangan**. Hasilnya, produksi jadi spreadsheet terpisah, status di web tidak pernah

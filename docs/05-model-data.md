@@ -85,7 +85,9 @@ Keputusan penting:
 ## Produksi
 
 ```
-production_jobs     id, order_item_id, tahap (DESAIN|PRINT|JAHIT|QC|PACKING), 
+production_jobs     id, order_item_id, tahap (DESAIN|PRINT|PRESS|POTONG|JAHIT|QC|PACKING),
+                    (kustom: DESAIN>PRINT>PRESS>POTONG>JAHIT>QC; stok: PACKING)
+                    
                     status (ANTRI|DIKERJAKAN|SELESAI), 
                     ditugaskan_ke, dimulai_pada, selesai_pada, catatan
 ```

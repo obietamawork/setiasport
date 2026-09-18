@@ -1149,6 +1149,31 @@ lalu saklar di Pengaturan (docs/12-deploy.md, "Menyalakan chat CS kembali").
 
 ---
 
+## KEP-037 — Urutan produksi mengikuti meja kerja konveksi
+**Status:** TERKUNCI · 2026-09-18
+
+Pertemuan dengan klien mengoreksi urutan yang selama ini dipakai sistem. Urutan
+sebenarnya di konveksi: **desain → printing → press/sublime → potong → jahit →
+finishing & packing**.
+
+**Keputusan:**
+
+- **Press mendahului potong.** Kertas hasil printing dipress ke kain lembaran dulu, baru
+  kainnya dipotong menurut pola. Urutan lama (potong dulu) tidak pernah cocok dengan
+  meja kerja, dan membuat antrian potong menampung pekerjaan yang belum bisa dipotong.
+- **Finishing dan packing jadi satu tahap** untuk barang kustom, karena dikerjakan orang
+  yang sama dalam satu langkah. Labelnya "Finishing & Packing".
+- **Barang stok toko tetap punya tahap Packing sendiri**, terpisah dari jalur kustom.
+
+Nilai tersimpan di database tidak diubah (`PRESS`, `POTONG`, `QC`), hanya urutan dan
+labelnya. Pekerjaan produksi yang telanjur dibuat dengan urutan lama ditukar lewat
+migrasi; status item tidak disentuh, supaya tidak ada barang yang berpindah meja karena
+migrasi.
+
+Delapan pekerja, dua orang per divisi.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1189,3 +1214,4 @@ lalu saklar di Pengaturan (docs/12-deploy.md, "Menyalakan chat CS kembali").
 | KEP-034 | Chat CS dibatalkan klien sementara, mati sebagai bawaan | TERKUNCI |
 | KEP-035 | Contoh portofolio dan testimoni untuk demo, dengan pagar | TERKUNCI |
 | KEP-036 | Chat CS dipasang lewat `.env`, bukan hanya saklar di Pengaturan | TERKUNCI |
+| KEP-037 | Urutan produksi mengikuti meja kerja konveksi | TERKUNCI |

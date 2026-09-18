@@ -34,7 +34,7 @@ Pemilik toko tinggal mengoreksi angkanya. Yang **BELUM DIPUTUSKAN**: setelah ber
 lama barang yang tidak pernah diambil dianggap hangus, dan apa yang terjadi pada DP-nya.
 
 ## 5. Kedalaman tracking — SELESAI
-Lima tahap: desain, printing, jahit, QC/packing, siap diambil. Masing-masing berubah
+Enam tahap produksi: desain, printing, press, potong, jahit, finishing & packing (KEP-037). Masing-masing berubah
 karena ada orang yang benar-benar menekan tombol saat mengerjakannya, bukan karena
 timer. **Sedikit tahap yang selalu akurat lebih baik daripada banyak tahap yang sering
 basi**, dan itulah kenapa tidak ditambah lagi.

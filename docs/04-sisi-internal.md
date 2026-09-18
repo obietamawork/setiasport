@@ -10,8 +10,10 @@ Maka panel internal dibangun sebagai **antrian per divisi**:
 
 - Desainer buka panel → melihat "Antrian Desain saya" → kerjakan → upload mockup → selesai
 - Operator printing → "Siap Print" → tandai selesai
+- Operator press, lalu potong kain → antrian masing-masing → tandai selesai
 - Operator jahit → "Siap Jahit" → tandai selesai
-- Gudang → "Siap Packing" → tandai selesai
+- Finishing & packing → satu tahap terakhir untuk barang kustom (KEP-037)
+- Gudang → "Siap Packing" → tandai selesai (khusus barang stok toko)
 
 Satu klik menyelesaikan pekerjaan **dan** menaikkan status yang dilihat pelanggan.
 

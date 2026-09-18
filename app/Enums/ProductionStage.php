@@ -14,10 +14,18 @@ enum ProductionStage: string
     // Dipisah sejak KEP-028: potong kain dan press adalah dua meja berbeda
     // dengan orang berbeda, dan menggabungkannya membuat antrian jahit
     // menampung pekerjaan yang belum bisa dijahit.
-    case POTONG = 'POTONG';
+    //
+    // Press MENDAHULUI potong (KEP-037): kertas hasil printing dipress ke kain
+    // lembaran dulu, baru kainnya dipotong menurut pola. Urutan sebelumnya
+    // terbalik dan tidak pernah cocok dengan meja kerja di konveksi.
     case PRESS = 'PRESS';
+    case POTONG = 'POTONG';
 
     case JAHIT = 'JAHIT';
+
+    // Finishing dan packing dikerjakan orang yang sama dalam satu langkah
+    // untuk barang kustom (KEP-037). PACKING di bawah hanya dilewati barang
+    // stok toko, yang tidak punya tahap finishing.
     case QC = 'QC';
     case PACKING = 'PACKING';
 
@@ -26,10 +34,10 @@ enum ProductionStage: string
         return match ($this) {
             self::DESAIN => 'Desain',
             self::PRINT => 'Printing Jersey',
-            self::POTONG => 'Potong Kain',
             self::PRESS => 'Press / Sublime',
+            self::POTONG => 'Potong Kain',
             self::JAHIT => 'Jahit',
-            self::QC => 'Finishing / QC',
+            self::QC => 'Finishing & Packing',
             self::PACKING => 'Packing',
         };
     }
@@ -47,8 +55,8 @@ enum ProductionStage: string
         return match ($this) {
             self::DESAIN => [OrderItemStatus::ANTRIAN_DESAIN, OrderItemStatus::PROSES_DESAIN],
             self::PRINT => [OrderItemStatus::ANTRIAN_PRODUKSI, OrderItemStatus::PRINTING],
-            self::POTONG => [OrderItemStatus::POTONG],
             self::PRESS => [OrderItemStatus::PRESS],
+            self::POTONG => [OrderItemStatus::POTONG],
             self::JAHIT => [OrderItemStatus::JAHIT],
             self::QC => [OrderItemStatus::QC],
             self::PACKING => [OrderItemStatus::PACKING],

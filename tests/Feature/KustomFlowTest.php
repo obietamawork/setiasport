@@ -125,10 +125,10 @@ class KustomFlowTest extends TestCase
     {
         $order = $this->buatPesanan();
 
-        // Desain, printing, potong, press, jahit, finishing (KEP-028).
-        // Packing tidak lagi dilewati barang kustom.
+        // Desain, printing, press, potong, jahit, finishing & packing (KEP-037).
+        // Packing terpisah tidak lagi dilewati barang kustom.
         $this->assertSame(
-            ['DESAIN', 'PRINT', 'POTONG', 'PRESS', 'JAHIT', 'QC'],
+            ['DESAIN', 'PRINT', 'PRESS', 'POTONG', 'JAHIT', 'QC'],
             $order->items->first()->productionJobs()->orderBy('urutan')->pluck('tahap')->map->value->all()
         );
 
@@ -286,12 +286,12 @@ class KustomFlowTest extends TestCase
         $this->assertSame(OrderItemStatus::MENUNGGU_PERSETUJUAN, $item->fresh()->status_item);
     }
 
-    /** Menjalankan antrian produksi sampai item meninggalkan Finishing / QC. */
+    /** Menjalankan antrian produksi sampai item meninggalkan Finishing & Packing. */
     private function kerjakanProduksi(OrderItem $item): void
     {
         $operator = $this->staf('admin@setiasport.test');
 
-        // ANTRIAN_PRODUKSI -> PRINTING -> POTONG -> PRESS -> JAHIT -> QC -> (gerbang)
+        // ANTRIAN_PRODUKSI -> PRINTING -> PRESS -> POTONG -> JAHIT -> QC -> (gerbang)
         foreach (range(1, 6) as $_) {
             $this->actingAs($operator)
                 ->post(route('panel.antrian.selesai', $item->fresh()))
@@ -432,7 +432,7 @@ class KustomFlowTest extends TestCase
 
         $operator = $this->staf('admin@setiasport.test');
 
-        // ANTRIAN_PRODUKSI -> PRINTING -> POTONG -> PRESS -> JAHIT
+        // ANTRIAN_PRODUKSI -> PRINTING -> PRESS -> POTONG -> JAHIT
         foreach (range(1, 4) as $_) {
             $this->actingAs($operator)->post(route('panel.antrian.selesai', $item->fresh()));
         }
@@ -456,10 +456,10 @@ class KustomFlowTest extends TestCase
 
         $this->assertSame([
             'Printing Jersey' => 'lewat',
-            'Potong Kain' => 'lewat',
             'Press / Sublime' => 'lewat',
+            'Potong Kain' => 'lewat',
             'Jahit' => 'kini',
-            'Finishing / QC' => 'nanti',
+            'Finishing & Packing' => 'nanti',
         ], $sub);
 
         // Fase lain tidak membuka rinciannya.

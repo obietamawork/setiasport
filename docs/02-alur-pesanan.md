@@ -43,12 +43,16 @@ Antrian Produksi
       ↓
 Printing
       ↓
+Press / Sublime
+      ↓
+Potong Kain
+      ↓
 Jahit
       ↓
-QC
+Finishing & Packing
       ↓
-Packing
-      ↓
+Menunggu Pelunasan
+      ↓ (pelunasan terverifikasi)
 Siap Diambil          ← notifikasi email
       ↓ (serah terima)
 Selesai
@@ -69,8 +73,11 @@ Ini bukan sekadar tahap UI. Ini **titik kunci komersial dan hukum kecil**:
 
 ### Tahap yang sering dilupakan
 
-- **QC** — sebelum packing. Kalau tidak ada, barang cacat baru ketahuan saat pelanggan
-  buka bungkus di toko, dan itu jadi drama di depan kasir.
+- **Finishing & Packing** — satu tahap, satu orang (KEP-037). Kalau tidak ada pemeriksaan
+  sama sekali, barang cacat baru ketahuan saat pelanggan buka bungkus di toko, dan itu
+  jadi drama di depan kasir.
+- **Urutan press sebelum potong** (KEP-037): kertas hasil printing dipress ke kain
+  lembaran dulu, baru kainnya dipotong menurut pola.
 - **Antrian** (Antrian Desain, Antrian Produksi) — ini status jujur "sudah masuk sistem,
   belum dikerjakan". Kalau tidak ada, operator terpaksa memalsukan status "sedang
   dikerjakan" sejak awal, dan tracking kehilangan makna.
