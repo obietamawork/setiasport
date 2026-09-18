@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\KategoriUkuran;
 use App\Enums\PriceBasis;
 use App\Models\OptionValue;
 use App\Models\Product;
+use App\Models\ProductPrice;
 use App\Models\ProductVariant;
 use InvalidArgumentException;
 
@@ -74,6 +76,124 @@ class PriceCalculator
             komponenPerItem: $perItem,
             qty: $qty,
             subtotal: $subtotal,
+        );
+    }
+
+    /**
+     * Jalur kustom dengan harga per potong menurut kategori ukuran (KEP-039).
+     *
+     * Dipakai produk yang daftar harganya dipisah SD / SMP / dewasa. Jumlah
+     * pesanan TIDAK dikirim sebagai satu angka: ia dijumlahkan dari daftar
+     * ukuran, supaya angka yang dipakai menghitung harga selalu angka yang
+     * sama dengan yang nanti dikerjakan konveksi.
+     *
+     * @param  array<int, array{kategori: string|KategoriUkuran, ukuran: string, jumlah: int}>  $daftarUkuran
+     * @param  array<int, int>  $optionValueIds
+     */
+    public function kustomPerUkuran(Product $product, array $daftarUkuran, array $optionValueIds = []): RincianPerUkuran
+    {
+        if (! $product->punyaJalurKustom()) {
+            throw new InvalidArgumentException("Produk {$product->sku} tidak punya jalur kustom.");
+        }
+
+        if ($daftarUkuran === []) {
+            throw new InvalidArgumentException('Daftar ukuran belum diisi.');
+        }
+
+        $values = $this->ambilOptionValues($product, $optionValueIds);
+
+        $perPcs = [];
+        $perItem = [];
+
+        foreach ($values as $value) {
+            if ($value->basis === PriceBasis::PER_PCS) {
+                $perPcs[] = [
+                    'label' => $value->option->nama,
+                    'nilai' => $value->label,
+                    'jumlah' => $value->tambahan_harga,
+                ];
+            } else {
+                $perItem[] = ['label' => $value->label, 'jumlah' => $value->tambahan_harga];
+            }
+        }
+
+        /*
+         * Bahan menentukan SEL MANA di matriks harga yang dipakai, jadi
+         * harganya sudah termasuk di harga dasar. Barisnya tetap ditampilkan
+         * supaya pelanggan melihat bahan yang dipilih, tetapi angkanya dinolkan
+         * agar tidak terhitung dua kali.
+         */
+        $bahan = $values->first(fn (OptionValue $v) => $product->prices->contains(
+            fn (ProductPrice $h) => $h->option_value_id === $v->id
+        ));
+
+        if ($bahan !== null) {
+            $perPcs = array_map(function (array $k) use ($bahan) {
+                if ($k['label'] === $bahan->option->nama && $k['nilai'] === $bahan->label) {
+                    $k['jumlah'] = 0;
+                }
+
+                return $k;
+            }, $perPcs);
+        }
+
+        $tambahanPerPcs = array_sum(array_column($perPcs, 'jumlah'));
+
+        $baris = [];
+        $qty = 0;
+        $subtotal = 0;
+
+        foreach ($daftarUkuran as $b) {
+            $kategori = $b['kategori'] instanceof KategoriUkuran
+                ? $b['kategori']
+                : KategoriUkuran::tryFrom((string) $b['kategori']);
+
+            $jumlah = (int) $b['jumlah'];
+
+            if ($jumlah < 1) {
+                throw new InvalidArgumentException('Jumlah tiap ukuran minimal 1 pcs.');
+            }
+
+            if ($kategori !== null && ! $kategori->punyaUkuran($b['ukuran'])) {
+                throw new InvalidArgumentException(
+                    "Ukuran {$b['ukuran']} tidak tersedia untuk {$kategori->label()}."
+                );
+            }
+
+            $dasar = $product->hargaPerPotong($kategori, $bahan?->id);
+
+            if ($dasar === null) {
+                throw new InvalidArgumentException(
+                    "Harga {$product->nama} untuk kategori ".($kategori?->label() ?? 'ini').' belum diisi.'
+                );
+            }
+
+            $hargaSatuan = $dasar + $tambahanPerPcs + $product->tambahanUkuran($b['ukuran']);
+
+            $baris[] = [
+                'kategori' => $kategori?->value ?? '',
+                'ukuran' => $b['ukuran'],
+                'jumlah' => $jumlah,
+                'harga_satuan' => $hargaSatuan,
+                'subtotal' => $hargaSatuan * $jumlah,
+            ];
+
+            $qty += $jumlah;
+            $subtotal += $hargaSatuan * $jumlah;
+        }
+
+        if ($qty < $product->moq) {
+            throw new InvalidArgumentException(
+                "Minimum pemesanan {$product->nama} adalah {$product->moq} pcs."
+            );
+        }
+
+        return new RincianPerUkuran(
+            baris: $baris,
+            komponenPerPcs: $perPcs,
+            komponenPerItem: $perItem,
+            qty: $qty,
+            subtotal: $subtotal + array_sum(array_column($perItem, 'jumlah')),
         );
     }
 

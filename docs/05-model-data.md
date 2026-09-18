@@ -82,6 +82,17 @@ Keputusan penting:
 - `approved_by_name` adalah nama yang **diketik pelanggan** di dialog konfirmasi, bukan
   relasi ke tabel user - pelanggan tidak punya akun.
 
+## Harga kustom per ukuran (KEP-039)
+
+```
+product_prices           id, product_id, kategori (SD|SMP|DEWASA|null),
+                         option_value_id (bahan, null = semua), harga_satuan
+product_size_surcharges  id, product_id, ukuran (3XL|5XL|...), tambahan_harga
+```
+
+kategori null berarti berlaku untuk semua umur, dipakai produk yang harganya memang
+sama seperti celana pendek fullprint.
+
 ## Produksi
 
 ```

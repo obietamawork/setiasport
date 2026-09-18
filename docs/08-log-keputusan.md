@@ -1190,6 +1190,41 @@ memperpanjang putaran yang sama sambil membuat pelanggan merasa ditagih berulang
 
 ---
 
+## KEP-039 — Harga per potong menurut kategori ukuran
+**Status:** TERKUNCI · 2026-09-18
+
+Daftar harga asli klien tidak punya satu harga per produk. Jersey Serena berharga
+Rp45.000 untuk ukuran SD, Rp55.000 untuk SMP, dan Rp60.000 untuk dewasa, sementara satu
+tim biasa memesan ketiganya sekaligus. Rumus KEP-009 (`harga_satuan * qty`) tidak bisa
+menyatakan itu.
+
+**Keputusan:** harga dihitung per potong.
+
+```
+harga_potong  = harga(produk, kategori, bahan)      ← matriks
+                + SUM(opsi PER_PCS)                 ← lengan panjang, kerah, saku
+                + tambahan_ukuran(ukuran)           ← 3XL, 5XL
+subtotal_item = SUM(harga_potong * jumlah) + SUM(opsi PER_ITEM)
+```
+
+**Kenapa matriks, bukan penjumlahan bertingkat.** Selisih antar kategori tidak tetap:
+Serena naik Rp10.000 dari SD ke SMP lalu Rp5.000 ke dewasa, sedangkan Embos naik
+Rp10.000 dua kali. Rumus bertingkat memaksa harga klien dibulatkan supaya cocok, dan itu
+sama dengan mengubah harga jual tanpa izin. Matriks menyimpan angka klien apa adanya.
+
+**Kenapa tambahan tetap dipisah.** Lengan panjang selalu +Rp10.000 dan kerah selalu
++Rp10.000 di seluruh kategori dan bahan. Memasukkannya ke matriks akan melipatgandakan
+jumlah sel dari 15 menjadi 60 tanpa menambah satu pun angka baru.
+
+Bahan tidak menambah harga sendiri: ia memilih baris matriks. Di rincian pelanggan bahan
+tetap ditampilkan, dengan angka nol, supaya pilihan yang dibuatnya tetap terbaca.
+
+Akibat lain yang harus diikuti: **jumlah pesanan dijumlahkan dari daftar ukuran**, bukan
+diketik terpisah. Angka yang dipakai menghitung harga wajib sama dengan angka yang nanti
+dikerjakan konveksi.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1232,3 +1267,4 @@ memperpanjang putaran yang sama sambil membuat pelanggan merasa ditagih berulang
 | KEP-036 | Chat CS dipasang lewat `.env`, bukan hanya saklar di Pengaturan | TERKUNCI |
 | KEP-037 | Urutan produksi mengikuti meja kerja konveksi | TERKUNCI |
 | KEP-038 | Revisi desain dibatasi tiga kali, tanpa revisi berbayar | TERKUNCI |
+| KEP-039 | Harga per potong menurut kategori ukuran | TERKUNCI |

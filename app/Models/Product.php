@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\FulfillmentType;
+use App\Enums\KategoriUkuran;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -52,6 +53,16 @@ class Product extends Model
         return $this->hasMany(ProductPriceTier::class)->orderBy('min_qty');
     }
 
+    public function prices(): HasMany
+    {
+        return $this->hasMany(ProductPrice::class);
+    }
+
+    public function sizeSurcharges(): HasMany
+    {
+        return $this->hasMany(ProductSizeSurcharge::class);
+    }
+
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
@@ -67,6 +78,35 @@ class Product extends Model
     public function punyaJalurKustom(): bool
     {
         return in_array($this->fulfillment_type, [FulfillmentType::PREORDER, FulfillmentType::BOTH], true);
+    }
+
+    /**
+     * Harga dasar satu potong menurut kategori ukuran dan bahannya (KEP-039).
+     *
+     * Dicari dari yang paling khusus ke yang paling umum: sel yang menyebut
+     * kategori DAN bahan menang atas sel yang hanya menyebut salah satunya.
+     * Dengan begitu produk yang harganya sama untuk semua umur, seperti celana
+     * pendek fullprint, cukup diisi satu baris tanpa kategori.
+     */
+    public function hargaPerPotong(?KategoriUkuran $kategori, ?int $optionValueId): ?int
+    {
+        $cocok = fn (?KategoriUkuran $k, ?int $v) => $this->prices
+            ->first(fn (ProductPrice $h) => $h->kategori === $k && $h->option_value_id === $v);
+
+        $harga = $cocok($kategori, $optionValueId)
+            ?? $cocok(null, $optionValueId)
+            ?? $cocok($kategori, null)
+            ?? $cocok(null, null);
+
+        return $harga?->harga_satuan;
+    }
+
+    /** Tambahan harga untuk ukuran besar seperti 3XL (KEP-039). */
+    public function tambahanUkuran(string $ukuran): int
+    {
+        return $this->sizeSurcharges
+            ->first(fn (ProductSizeSurcharge $t) => $t->ukuran === $ukuran)
+            ?->tambahan_harga ?? 0;
     }
 
     /**
