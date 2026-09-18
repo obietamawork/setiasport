@@ -11,6 +11,7 @@ use App\Http\Controllers\Panel\AntrianController;
 use App\Http\Controllers\Panel\GambarProdukController;
 use App\Http\Controllers\Panel\LaporanController;
 use App\Http\Controllers\Panel\MockupController;
+use App\Http\Controllers\Panel\PembatalanController;
 use App\Http\Controllers\Panel\PembayaranController;
 use App\Http\Controllers\Panel\PenyesuaianController;
 use App\Http\Controllers\Panel\PengaturanController;
@@ -62,6 +63,13 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
             Route::post('batal', [PesananController::class, 'batalkan'])
                 ->middleware('izin:order.batal')->name('batal');
+
+            Route::middleware('izin:order.batal')->group(function () {
+                Route::post('pembatalan/{pembatalan}/setujui', [PembatalanController::class, 'setujui'])
+                    ->name('pembatalan.setujui');
+                Route::post('pembatalan/{pembatalan}/tolak', [PembatalanController::class, 'tolak'])
+                    ->name('pembatalan.tolak');
+            });
 
             Route::post('penyesuaian', [PenyesuaianController::class, 'store'])
                 ->middleware('izin:order.penyesuaian')->name('penyesuaian.simpan');

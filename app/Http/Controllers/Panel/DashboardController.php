@@ -45,6 +45,16 @@ class DashboardController extends Controller
             'siapDiambil' => Order::where('status', OrderStatus::SIAP_DIAMBIL)->count(),
             'sedangDikerjakan' => Order::where('status', OrderStatus::DIPROSES)->count(),
             'menungguPelunasan' => Order::where('status', OrderStatus::MENUNGGU_PELUNASAN)->count(),
+            /*
+             * Pengajuan pembatalan yang belum diputuskan (KEP-041). Selama
+             * menggantung, konveksi tetap mengerjakan kain yang mungkin tidak
+             * jadi dipakai, jadi ia setara mendesaknya dengan bukti bayar.
+             */
+            'pembatalanMenunggu' => Order::query()
+                ->with('customer')
+                ->whereHas('pembatalans', fn ($q) => $q->where('status', 'DIAJUKAN'))
+                ->get(),
+
             // Pesanan lebih mendesak daripada katalog, jadi tampil lebih dulu.
             'perluVerifikasi' => Order::query()
                 ->with('customer')

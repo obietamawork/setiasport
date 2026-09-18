@@ -18,19 +18,20 @@ Pelanggan mengisinya sendiri di halaman pesanannya, lewat form dinamis, dan rost
 terkunci begitu desain disetujui (KEP-013). Unggah Excel/CSV tidak dibangun: untuk
 ukuran tim 12-30 orang, mengetik langsung lebih cepat daripada menyiapkan berkas.
 
-## 3. Kebijakan pembatalan setelah DP masuk
-Usulan bertingkat:
-- Batal **sebelum** desain dikerjakan → DP kembali (dipotong biaya admin?)
-- Batal **setelah** desain disetujui / masuk produksi → DP hangus
-
-Kebijakan ini harus tampil sebagai centang persetujuan **di halaman checkout**, bukan
-disembunyikan di halaman syarat & ketentuan.
+## 3. Kebijakan pembatalan setelah DP masuk — SELESAI
+Diputuskan klien dan sudah terpasang (KEP-041): belum dikerjakan uang kembali penuh,
+desain sudah dikerjakan dipotong biaya setup desain, sudah masuk produksi tidak ada
+pengembalian. Pelanggan mengajukan dari halaman pesanannya, toko yang memutuskan, dan
+ketentuannya terbaca sebelum tombolnya ditekan.
 
 ## 4. Batas waktu
 Ketiganya sudah jadi pengaturan dengan nilai bawaan yang masuk akal:
 `batas_bayar_jam` (24), `pengingat_ambil_hari` (3), `ambil_peringatan_hari` (7).
-Pemilik toko tinggal mengoreksi angkanya. Yang **BELUM DIPUTUSKAN**: setelah berapa
-lama barang yang tidak pernah diambil dianggap hangus, dan apa yang terjadi pada DP-nya.
+Pemilik toko tinggal mengoreksi angkanya.
+
+Barang yang tidak pernah diambil: klien memutuskan **satu bulan, lalu uangnya hangus**
+(pertemuan 2026-09-18). **BELUM DIPASANG** di sistem; sekarang barang yang menganggur
+hanya ditandai di dashboard setelah `ambil_peringatan_hari`.
 
 ## 5. Kedalaman tracking — SELESAI
 Enam tahap produksi: desain, printing, press, potong, jahit, finishing & packing (KEP-037). Masing-masing berubah

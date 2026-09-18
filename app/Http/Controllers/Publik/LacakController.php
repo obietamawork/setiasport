@@ -7,6 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\KebijakanPembatalan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +22,8 @@ use Illuminate\Validation\ValidationException;
  */
 class LacakController extends Controller
 {
+    public function __construct(private KebijakanPembatalan $kebijakan) {}
+
     public function form()
     {
         // Pelanggan yang sudah masuk tidak perlu mengetik kode apa pun.
@@ -70,7 +73,7 @@ class LacakController extends Controller
             ->with([
                 'customer', 'items.options', 'items.product', 'items.rosters',
                 'items.designAssets', 'items.approvedDesign', 'adjustments',
-                'payments', 'statusLogs.orderItem',
+                'payments', 'statusLogs.orderItem', 'pembatalans',
             ])
             ->firstOrFail();
 
@@ -101,6 +104,16 @@ class LacakController extends Controller
         return view('publik.lacak', [
             'order' => $order,
             'tagihan' => $tagihan,
+
+            // Ketentuan pembatalan dihitung dari keadaan pesanan saat ini
+            // (KEP-041), supaya pelanggan membaca akibatnya sebelum menekan
+            // tombol, bukan sesudahnya.
+            'pembatalan' => [
+                'boleh' => $this->kebijakan->bolehDiajukan($order),
+                'tahap' => $this->kebijakan->tahap($order),
+                'usulan' => $this->kebijakan->refundUsulan($order),
+                'terakhir' => $order->pembatalans->first(),
+            ],
         ]);
     }
 

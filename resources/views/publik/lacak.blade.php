@@ -485,6 +485,85 @@
         </section>
     @endif
 
+    {{-- Pembatalan (KEP-041). Ketentuannya ditulis apa adanya SEBELUM tombolnya,
+         termasuk kalimat pahit bahwa uang muka bisa hangus: pelanggan yang baru
+         tahu akibatnya setelah menekan tombol akan merasa dijebak, dan itu
+         berakhir jadi pertengkaran di WhatsApp. --}}
+    @php $batal = $pembatalan['terakhir']; @endphp
+
+    @if ($batal && $batal->menunggu())
+        <section class="mt-8 border border-kuning bg-kuning-50 p-5">
+            <h2 class="font-bold">Pengajuan pembatalan sedang diperiksa</h2>
+            <p class="mt-1 text-sm leading-relaxed">
+                Diajukan {{ $batal->created_at->translatedFormat('j M Y, H:i') }}. Toko akan
+                mengabari keputusannya di halaman ini. Selama belum diputuskan, pesanan Anda
+                tetap berjalan seperti biasa.
+            </p>
+            <p class="mt-2 text-sm text-muted">Alasan yang Anda tulis: "{{ $batal->alasan }}"</p>
+        </section>
+    @elseif ($batal && $batal->status === \App\Enums\StatusPembatalan::DISETUJUI)
+        <section class="mt-8 border border-line bg-field p-5">
+            <h2 class="font-bold">Pesanan dibatalkan</h2>
+            <p class="mt-1 text-sm leading-relaxed">
+                @if ($batal->refund_jumlah > 0)
+                    Pengembalian sebesar <strong>{{ rupiah($batal->refund_jumlah) }}</strong>
+                    dikirim lewat {{ $batal->refund_metode === 'TUNAI' ? 'tunai di toko' : 'transfer' }}.
+                    Kalau dalam 3 hari kerja belum masuk, hubungi toko.
+                @else
+                    Tidak ada pengembalian uang untuk pembatalan ini.
+                @endif
+            </p>
+            @if ($batal->catatan_admin)
+                <p class="mt-2 text-sm text-muted">Catatan toko: {{ $batal->catatan_admin }}</p>
+            @endif
+        </section>
+    @elseif ($batal && $batal->status === \App\Enums\StatusPembatalan::DITOLAK)
+        <section class="mt-8 border border-line bg-field p-5">
+            <h2 class="font-bold">Pengajuan pembatalan ditolak</h2>
+            <p class="mt-1 text-sm leading-relaxed">{{ $batal->catatan_admin }}</p>
+            <p class="mt-2 text-sm text-muted">
+                Pesanan Anda tetap berjalan. Kalau masih ingin membicarakannya, hubungi toko.
+            </p>
+        </section>
+    @endif
+
+    @if ($pembatalan['boleh'])
+        <details class="mt-8 border border-line bg-field p-5">
+            <summary class="cursor-pointer font-medium">Ingin membatalkan pesanan ini?</summary>
+
+            <p class="mt-3 text-sm leading-relaxed">{{ $pembatalan['tahap']->ketentuan() }}</p>
+
+            @if ($pembatalan['tahap']->adaPengembalian() && $order->sudah_dibayar > 0)
+                <p class="mt-2 text-sm">
+                    Perkiraan pengembalian:
+                    <strong class="tabular">{{ rupiah($pembatalan['usulan']) }}</strong>
+                    dari {{ rupiah($order->sudah_dibayar) }} yang sudah dibayar.
+                    Angka akhirnya dipastikan toko saat menyetujui.
+                </p>
+            @endif
+
+            <form method="POST" action="{{ route('lacak.pembatalan', $order->access_token) }}" class="mt-4 space-y-3">
+                @csrf
+                <div>
+                    <label for="alasan-batal" class="label-form">Alasan pembatalan</label>
+                    <textarea id="alasan-batal" name="alasan" rows="3" class="kotak-input" required
+                              minlength="10" maxlength="1000"
+                              placeholder="Contoh: turnamennya diundur, tim belum bisa menentukan ukuran"></textarea>
+                    @error('alasan')
+                        <p class="mt-1 text-sm text-merah">{{ $message }}</p>
+                    @enderror
+                </div>
+                <button type="submit" class="tombol tombol-garis text-merah"
+                        data-teks-proses="Mengirim...">
+                    Ajukan pembatalan
+                </button>
+                <p class="text-xs leading-relaxed text-muted">
+                    Pesanan belum langsung batal. Toko memeriksa dulu, dan Anda dikabari di halaman ini.
+                </p>
+            </form>
+        </details>
+    @endif
+
     <p class="mt-8 text-sm leading-relaxed text-muted">
         Simpan tautan halaman ini. Boleh dibagikan ke anggota tim yang ingin ikut
         memantau, tidak ada data pribadi yang tampil di sini.

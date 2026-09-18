@@ -83,9 +83,16 @@ class PesananController extends Controller
             'statusLogs.pelaku', 'statusLogs.orderItem', 'emailLogs',
         ]);
 
+        $kebijakan = app(\App\Services\KebijakanPembatalan::class);
+
         return view('panel.pesanan.show', [
             'pesanan' => $pesanan,
             'pesanWa' => $this->pesanWhatsApp($pesanan),
+
+            // Pengajuan yang belum diputuskan (KEP-041). Selama ada di sini,
+            // pekerjaan tetap berjalan, jadi ia ditaruh paling atas di layar.
+            'pembatalan' => $kebijakan->pengajuanTertunda($pesanan),
+            'biayaSetup' => $kebijakan->biayaSetup($pesanan),
         ]);
     }
 

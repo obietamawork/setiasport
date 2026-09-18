@@ -1255,6 +1255,45 @@ jawaban terakhirnya.
 
 ---
 
+## KEP-041 — Pembatalan diajukan pelanggan, diputuskan toko
+**Status:** TERKUNCI · 2026-09-19
+
+Klien mengirim alurnya: ajukan pembatalan → konfirmasi admin → refund → pesanan
+dibatalkan. Ketentuannya tiga tingkat, mengikuti sejauh mana pekerjaan berjalan.
+
+**Keputusan:**
+
+| Tahap saat diajukan | Pengembalian |
+|---|---|
+| Belum dikerjakan | Seluruh yang sudah dibayar |
+| Desain sudah dikerjakan | Dipotong biaya setup desain yang tercatat di pesanan |
+| Sudah disetujui dan masuk produksi | Tidak ada. Kain sudah tercetak dengan nama tim |
+
+**Menekan tombol tidak membatalkan apa pun.** Yang tercipta hanya pengajuan; pesanan
+tetap berjalan, stok tetap dipesan, dan konveksi tetap bekerja sampai toko memutuskan.
+Kalau satu klik pelanggan bisa langsung membatalkan, satu salah pencet menghentikan kain
+yang sedang dipotong.
+
+**Nominal pengembalian diketik admin, bukan dieksekusi otomatis.** Sistem mengusulkan
+angkanya supaya admin tidak menghitung sendiri, tetapi uang keluar tetap keputusan toko,
+dan batas atasnya dijaga: tidak mungkin mengembalikan lebih dari yang pernah masuk.
+
+**Ketentuannya ditulis sebelum tombolnya**, termasuk kalimat pahit bahwa uang muka bisa
+hangus. Pelanggan yang baru tahu akibatnya setelah menekan tombol akan merasa dijebak,
+dan itu berakhir jadi pertengkaran di WhatsApp.
+
+Yang dibekukan di pengajuan: berapa yang sudah dibayar dan tahap apa saat itu. Tanpa itu,
+keputusan lama tidak bisa lagi dijelaskan ketika pelanggan bertanya sebulan kemudian.
+
+Barang stok yang baru disiapkan atau dipacking dihitung "belum dikerjakan": barangnya
+utuh dan bisa kembali ke rak. Paket yang sudah berangkat tidak bisa diajukan lewat web
+sama sekali; itu urusan retur, dan retur selalu lewat percakapan dengan toko.
+
+Pengajuan yang menggantung tampil di dashboard bersama bukti bayar yang menunggu, karena
+selama menggantung konveksi mengerjakan kain yang mungkin tidak jadi dipakai.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1299,3 +1338,4 @@ jawaban terakhirnya.
 | KEP-038 | Revisi desain dibatasi tiga kali, tanpa revisi berbayar | TERKUNCI |
 | KEP-039 | Harga per potong menurut kategori ukuran | TERKUNCI |
 | KEP-040 | Pemesanan kustom empat langkah, WhatsApp hanya bantuan | TERKUNCI |
+| KEP-041 | Pembatalan diajukan pelanggan, diputuskan toko | TERKUNCI |

@@ -51,6 +51,32 @@
      mata berjalan jauh dari nama barang ke angkanya. --}}
 <div class="mt-4 grid items-start gap-3 xl:grid-cols-2">
 
+    {{-- Pengajuan pembatalan (KEP-041) didahulukan: selama menggantung,
+         konveksi mengerjakan kain yang mungkin tidak jadi dipakai. --}}
+    @if ($pembatalanMenunggu->isNotEmpty())
+        <section class="kartu overflow-hidden">
+            <div class="kartu-kop flex items-center gap-2">
+                <span class="tahap-titik tahap-titik-kini"></span>
+                Pengajuan pembatalan
+                <span class="chip chip-merah ml-auto">{{ $pembatalanMenunggu->count() }}</span>
+            </div>
+            <p class="border-b border-line px-5 py-2.5 text-sm text-muted">
+                Pekerjaan tetap berjalan sampai Anda memutuskan.
+            </p>
+            <ul class="divide-y divide-line text-sm">
+                @foreach ($pembatalanMenunggu as $o)
+                    <li>
+                        <a href="{{ route('panel.pesanan.show', $o) }}"
+                           class="flex items-center justify-between gap-4 px-5 py-2.5 hover:bg-navy-50">
+                            <span class="tabular font-medium">{{ $o->kode }}</span>
+                            <span class="text-muted">{{ $o->customer->nama }}</span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     @if ($perluVerifikasi->isNotEmpty())
         <section class="kartu overflow-hidden">
             <div class="kartu-kop flex items-center gap-2">
@@ -169,7 +195,8 @@
     @endif
 
     @if (empty($masalahSistem) && $tanpaTier->isEmpty() && $stokHabis->isEmpty() && $stokMenipis->isEmpty()
-         && $perluVerifikasi->isEmpty() && $lamaBelumDiambil->isEmpty() && $emailBermasalah->isEmpty())
+         && $perluVerifikasi->isEmpty() && $lamaBelumDiambil->isEmpty() && $emailBermasalah->isEmpty()
+         && $pembatalanMenunggu->isEmpty())
         <section class="kartu p-8 text-center">
             <p class="text-lg font-bold">Tidak ada yang perlu ditangani</p>
             <p class="kolom-baca mx-auto mt-2 text-sm text-muted">

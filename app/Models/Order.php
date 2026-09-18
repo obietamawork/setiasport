@@ -74,6 +74,11 @@ class Order extends Model
         return $this->hasMany(EmailLog::class)->latest();
     }
 
+    public function pembatalans(): HasMany
+    {
+        return $this->hasMany(Pembatalan::class)->latest('id');
+    }
+
     public function getSubtotalAttribute(): int
     {
         return (int) $this->items->sum(fn (OrderItem $i) => $i->subtotal);

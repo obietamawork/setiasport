@@ -9,6 +9,7 @@ use App\Http\Controllers\Publik\KatalogController;
 use App\Http\Controllers\Publik\KeranjangController;
 use App\Http\Controllers\Publik\KustomController;
 use App\Http\Controllers\Publik\LacakController;
+use App\Http\Controllers\Publik\PembatalanController;
 use App\Http\Controllers\Publik\PesananItemController;
 use App\Http\Controllers\Publik\PesananSayaController;
 use App\Http\Controllers\Webhook\ResendController;
@@ -80,6 +81,11 @@ Route::prefix('/cs')->name('cs.')->group(function () {
     Route::post('/auth', [CsController::class, 'otorisasi'])->middleware('throttle:20,1')->name('auth');
     Route::get('/lampiran/{pesan}', [CsController::class, 'lampiran'])->middleware('throttle:30,1')->name('lampiran');
 });
+
+// Pengajuan pembatalan dari pelanggan (KEP-041). Dibatasi supaya satu tautan
+// tidak bisa dipakai membanjiri panel dengan pengajuan.
+Route::post('/lacak/{token}/pembatalan', [PembatalanController::class, 'ajukan'])
+    ->middleware('throttle:6,60')->name('lacak.pembatalan');
 
 Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->group(function () {
     Route::post('roster', [PesananItemController::class, 'simpanRoster'])->name('roster');
