@@ -217,6 +217,41 @@ class KustomFlowTest extends TestCase
         $this->assertNull($item->approved_at);
     }
 
+    /**
+     * Batasnya keras, bukan sekadar batas gratis (KEP-038). Klien memilih tidak
+     * menjual revisi tambahan, jadi permintaan keempat harus ditolak, bukan
+     * diterima lalu ditagihkan.
+     */
+    public function test_revisi_melebihi_batas_ditolak(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+        $item->update(['jumlah_revisi' => (int) setting('revisi_gratis_maks', 3)]);
+
+        $this->post(route('lacak.item.revisi', [$item->order->access_token, $item]), [
+            'catatan' => 'Sekali lagi tolong warnanya diubah.',
+        ])->assertStatus(422);
+
+        $item->refresh();
+
+        $this->assertSame(OrderItemStatus::MENUNGGU_PERSETUJUAN, $item->status_item);
+        $this->assertSame(3, $item->jumlah_revisi);
+    }
+
+    /** Formulir yang pasti ditolak tidak boleh tetap dipajang. */
+    public function test_formulir_revisi_hilang_setelah_jatahnya_habis(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+
+        $this->get(route('lacak.token', $item->order->access_token))
+            ->assertSee('Minta revisi');
+
+        $item->update(['jumlah_revisi' => (int) setting('revisi_gratis_maks', 3)]);
+
+        $this->get(route('lacak.token', $item->order->access_token))
+            ->assertDontSee('Minta revisi')
+            ->assertSee('sudah terpakai');
+    }
+
     private function siapkanMenungguPersetujuan(): OrderItem
     {
         $order = $this->buatPesanan(12);

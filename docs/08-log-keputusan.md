@@ -1174,6 +1174,22 @@ Delapan pekerja, dua orang per divisi.
 
 ---
 
+## KEP-038 — Revisi desain dibatasi tiga kali, tanpa revisi berbayar
+**Status:** TERKUNCI · 2026-09-18
+
+KEP-005 menyisakan pertanyaan berapa biaya revisi keempat. Klien menjawab: tidak ada
+revisi keempat. Tiga kali, semuanya gratis, lalu berhenti.
+
+**Keputusan:** `revisi_gratis_maks` berubah arti dari "batas gratis" menjadi **batas
+keras**. Permintaan revisi setelah jatahnya habis ditolak, dan formulirnya tidak lagi
+ditampilkan di halaman pesanan; pelanggan diarahkan menghubungi toko.
+
+Alasan klien: desain yang belum juga cocok setelah tiga putaran biasanya bukan soal
+gambar, melainkan soal yang perlu dibicarakan langsung. Menjual revisi keempat hanya
+memperpanjang putaran yang sama sambil membuat pelanggan merasa ditagih berulang.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1215,3 +1231,4 @@ Delapan pekerja, dua orang per divisi.
 | KEP-035 | Contoh portofolio dan testimoni untuk demo, dengan pagar | TERKUNCI |
 | KEP-036 | Chat CS dipasang lewat `.env`, bukan hanya saklar di Pengaturan | TERKUNCI |
 | KEP-037 | Urutan produksi mengikuti meja kerja konveksi | TERKUNCI |
+| KEP-038 | Revisi desain dibatasi tiga kali, tanpa revisi berbayar | TERKUNCI |

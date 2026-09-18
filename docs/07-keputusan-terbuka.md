@@ -9,10 +9,9 @@ bukan lewat deploy. Yang masih benar-benar terbuka ditandai **BELUM DIPUTUSKAN**
 
 ---
 
-## 1. Aturan revisi desain
-Jumlah revisi gratis sudah jadi pengaturan (`revisi_gratis_maks`, bawaan 3). Yang
-**BELUM DIPUTUSKAN**: berapa biaya revisi ke-4 dan seterusnya, dan apakah desain yang
-sudah disetujui masih boleh diubah dengan biaya (yang otomatis jadi `order_adjustment`).
+## 1. Aturan revisi desain — SELESAI
+Tiga kali revisi, semuanya gratis, dan itu batas keras (KEP-038). Tidak ada revisi
+berbayar: yang belum cocok setelah tiga kali dibicarakan langsung dengan toko.
 
 ## 2. Roster / nameset — SELESAI
 Pelanggan mengisinya sendiri di halaman pesanannya, lewat form dinamis, dan roster

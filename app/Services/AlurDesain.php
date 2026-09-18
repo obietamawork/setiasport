@@ -113,6 +113,15 @@ class AlurDesain
             'Item ini sedang tidak menunggu persetujuan.'
         );
 
+        // Batas keras, bukan sekadar batas gratis (KEP-038). Klien memilih tidak
+        // menjual revisi tambahan: desain yang belum juga cocok setelah tiga kali
+        // lebih baik dibicarakan langsung daripada diputar terus lewat formulir.
+        abort_unless(
+            $this->sisaRevisi($item) > 0,
+            422,
+            'Batas revisi desain sudah tercapai. Hubungi kami untuk membicarakannya.'
+        );
+
         DB::transaction(function () use ($item, $catatan) {
             $item->increment('jumlah_revisi');
 
@@ -129,8 +138,8 @@ class AlurDesain
         });
     }
 
-    /** Sisa jatah revisi gratis. Nol berarti revisi berikutnya berbiaya. */
-    public function sisaRevisiGratis(OrderItem $item): int
+    /** Sisa jatah revisi. Nol berarti tidak ada revisi lagi (KEP-038). */
+    public function sisaRevisi(OrderItem $item): int
     {
         return max(0, (int) Setting::ambil('revisi_gratis_maks', 3) - $item->jumlah_revisi);
     }

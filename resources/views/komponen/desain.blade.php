@@ -73,21 +73,33 @@
 
             <details class="mt-4 border-t border-line pt-4">
                 <summary class="cursor-pointer text-sm font-medium">Ada yang perlu diubah?</summary>
-                <form method="POST" action="{{ route('lacak.item.revisi', [$order->access_token, $item]) }}"
-                      class="mt-3 space-y-3">
-                    @csrf
-                    <div>
-                        <label for="revisi-{{ $item->id }}" class="label-form">Bagian mana yang perlu diubah?</label>
-                        <textarea id="revisi-{{ $item->id }}" name="catatan" rows="3" class="kotak-input"
-                                  required minlength="5"
-                                  placeholder="Warna kerah terlalu gelap, logo sponsor kurang ke kanan"></textarea>
-                    </div>
-                    <button type="submit" class="tombol tombol-garis text-sm">Minta revisi</button>
-                    <p class="text-xs text-muted">
-                        Sisa revisi gratis: {{ app(\App\Services\AlurDesain::class)->sisaRevisiGratis($item) }}
-                        dari {{ setting('revisi_gratis_maks', 3) }}.
+                @php $sisaRevisi = app(\App\Services\AlurDesain::class)->sisaRevisi($item); @endphp
+
+                {{-- Setelah jatahnya habis, formulirnya tidak ditampilkan sama sekali
+                     (KEP-038). Tombol yang pasti ditolak hanya membuang waktu
+                     pelanggan dan membuatnya merasa dipermainkan. --}}
+                @if ($sisaRevisi > 0)
+                    <form method="POST" action="{{ route('lacak.item.revisi', [$order->access_token, $item]) }}"
+                          class="mt-3 space-y-3">
+                        @csrf
+                        <div>
+                            <label for="revisi-{{ $item->id }}" class="label-form">Bagian mana yang perlu diubah?</label>
+                            <textarea id="revisi-{{ $item->id }}" name="catatan" rows="3" class="kotak-input"
+                                      required minlength="5"
+                                      placeholder="Warna kerah terlalu gelap, logo sponsor kurang ke kanan"></textarea>
+                        </div>
+                        <button type="submit" class="tombol tombol-garis text-sm">Minta revisi</button>
+                        <p class="text-xs text-muted">
+                            Sisa revisi: {{ $sisaRevisi }} dari {{ setting('revisi_gratis_maks', 3) }}.
+                        </p>
+                    </form>
+                @else
+                    <p class="mt-3 text-sm leading-relaxed text-muted">
+                        Jatah revisi {{ setting('revisi_gratis_maks', 3) }} kali sudah terpakai.
+                        Kalau masih ada yang perlu diubah, hubungi kami lewat
+                        {{ kanal_kontak() }} supaya bisa dibicarakan langsung.
                     </p>
-                </form>
+                @endif
             </details>
         </div>
     @endif

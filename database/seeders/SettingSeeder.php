@@ -51,7 +51,8 @@ Minggu 08.00-14.00", 'teks', 'toko', 'Jam Buka Toko',
             ['batas_bayar_jam', '24', 'int', 'pembayaran', 'Batas Waktu Pembayaran (jam)',
                 'Order yang belum dibayar melewati batas ini kadaluarsa dan reservasi stoknya dilepas.'],
 
-            ['revisi_gratis_maks', '3', 'int', 'produksi', 'Jumlah Revisi Desain Gratis'],
+            ['revisi_gratis_maks', '3', 'int', 'produksi', 'Batas Revisi Desain',
+                'Maksimal permintaan revisi dari pelanggan. Semuanya gratis, dan setelah habis tidak ada revisi berbayar.'],
             ['upload_maks_mb', '10', 'int', 'produksi', 'Batas Ukuran Upload Preview (MB)',
                 'Berlaku untuk preview desain dan foto. File mentah siap cetak dikirim lewat tautan Drive, bukan diunggah.'],
 

@@ -135,7 +135,7 @@
     <ol class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ([
             ['Bicarakan dulu', 'Kirim contoh desain atau ceritakan maunya lewat '.kanal_kontak().'. Kami hitungkan harganya sesuai jumlah tim.'],
-            ['Setujui mockupnya', 'Kami kirim gambar jadi sebelum apa pun dicetak. Boleh direvisi sampai '.setting('revisi_gratis_maks', 3).' kali tanpa biaya.'],
+            ['Setujui mockupnya', 'Kami kirim gambar jadi sebelum apa pun dicetak. Boleh direvisi sampai '.setting('revisi_gratis_maks', 3).' kali.'],
             ['Kami kerjakan', 'Printing, jahit, sampai packing. Setiap tahapnya terlihat di halaman pesanan Anda sendiri.'],
             ['Lunasi, lalu ambil', 'Kami kabari begitu jadi. Lunasi sisanya lewat transfer atau di kasir, lalu ambil di toko dengan kode ambil.'],
         ] as $i => [$judul, $isi])
