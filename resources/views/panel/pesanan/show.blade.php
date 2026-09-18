@@ -175,6 +175,92 @@
                             </p>
                         @endif
 
+                        {{-- Tambah atau kurangi isi pesanan (KEP-044). Dua pemain
+                             menyusul adalah kejadian sehari-hari, dan selama ini
+                             jalan keluarnya cuma penyesuaian biaya, sementara
+                             daftar pemain dan lembar kerja tetap menyebut jumlah
+                             lama. Konveksi lalu menjahit sesuai lembar kerja. --}}
+                        @if (! $batal && $izin->punyaIzin('order.kelola') && ! $pesanan->status->final())
+                            <details class="mt-3 border-t border-line pt-3">
+                                <summary class="cursor-pointer text-sm text-muted">Ubah jumlah pesanan</summary>
+
+                                @if ($item->hargaPerUkuran())
+                                    <form method="POST" action="{{ route('panel.pesanan.item.jumlah', [$pesanan, $item]) }}"
+                                          class="mt-3 space-y-3"
+                                          x-data="{ baris: {{ Js::from($item->rosters->map(fn ($r) => [
+                                              'kategori' => $r->kategori?->value ?? '',
+                                              'ukuran' => $r->ukuran,
+                                              'jumlah' => $r->jumlah,
+                                              'nama_punggung' => $r->nama_punggung ?? '',
+                                              'nomor' => $r->nomor ?? '',
+                                          ])->values()) }} }">
+                                        @csrf
+
+                                        <template x-for="(b, i) in baris" :key="i">
+                                            <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_4.5rem_8rem_5rem_4.5rem_auto] sm:items-end">
+                                                <label class="block">
+                                                    <span class="label-form">Nama</span>
+                                                    <input type="text" x-model="b.nama_punggung" :name="`baris[${i}][nama_punggung]`"
+                                                           maxlength="60" class="kotak-input" placeholder="Tanpa nama">
+                                                </label>
+                                                <label class="block">
+                                                    <span class="label-form">No</span>
+                                                    <input type="text" x-model="b.nomor" :name="`baris[${i}][nomor]`"
+                                                           maxlength="5" class="kotak-input tabular">
+                                                </label>
+                                                <label class="block">
+                                                    <span class="label-form">Kategori</span>
+                                                    <select x-model="b.kategori" :name="`baris[${i}][kategori]`" class="kotak-input">
+                                                        @foreach (\App\Enums\KategoriUkuran::cases() as $kat)
+                                                            <option value="{{ $kat->value }}">{{ $kat->label() }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </label>
+                                                <label class="block">
+                                                    <span class="label-form">Ukuran</span>
+                                                    <input type="text" x-model="b.ukuran" :name="`baris[${i}][ukuran]`"
+                                                           maxlength="10" class="kotak-input" required>
+                                                </label>
+                                                <label class="block">
+                                                    <span class="label-form">Jumlah</span>
+                                                    <input type="number" x-model.number="b.jumlah" :name="`baris[${i}][jumlah]`"
+                                                           min="0" max="5000" class="kotak-input tabular" required>
+                                                </label>
+                                                <button type="button" @click="baris.splice(i, 1)"
+                                                        class="tautan pb-2 text-xs text-merah">Hapus</button>
+                                            </div>
+                                        </template>
+
+                                        <div class="flex flex-wrap items-center gap-3">
+                                            <button type="button"
+                                                    @click="baris.push({ kategori: 'DEWASA', ukuran: 'L', jumlah: 1, nama_punggung: '', nomor: '' })"
+                                                    class="tombol tombol-garis tombol-sm">+ Tambah baris</button>
+                                            <button type="submit" class="tombol tombol-navy tombol-sm">Simpan jumlah</button>
+                                        </div>
+
+                                        <p class="text-xs leading-relaxed text-muted">
+                                            Ukuran yang sudah ada memakai harga yang disepakati saat memesan.
+                                            Ukuran baru memakai harga katalog hari ini. Isi jumlah 0 untuk menghapus baris.
+                                        </p>
+                                    </form>
+                                @else
+                                    <form method="POST" action="{{ route('panel.pesanan.item.jumlah', [$pesanan, $item]) }}"
+                                          class="mt-3 flex flex-wrap items-end gap-3">
+                                        @csrf
+                                        <label class="block">
+                                            <span class="label-form">Jumlah (pcs)</span>
+                                            <input type="number" name="qty" value="{{ $item->qty }}" min="1" max="5000"
+                                                   class="kotak-input tabular w-28" required>
+                                        </label>
+                                        <button type="submit" class="tombol tombol-navy tombol-sm">Simpan jumlah</button>
+                                        <p class="w-full text-xs leading-relaxed text-muted">
+                                            Untuk barang stok, reservasi di gudang ikut menyesuaikan.
+                                        </p>
+                                    </form>
+                                @endif
+                            </details>
+                        @endif
+
                         @unless ($batal)
                             <div class="mt-4 flex flex-wrap items-center gap-3 border-t border-line pt-4">
                                 <div class="flex items-center gap-1.5" title="{{ $item->status_item->label() }}">
@@ -591,6 +677,18 @@
                         {{ $pesanan->sisa_tagihan > 0 ? rupiah($pesanan->sisa_tagihan) : 'Lunas' }}
                     </dd>
                 </div>
+
+                {{-- Kelebihan bayar tidak pernah muncul sendiri di "sisa", karena
+                     sisa berhenti di nol. Setelah pesanan dikurangi (KEP-044),
+                     uang lebih ini yang harus dikembalikan ke pelanggan. --}}
+                @if ($pesanan->sudah_dibayar > $pesanan->total)
+                    <div class="flex justify-between gap-3 border-t border-line pt-1.5">
+                        <dt class="font-semibold">Kelebihan bayar</dt>
+                        <dd class="tabular font-semibold text-merah">
+                            {{ rupiah($pesanan->sudah_dibayar - $pesanan->total) }}
+                        </dd>
+                    </div>
+                @endif
             </dl>
 
             @if ($pesanan->kode_ambil)

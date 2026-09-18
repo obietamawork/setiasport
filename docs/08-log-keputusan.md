@@ -1339,6 +1339,34 @@ bukan disembunyikan di halaman syarat.
 
 ---
 
+## KEP-044 — Isi pesanan bisa ditambah dan dikurangi, bukan cuma tagihannya
+**Status:** TERKUNCI · 2026-09-19
+
+Klien meminta penyesuaian pesanan: tambah pemain, kurangi pemain, berikut biayanya.
+
+Sebelum ini satu-satunya jalan adalah penyesuaian biaya bertuliskan "tambah 2 pemain".
+Tagihannya benar, tetapi daftar pemain, jumlah potong, dan lembar kerja tetap menyebut
+angka lama. **Konveksi menjahit sesuai lembar kerja, bukan sesuai tagihan**, jadi dua
+jersey yang sudah dibayar tidak pernah dibuat.
+
+**Keputusan:** admin mengubah isi pesanannya sendiri.
+
+- **Ukuran yang sudah ada memakai harga yang disepakati saat memesan**, walau daftar
+  harga sudah naik. Pesanan adalah kesepakatan, bukan kutipan harga hari ini.
+- **Ukuran yang benar-benar baru memakai harga katalog hari ini**, ditambah pilihan
+  kerah dan lengan yang sudah disepakati di pesanan itu.
+- **Barang stok ikut menyesuaikan reservasi gudang**, dan penambahan ditolak kalau
+  raknya tidak cukup.
+- **Perubahan masuk riwayat yang dibaca pelanggan**, bukan hanya log internal.
+  Perubahan tagihan tanpa jejak adalah hal pertama yang dipersoalkan orang.
+- **Kelebihan bayar ditampilkan terpisah** di panel. "Sisa tagihan" berhenti di nol, jadi
+  uang lebih setelah pesanan dikurangi tidak akan pernah terlihat di sana.
+
+Penyesuaian biaya yang lama tetap ada untuk hal yang bukan potongan barang: ongkir,
+potongan harga reseller, atau kompensasi.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1386,3 +1414,4 @@ bukan disembunyikan di halaman syarat.
 | KEP-041 | Pembatalan diajukan pelanggan, diputuskan toko | TERKUNCI |
 | KEP-042 | Rapikan tampilan publik menurut kebiasaan marketplace | TERKUNCI |
 | KEP-043 | Barang tidak diambil 30 hari dinyatakan hangus, oleh admin | TERKUNCI |
+| KEP-044 | Isi pesanan bisa ditambah dan dikurangi, bukan cuma tagihannya | TERKUNCI |

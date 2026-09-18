@@ -6,6 +6,7 @@ use App\Http\Controllers\Panel\ContohProfilController;
 use App\Http\Controllers\Panel\CsController;
 use App\Http\Controllers\Panel\TemplateBalasanController;
 use App\Http\Controllers\Panel\DashboardController;
+use App\Http\Controllers\Panel\IsiPesananController;
 use App\Http\Controllers\Panel\KategoriController;
 use App\Http\Controllers\Panel\AntrianController;
 use App\Http\Controllers\Panel\GambarProdukController;
@@ -60,6 +61,10 @@ Route::prefix('panel')->name('panel.')->group(function () {
         Route::prefix('pesanan/{pesanan}')->name('pesanan.')->group(function () {
             Route::post('item/{item}/maju', [PesananController::class, 'majukanItem'])
                 ->middleware('izin:order.kelola')->name('item.maju');
+
+            // Tambah atau kurangi isi pesanan yang sedang berjalan (KEP-044).
+            Route::post('item/{item}/jumlah', [IsiPesananController::class, 'ubah'])
+                ->middleware('izin:order.kelola')->name('item.jumlah');
 
             Route::post('batal', [PesananController::class, 'batalkan'])
                 ->middleware('izin:order.batal')->name('batal');

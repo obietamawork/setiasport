@@ -503,10 +503,18 @@
             <ul class="mt-4 divide-y divide-line border border-line bg-field text-sm">
                 @foreach ($order->statusLogs->take(20) as $log)
                     <li class="flex flex-wrap justify-between gap-3 px-5 py-2.5">
+                        {{-- Baris yang statusnya tidak berpindah adalah catatan, bukan
+                             kenaikan tahap: misalnya jumlah pesanan diubah (KEP-044).
+                             Menampilkan labelnya saja membuat perubahan tagihan
+                             seolah tidak pernah terjadi. --}}
                         <span>
-                            {{ $log->orderItem?->nama_produk ?? 'Pesanan' }}
-                            {{ \App\Enums\OrderItemStatus::tryFrom($log->ke)?->label()
-                                ?? OrderStatus::tryFrom($log->ke)?->label() ?? $log->ke }}
+                            @if ($log->dari === $log->ke && $log->catatan)
+                                {{ $log->catatan }}
+                            @else
+                                {{ $log->orderItem?->nama_produk ?? 'Pesanan' }}
+                                {{ \App\Enums\OrderItemStatus::tryFrom($log->ke)?->label()
+                                    ?? OrderStatus::tryFrom($log->ke)?->label() ?? $log->ke }}
+                            @endif
                         </span>
                         <span class="text-muted tabular">{{ $log->created_at?->translatedFormat('j M Y, H:i') }}</span>
                     </li>
