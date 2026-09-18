@@ -73,9 +73,16 @@ class Checkout
                         .($baris['varian']?->label ? ': '.$baris['varian']->label : ''),
                     'fulfillment_type' => $baris['jalur'],
                     'qty' => $baris['qty'],
-                    'harga_satuan' => $baris['rincian']->hargaSatuan,
+                    // Baris berharga per ukuran tidak punya satu harga satuan;
+                    // yang disimpan di sini rata-ratanya, sekadar untuk dibaca.
+                    // Totalnya dihitung dari harga tiap baris ukuran (KEP-039).
+                    'harga_satuan' => $baris['rincian'] instanceof RincianPerUkuran
+                        ? $baris['rincian']->hargaRataRata()
+                        : $baris['rincian']->hargaSatuan,
                     'status_item' => OrderItemStatus::MENUNGGU_PEMBAYARAN,
                 ]);
+
+                $this->simpanDaftarUkuran($item, $baris);
 
                 // Snapshot opsi lengkap dengan basis-nya, agar rincian harga
                 // tetap bisa dijelaskan setelah data master berubah.
@@ -122,6 +129,31 @@ class Checkout
 
             return $order;
         });
+    }
+
+    /**
+     * Daftar ukuran dari keranjang disimpan sebagai daftar pemain berikut
+     * harganya (KEP-039). Harga ikut dibekukan di sini karena pesanan adalah
+     * dokumen historis: daftar harga boleh naik tahun depan tanpa mengubah
+     * tagihan yang sudah disepakati hari ini.
+     */
+    private function simpanDaftarUkuran(\App\Models\OrderItem $item, array $baris): void
+    {
+        if (($baris['ukuran'] ?? null) === null) {
+            return;
+        }
+
+        foreach ($baris['rincian']->baris as $urutan => $r) {
+            $item->rosters()->create([
+                'urutan' => $urutan + 1,
+                'kategori' => $r['kategori'] !== '' ? $r['kategori'] : null,
+                'nama_punggung' => $baris['ukuran'][$urutan]['nama_punggung'] ?? null,
+                'nomor' => $baris['ukuran'][$urutan]['nomor'] ?? null,
+                'ukuran' => $r['ukuran'],
+                'jumlah' => $r['jumlah'],
+                'harga_satuan' => $r['harga_satuan'],
+            ]);
+        }
     }
 
     /**

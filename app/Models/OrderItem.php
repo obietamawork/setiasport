@@ -88,7 +88,23 @@ class OrderItem extends Model
             ->where('basis', PriceBasis::PER_ITEM)
             ->sum('tambahan_harga');
 
-        return $this->harga_satuan * $this->qty + $perItem;
+        /*
+         * Pesanan kustom yang harganya per ukuran menyimpan harga di tiap baris
+         * daftar pemain (KEP-039): satu baris SD dan satu baris dewasa berbeda
+         * harga. Di baris seperti itu harga_satuan hanya rata-rata untuk
+         * ditampilkan, dan menghitung total darinya akan meleset.
+         */
+        $perUkuran = (int) $this->rosters
+            ->whereNotNull('harga_satuan')
+            ->sum(fn (OrderItemRoster $r) => $r->harga_satuan * $r->jumlah);
+
+        return ($perUkuran > 0 ? $perUkuran : $this->harga_satuan * $this->qty) + $perItem;
+    }
+
+    /** Apakah baris ini memakai harga per ukuran (KEP-039). */
+    public function hargaPerUkuran(): bool
+    {
+        return $this->rosters->whereNotNull('harga_satuan')->isNotEmpty();
     }
 
     public function kustom(): bool

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\KategoriUkuran;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -12,11 +13,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class OrderItemRoster extends Model
 {
-    protected $fillable = ['order_item_id', 'urutan', 'nama_punggung', 'nomor', 'ukuran', 'catatan'];
+    protected $fillable = [
+        'order_item_id', 'urutan', 'kategori', 'nama_punggung', 'nomor',
+        'ukuran', 'jumlah', 'harga_satuan', 'catatan',
+    ];
 
     protected function casts(): array
     {
-        return ['urutan' => 'integer'];
+        return [
+            'urutan' => 'integer',
+            'kategori' => KategoriUkuran::class,
+            'jumlah' => 'integer',
+            'harga_satuan' => 'integer',
+        ];
+    }
+
+    /** Label yang dibaca manusia, misalnya "SMP M". */
+    public function labelUkuran(): string
+    {
+        return $this->kategori?->labelUkuran($this->ukuran) ?? $this->ukuran;
     }
 
     public function orderItem(): BelongsTo

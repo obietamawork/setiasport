@@ -89,12 +89,55 @@ class Keranjang
         session([self::KUNCI => $baris]);
     }
 
+    /**
+     * Jalur kustom dengan harga per ukuran (KEP-039).
+     *
+     * Jumlah pesanan tidak dikirim terpisah: ia dijumlahkan dari daftar ukuran,
+     * dan daftar itu pula yang nanti jadi daftar pemain di pesanan. Satu angka
+     * jumlah yang berdiri sendiri pasti suatu saat berselisih dengan daftarnya.
+     *
+     * @param  array<int, array{kategori:string, ukuran:string, jumlah:int, nama_punggung?:?string, nomor?:?string}>  $daftarUkuran
+     * @param  array<int, int>  $optionValueIds
+     */
+    public function tambahKustomPerUkuran(Product $produk, array $daftarUkuran, array $optionValueIds): void
+    {
+        $rincian = $this->kalkulator->kustomPerUkuran($produk, $daftarUkuran, $optionValueIds);
+
+        $baris = $this->baris();
+
+        $baris['ks:'.Str::random(8)] = [
+            'product_id' => $produk->id,
+            'variant_id' => null,
+            'qty' => $rincian->qty,
+            'jalur' => FulfillmentType::PREORDER->value,
+            'opsi' => array_values($optionValueIds),
+            'ukuran' => array_map(fn (array $b) => [
+                'kategori' => (string) ($b['kategori'] ?? ''),
+                'ukuran' => (string) $b['ukuran'],
+                'jumlah' => (int) $b['jumlah'],
+                'nama_punggung' => $b['nama_punggung'] ?? null,
+                'nomor' => $b['nomor'] ?? null,
+            ], $daftarUkuran),
+        ];
+
+        session([self::KUNCI => $baris]);
+    }
+
     public function ubahJumlah(string $kunci, int $qty): void
     {
         $baris = $this->baris();
 
         if (! isset($baris[$kunci])) {
             return;
+        }
+
+        // Jumlahnya berasal dari daftar ukuran, jadi tidak boleh diubah dari
+        // keranjang: mengubahnya di sini akan membuat jumlah potong dan daftar
+        // pemain berselisih tanpa ada yang tahu mana yang benar.
+        if (isset($baris[$kunci]['ukuran'])) {
+            throw new InvalidArgumentException(
+                'Jumlah pesanan kustom diubah lewat daftar ukurannya, bukan dari keranjang.'
+            );
         }
 
         if ($qty < 1) {
@@ -137,7 +180,8 @@ class Keranjang
     public function isi(): Collection
     {
         return collect($this->baris())->map(function (array $b, string $kunci) {
-            $produk = Product::with(['priceTiers', 'options.values'])->find($b['product_id']);
+            $produk = Product::with(['priceTiers', 'options.values', 'prices', 'sizeSurcharges'])
+                ->find($b['product_id']);
             $varian = $b['variant_id'] ? ProductVariant::with('product')->find($b['variant_id']) : null;
 
             if (! $produk || ! $produk->aktif || ($b['variant_id'] && ! $varian)) {
@@ -148,9 +192,11 @@ class Keranjang
             $masalah = null;
 
             try {
-                $rincian = $jalur === FulfillmentType::READY_STOCK
-                    ? $this->kalkulator->readyStock($varian, $b['qty'])
-                    : $this->kalkulator->kustom($produk, $b['qty'], $b['opsi']);
+                $rincian = match (true) {
+                    $jalur === FulfillmentType::READY_STOCK => $this->kalkulator->readyStock($varian, $b['qty']),
+                    isset($b['ukuran']) => $this->kalkulator->kustomPerUkuran($produk, $b['ukuran'], $b['opsi']),
+                    default => $this->kalkulator->kustom($produk, $b['qty'], $b['opsi']),
+                };
             } catch (InvalidArgumentException $e) {
                 // Stok berkurang atau harga berubah setelah barang masuk keranjang.
                 // Barisnya tetap ditampilkan beserta penjelasannya, bukan dibuang diam-diam.
@@ -159,7 +205,11 @@ class Keranjang
             }
 
             return compact('kunci', 'produk', 'varian', 'jalur', 'rincian', 'masalah')
-                + ['qty' => $b['qty'], 'opsi' => $b['opsi']];
+                + [
+                    'qty' => $rincian?->qty ?? $b['qty'],
+                    'opsi' => $b['opsi'],
+                    'ukuran' => $b['ukuran'] ?? null,
+                ];
         })->filter()->values();
     }
 
