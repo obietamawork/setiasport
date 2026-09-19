@@ -18,7 +18,10 @@ class Customer extends Authenticatable
 {
     use Notifiable;
 
-    protected $fillable = ['nama', 'email', 'no_hp', 'catatan', 'user_id', 'password'];
+    protected $fillable = [
+        'nama', 'email', 'no_hp', 'catatan', 'user_id', 'password',
+        'reseller', 'catatan_reseller',
+    ];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -26,6 +29,7 @@ class Customer extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'reseller' => 'boolean',
             'akun_dibuat_pada' => 'datetime',
             'login_terakhir_pada' => 'datetime',
             'email_terverifikasi_pada' => 'datetime',

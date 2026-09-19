@@ -28,6 +28,8 @@
     <div class="flex flex-wrap items-center gap-3">
         <a href="{{ route('panel.pesanan.worksheet', $pesanan) }}" target="_blank" rel="noopener"
            class="tombol tombol-garis tombol-sm">Worksheet</a>
+        <a href="{{ route('panel.pesanan.invoice', $pesanan) }}" target="_blank" rel="noopener"
+           class="tombol tombol-garis tombol-sm">Invoice</a>
         <a href="{{ route('lacak.token', $pesanan->access_token) }}" target="_blank" rel="noopener"
            class="tautan text-sm">Lihat seperti pelanggan</a>
     </div>
@@ -701,13 +703,54 @@
 
         <div class="kartu p-5">
             <h2 class="font-semibold">Pelanggan</h2>
-            <p class="mt-2 text-sm font-medium">{{ $pesanan->customer->nama }}</p>
+            <p class="mt-2 flex flex-wrap items-center gap-2 text-sm font-medium">
+                {{ $pesanan->customer->nama }}
+                @if ($pesanan->customer->reseller)
+                    <span class="chip chip-kuning">Reseller</span>
+                @endif
+            </p>
             <p class="text-sm break-all text-muted">{{ $pesanan->customer->email }}</p>
             <p class="tabular text-sm text-muted">{{ $pesanan->customer->no_hp }}</p>
+
+            @if ($pesanan->customer->reseller && $pesanan->customer->catatan_reseller)
+                <p class="mt-2 text-sm text-muted">{{ $pesanan->customer->catatan_reseller }}</p>
+            @endif
+
             @if ($pesanan->catatan)
                 <p class="mt-3 border-l-2 border-kuning bg-kuning-50 py-2 pr-2 pl-3 text-sm">
                     {{ $pesanan->catatan }}
                 </p>
+            @endif
+
+            {{-- Penanda reseller (KEP-046). Harganya tidak berubah otomatis:
+                 potongan diberikan admin per pesanan lewat penyesuaian biaya,
+                 karena kesepakatannya memang dibicarakan satu per satu. --}}
+            @if ($izin->punyaIzin('order.kelola'))
+                <details class="mt-4 border-t border-line pt-3">
+                    <summary class="cursor-pointer text-sm text-muted">
+                        {{ $pesanan->customer->reseller ? 'Ubah penanda reseller' : 'Tandai sebagai reseller' }}
+                    </summary>
+                    <form method="POST" action="{{ route('panel.pesanan.reseller', $pesanan) }}" class="mt-3 space-y-3">
+                        @csrf
+                        <input type="hidden" name="reseller" value="{{ $pesanan->customer->reseller ? 0 : 1 }}">
+
+                        @unless ($pesanan->customer->reseller)
+                            <div>
+                                <label for="catatan_reseller" class="label-form">Kesepakatan potongan (opsional)</label>
+                                <input type="text" id="catatan_reseller" name="catatan_reseller" maxlength="200"
+                                       class="kotak-input" placeholder="Contoh: potongan Rp5.000 per pcs di atas 50 pcs">
+                            </div>
+                        @endunless
+
+                        <button type="submit" class="tombol tombol-garis tombol-sm">
+                            {{ $pesanan->customer->reseller ? 'Lepas penanda' : 'Tandai reseller' }}
+                        </button>
+                        <p class="text-xs leading-relaxed text-muted">
+                            Penanda ini pengingat untuk admin. Potongannya tetap ditambahkan
+                            per pesanan lewat penyesuaian biaya.
+                        </p>
+                    </form>
+                </details>
             @endif
         </div>
 

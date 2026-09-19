@@ -6,6 +6,7 @@ use App\Http\Controllers\Panel\ContohProfilController;
 use App\Http\Controllers\Panel\CsController;
 use App\Http\Controllers\Panel\TemplateBalasanController;
 use App\Http\Controllers\Panel\DashboardController;
+use App\Http\Controllers\Panel\InvoiceController;
 use App\Http\Controllers\Panel\IsiPesananController;
 use App\Http\Controllers\Panel\KategoriController;
 use App\Http\Controllers\Panel\AntrianController;
@@ -71,6 +72,12 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
             Route::post('hangus', [PesananController::class, 'hanguskan'])
                 ->middleware('izin:order.batal')->name('hangus');
+
+            // Penanda reseller (KEP-046) dan lembar invoice.
+            Route::post('reseller', [PesananController::class, 'tandaiReseller'])
+                ->middleware('izin:order.kelola')->name('reseller');
+            Route::get('invoice', InvoiceController::class)
+                ->middleware('izin:order.lihat')->name('invoice');
 
             Route::middleware('izin:order.batal')->group(function () {
                 Route::post('pembatalan/{pembatalan}/setujui', [PembatalanController::class, 'setujui'])

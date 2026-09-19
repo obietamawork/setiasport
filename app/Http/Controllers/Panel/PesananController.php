@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Panel;
 
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\AlurPesanan;
@@ -108,6 +109,32 @@ class PesananController extends Controller
         $this->alur->hanguskan($pesanan, auth('web')->id());
 
         return back()->with('sukses', 'Pesanan ditandai hangus dan reservasi stoknya dilepas.');
+    }
+
+    /**
+     * Penanda reseller (KEP-046). Hanya pengingat untuk admin: potongan
+     * harganya tetap diberikan per pesanan lewat penyesuaian biaya.
+     */
+    public function tandaiReseller(Request $request, Order $pesanan): RedirectResponse
+    {
+        $data = $request->validate([
+            'reseller' => ['required', 'boolean'],
+            'catatan_reseller' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        $pesanan->customer->update([
+            'reseller' => (bool) $data['reseller'],
+            'catatan_reseller' => $data['catatan_reseller'] ?? null,
+        ]);
+
+        ActivityLog::catat('pelanggan.reseller', $pesanan, [
+            'pelanggan' => $pesanan->customer->nama,
+            'reseller' => (bool) $data['reseller'],
+        ]);
+
+        return back()->with('sukses', $data['reseller']
+            ? $pesanan->customer->nama.' ditandai sebagai reseller.'
+            : 'Penanda reseller dilepas.');
     }
 
     public function majukanItem(Order $pesanan, OrderItem $item): RedirectResponse

@@ -22,6 +22,10 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
+# Berkas mentah dari klien: berisi data pelanggan dan nomor rekening, dan
+# tidak dibutuhkan untuk menjalankan aplikasi.
+/data-dariklien
+
 # Artefak peninjauan desain
 /.playwright-mcp
 /*.png

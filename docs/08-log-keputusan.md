@@ -1388,6 +1388,34 @@ matriksnya, dengan catatan bahwa harga akhirnya mengikuti bahan, model, dan ukur
 
 ---
 
+## KEP-046 — Invoice dibuat sistem, reseller cukup ditandai
+**Status:** TERKUNCI · 2026-09-19
+
+Dua permintaan klien yang ternyata satu urusan: invoice yang rapi, dan perlakuan khusus
+untuk reseller.
+
+**Invoice.** Dicetak dari data pesanan, bukan diketik ulang di Excel. File Excel lama
+klien menyimpan sisa template toko lain, termasuk **nomor rekening milik orang lain**,
+dan rumus totalnya tidak mengurangi diskon. Keduanya mustahil terjadi di lembar yang
+dibangun dari data pesanan, dan dua tes menjaga persis kesalahan itu.
+
+Isinya: nomor pesanan sebagai nomor invoice, tanggal, jatuh tempo selama tagihan masih
+berjalan, rincian per ukuran, penyesuaian biaya, total, yang sudah dibayar, sisa atau
+kelebihan bayar, rekening toko, dan cap **LUNAS** begitu pembayarannya penuh.
+
+Tidak memakai pustaka PDF: peramban sudah bisa menyimpan halaman ini sebagai PDF, dan
+menambah pustaka berarti menambah beban di shared hosting untuk pekerjaan yang sudah ada
+alatnya.
+
+**Reseller.** Klien memutuskan reseller tidak punya harga sendiri di katalog; potongannya
+diberikan admin per pesanan dan kesepakatannya dibicarakan lewat WhatsApp. Maka yang
+dibangun cuma penanda di data pelanggan berikut catatan kesepakatannya, supaya admin
+tidak perlu mengingat sendiri siapa saja resellernya. Harga tidak pernah berubah otomatis:
+potongan tetap ditambahkan sebagai penyesuaian biaya, sehingga tertulis apa adanya di
+invoice.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1437,3 +1465,4 @@ matriksnya, dengan catatan bahwa harga akhirnya mengikuti bahan, model, dan ukur
 | KEP-043 | Barang tidak diambil 30 hari dinyatakan hangus, oleh admin | TERKUNCI |
 | KEP-044 | Isi pesanan bisa ditambah dan dikurangi, bukan cuma tagihannya | TERKUNCI |
 | KEP-045 | Ukuran dan warna dipilih lewat kotak, bukan dropdown | TERKUNCI |
+| KEP-046 | Invoice dibuat sistem, reseller cukup ditandai | TERKUNCI |
