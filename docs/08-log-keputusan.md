@@ -1416,6 +1416,43 @@ invoice.
 
 ---
 
+## KEP-047 — Tahap produksi ditandai pekerja lewat pindai QR
+**Status:** TERKUNCI · 2026-09-19
+
+Klien ingin pekerja menandai sendiri tahap yang selesai, supaya tidak perlu melapor ke
+admin konveksi yang lalu mengklik satu per satu. Paket yang diambil paket dasar; payroll
+dibatalkan.
+
+**Keputusan:**
+
+- **Satu QR per baris pesanan**, dicetak di lembar kerja yang berjalan bersama kainnya.
+  Bukan per pesanan: satu pesanan bisa memuat dua barang yang tahapnya berbeda.
+- **Pekerja bukan pengguna panel.** Mereka tidak pernah membuka pesanan, harga, atau data
+  pelanggan. Memberi delapan orang akun panel demi satu tombol adalah harga yang terlalu
+  mahal. Halaman kerjanya hanya memuat barang apa, berapa potong, ukuran apa saja, dan
+  tahap mana yang sedang dipegang.
+- **Membuka tautan tidak mengubah apa pun.** Tahap berpindah hanya setelah PIN diketik
+  dan tombol ditekan, karena tautan yang beredar di grup WhatsApp ikut dibuka pratinjau
+  oleh aplikasinya sendiri.
+- **PIN per orang, seperti NIK**, sesuai jawaban klien. Tiap orang hanya boleh menandai
+  bagiannya sendiri: tanpa pagar itu, satu PIN bisa menyelesaikan seluruh tahap sekaligus
+  dan catatan siapa mengerjakan apa jadi tidak ada artinya.
+- **PIN disimpan sebagai hash** dan tidak pernah bisa dibaca ulang, bahkan oleh pemilik
+  toko. Kalau lupa, PIN-nya diganti, bukan dilihat. Yang menjaga pintunya bukan PIN empat
+  angka itu, melainkan token panjang di tautan lembar kerja.
+- **Pekerja yang keluar dinonaktifkan, bukan dihapus**, supaya pekerjaan yang pernah ia
+  tandai tetap bisa ditelusuri namanya.
+- **Salah tandai diperbaiki admin konveksi**, sesuai jawaban klien.
+
+QR digambar sebagai SVG saat lembar kerja dibuka, bukan disimpan sebagai berkas: isinya
+cuma tautan yang sudah ada di database, dan SVG tetap tajam di printer mana pun.
+
+**Yang belum dipasang:** printing per roll (satu roll memuat beberapa pesanan) dan setoran
+per potong. Dua hal itu pertanyaannya belum dijawab klien, dan membangunnya berdasar
+tebakan akan mengunci cara kerja yang belum tentu benar.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1466,3 +1503,4 @@ invoice.
 | KEP-044 | Isi pesanan bisa ditambah dan dikurangi, bukan cuma tagihannya | TERKUNCI |
 | KEP-045 | Ukuran dan warna dipilih lewat kotak, bukan dropdown | TERKUNCI |
 | KEP-046 | Invoice dibuat sistem, reseller cukup ditandai | TERKUNCI |
+| KEP-047 | Tahap produksi ditandai pekerja lewat pindai QR | TERKUNCI |

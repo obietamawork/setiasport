@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\KodeQr;
 use Illuminate\Contracts\View\View;
 
 /**
@@ -15,6 +16,8 @@ use Illuminate\Contracts\View\View;
  */
 class WorksheetController extends Controller
 {
+    public function __construct(private KodeQr $qr) {}
+
     public function __invoke(Order $pesanan): View
     {
         $pesanan->load([
@@ -23,8 +26,23 @@ class WorksheetController extends Controller
             'items.options',
             'items.approvedDesign',
             'items.product',
+            'items.productionJobs',
         ]);
 
-        return view('panel.worksheet', ['pesanan' => $pesanan]);
+        /*
+         * Satu QR per baris pesanan (KEP-047), bukan per pesanan: yang berjalan
+         * dari meja ke meja adalah barangnya, dan satu pesanan bisa memuat dua
+         * barang yang tahapnya berbeda.
+         */
+        $qr = $pesanan->items
+            ->filter(fn (\App\Models\OrderItem $i) => $i->productionJobs->isNotEmpty())
+            ->mapWithKeys(fn (\App\Models\OrderItem $i) => [
+                $i->id => [
+                    'tautan' => route('kerja', $i->tokenKerja()),
+                    'svg' => $this->qr->svg(route('kerja', $i->tokenKerja()), 150),
+                ],
+            ]);
+
+        return view('panel.worksheet', ['pesanan' => $pesanan, 'qr' => $qr]);
     }
 }

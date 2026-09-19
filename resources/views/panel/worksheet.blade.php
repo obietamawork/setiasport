@@ -33,6 +33,11 @@
         .ringkas { padding: 8px 10px; font-weight: bold; }
         .catatan { border: 1px solid #000; padding: 8px 10px; margin-top: 4px; min-height: 40px; }
         .cetak { margin-bottom: 14px; }
+        .kerja { display: flex; gap: 12px; align-items: center; padding: 10px;
+                 border-top: 1px solid #000; }
+        .kerja .petunjuk { font-size: 11px; line-height: 1.5; }
+        .kerja .petunjuk strong { font-size: 13px; }
+        .kerja .tautan { font-family: monospace; font-size: 9px; color: #444; word-break: break-all; }
         @media print { .cetak { display: none; } body { padding: 10mm; } }
     </style>
 </head>
@@ -108,6 +113,21 @@
 
         @if ($item->catatan)
             <div class="meta">Catatan: {{ $item->catatan }}</div>
+        @endif
+
+        {{-- QR penanda tahap (KEP-047). Lembar ini berjalan bersama kainnya dari
+             meja ke meja; pekerja memindai, memasukkan PIN, lalu tahapnya
+             berpindah tanpa perlu melapor ke admin konveksi. --}}
+        @if (isset($qr[$item->id]))
+            <div class="kerja">
+                <div>{!! $qr[$item->id]['svg'] !!}</div>
+                <div class="petunjuk">
+                    <strong>Pindai setelah pekerjaan selesai</strong><br>
+                    Buka dengan kamera HP, masukkan PIN Anda, lalu tekan tandai selesai.
+                    Tandai hanya bagian yang benar-benar Anda kerjakan.
+                    <div class="tautan">{{ $qr[$item->id]['tautan'] }}</div>
+                </div>
+            </div>
         @endif
     </div>
 @endforeach

@@ -18,7 +18,7 @@ class ProductionJob extends Model
 {
     protected $fillable = [
         'order_item_id', 'tahap', 'urutan', 'status',
-        'ditugaskan_ke', 'diselesaikan_oleh', 'dimulai_pada', 'selesai_pada',
+        'ditugaskan_ke', 'diselesaikan_oleh', 'pekerja_id', 'dimulai_pada', 'selesai_pada',
         'catatan', 'foto_path',
     ];
 
@@ -31,6 +31,11 @@ class ProductionJob extends Model
             'dimulai_pada' => 'datetime',
             'selesai_pada' => 'datetime',
         ];
+    }
+
+    public function pekerja(): BelongsTo
+    {
+        return $this->belongsTo(Pekerja::class);
     }
 
     public function orderItem(): BelongsTo

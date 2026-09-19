@@ -88,7 +88,7 @@ class AlurPesanan
     }
 
     /** Operator menyelesaikan satu tahap; status pelanggan naik sebagai akibatnya. */
-    public function majukanItem(OrderItem $item, ?int $olehUserId = null): OrderItemStatus
+    public function majukanItem(OrderItem $item, ?int $olehUserId = null, ?int $pekerjaId = null): OrderItemStatus
     {
         $berikutnya = $item->status_item->berikutnya($item->fulfillment_type);
 
@@ -130,9 +130,9 @@ class AlurPesanan
             $berikutnya = OrderItemStatus::SIAP;
         }
 
-        DB::transaction(function () use ($item, $berikutnya, $olehUserId) {
+        DB::transaction(function () use ($item, $berikutnya, $olehUserId, $pekerjaId) {
             // Tahap yang DITINGGALKAN-lah yang selesai; tahap yang dimasuki baru dimulai.
-            $this->selesaikanJob($item, $item->status_item->tahapProduksi(), $olehUserId);
+            $this->selesaikanJob($item, $item->status_item->tahapProduksi(), $olehUserId, $pekerjaId);
             $this->setStatusItem($item, $berikutnya, null, $olehUserId);
             $this->mulaiJob($item, $berikutnya->tahapProduksi(), $olehUserId);
 
@@ -312,8 +312,12 @@ class AlurPesanan
         ]);
     }
 
-    private function selesaikanJob(OrderItem $item, ?ProductionStage $tahap, ?int $oleh): void
-    {
+    private function selesaikanJob(
+        OrderItem $item,
+        ?ProductionStage $tahap,
+        ?int $oleh,
+        ?int $pekerjaId = null,
+    ): void {
         if (! $tahap) {
             return;
         }
@@ -324,6 +328,9 @@ class AlurPesanan
             ->update([
                 'status' => ProductionStatus::SELESAI->value,
                 'diselesaikan_oleh' => $oleh,
+                // Pekerja konveksi bukan pengguna panel (KEP-047), jadi yang
+                // menandai lewat pindai QR tercatat di kolomnya sendiri.
+                'pekerja_id' => $pekerjaId,
                 'selesai_pada' => now(),
             ]);
     }

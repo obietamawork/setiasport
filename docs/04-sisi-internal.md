@@ -17,6 +17,11 @@ Maka panel internal dibangun sebagai **antrian per divisi**:
 
 Satu klik menyelesaikan pekerjaan **dan** menaikkan status yang dilihat pelanggan.
 
+Sejak KEP-047 ada jalur kedua yang menghasilkan hal yang sama: pekerja konveksi memindai
+QR di lembar kerja, memasukkan PIN-nya, lalu tahapnya berpindah tanpa melapor ke admin.
+Pekerja tidak punya akun panel, dan halaman pindainya tidak memuat harga maupun data
+pelanggan.
+
 ## Prinsip #2: Nol input ganda
 
 **Status pelanggan tidak pernah diketik.** Ia adalah efek samping dari pekerjaan nyata

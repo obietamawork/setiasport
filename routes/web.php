@@ -6,6 +6,7 @@ use App\Http\Controllers\Publik\BerandaController;
 use App\Http\Controllers\Publik\CheckoutController;
 use App\Http\Controllers\Publik\CsController;
 use App\Http\Controllers\Publik\KatalogController;
+use App\Http\Controllers\Publik\KerjaController;
 use App\Http\Controllers\Publik\KeranjangController;
 use App\Http\Controllers\Publik\KustomController;
 use App\Http\Controllers\Publik\LacakController;
@@ -81,6 +82,16 @@ Route::prefix('/cs')->name('cs.')->group(function () {
     Route::post('/auth', [CsController::class, 'otorisasi'])->middleware('throttle:20,1')->name('auth');
     Route::get('/lampiran/{pesan}', [CsController::class, 'lampiran'])->middleware('throttle:30,1')->name('lampiran');
 });
+
+/*
+ * Lembar kerja konveksi yang dibuka lewat pindai QR (KEP-047). Publik tanpa
+ * akun: yang menjaganya token panjang di tautan, dan PIN pekerja saat menandai.
+ * Batasnya ketat karena PIN cuma empat angka.
+ */
+Route::get('/kerja/{token}', [KerjaController::class, 'show'])
+    ->middleware('throttle:60,1')->name('kerja');
+Route::post('/kerja/{token}/selesai', [KerjaController::class, 'selesai'])
+    ->middleware('throttle:10,1')->name('kerja.selesai');
 
 // Pengajuan pembatalan dari pelanggan (KEP-041). Dibatasi supaya satu tautan
 // tidak bisa dipakai membanjiri panel dengan pengajuan.

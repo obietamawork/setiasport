@@ -177,6 +177,23 @@
                             </p>
                         @endif
 
+                        {{-- Tautan kerja (KEP-047) disalin dari sini, lalu dikirim ke
+                             pekerja atau grup bagiannya lewat WhatsApp. Sama persis
+                             dengan yang ada di QR lembar kerja, untuk pekerja yang
+                             lembarannya tertinggal di meja lain. --}}
+                        @if (! $batal && $item->productionJobs->isNotEmpty())
+                            <div class="mt-3 flex flex-wrap items-center gap-3 text-sm"
+                                 x-data="{ tersalin: false }">
+                                <button type="button" class="tautan"
+                                        @click="navigator.clipboard.writeText(@js(route('kerja', $item->tokenKerja())))
+                                                .then(() => { tersalin = true; setTimeout(() => tersalin = false, 2500) })">
+                                    <span x-show="!tersalin">Salin tautan kerja</span>
+                                    <span x-show="tersalin" x-cloak>Tautan tersalin</span>
+                                </button>
+                                <span class="text-xs text-muted">Pekerja butuh PIN untuk menandai selesai.</span>
+                            </div>
+                        @endif
+
                         {{-- Tambah atau kurangi isi pesanan (KEP-044). Dua pemain
                              menyusul adalah kejadian sehari-hari, dan selama ini
                              jalan keluarnya cuma penyesuaian biaya, sementara

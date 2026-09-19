@@ -13,6 +13,7 @@ use App\Http\Controllers\Panel\AntrianController;
 use App\Http\Controllers\Panel\GambarProdukController;
 use App\Http\Controllers\Panel\LaporanController;
 use App\Http\Controllers\Panel\MockupController;
+use App\Http\Controllers\Panel\PekerjaController;
 use App\Http\Controllers\Panel\PembatalanController;
 use App\Http\Controllers\Panel\PembayaranController;
 use App\Http\Controllers\Panel\PenyesuaianController;
@@ -114,6 +115,14 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
         Route::get('serah-terima', [SerahTerimaController::class, 'form'])
             ->middleware('izin:serah_terima.proses')->name('serah-terima');
+
+        // Pekerja konveksi yang memindai QR lembar kerja (KEP-047).
+        Route::middleware('izin:pengguna.kelola')->prefix('pekerja')->name('pekerja.')->group(function () {
+            Route::get('/', [PekerjaController::class, 'index'])->name('index');
+            Route::post('/', [PekerjaController::class, 'store'])->name('simpan');
+            Route::put('{pekerja}', [PekerjaController::class, 'update'])->name('update');
+            Route::post('{pekerja}/nonaktif', [PekerjaController::class, 'nonaktif'])->name('nonaktif');
+        });
 
         Route::middleware('izin:katalog.kelola')->group(function () {
             Route::resource('kategori', KategoriController::class)

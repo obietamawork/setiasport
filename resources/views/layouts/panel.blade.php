@@ -71,6 +71,7 @@
             ['panel.testimoni.index', 'Testimoni', 'profil.kelola', 'panel.testimoni.*', null],
         ],
         'Toko' => [
+            ['panel.pekerja.index', 'Pekerja konveksi', 'pengguna.kelola', 'panel.pekerja.*', null],
             ['panel.laporan', 'Laporan', 'laporan.lihat', 'panel.laporan', null],
             ['panel.pengaturan.index', 'Pengaturan', 'pengaturan.kelola', 'panel.pengaturan.*', null],
         ],

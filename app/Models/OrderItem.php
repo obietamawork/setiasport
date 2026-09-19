@@ -18,7 +18,7 @@ class OrderItem extends Model
 {
     protected $fillable = [
         'order_id', 'product_id', 'product_variant_id', 'nama_produk',
-        'fulfillment_type', 'qty', 'harga_satuan', 'status_item',
+        'fulfillment_type', 'qty', 'harga_satuan', 'status_item', 'kerja_token',
         'approved_design_asset_id', 'approved_at', 'approved_by_name', 'approved_ip',
         'jumlah_revisi', 'catatan',
     ];
@@ -105,6 +105,19 @@ class OrderItem extends Model
     public function hargaPerUkuran(): bool
     {
         return $this->rosters->whereNotNull('harga_satuan')->isNotEmpty();
+    }
+
+    /**
+     * Kunci lembar kerja, dibuat saat pertama kali dibutuhkan (KEP-047).
+     * Tautannya beredar di grup WhatsApp, jadi panjang dan acak.
+     */
+    public function tokenKerja(): string
+    {
+        if (! $this->kerja_token) {
+            $this->forceFill(['kerja_token' => \Illuminate\Support\Str::random(48)])->save();
+        }
+
+        return $this->kerja_token;
     }
 
     public function kustom(): bool
