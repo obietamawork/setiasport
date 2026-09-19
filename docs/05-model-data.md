@@ -88,6 +88,8 @@ Keputusan penting:
 product_prices           id, product_id, kategori (SD|SMP|DEWASA|null),
                          option_value_id (bahan, null = semua), harga_satuan
 product_size_surcharges  id, product_id, ukuran (3XL|5XL|...), tambahan_harga
+product_size_charts      id, product_id, kategori (nullable), ukuran,
+                         ukuran_cm (JSON: {"Lebar": 35, "Panjang": 45}), urutan
 ```
 
 kategori null berarti berlaku untuk semua umur, dipakai produk yang harganya memang

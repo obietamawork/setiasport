@@ -46,7 +46,12 @@ Minggu 08.00-14.00", 'teks', 'toko', 'Jam Buka Toko',
             ['qris_path', '', 'berkas', 'pembayaran', 'Gambar QRIS',
                 'Diunggah lewat tombol di bawah, bukan diketik.'],
 
-            ['biaya_layanan', '500', 'int', 'pembayaran', 'Biaya Layanan per Pesanan (Rp)',
+            /*
+             * Bawaannya 0, bukan angka tebakan: nominalnya belum final dari klien,
+             * dan sistem tidak boleh menambahkan biaya yang belum disepakati.
+             * Pemilik toko mengisinya sendiri begitu angkanya diputuskan.
+             */
+            ['biaya_layanan', '0', 'int', 'pembayaran', 'Biaya Layanan per Pesanan (Rp)',
                 'Ditambahkan sekali di tiap pesanan, menutup biaya hitung ongkir dan pelacakan paket. '
                 .'Isi 0 kalau tidak dipakai. Tampil terbuka di checkout dan invoice, bukan biaya tersembunyi.'],
 

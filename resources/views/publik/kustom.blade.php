@@ -27,11 +27,27 @@
         'harga' => $h->harga_satuan,
     ])->values();
 
-    $dataKategori = collect($kategori)->map(fn ($k) => [
-        'value' => $k->value,
-        'label' => $k->label(),
-        'ukuran' => $k->ukuran(),
-    ])->values();
+    /*
+     * Ukurannya bersumber dari panduan ukuran produk (KEP-049). Celana pendek
+     * tidak punya kategori umur sama sekali, jadi pemilih kategorinya ikut
+     * hilang, bukan diisi pilihan yang tidak berarti apa-apa.
+     */
+    $pakaiKategori = $produk->pakaiKategoriUkuran();
+
+    $dataKategori = $pakaiKategori
+        ? collect($kategori)->map(fn ($k) => [
+            'value' => $k->value,
+            'label' => $k->label(),
+            'ukuran' => $produk->ukuranTersedia($k),
+        ])->values()
+        : collect([[
+            'value' => '',
+            'label' => 'Semua ukuran',
+            'ukuran' => $produk->ukuranTersedia(null),
+        ]]);
+
+    // Panduan ukuran dalam sentimeter, dikelompokkan per kategori.
+    $panduan = $produk->sizeCharts->groupBy(fn ($b) => $b->kategori?->label() ?? 'Semua ukuran');
 
     $dataTambahan = $produk->sizeSurcharges->mapWithKeys(fn ($t) => [$t->ukuran => $t->tambahan_harga]);
 
@@ -194,7 +210,9 @@
                 <div class="space-y-3">
                     <template x-for="(b, i) in baris" :key="i">
                         <div class="kartu p-4">
-                            <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_5.5rem_10rem_7rem_5.5rem]">
+                            <div class="grid gap-3 {{ $pakaiKategori
+                                ? 'sm:grid-cols-[minmax(0,1fr)_5.5rem_10rem_7rem_5.5rem]'
+                                : 'sm:grid-cols-[minmax(0,1fr)_5.5rem_7rem_5.5rem]' }}">
                                 <label class="block">
                                     <span class="label-form">Nama punggung</span>
                                     <input type="text" x-model="b.nama_punggung" :name="`baris[${i}][nama_punggung]`"
@@ -205,15 +223,19 @@
                                     <input type="text" x-model="b.nomor" :name="`baris[${i}][nomor]`"
                                            maxlength="5" inputmode="numeric" class="kotak-input tabular">
                                 </label>
-                                <label class="block">
-                                    <span class="label-form">Kategori</span>
-                                    <select x-model="b.kategori" :name="`baris[${i}][kategori]`"
-                                            @change="betulkanUkuran(b)" class="kotak-input">
-                                        <template x-for="k in kategori" :key="k.value">
-                                            <option :value="k.value" x-text="k.label"></option>
-                                        </template>
-                                    </select>
-                                </label>
+                                @if ($pakaiKategori)
+                                    <label class="block">
+                                        <span class="label-form">Kategori</span>
+                                        <select x-model="b.kategori" :name="`baris[${i}][kategori]`"
+                                                @change="betulkanUkuran(b)" class="kotak-input">
+                                            <template x-for="k in kategori" :key="k.value">
+                                                <option :value="k.value" x-text="k.label"></option>
+                                            </template>
+                                        </select>
+                                    </label>
+                                @else
+                                    <input type="hidden" :name="`baris[${i}][kategori]`" value="">
+                                @endif
                                 <label class="block">
                                     <span class="label-form">Ukuran</span>
                                     <select x-model="b.ukuran" :name="`baris[${i}][ukuran]`" class="kotak-input">
@@ -280,14 +302,47 @@
 
                 <div class="kartu p-5">
                     <p class="font-semibold">Panduan ukuran</p>
-                    <div class="mt-3 space-y-2 text-sm">
-                        <template x-for="k in kategori" :key="k.value">
-                            <p>
-                                <span class="font-medium" x-text="k.label"></span>:
-                                <span class="text-muted" x-text="k.ukuran.join(', ')"></span>
-                            </p>
-                        </template>
-                    </div>
+
+                    @if ($panduan->isNotEmpty())
+                        @foreach ($panduan as $namaKategori => $baris)
+                            @php $kolom = array_keys($baris->first()->ukuran_cm); @endphp
+                            <div class="mt-3 overflow-x-auto">
+                                @if ($panduan->count() > 1)
+                                    <p class="mb-1 text-sm font-medium">{{ $namaKategori }}</p>
+                                @endif
+                                <table class="w-full min-w-72 text-sm">
+                                    <thead>
+                                        <tr class="border-b border-line text-left">
+                                            <th class="py-1.5 pr-3 font-medium">Ukuran</th>
+                                            @foreach ($kolom as $k)
+                                                <th class="py-1.5 pr-3 font-medium">{{ $k }} (cm)</th>
+                                            @endforeach
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($baris as $b)
+                                            <tr class="border-b border-line last:border-0">
+                                                <td class="py-1.5 pr-3 font-medium">{{ $b->ukuran }}</td>
+                                                @foreach ($kolom as $k)
+                                                    <td class="tabular py-1.5 pr-3">{{ $b->ukuran_cm[$k] ?? '-' }}</td>
+                                                @endforeach
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endforeach
+                        <p class="mt-2 text-xs text-muted">Ukuran bisa berbeda 1-2 cm karena proses produksi.</p>
+                    @else
+                        <div class="mt-3 space-y-2 text-sm">
+                            <template x-for="k in kategori" :key="k.value">
+                                <p>
+                                    <span class="font-medium" x-text="k.label"></span>:
+                                    <span class="text-muted" x-text="k.ukuran.join(', ')"></span>
+                                </p>
+                            </template>
+                        </div>
+                    @endif
                     <p class="mt-3 text-xs leading-relaxed text-muted">
                         Ragu ukurannya? Tanyakan lewat tombol bantuan, atau datang ke toko untuk mencoba
                         contoh ukurannya sebelum dicetak.
@@ -487,6 +542,8 @@
             },
 
             labelUkuran(b) {
+                if (!b.kategori) return b.ukuran;
+
                 const k = this.kategori.find(k => k.value === b.kategori);
                 return k ? k.label + ' ' + b.ukuran : b.ukuran;
             },

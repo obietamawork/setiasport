@@ -9,6 +9,7 @@ use App\Models\OptionValue;
 use App\Models\Product;
 use App\Models\ProductOption;
 use App\Models\ProductPrice;
+use App\Models\ProductSizeChart;
 use App\Models\ProductSizeSurcharge;
 use App\Models\ProductPriceTier;
 use App\Models\ProductVariant;
@@ -26,7 +27,13 @@ use Illuminate\Support\Str;
  */
 class CatalogSeeder extends Seeder
 {
-    private const SKU_KUSTOM = 'CUST-JRS-ATASAN';
+    /**
+     * Produk kustom dengan harga asli klien. Dipisah dari katalog contoh karena
+     * keduanya diperlakukan berbeda saat seeder dijalankan ulang.
+     */
+    private const SKU_KUSTOM = [
+        'CUST-JRS-ATASAN', 'CUST-SETELAN', 'CUST-CELANA-PENDEK', 'CUST-JAKET', 'CUST-TRAINING',
+    ];
 
     public function run(): void
     {
@@ -37,9 +44,18 @@ class CatalogSeeder extends Seeder
          * sudah jalan (KEP-039): ia susunan baru yang dipakai toko, bukan
          * sekadar contoh etalase. Yang sudah ada tidak disentuh.
          */
-        if (! Product::where('sku', self::SKU_KUSTOM)->exists()) {
+        if (! Product::where('sku', 'CUST-JRS-ATASAN')->exists()) {
             $this->jerseyAtasanKustom($k['jersey-futsal']);
         }
+
+        if (! Product::where('sku', 'CUST-SETELAN')->exists()) {
+            $this->setelanKustom($k['jersey-futsal']);
+            $this->celanaPendekKustom($k['celana-custom']);
+            $this->jaketKustom($k['jaket-custom']);
+            $this->trainingKustom($k['celana-custom']);
+        }
+
+        $this->panduanUkuranSusulan();
 
         /*
          * Sisanya katalog contoh, hanya untuk instalasi yang masih kosong.
@@ -47,7 +63,7 @@ class CatalogSeeder extends Seeder
          * menimpa harga asli dengan angka draft, tanpa ada yang sadar sampai
          * pelanggan membayar dengan harga yang salah.
          */
-        if (Product::where('sku', '!=', self::SKU_KUSTOM)->exists()) {
+        if (Product::whereNotIn('sku', self::SKU_KUSTOM)->exists()) {
             return;
         }
 
@@ -66,6 +82,8 @@ class CatalogSeeder extends Seeder
             'Sepatu' => ['Futsal' => 'sepatu-futsal'],
             'Jersey' => ['Futsal' => 'jersey-futsal', 'Polos' => 'jersey-polos'],
             'Kaos' => ['Sekolah' => 'kaos-sekolah'],
+            'Celana' => ['Custom' => 'celana-custom'],
+            'Jaket' => ['Custom' => 'jaket-custom'],
         ];
 
         $hasil = [];
@@ -163,6 +181,112 @@ class CatalogSeeder extends Seeder
         ]);
 
         $this->tambahanUkuran($p, ['3XL' => 5_000, '5XL' => 10_000]);
+    }
+
+    /**
+     * Setelan jersey, atasan dan celana sekaligus (KEP-039). Harganya matriks
+     * bahan kali kategori ukuran, persis seperti daftar harga klien.
+     */
+    private function setelanKustom(Category $kategori): void
+    {
+        $p = $this->produk($kategori, [
+            'sku' => 'CUST-SETELAN',
+            'nama' => 'Custom Setelan Jersey',
+            'fulfillment_type' => FulfillmentType::PREORDER,
+            'moq' => 6,
+            'lead_time_hari' => 7,
+            'roster_wajib' => true,
+            'deskripsi' => 'Atasan dan celana sekaligus, full printing. Harga mengikuti bahan '
+                .'dan ukuran, dan satu pesanan boleh memuat ukuran anak sampai dewasa.',
+        ]);
+
+        $this->opsi($p, 'Bahan', [
+            ['Serena', 0], ['Jarum', 0], ['Milano', 0], ['Wafel', 0], ['Embos', 0],
+        ]);
+        $this->opsi($p, 'Model Baju', [['Oblong', 0], ['Pakai Kerah', 10_000]]);
+        $this->opsi($p, 'Model Lengan', [['Pendek', 0], ['Panjang', 10_000]]);
+
+        $this->matriksHarga($p, [
+            'SD' => ['Serena' => 75_000, 'Jarum' => 85_000, 'Milano' => 95_000, 'Wafel' => 100_000, 'Embos' => 115_000],
+            'SMP' => ['Serena' => 85_000, 'Jarum' => 95_000, 'Milano' => 105_000, 'Wafel' => 110_000, 'Embos' => 125_000],
+            'DEWASA' => ['Serena' => 100_000, 'Jarum' => 110_000, 'Milano' => 120_000, 'Wafel' => 125_000, 'Embos' => 135_000],
+        ]);
+
+        $this->tambahanUkuran($p, ['3XL' => 10_000]);
+    }
+
+    /**
+     * Celana pendek fullprint. Satu-satunya produk kustom yang harganya TIDAK
+     * bergantung kategori umur: kategori null berarti berlaku untuk semua.
+     */
+    private function celanaPendekKustom(Category $kategori): void
+    {
+        $p = $this->produk($kategori, [
+            'sku' => 'CUST-CELANA-PENDEK',
+            'nama' => 'Custom Celana Pendek Fullprint',
+            'fulfillment_type' => FulfillmentType::PREORDER,
+            'moq' => 6,
+            'lead_time_hari' => 7,
+            'roster_wajib' => false,
+            'deskripsi' => 'Celana pendek full printing. Harganya sama untuk semua ukuran, '
+                .'mengikuti bahan yang dipilih. Ukurannya ikut panduan ukuran celana.',
+        ]);
+
+        $this->opsi($p, 'Bahan', [['Lotto', 0], ['Diadora', 0], ['Micro', 0]]);
+
+        // Panduan ukuran dari klien (KEP-049). Daftar inilah yang membatasi
+        // ukuran mana yang boleh dipesan, bukan daftar bawaan di kode.
+        $this->panduanUkuran($p, null, [
+            'S' => [35, 45], 'M' => [37, 47], 'L' => [39, 49],
+            'XL' => [41, 51], '2XL' => [43, 53], '3XL' => [45, 55],
+        ]);
+
+        // Kategori null: satu harga dari ukuran terkecil sampai terbesar.
+        $this->matriksHarga($p, [
+            null => ['Lotto' => 35_000, 'Diadora' => 45_000, 'Micro' => 45_000],
+        ]);
+    }
+
+    private function jaketKustom(Category $kategori): void
+    {
+        $p = $this->produk($kategori, [
+            'sku' => 'CUST-JAKET',
+            'nama' => 'Custom Jaket Fullprint',
+            'fulfillment_type' => FulfillmentType::PREORDER,
+            'moq' => 6,
+            'lead_time_hari' => 10,
+            'roster_wajib' => false,
+            'deskripsi' => 'Jaket full printing dengan desain bebas. Harga mengikuti bahan dan ukuran.',
+        ]);
+
+        $this->opsi($p, 'Bahan', [['Lotto', 0], ['Diadora Lokal', 0], ['Diadora Import', 0]]);
+
+        $this->matriksHarga($p, [
+            'SD' => ['Lotto' => 115_000, 'Diadora Lokal' => 130_000, 'Diadora Import' => 140_000],
+            'SMP' => ['Lotto' => 125_000, 'Diadora Lokal' => 140_000, 'Diadora Import' => 150_000],
+            'DEWASA' => ['Lotto' => 135_000, 'Diadora Lokal' => 150_000, 'Diadora Import' => 160_000],
+        ]);
+    }
+
+    private function trainingKustom(Category $kategori): void
+    {
+        $p = $this->produk($kategori, [
+            'sku' => 'CUST-TRAINING',
+            'nama' => 'Custom Celana Training Fullprint',
+            'fulfillment_type' => FulfillmentType::PREORDER,
+            'moq' => 6,
+            'lead_time_hari' => 10,
+            'roster_wajib' => false,
+            'deskripsi' => 'Celana training panjang, full printing. Harga mengikuti bahan dan ukuran.',
+        ]);
+
+        $this->opsi($p, 'Bahan', [['Lotto', 0], ['Diadora Lokal', 0], ['Diadora Import', 0]]);
+
+        $this->matriksHarga($p, [
+            'SD' => ['Lotto' => 75_000, 'Diadora Lokal' => 85_000, 'Diadora Import' => 100_000],
+            'SMP' => ['Lotto' => 80_000, 'Diadora Lokal' => 90_000, 'Diadora Import' => 105_000],
+            'DEWASA' => ['Lotto' => 85_000, 'Diadora Lokal' => 95_000, 'Diadora Import' => 110_000],
+        ]);
     }
 
     /** C, produk terpenting: tier, dua basis biaya, roster wajib. */
@@ -310,6 +434,8 @@ class CatalogSeeder extends Seeder
     private function matriksHarga(Product $p, array $matriks): void
     {
         foreach ($matriks as $kategori => $baris) {
+            $kategori = $kategori === '' ? null : $kategori;
+
             foreach ($baris as $bahan => $harga) {
                 $value = OptionValue::whereHas(
                     'option',
@@ -321,6 +447,40 @@ class CatalogSeeder extends Seeder
                     ['harga_satuan' => $harga]
                 );
             }
+        }
+    }
+
+    /**
+     * Panduan ukuran dari klien biasanya menyusul setelah produknya dibuat,
+     * jadi pengisiannya dipisah dari pembuatan produk. Yang sudah punya
+     * panduan tidak disentuh, supaya koreksi pemilik toko tidak tertimpa.
+     */
+    private function panduanUkuranSusulan(): void
+    {
+        $celana = Product::where('sku', 'CUST-CELANA-PENDEK')->first();
+
+        if ($celana && $celana->sizeCharts()->doesntExist()) {
+            $this->panduanUkuran($celana, null, [
+                'S' => [35, 45], 'M' => [37, 47], 'L' => [39, 49],
+                'XL' => [41, 51], '2XL' => [43, 53], '3XL' => [45, 55],
+            ]);
+        }
+    }
+
+    /**
+     * Panduan ukuran celana: lebar dan panjang dalam sentimeter.
+     *
+     * @param  array<string, array{0:int, 1:int}>  $baris
+     */
+    private function panduanUkuran(Product $p, ?string $kategori, array $baris): void
+    {
+        $urutan = 0;
+
+        foreach ($baris as $ukuran => [$lebar, $panjang]) {
+            ProductSizeChart::updateOrCreate(
+                ['product_id' => $p->id, 'kategori' => $kategori, 'ukuran' => $ukuran],
+                ['ukuran_cm' => ['Lebar' => $lebar, 'Panjang' => $panjang], 'urutan' => $urutan++]
+            );
         }
     }
 

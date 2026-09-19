@@ -1472,6 +1472,40 @@ Diisi 0 berarti fitur ini mati sepenuhnya, dan barisnya tidak muncul di mana pun
 
 ---
 
+## KEP-049 — Panduan ukuran yang menentukan ukuran mana yang boleh dipesan
+**Status:** TERKUNCI · 2026-09-20
+
+Klien mengirim panduan ukuran celana pendek: S sampai 3XL, lengkap dengan lebar dan
+panjang dalam sentimeter, dan **tanpa kategori SD/SMP/SMA**. Sekaligus menjawab dua
+pertanyaan lama: kerah berlaku di semua kategori dengan tambahan Rp10.000, dan lengan
+panjang bisa dipesan baik untuk atasan saja maupun setelan.
+
+**Keputusan:**
+
+- **Panduan ukuran jadi sumber daftar ukuran**, bukan daftar tetap di kode. Celana pendek
+  berhenti di 3XL sementara jersey dewasa sampai 5XL, dan yang tahu batasnya adalah
+  panduan yang dikirim klien. Ukuran di luar panduan ditolak kalkulator harga.
+- **Produk boleh tidak punya kategori umur sama sekali.** Celana pendek satu harga dari
+  ukuran terkecil sampai terbesar, jadi pemilih kategorinya ikut hilang dari halaman
+  pemesanan, bukan diisi pilihan yang tidak berarti apa-apa.
+- **Angka sentimeternya disimpan sebagai JSON bernama**, misalnya `{"Lebar": 35,
+  "Panjang": 45}`, karena tiap produk mengukur hal berbeda: celana diukur lebar dan
+  panjang, jersey diukur lingkar dada dan panjang baju.
+- **Pengisian panduan dipisah dari pembuatan produk**, karena panduannya menyusul dari
+  klien, sering setelah produknya telanjur dibuat. Yang sudah punya panduan tidak
+  ditimpa.
+
+Katalog kini memuat lima produk kustom dengan harga asli klien: jersey atasan, setelan,
+celana pendek, jaket, dan celana training.
+
+**Yang masih menunggu klien:** panduan ukuran untuk jersey, setelan, jaket, dan training.
+Selama belum ada, keempatnya memakai daftar ukuran bawaan.
+
+Satu ketidakcocokan yang perlu ditanyakan: panduan celana menulis **2XL**, sementara
+contoh tampilan yang klien setujui menulis **XXL**. Keduanya ukuran yang sama.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1524,3 +1558,4 @@ Diisi 0 berarti fitur ini mati sepenuhnya, dan barisnya tidak muncul di mana pun
 | KEP-046 | Invoice dibuat sistem, reseller cukup ditandai | TERKUNCI |
 | KEP-047 | Tahap produksi ditandai pekerja lewat pindai QR | TERKUNCI |
 | KEP-048 | Biaya layanan per pesanan, disebut terbuka | TERKUNCI |
+| KEP-049 | Panduan ukuran yang menentukan ukuran mana yang boleh dipesan | TERKUNCI |

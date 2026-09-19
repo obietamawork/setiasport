@@ -154,9 +154,10 @@ class PriceCalculator
                 throw new InvalidArgumentException('Jumlah tiap ukuran minimal 1 pcs.');
             }
 
-            if ($kategori !== null && ! $kategori->punyaUkuran($b['ukuran'])) {
+            if (! in_array($b['ukuran'], $product->ukuranTersedia($kategori), true)) {
                 throw new InvalidArgumentException(
-                    "Ukuran {$b['ukuran']} tidak tersedia untuk {$kategori->label()}."
+                    "Ukuran {$b['ukuran']} tidak tersedia untuk "
+                    .($kategori?->label() ?? 'produk ini').'.'
                 );
             }
 

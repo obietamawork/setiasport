@@ -63,6 +63,41 @@ class Product extends Model
         return $this->hasMany(ProductSizeSurcharge::class);
     }
 
+    public function sizeCharts(): HasMany
+    {
+        return $this->hasMany(ProductSizeChart::class)->orderBy('urutan');
+    }
+
+    /**
+     * Apakah harga produk ini dipisah menurut kategori umur (KEP-039).
+     * Celana pendek tidak: satu harga dari ukuran terkecil sampai terbesar.
+     */
+    public function pakaiKategoriUkuran(): bool
+    {
+        return $this->prices->contains(fn (ProductPrice $h) => $h->kategori !== null);
+    }
+
+    /**
+     * Ukuran yang boleh dipesan. Panduan ukuran yang dikirim klien jadi sumber
+     * utamanya (KEP-049); daftar bawaan di enum hanya dipakai kalau panduannya
+     * belum diisi.
+     *
+     * @return list<string>
+     */
+    public function ukuranTersedia(?KategoriUkuran $kategori): array
+    {
+        $panduan = $this->sizeCharts
+            ->filter(fn (ProductSizeChart $b) => $b->kategori === $kategori)
+            ->pluck('ukuran')
+            ->all();
+
+        if ($panduan !== []) {
+            return array_values($panduan);
+        }
+
+        return $kategori?->ukuran() ?? KategoriUkuran::DEWASA->ukuran();
+    }
+
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
