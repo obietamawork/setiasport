@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
 class Order extends Model
 {
     protected $fillable = [
-        'kode', 'customer_id', 'status', 'access_token', 'tipe_pembayaran', 'diskon',
+        'kode', 'customer_id', 'status', 'access_token', 'tipe_pembayaran', 'diskon', 'biaya_layanan',
         'target_siap_pada', 'kadaluarsa_pada', 'siap_pada', 'diambil_pada',
         'kode_ambil', 'diambil_oleh', 'diserahkan_oleh', 'catatan',
         'metode_ambil', 'alamat_kirim', 'jasa_kirim', 'no_resi',
@@ -86,7 +86,10 @@ class Order extends Model
 
     public function getTotalAttribute(): int
     {
-        return $this->subtotal + (int) $this->adjustments->sum('jumlah') - $this->diskon;
+        return $this->subtotal
+            + (int) $this->adjustments->sum('jumlah')
+            + (int) $this->biaya_layanan
+            - $this->diskon;
     }
 
     public function getSudahDibayarAttribute(): int

@@ -478,6 +478,12 @@
         </ul>
 
         <dl class="space-y-1.5 border-t border-line px-5 py-4 text-sm">
+            @if ($order->biaya_layanan > 0)
+                <div class="flex justify-between gap-3 text-muted">
+                    <dt>Biaya layanan</dt>
+                    <dd class="tabular">{{ rupiah($order->biaya_layanan) }}</dd>
+                </div>
+            @endif
             <div class="flex justify-between gap-3">
                 <dt class="font-semibold">Total</dt>
                 <dd class="tabular font-semibold">{{ rupiah($order->total) }}</dd>

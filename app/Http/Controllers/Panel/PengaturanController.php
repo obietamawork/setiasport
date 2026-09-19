@@ -36,7 +36,7 @@ class PengaturanController extends Controller
             'bagian' => [
                 ['judul' => 'Rekening 1', 'baris' => 'rekening', 'kunci' => ['bank_nama', 'bank_rekening', 'bank_atas_nama']],
                 ['judul' => 'Rekening 2', 'baris' => 'rekening', 'kunci' => ['bank2_nama', 'bank2_rekening', 'bank2_atas_nama']],
-                ['judul' => 'Aturan pembayaran', 'kunci' => ['dp_minimum_persen', 'batas_bayar_jam']],
+                ['judul' => 'Aturan pembayaran', 'kunci' => ['biaya_layanan', 'dp_minimum_persen', 'batas_bayar_jam']],
             ],
         ],
         'pesanan' => [

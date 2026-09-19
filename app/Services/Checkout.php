@@ -61,6 +61,10 @@ class Checkout
                 'tipe_pembayaran' => $tipePembayaran,
                 'kadaluarsa_pada' => now()->addHours((int) Setting::ambil('batas_bayar_jam', 24)),
                 'catatan' => $pelanggan['catatan'] ?? null,
+
+                // Dibekukan di sini (KEP-048). Tarifnya boleh berubah nanti tanpa
+                // mengubah tagihan pesanan yang sudah berjalan.
+                'biaya_layanan' => (int) Setting::ambil('biaya_layanan', 0),
             ]);
 
             foreach ($isi as $baris) {

@@ -36,6 +36,7 @@ class CheckoutController extends Controller
             // besok, jadi tidak ada gunanya menunda pembayarannya (KEP-005).
             'bolehDp' => $isi->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::PREORDER),
             'persenDp' => (int) setting('dp_minimum_persen', 50),
+            'biayaLayanan' => (int) setting('biaya_layanan', 0),
             'pelanggan' => Auth::guard('pelanggan')->user(),
         ]);
     }

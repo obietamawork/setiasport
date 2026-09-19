@@ -1453,6 +1453,25 @@ tebakan akan mengunci cara kerja yang belum tentu benar.
 
 ---
 
+## KEP-048 — Biaya layanan per pesanan, disebut terbuka
+**Status:** TERKUNCI · 2026-09-20
+
+Toko akan memakai API berbayar untuk hitung ongkir dan pelacakan paket, dan klien
+sepakat menutupnya lewat biaya layanan kecil per pesanan.
+
+**Keputusan:** satu angka per pesanan, diatur di Pengaturan (`biaya_layanan`), dan
+**ditulis terbuka di checkout sebelum pelanggan menekan tombol bayar**, lalu ikut tampil
+di halaman pesanan dan invoice. Angka yang baru muncul di halaman tagihan adalah cara
+tercepat membuat pelanggan merasa ditambah-tambahi diam-diam.
+
+Nilainya **dibekukan di pesanan**, bukan dibaca ulang dari pengaturan saat menghitung
+total. Kalau tarifnya dinaikkan bulan depan, tagihan yang sudah disepakati hari ini tidak
+ikut berubah. Alasannya sama dengan harga per ukuran (KEP-039).
+
+Diisi 0 berarti fitur ini mati sepenuhnya, dan barisnya tidak muncul di mana pun.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1504,3 +1523,4 @@ tebakan akan mengunci cara kerja yang belum tentu benar.
 | KEP-045 | Ukuran dan warna dipilih lewat kotak, bukan dropdown | TERKUNCI |
 | KEP-046 | Invoice dibuat sistem, reseller cukup ditandai | TERKUNCI |
 | KEP-047 | Tahap produksi ditandai pekerja lewat pindai QR | TERKUNCI |
+| KEP-048 | Biaya layanan per pesanan, disebut terbuka | TERKUNCI |

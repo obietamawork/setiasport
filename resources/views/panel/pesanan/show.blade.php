@@ -686,6 +686,12 @@
                     <dt class="text-muted">Total</dt>
                     <dd class="tabular font-semibold">{{ rupiah($pesanan->total) }}</dd>
                 </div>
+                @if ($pesanan->biaya_layanan > 0)
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-muted">Biaya layanan</dt>
+                        <dd class="tabular">{{ rupiah($pesanan->biaya_layanan) }}</dd>
+                    </div>
+                @endif
                 <div class="flex justify-between gap-3">
                     <dt class="text-muted">Sudah dibayar</dt>
                     <dd class="tabular">{{ rupiah($pesanan->sudah_dibayar) }}</dd>

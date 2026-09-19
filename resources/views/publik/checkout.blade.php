@@ -151,9 +151,23 @@
                     @endforeach
                 </ul>
                 <div class="border-t border-line px-5 py-4">
-                    <div class="flex items-baseline justify-between gap-3">
+                    {{-- Biaya layanan disebut terbuka di sini (KEP-048). Angka yang
+                         baru muncul di halaman tagihan adalah cara tercepat membuat
+                         pelanggan merasa ditambah-tambahi diam-diam. --}}
+                    @if ($biayaLayanan > 0)
+                        <div class="flex items-baseline justify-between gap-3 text-sm">
+                            <span class="text-muted">Subtotal</span>
+                            <span class="tabular">{{ rupiah($total) }}</span>
+                        </div>
+                        <div class="mt-1 flex items-baseline justify-between gap-3 text-sm">
+                            <span class="text-muted">Biaya layanan</span>
+                            <span class="tabular">{{ rupiah($biayaLayanan) }}</span>
+                        </div>
+                    @endif
+
+                    <div class="mt-2 flex items-baseline justify-between gap-3">
                         <span class="font-semibold">Total</span>
-                        <span class="numeral text-2xl text-merah">{{ rupiah($total) }}</span>
+                        <span class="numeral text-2xl text-merah">{{ rupiah($total + $biayaLayanan) }}</span>
                     </div>
                     <p class="mt-2 text-xs text-muted">Diambil di toko, tanpa ongkos kirim.</p>
                 </div>

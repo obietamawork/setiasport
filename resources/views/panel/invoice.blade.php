@@ -161,6 +161,13 @@
         <td style="width:140px">Subtotal</td>
         <td style="width:130px" class="angka">{{ rupiah($pesanan->subtotal) }}</td>
     </tr>
+    @if ($pesanan->biaya_layanan > 0)
+        <tr>
+            <td></td>
+            <td>Biaya layanan</td>
+            <td class="angka">{{ rupiah($pesanan->biaya_layanan) }}</td>
+        </tr>
+    @endif
     @if ($pesanan->diskon > 0)
         <tr>
             <td></td>

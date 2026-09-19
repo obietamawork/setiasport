@@ -46,6 +46,10 @@ Minggu 08.00-14.00", 'teks', 'toko', 'Jam Buka Toko',
             ['qris_path', '', 'berkas', 'pembayaran', 'Gambar QRIS',
                 'Diunggah lewat tombol di bawah, bukan diketik.'],
 
+            ['biaya_layanan', '500', 'int', 'pembayaran', 'Biaya Layanan per Pesanan (Rp)',
+                'Ditambahkan sekali di tiap pesanan, menutup biaya hitung ongkir dan pelacakan paket. '
+                .'Isi 0 kalau tidak dipakai. Tampil terbuka di checkout dan invoice, bukan biaya tersembunyi.'],
+
             ['dp_minimum_persen', '50', 'int', 'pembayaran', 'DP Minimum (%)',
                 'Batas bawah uang muka untuk pesanan custom. 50% dipilih karena cukup menutup biaya produksi.'],
             ['batas_bayar_jam', '24', 'int', 'pembayaran', 'Batas Waktu Pembayaran (jam)',
