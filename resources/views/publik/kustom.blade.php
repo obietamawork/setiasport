@@ -62,6 +62,8 @@
         tambahanUkuran: @js($dataTambahan),
         moq: {{ $produk->moq }},
         dpPersen: {{ (int) setting('dp_minimum_persen', 50) }},
+        diskonMinQty: {{ $produk->diskon_min_qty }},
+        diskonPerPcs: {{ $produk->diskon_per_pcs }},
      })">
 
     <nav class="text-sm text-muted" aria-label="Remah roti">
@@ -434,6 +436,18 @@
                     </template>
                 </dl>
 
+                {{-- Potongan borongan (KEP-050) ditampilkan sebagai baris tersendiri,
+                     bukan disembunyikan ke dalam harga per potong: pelanggan yang
+                     tahu potongannya justru terdorong menambah jumlah. --}}
+                <template x-if="potongan > 0">
+                    <div class="mt-3 flex justify-between gap-3 border-t border-line pt-3 text-sm">
+                        <span class="text-muted">
+                            Potongan <span x-text="diskonMinQty"></span> pcs ke atas
+                        </span>
+                        <span class="tabular font-medium text-ok" x-text="'− ' + rp(potongan)"></span>
+                    </div>
+                </template>
+
                 <div class="mt-4 border-t border-line pt-4">
                     <div class="flex items-baseline justify-between gap-3">
                         <span class="text-sm text-muted">Perkiraan total</span>
@@ -655,13 +669,27 @@
                 return this.baris.reduce((s, b) => s + (parseInt(b.jumlah, 10) || 0), 0);
             },
 
-            get total() {
+            get hargaPenuh() {
                 return this.baris.reduce((s, b) => s + this.hargaPotong(b) * (parseInt(b.jumlah, 10) || 0), 0)
                     + this.komponenPerItem.reduce((s, k) => s + k.harga, 0);
             },
 
+            // Tarifnya tetap, tidak berlaku kelipatan: 24 pcs dipotong dengan
+            // tarif yang sama dengan 12 pcs.
+            get potongan() {
+                if (this.diskonMinQty < 1 || this.diskonPerPcs < 1) return 0;
+
+                return this.qty >= this.diskonMinQty ? this.qty * this.diskonPerPcs : 0;
+            },
+
+            get total() {
+                return this.hargaPenuh - this.potongan;
+            },
+
+            // Uang muka dihitung dari harga SEBELUM potongan (KEP-050): toko
+            // memberi potongannya saat pelunasan.
             get dp() {
-                return Math.ceil(this.total * this.dpPersen / 100);
+                return Math.ceil(this.hargaPenuh * this.dpPersen / 100);
             },
         };
     }

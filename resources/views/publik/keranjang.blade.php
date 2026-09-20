@@ -52,6 +52,13 @@
                             </ul>
                         @endif
 
+                        @if (($b['rincian']->potongan ?? 0) > 0)
+                            <p class="mt-1 text-sm font-medium text-ok">
+                                Potongan {{ $b['produk']->diskon_min_qty }} pcs ke atas:
+                                −{{ rupiah($b['rincian']->potongan) }}
+                            </p>
+                        @endif
+
                         @foreach ($b['rincian']?->komponenPerItem ?? [] as $k)
                             <p class="text-sm text-muted tabular">
                                 {{ $k['label'] }}: {{ rupiah($k['jumlah']) }} (sekali)
@@ -82,7 +89,9 @@
                     @endif
 
                     <div class="w-32 text-right">
-                        <p class="tabular font-semibold">{{ rupiah($b['rincian']?->subtotal ?? 0) }}</p>
+                        <p class="tabular font-semibold">
+                            {{ rupiah(($b['rincian']?->subtotal ?? 0) - ($b['rincian']->potongan ?? 0)) }}
+                        </p>
                         @if ($b['rincian'] && ! ($b['ukuran'] ?? null))
                             <p class="text-xs text-muted tabular">{{ rupiah($b['rincian']->hargaSatuan) }} / pcs</p>
                         @endif

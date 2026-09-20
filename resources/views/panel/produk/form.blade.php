@@ -101,7 +101,37 @@
         <p class="mt-1 text-xs text-muted">Rupiah, tanpa titik. Selisih tiap varian diatur terpisah di bawah.</p>
     </div>
 
+    {{-- Berat dipakai menghitung ongkir (KEP-050). Berlaku untuk kedua jalur:
+         barang stok pun dikirim, dan kurir menagih per kilogram. --}}
+    <div>
+        <label for="berat_gram" class="label-form">Berat satuan (gram)</label>
+        <input type="number" id="berat_gram" name="berat_gram"
+               value="{{ old('berat_gram', $produk->berat_gram) }}"
+               class="kotak-input tabular" min="0" max="100000">
+        <p class="mt-1 text-xs leading-relaxed text-muted">
+            Termasuk packing. Tanpa angka ini, ongkos kirim tidak bisa dihitung otomatis
+            dan pesanan kirim harus dihitung manual admin.
+        </p>
+    </div>
+
     <div x-show="jalur !== 'READY_STOCK'" x-cloak class="space-y-4">
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+                <label for="diskon_min_qty" class="label-form">Potongan borongan mulai (pcs)</label>
+                <input type="number" id="diskon_min_qty" name="diskon_min_qty"
+                       value="{{ old('diskon_min_qty', $produk->diskon_min_qty) }}"
+                       class="kotak-input tabular" min="0" max="10000">
+                <p class="mt-1 text-xs text-muted">Isi 0 kalau produk ini tanpa potongan.</p>
+            </div>
+            <div>
+                <label for="diskon_per_pcs" class="label-form">Potongan per pcs (Rp)</label>
+                <input type="number" id="diskon_per_pcs" name="diskon_per_pcs"
+                       value="{{ old('diskon_per_pcs', $produk->diskon_per_pcs) }}"
+                       class="kotak-input tabular" min="0" max="10000000">
+                <p class="mt-1 text-xs text-muted">Tidak berlaku kelipatan, tarifnya tetap.</p>
+            </div>
+        </div>
+
         <div class="grid gap-4 sm:grid-cols-2">
             <div>
                 <label for="moq" class="label-form">Minimum pemesanan (pcs)</label>

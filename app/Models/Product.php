@@ -13,7 +13,8 @@ class Product extends Model
 {
     protected $fillable = [
         'category_id', 'sku', 'nama', 'slug', 'deskripsi', 'fulfillment_type',
-        'harga_dasar', 'moq', 'lead_time_hari', 'roster_wajib', 'aktif',
+        'harga_dasar', 'berat_gram', 'moq', 'diskon_min_qty', 'diskon_per_pcs',
+        'lead_time_hari', 'roster_wajib', 'aktif',
     ];
 
     protected function casts(): array
@@ -21,7 +22,10 @@ class Product extends Model
         return [
             'fulfillment_type' => FulfillmentType::class,
             'harga_dasar' => 'integer',
+            'berat_gram' => 'integer',
             'moq' => 'integer',
+            'diskon_min_qty' => 'integer',
+            'diskon_per_pcs' => 'integer',
             'lead_time_hari' => 'integer',
             'roster_wajib' => 'boolean',
             'aktif' => 'boolean',
@@ -134,6 +138,20 @@ class Product extends Model
             ?? $cocok(null, null);
 
         return $harga?->harga_satuan;
+    }
+
+    /**
+     * Potongan borongan (KEP-050): di atas jumlah tertentu, tiap potong dipotong
+     * sekian rupiah. Tidak berlaku kelipatan, jadi 24 pcs dipotong dengan tarif
+     * yang sama dengan 12 pcs.
+     */
+    public function potonganBorongan(int $qty): int
+    {
+        if ($this->diskon_min_qty < 1 || $this->diskon_per_pcs < 1 || $qty < $this->diskon_min_qty) {
+            return 0;
+        }
+
+        return $qty * $this->diskon_per_pcs;
     }
 
     /** Tambahan harga untuk ukuran besar seperti 3XL (KEP-039). */

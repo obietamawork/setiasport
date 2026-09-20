@@ -146,7 +146,9 @@
                                 @endif
                                 <span class="text-muted tabular">&times; {{ $b['qty'] }}</span>
                             </span>
-                            <span class="tabular whitespace-nowrap">{{ rupiah($b['rincian']?->subtotal ?? 0) }}</span>
+                            <span class="tabular whitespace-nowrap">
+                                {{ rupiah(($b['rincian']?->subtotal ?? 0) - ($b['rincian']->potongan ?? 0)) }}
+                            </span>
                         </li>
                     @endforeach
                 </ul>

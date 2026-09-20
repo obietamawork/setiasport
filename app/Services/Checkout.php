@@ -67,6 +67,8 @@ class Checkout
                 'biaya_layanan' => (int) Setting::ambil('biaya_layanan', 0),
             ]);
 
+            $diskon = 0;
+
             foreach ($isi as $baris) {
                 abort_if($baris['masalah'] !== null, 422, $baris['masalah']);
 
@@ -109,8 +111,19 @@ class Checkout
                     ]);
                 }
 
+                // Potongan borongan dicatat sebagai diskon pesanan (KEP-050),
+                // bukan mengurangi harga tiap potong: pelanggan berhak melihat
+                // harga penuhnya dan potongannya sebagai dua angka terpisah.
+                if ($baris['rincian'] instanceof RincianPerUkuran) {
+                    $diskon += $baris['rincian']->potongan;
+                }
+
                 $this->reservasi->pesan($item);
                 $this->siapkanJobProduksi($item);
+            }
+
+            if ($diskon > 0) {
+                $order->update(['diskon' => $diskon]);
             }
 
             $order->load(['items.options']);

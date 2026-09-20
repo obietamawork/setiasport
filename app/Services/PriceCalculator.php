@@ -195,6 +195,7 @@ class PriceCalculator
             komponenPerItem: $perItem,
             qty: $qty,
             subtotal: $subtotal + array_sum(array_column($perItem, 'jumlah')),
+            potongan: $product->potonganBorongan($qty),
         );
     }
 

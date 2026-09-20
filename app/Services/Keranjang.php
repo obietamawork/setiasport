@@ -221,7 +221,11 @@ class Keranjang
 
     public function total(): int
     {
-        return (int) $this->isi()->sum(fn (array $b) => $b['rincian']?->subtotal ?? 0);
+        return (int) $this->isi()->sum(
+            fn (array $b) => $b['rincian'] instanceof RincianPerUkuran
+                ? $b['rincian']->totalBersih()
+                : ($b['rincian']?->subtotal ?? 0)
+        );
     }
 
     public function adaMasalah(): bool

@@ -23,7 +23,18 @@ final readonly class RincianPerUkuran
         public array $komponenPerItem,
         public int $qty,
         public int $subtotal,
+        public int $potongan = 0,
     ) {}
+
+    /**
+     * Yang benar-benar ditagihkan. `subtotal` sengaja tetap harga penuh, karena
+     * uang muka dihitung sebelum potongan borongan (KEP-050) dan rinciannya
+     * harus tetap bisa dijelaskan ke pelanggan.
+     */
+    public function totalBersih(): int
+    {
+        return $this->subtotal - $this->potongan;
+    }
 
     /** Harga rata-rata per potong, untuk ditulis di baris pesanan. */
     public function hargaRataRata(): int

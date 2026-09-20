@@ -33,7 +33,10 @@ class ProdukController extends Controller
     public function create()
     {
         return view('panel.produk.form', [
-            'produk' => new Product(['aktif' => true, 'moq' => 1, 'lead_time_hari' => 0, 'harga_dasar' => 0]),
+            'produk' => new Product([
+                'aktif' => true, 'moq' => 1, 'lead_time_hari' => 0, 'harga_dasar' => 0,
+                'berat_gram' => 0, 'diskon_min_qty' => 0, 'diskon_per_pcs' => 0,
+            ]),
             'kategori' => $this->pilihanKategori(),
         ]);
     }
@@ -111,6 +114,9 @@ class ProdukController extends Controller
             'harga_dasar' => [$adaStok ? 'required' : 'nullable', 'integer', 'min:0', 'max:999999999'],
 
             'moq' => [$adaKustom ? 'required' : 'nullable', 'integer', 'min:1', 'max:100000'],
+            'berat_gram' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'diskon_min_qty' => ['nullable', 'integer', 'min:0', 'max:10000'],
+            'diskon_per_pcs' => ['nullable', 'integer', 'min:0', 'max:10000000'],
             'lead_time_hari' => [$adaKustom ? 'required' : 'nullable', 'integer', 'min:1', 'max:365'],
             'roster_wajib' => ['boolean'],
             'aktif' => ['boolean'],
@@ -123,12 +129,18 @@ class ProdukController extends Controller
             'fulfillment_type' => 'cara beli',
             'harga_dasar' => 'harga dasar',
             'moq' => 'minimum pemesanan',
+            'berat_gram' => 'berat satuan',
+            'diskon_min_qty' => 'potongan borongan mulai',
+            'diskon_per_pcs' => 'potongan per pcs',
             'lead_time_hari' => 'waktu pengerjaan',
         ]);
 
         $data['slug'] = $data['slug'] ?: Str::slug($data['nama']);
         $data['harga_dasar'] = $data['harga_dasar'] ?? 0;
         $data['moq'] = $data['moq'] ?? 1;
+        $data['berat_gram'] = $data['berat_gram'] ?? 0;
+        $data['diskon_min_qty'] = $data['diskon_min_qty'] ?? 0;
+        $data['diskon_per_pcs'] = $data['diskon_per_pcs'] ?? 0;
         $data['lead_time_hari'] = $data['lead_time_hari'] ?? 0;
         $data['roster_wajib'] = $request->boolean('roster_wajib');
         $data['aktif'] = $request->boolean('aktif');

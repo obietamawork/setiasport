@@ -1506,6 +1506,32 @@ contoh tampilan yang klien setujui menulis **XXL**. Keduanya ukuran yang sama.
 
 ---
 
+## KEP-050 — Berat produk, potongan borongan, dan penulisan ukuran
+**Status:** TERKUNCI · 2026-09-21
+
+Tiga jawaban klien sekaligus, yang membuka penghalang terbesar berikutnya.
+
+**Berat produk.** Jersey atasan 250 g, setelan 280 g, celana pendek 250 g, jaket 280 g,
+training 280 g, barang stok 500 g. Disimpan per produk dan bisa dikoreksi pemilik toko
+dari panel. Tanpa angka ini tidak ada penyedia ongkir mana pun yang bisa dipanggil.
+
+**Potongan borongan.** Di atas 12 pcs, harga dipotong Rp5.000 per potong, **tidak berlaku
+kelipatan**: 24 pcs dipotong dengan tarif yang sama dengan 12 pcs.
+
+Yang penting dan mudah salah: **uang muka dihitung dari harga SEBELUM potongan.** Toko
+memberi potongannya saat pelunasan, bukan saat DP. Contoh dari klien dipakai apa adanya
+sebagai tes: 12 pcs × Rp60.000 = Rp720.000, potongan Rp60.000, tagihan Rp660.000, DP 50%
+tetap Rp360.000, dan sisanya Rp300.000.
+
+Potongannya disimpan sebagai diskon pesanan, bukan dengan menurunkan harga tiap potong:
+pelanggan berhak melihat harga penuh dan potongannya sebagai dua angka terpisah, dan
+rincian harga per ukuran harus tetap bisa dijelaskan.
+
+**Penulisan ukuran.** Ukuran dewasa ditulis **2XL**, bukan XXL, mengikuti panduan ukuran
+yang dipakai toko. Varian stok lama masih menulis XXL dan perlu diseragamkan terpisah.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1559,3 +1585,4 @@ contoh tampilan yang klien setujui menulis **XXL**. Keduanya ukuran yang sama.
 | KEP-047 | Tahap produksi ditandai pekerja lewat pindai QR | TERKUNCI |
 | KEP-048 | Biaya layanan per pesanan, disebut terbuka | TERKUNCI |
 | KEP-049 | Panduan ukuran yang menentukan ukuran mana yang boleh dipesan | TERKUNCI |
+| KEP-050 | Berat produk, potongan borongan, dan penulisan ukuran | TERKUNCI |

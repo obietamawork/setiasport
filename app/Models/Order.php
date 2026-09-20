@@ -102,12 +102,17 @@ class Order extends Model
         return max(0, $this->total - $this->sudah_dibayar);
     }
 
-    /** Nominal DP terkecil yang sah untuk order ini (KEP-005). */
+    /**
+     * Nominal DP terkecil yang sah untuk order ini (KEP-005).
+     *
+     * Dihitung dari harga SEBELUM potongan borongan (KEP-050): toko memberi
+     * potongannya saat pelunasan, bukan saat uang muka.
+     */
     public function dpMinimum(): int
     {
         $persen = (int) Setting::ambil('dp_minimum_persen', 50);
 
-        return (int) ceil($this->total * $persen / 100);
+        return (int) ceil(($this->total + $this->diskon) * $persen / 100);
     }
 
     /** Sudah melewati batas hari pengambilan (KEP-043). */

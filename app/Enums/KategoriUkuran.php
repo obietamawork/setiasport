@@ -33,7 +33,8 @@ enum KategoriUkuran: string
     {
         return match ($this) {
             self::SD, self::SMP => ['S', 'M', 'L', 'XL'],
-            self::DEWASA => ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'],
+            // Ditulis 2XL, bukan XXL, mengikuti panduan ukuran yang dipakai toko.
+            self::DEWASA => ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'],
         };
     }
 
