@@ -21,6 +21,8 @@
     </div>
 @endif
 
+<div x-data="{ terpilih: [] }">
+
 @if ($pekerjaan->isEmpty())
     <div class="kartu mt-6 p-8 text-center">
         <p class="text-lg font-bold">Antrian kosong</p>
@@ -29,9 +31,36 @@
         </p>
     </div>
 @else
-    {{-- Kartu, bukan tabel: operator produksi membuka layar ini dari HP di
-         dekat mesin, bukan dari PC (docs/04). --}}
-    <div class="mt-6 space-y-3">
+    {{-- Printing berjalan per ROLL kertas, bukan per pesanan (KEP-051): satu
+         roll memuat beberapa pesanan, dan pesanan kecil diselipkan untuk
+         menggenapi sisa kertas. Centang isinya, lalu satu QR mewakili roll itu. --}}
+    @php $rollBisa = $stage === \App\Enums\ProductionStage::PRINT; @endphp
+
+    <form method="POST" action="{{ route('panel.roll.simpan') }}" id="roll-printing"
+          @if (! $rollBisa) class="hidden" @endif>
+        @csrf
+
+        @if ($rollBisa)
+            <div class="kartu mt-6 flex flex-wrap items-center gap-3 p-4">
+                <div class="min-w-56 flex-1">
+                    <p class="font-semibold">Buat roll printing</p>
+                    <p class="mt-0.5 text-sm text-muted">
+                        Centang pesanan yang masuk satu roll kertas, lalu cetak QR-nya sekali.
+                    </p>
+                </div>
+
+                <input type="text" name="catatan" maxlength="200" class="kotak-input w-48"
+                       placeholder="Catatan roll (opsional)">
+
+                <button type="submit" class="tombol tombol-navy tombol-sm"
+                        :disabled="terpilih.length === 0">
+                    Buat roll (<span x-text="terpilih.length"></span>)
+                </button>
+            </div>
+        @endif
+    </form>
+
+    <div class="mt-3 space-y-3">
         @foreach ($pekerjaan as $item)
             @php
                 $job = $item->productionJobs->firstWhere('tahap', $stage);
@@ -40,6 +69,18 @@
 
             <div class="kartu overflow-hidden {{ $dikerjakan ? 'border-l-2 border-l-merah' : '' }}">
                 <div class="flex flex-wrap items-start gap-3 p-4">
+                    @if ($rollBisa)
+                        <label class="flex items-center pt-1"
+                               x-data="{ id: {{ $item->id }} }">
+                            <input type="checkbox" name="item[]" value="{{ $item->id }}"
+                                   form="roll-printing" class="size-4 accent-navy"
+                                   @change="$event.target.checked
+                                       ? terpilih.push(id)
+                                       : terpilih.splice(terpilih.indexOf(id), 1)">
+                            <span class="sr-only">Masukkan {{ $item->nama_produk }} ke roll</span>
+                        </label>
+                    @endif
+
                     <div class="min-w-50 flex-1">
                         <p class="font-bold">{{ $item->nama_produk }}</p>
                         <p class="mt-0.5 text-sm text-muted tabular">
@@ -106,4 +147,5 @@
         @endforeach
     </div>
 @endif
+</div>
 @endsection

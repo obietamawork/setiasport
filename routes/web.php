@@ -11,6 +11,7 @@ use App\Http\Controllers\Publik\KeranjangController;
 use App\Http\Controllers\Publik\KustomController;
 use App\Http\Controllers\Publik\LacakController;
 use App\Http\Controllers\Publik\PembatalanController;
+use App\Http\Controllers\Publik\RollController;
 use App\Http\Controllers\Publik\PesananItemController;
 use App\Http\Controllers\Publik\PesananSayaController;
 use App\Http\Controllers\Webhook\ResendController;
@@ -92,6 +93,12 @@ Route::get('/kerja/{token}', [KerjaController::class, 'show'])
     ->middleware('throttle:60,1')->name('kerja');
 Route::post('/kerja/{token}/selesai', [KerjaController::class, 'selesai'])
     ->middleware('throttle:10,1')->name('kerja.selesai');
+
+// Roll printing (KEP-051), dibuka operator lewat pindai QR di lembar roll.
+Route::get('/roll/{token}', [RollController::class, 'show'])
+    ->middleware('throttle:60,1')->name('roll');
+Route::post('/roll/{token}/selesai', [RollController::class, 'selesai'])
+    ->middleware('throttle:10,1')->name('roll.selesai');
 
 // Pengajuan pembatalan dari pelanggan (KEP-041). Dibatasi supaya satu tautan
 // tidak bisa dipakai membanjiri panel dengan pengajuan.

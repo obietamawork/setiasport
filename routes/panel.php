@@ -20,6 +20,7 @@ use App\Http\Controllers\Panel\PenyesuaianController;
 use App\Http\Controllers\Panel\PengaturanController;
 use App\Http\Controllers\Panel\PengirimanController;
 use App\Http\Controllers\Panel\PortofolioController;
+use App\Http\Controllers\Panel\RollCetakController;
 use App\Http\Controllers\Panel\PesananController;
 use App\Http\Controllers\Panel\SerahTerimaController;
 use App\Http\Controllers\Panel\WorksheetController;
@@ -115,6 +116,12 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
         Route::get('serah-terima', [SerahTerimaController::class, 'form'])
             ->middleware('izin:serah_terima.proses')->name('serah-terima');
+
+        // Roll kertas printing (KEP-051): satu roll, beberapa pesanan.
+        Route::middleware('izin:produksi.print')->prefix('roll')->name('roll.')->group(function () {
+            Route::post('/', [RollCetakController::class, 'store'])->name('simpan');
+            Route::get('{roll}', [RollCetakController::class, 'show'])->name('show');
+        });
 
         // Pekerja konveksi yang memindai QR lembar kerja (KEP-047).
         Route::middleware('izin:pengguna.kelola')->prefix('pekerja')->name('pekerja.')->group(function () {

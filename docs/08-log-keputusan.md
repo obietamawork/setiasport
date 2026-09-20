@@ -1532,6 +1532,33 @@ yang dipakai toko. Varian stok lama masih menulis XXL dan perlu diseragamkan ter
 
 ---
 
+## KEP-051 — Printing ditandai per roll kertas, bukan per pesanan
+**Status:** TERKUNCI · 2026-09-21
+
+Klien menjelaskan cara kerja mesin printing: satu roll kertas memuat beberapa pesanan
+sekaligus, dan pesanan kecil diselipkan untuk menggenapi sisa kertas. Menandainya satu
+per satu berarti operator menandai hal yang sebenarnya selesai bersamaan, dan itulah
+sebabnya status printing selalu telat diperbarui.
+
+**Keputusan:** roll jadi benda tersendiri di sistem.
+
+- Operator mencentang isi roll dari antrian printing, lalu **satu lembar roll dengan satu
+  QR** mewakili seluruh isinya.
+- Sekali pindai dan satu PIN menaikkan **seluruh pesanan di roll itu** ke tahap
+  berikutnya.
+- **Roll hanya menyentuh tahap printing.** Setelah kainnya terpisah per pesanan,
+  pekerjaannya kembali berjalan sendiri-sendiri.
+- **Pesanan yang sudah telanjur dimajukan admin dilewati diam-diam**, bukan menggagalkan
+  seluruh roll: yang dimaksud operator tetap benar, yaitu "roll ini sudah selesai
+  dicetak".
+- Pesanan yang tidak sedang berada di tahap printing **ditolak masuk roll**, lengkap
+  dengan sebutan pesanan mana yang bermasalah.
+
+Pagarnya sama dengan lembar kerja per pesanan (KEP-047): membuka tautan tidak mengubah
+apa pun, dan yang memindahkan tahap adalah PIN operator printing.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1586,3 +1613,4 @@ yang dipakai toko. Varian stok lama masih menulis XXL dan perlu diseragamkan ter
 | KEP-048 | Biaya layanan per pesanan, disebut terbuka | TERKUNCI |
 | KEP-049 | Panduan ukuran yang menentukan ukuran mana yang boleh dipesan | TERKUNCI |
 | KEP-050 | Berat produk, potongan borongan, dan penulisan ukuran | TERKUNCI |
+| KEP-051 | Printing ditandai per roll kertas, bukan per pesanan | TERKUNCI |
