@@ -53,7 +53,7 @@ class ProdukController extends Controller
 
     public function edit(Product $produk)
     {
-        $produk->load(['variants', 'priceTiers', 'options.values']);
+        $produk->load(['variants', 'priceTiers', 'options.values', 'prices', 'sizeCharts', 'sizeSurcharges']);
 
         return view('panel.produk.form', [
             'produk' => $produk,

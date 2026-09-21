@@ -37,6 +37,8 @@
                 $produk->punyaJalurReadyStock() ? ['#varian', 'Varian & stok'] : null,
                 $produk->punyaJalurKustom() ? ['#harga', 'Tier harga'] : null,
                 $produk->punyaJalurKustom() ? ['#opsi', 'Opsi'] : null,
+                $produk->punyaJalurKustom() ? ['#matriks', 'Matriks harga'] : null,
+                $produk->punyaJalurKustom() ? ['#panduan', 'Panduan ukuran'] : null,
             ]);
         @endphp
         @foreach ($bagian as [$anchor, $label])
@@ -492,6 +494,218 @@
                 Wajib dipilih
             </label>
             <button type="submit" class="tombol tombol-garis">Tambah opsi</button>
+        </form>
+    </div>
+</section>
+
+{{-- MATRIKS HARGA (KEP-052) ------------------------------------------------ --}}
+<section id="matriks" class="mt-10 max-w-4xl scroll-mt-20">
+    <h2 class="text-lg font-extrabold">Matriks harga per ukuran</h2>
+    <p class="kolom-baca mt-1 text-sm leading-relaxed text-muted">
+        Dipakai produk yang harganya berbeda menurut umur pemakainya, misalnya jersey SD,
+        SMP, dan dewasa. Isi harga dasar tiap bahan; tambahan kerah, lengan panjang, dan
+        saku diatur di bagian Opsi, jadi tidak perlu diulang di sini.
+    </p>
+
+    @php
+        $opsiHarga = $produk->options->first(fn ($o) => $o->values->contains(
+            fn ($v) => $produk->prices->contains('option_value_id', $v->id)
+        )) ?? $produk->options->first();
+
+        $kolomKategori = collect(\App\Enums\KategoriUkuran::cases())
+            ->mapWithKeys(fn ($k) => [$k->value => $k->label()])
+            ->prepend('Semua kategori', 'SEMUA');
+    @endphp
+
+    <div class="kartu mt-4 p-5">
+        @if ($produk->options->isEmpty())
+            <p class="text-sm leading-relaxed text-muted">
+                Buat dulu opsi penentu harga di bagian Opsi, biasanya "Bahan". Matriks ini
+                mengisi harga untuk tiap pilihan di opsi itu.
+            </p>
+        @else
+            <form method="POST" action="{{ route('panel.produk.matriks.simpan', $produk) }}"
+                  x-data="{ opsi: {{ $opsiHarga?->id ?? 0 }} }">
+                @csrf
+
+                <label for="opsi_id" class="label-form">Opsi penentu harga</label>
+                <select id="opsi_id" name="opsi_id" x-model.number="opsi" class="kotak-input max-w-64">
+                    @foreach ($produk->options as $o)
+                        <option value="{{ $o->id }}">{{ $o->nama }}</option>
+                    @endforeach
+                </select>
+
+                @foreach ($produk->options as $o)
+                    <div x-show="opsi === {{ $o->id }}" class="mt-4 overflow-x-auto">
+                        <table class="w-full min-w-120 text-sm">
+                            <thead>
+                                <tr class="border-b border-line text-left">
+                                    <th class="py-2 pr-3 font-medium">{{ $o->nama }}</th>
+                                    @foreach ($kolomKategori as $nilai => $label)
+                                        <th class="py-2 pr-3 font-medium">{{ $label }}</th>
+                                    @endforeach
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($o->values as $v)
+                                    <tr class="border-b border-line last:border-0">
+                                        <td class="py-2 pr-3 font-medium">{{ $v->label }}</td>
+                                        @foreach ($kolomKategori as $nilai => $label)
+                                            @php
+                                                $sel = $produk->prices->first(fn ($h) => $h->option_value_id === $v->id
+                                                    && ($h->kategori?->value ?? 'SEMUA') === $nilai);
+                                            @endphp
+                                            <td class="py-1.5 pr-3">
+                                                <input type="number" min="0" max="999999999"
+                                                       name="harga[{{ $nilai }}][{{ $v->id }}]"
+                                                       value="{{ $sel?->harga_satuan }}"
+                                                       class="kotak-input tabular w-28" placeholder="-">
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endforeach
+
+                <div class="mt-4 flex flex-wrap items-center gap-3">
+                    <button type="submit" class="tombol tombol-navy">Simpan matriks harga</button>
+                    <p class="text-xs leading-relaxed text-muted">
+                        Kolom yang dikosongkan berarti kombinasi itu tidak dijual.
+                        Pakai kolom "Semua kategori" untuk produk yang harganya sama untuk semua umur.
+                    </p>
+                </div>
+            </form>
+        @endif
+    </div>
+</section>
+
+{{-- PANDUAN UKURAN (KEP-052) ----------------------------------------------- --}}
+<section id="panduan" class="mt-10 max-w-4xl scroll-mt-20">
+    <h2 class="text-lg font-extrabold">Panduan ukuran</h2>
+    <p class="kolom-baca mt-1 text-sm leading-relaxed text-muted">
+        Daftar ini yang menentukan ukuran mana yang boleh dipesan pelanggan, sekaligus
+        tampil sebagai tabel sentimeter di halaman pemesanan. Selama kosong, sistem memakai
+        daftar ukuran bawaan.
+    </p>
+
+    @php
+        $kategoriPanduan = collect([['', 'Semua kategori']])->concat(
+            collect(\App\Enums\KategoriUkuran::cases())->map(fn ($k) => [$k->value, $k->label()])
+        );
+    @endphp
+
+    <div class="mt-4 space-y-4">
+        @foreach ($kategoriPanduan as [$nilai, $label])
+            @php
+                $baris = $produk->sizeCharts
+                    ->filter(fn ($b) => ($b->kategori?->value ?? '') === $nilai)
+                    ->values();
+                $kolom = $baris->isNotEmpty() ? $baris->first()->kolom() : ['Lebar', 'Panjang'];
+            @endphp
+
+            <details class="kartu p-5" @if ($baris->isNotEmpty()) open @endif>
+                <summary class="cursor-pointer font-semibold">
+                    {{ $label }}
+                    <span class="font-normal text-muted">
+                        &middot; {{ $baris->count() }} ukuran
+                    </span>
+                </summary>
+
+                <form method="POST" action="{{ route('panel.produk.panduan.simpan', $produk) }}"
+                      class="mt-4 space-y-3"
+                      x-data="{ baris: {{ Js::from($baris->map(fn ($b) => [
+                          'ukuran' => $b->ukuran,
+                          'nilai' => collect($b->ukuran_cm ?? [])->pluck('nilai')->all(),
+                      ])->values()) }} }">
+                    @csrf
+                    <input type="hidden" name="kategori" value="{{ $nilai }}">
+
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <label class="block">
+                            <span class="label-form">Nama kolom 1</span>
+                            <input type="text" name="kolom[0]" value="{{ $kolom[0] ?? 'Lebar' }}"
+                                   class="kotak-input" maxlength="20">
+                        </label>
+                        <label class="block">
+                            <span class="label-form">Nama kolom 2 (opsional)</span>
+                            <input type="text" name="kolom[1]" value="{{ $kolom[1] ?? 'Panjang' }}"
+                                   class="kotak-input" maxlength="20">
+                        </label>
+                    </div>
+
+                    <template x-for="(b, i) in baris" :key="i">
+                        <div class="grid gap-2 sm:grid-cols-[6rem_7rem_7rem_auto] sm:items-end">
+                            <label class="block">
+                                <span class="label-form">Ukuran</span>
+                                <input type="text" x-model="b.ukuran" :name="`baris[${i}][ukuran]`"
+                                       class="kotak-input" maxlength="10" placeholder="L">
+                            </label>
+                            <label class="block">
+                                <span class="label-form">Kolom 1 (cm)</span>
+                                <input type="number" x-model="b.nilai[0]" :name="`baris[${i}][nilai][0]`"
+                                       class="kotak-input tabular" min="0" max="1000">
+                            </label>
+                            <label class="block">
+                                <span class="label-form">Kolom 2 (cm)</span>
+                                <input type="number" x-model="b.nilai[1]" :name="`baris[${i}][nilai][1]`"
+                                       class="kotak-input tabular" min="0" max="1000">
+                            </label>
+                            <button type="button" @click="baris.splice(i, 1)"
+                                    class="tautan pb-2 text-xs text-merah">Hapus</button>
+                        </div>
+                    </template>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button type="button" @click="baris.push({ ukuran: '', nilai: [null, null] })"
+                                class="tombol tombol-garis tombol-sm">+ Tambah ukuran</button>
+                        <button type="submit" class="tombol tombol-navy tombol-sm">Simpan panduan</button>
+                        <p class="text-xs text-muted">Urutan baris menentukan urutan pilihan ukuran.</p>
+                    </div>
+                </form>
+            </details>
+        @endforeach
+    </div>
+
+    {{-- TAMBAHAN UKURAN BESAR --}}
+    <h3 class="mt-8 font-extrabold">Tambahan ukuran besar</h3>
+    <p class="kolom-baca mt-1 text-sm leading-relaxed text-muted">
+        Ukuran besar makan kain lebih banyak. Tambahan ini berlaku per potong, di luar
+        harga matriks.
+    </p>
+
+    <div class="kartu mt-3 p-5">
+        @if ($produk->sizeSurcharges->isEmpty())
+            <p class="text-sm text-muted">Belum ada tambahan ukuran.</p>
+        @else
+            <ul class="divide-y divide-line text-sm">
+                @foreach ($produk->sizeSurcharges as $t)
+                    <li class="flex items-center gap-3 py-2">
+                        <span class="w-16 font-medium">{{ $t->ukuran }}</span>
+                        <span class="tabular">+ {{ rupiah($t->tambahan_harga) }} / pcs</span>
+                        <form method="POST" action="{{ route('panel.produk.tambahan.hapus', [$produk, $t]) }}"
+                              class="ml-auto">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="tautan text-xs text-muted">Hapus</button>
+                        </form>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+
+        <form method="POST" action="{{ route('panel.produk.tambahan.simpan', $produk) }}"
+              class="mt-4 flex flex-wrap items-end gap-3 border-t border-line pt-4">
+            @csrf
+            <label class="block">
+                <span class="label-form">Ukuran</span>
+                <input type="text" name="ukuran" class="kotak-input w-24" maxlength="10" placeholder="3XL" required>
+            </label>
+            <label class="block">
+                <span class="label-form">Tambahan (Rp / pcs)</span>
+                <input type="number" name="tambahan_harga" class="kotak-input tabular w-32" min="0" required>
+            </label>
+            <button type="submit" class="tombol tombol-garis">Simpan tambahan</button>
         </form>
     </div>
 </section>

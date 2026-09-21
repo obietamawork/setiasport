@@ -307,7 +307,7 @@
 
                     @if ($panduan->isNotEmpty())
                         @foreach ($panduan as $namaKategori => $baris)
-                            @php $kolom = array_keys($baris->first()->ukuran_cm); @endphp
+                            @php $kolom = $baris->first()->kolom(); @endphp
                             <div class="mt-3 overflow-x-auto">
                                 @if ($panduan->count() > 1)
                                     <p class="mb-1 text-sm font-medium">{{ $namaKategori }}</p>
@@ -326,7 +326,7 @@
                                             <tr class="border-b border-line last:border-0">
                                                 <td class="py-1.5 pr-3 font-medium">{{ $b->ukuran }}</td>
                                                 @foreach ($kolom as $k)
-                                                    <td class="tabular py-1.5 pr-3">{{ $b->ukuran_cm[$k] ?? '-' }}</td>
+                                                    <td class="tabular py-1.5 pr-3">{{ $b->nilai($k) ?? '-' }}</td>
                                                 @endforeach
                                             </tr>
                                         @endforeach

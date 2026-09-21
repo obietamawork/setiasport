@@ -25,6 +25,7 @@ use App\Http\Controllers\Panel\PesananController;
 use App\Http\Controllers\Panel\SerahTerimaController;
 use App\Http\Controllers\Panel\WorksheetController;
 use App\Http\Controllers\Panel\ProdukController;
+use App\Http\Controllers\Panel\ProdukHargaController;
 use App\Http\Controllers\Panel\ProdukKomponenController;
 use App\Http\Controllers\Panel\StokController;
 use App\Http\Controllers\Panel\TestimoniController;
@@ -153,6 +154,14 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
                 Route::post('opsi', [ProdukKomponenController::class, 'simpanOpsi'])->name('opsi.simpan');
                 Route::delete('opsi/{opsi}', [ProdukKomponenController::class, 'hapusOpsi'])->name('opsi.hapus');
+
+                // Matriks harga, panduan ukuran, dan tambahan ukuran besar (KEP-052).
+                Route::post('matriks', [ProdukHargaController::class, 'simpanMatriks'])->name('matriks.simpan');
+                Route::post('panduan', [ProdukHargaController::class, 'simpanPanduan'])->name('panduan.simpan');
+                Route::post('tambahan-ukuran', [ProdukHargaController::class, 'simpanTambahanUkuran'])
+                    ->name('tambahan.simpan');
+                Route::delete('tambahan-ukuran/{tambahan}', [ProdukHargaController::class, 'hapusTambahanUkuran'])
+                    ->name('tambahan.hapus');
 
                 Route::post('opsi/{opsi}/nilai', [ProdukKomponenController::class, 'simpanNilai'])->name('nilai.simpan');
                 Route::delete('opsi/{opsi}/nilai/{nilai}', [ProdukKomponenController::class, 'hapusNilai'])->name('nilai.hapus');

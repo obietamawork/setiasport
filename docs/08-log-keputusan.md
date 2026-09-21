@@ -1559,6 +1559,40 @@ apa pun, dan yang memindahkan tahap adalah PIN operator printing.
 
 ---
 
+## KEP-052 — Harga dan ukuran diisi pemilik toko, bukan lewat pengembang
+**Status:** TERKUNCI · 2026-09-21
+
+Matriks harga (KEP-039), panduan ukuran (KEP-049), dan tambahan ukuran besar sempat hanya
+bisa diisi lewat seeder. Artinya tiap kali toko mengubah harga, ia harus mengirim ke
+pengembang dan menunggu. Itu menyalahi cara kerja seluruh panel ini: angka yang dipakai
+berjualan milik pemilik toko.
+
+**Keputusan:** ketiganya mendapat editor di halaman produk.
+
+- **Matriks harga disimpan sekali jalan**, bukan sel demi sel. Pemilik toko membacanya
+  sebagai satu tabel, dan menyimpan per sel akan meninggalkan tabel setengah terisi
+  begitu halamannya keburu ditutup.
+- **Sel yang dikosongkan berarti kombinasi itu tidak dijual**, dan kalkulator harga
+  memang menolaknya.
+- **Panduan ukuran punya nama kolom yang bisa diatur sendiri**, karena tiap produk
+  mengukur hal berbeda: celana lebar dan panjang, jersey lingkar dada dan panjang baju.
+- Daftar ukuran di panduan itulah yang **membatasi ukuran mana yang boleh dipesan**.
+  Mengosongkannya mengembalikan produk ke daftar bawaan sistem.
+
+**Dua jebakan database yang ditemukan saat mengerjakannya**, keduanya kini dijaga tes:
+
+1. **MySQL menganggap dua NULL berbeda di indeks unik**, sehingga baris "berlaku semua
+   kategori" tergandakan diam-diam kalau disimpan lewat `updateOrCreate` biasa.
+2. **MySQL mengurutkan ulang kunci objek JSON menurut panjangnya.** Kolom "Lingkar dada"
+   dan "Panjang" bertukar tempat sendiri, dan tabel yang dibaca pelanggan jadi berbeda
+   dari yang diketik pemilik toko. Panduan ukuran karena itu disimpan sebagai **daftar
+   berurutan** `[{nama, nilai}, ...]`, bukan peta `{nama: nilai}`.
+
+Seeder tetap ada, tetapi perannya kembali seperti semula: mengisi data awal instalasi,
+bukan satu-satunya jalan mengubah harga.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1614,3 +1648,4 @@ apa pun, dan yang memindahkan tahap adalah PIN operator printing.
 | KEP-049 | Panduan ukuran yang menentukan ukuran mana yang boleh dipesan | TERKUNCI |
 | KEP-050 | Berat produk, potongan borongan, dan penulisan ukuran | TERKUNCI |
 | KEP-051 | Printing ditandai per roll kertas, bukan per pesanan | TERKUNCI |
+| KEP-052 | Harga dan ukuran diisi pemilik toko, bukan lewat pengembang | TERKUNCI |

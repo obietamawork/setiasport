@@ -494,7 +494,13 @@ class CatalogSeeder extends Seeder
         foreach ($baris as $ukuran => [$lebar, $panjang]) {
             ProductSizeChart::updateOrCreate(
                 ['product_id' => $p->id, 'kategori' => $kategori, 'ukuran' => $ukuran],
-                ['ukuran_cm' => ['Lebar' => $lebar, 'Panjang' => $panjang], 'urutan' => $urutan++]
+                [
+                    'ukuran_cm' => [
+                        ['nama' => 'Lebar', 'nilai' => $lebar],
+                        ['nama' => 'Panjang', 'nilai' => $panjang],
+                    ],
+                    'urutan' => $urutan++,
+                ]
             );
         }
     }
