@@ -1593,6 +1593,39 @@ bukan satu-satunya jalan mengubah harga.
 
 ---
 
+## KEP-053 — Seragam olahraga, tiga jenis kaos, dan kategori barang stok
+**Status:** TERKUNCI · 2026-09-22
+
+Klien mengirim daftar harga seragam sekolah dan kaos, plus 22 kategori barang stok.
+
+**Produk baru:** seragam olahraga (kaos + training, minimum 24 set), kaos berkrah, kaos
+oblong, dan kaos katun. Semuanya memakai susunan yang sudah ada: matriks bahan kali
+kategori, ditambah opsi lengan.
+
+**Yang paling mudah meleset dan karena itu dikunci tes:** lengan panjang menambah
+Rp10.000 di hampir semua produk, **tetapi hanya Rp5.000 di kaos katun**. Tarif opsi
+memang disimpan per produk, dan kasus inilah alasannya.
+
+**Kaos berkrah dan oblong tidak dipisah jenjang sekolah**, jadi matriksnya memakai baris
+"berlaku semua kategori".
+
+**Ukuran kaos hanya M, L, dan XL.** Panduan ukurannya diisi tanpa angka sentimeter,
+karena yang dikirim klien baru daftar ukurannya; yang penting daftar itu sudah membatasi
+pesanan. Angka sentimeternya menyusul lewat editor panel (KEP-052).
+
+**Yang sengaja belum dipasang:** model Tunik dan Oversize di kaos oblong. Harganya tidak
+mengikuti pola pendek-panjang, dan perlu dipastikan dulu apakah itu produk tersendiri
+atau pilihan di dalam kaos oblong.
+
+**Berat keempat produk baru belum ada**, jadi ongkirnya belum bisa dihitung otomatis.
+
+Soal cara memasukkannya: data ini tetap ditaruh di seeder sebagai **isi awal instalasi**,
+bukan karena harga dikunci di kode. Tanpa itu, pemilik toko harus mengetik ulang seluruh
+daftar harga di hosting nanti. Editornya sudah ada (KEP-052), jadi setiap angka di sini
+bisa diubah sendiri dari panel kapan saja.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1649,3 +1682,4 @@ bukan satu-satunya jalan mengubah harga.
 | KEP-050 | Berat produk, potongan borongan, dan penulisan ukuran | TERKUNCI |
 | KEP-051 | Printing ditandai per roll kertas, bukan per pesanan | TERKUNCI |
 | KEP-052 | Harga dan ukuran diisi pemilik toko, bukan lewat pengembang | TERKUNCI |
+| KEP-053 | Seragam olahraga, tiga jenis kaos, dan kategori barang stok | TERKUNCI |

@@ -33,6 +33,7 @@ class CatalogSeeder extends Seeder
      */
     private const SKU_KUSTOM = [
         'CUST-JRS-ATASAN', 'CUST-SETELAN', 'CUST-CELANA-PENDEK', 'CUST-JAKET', 'CUST-TRAINING',
+        'CUST-SERAGAM', 'CUST-KAOS-KERAH', 'CUST-KAOS-OBLONG', 'CUST-KAOS-KATUN',
     ];
 
     public function run(): void
@@ -53,6 +54,13 @@ class CatalogSeeder extends Seeder
             $this->celanaPendekKustom($k['celana-custom']);
             $this->jaketKustom($k['jaket-custom']);
             $this->trainingKustom($k['celana-custom']);
+        }
+
+        if (! Product::where('sku', 'CUST-SERAGAM')->exists()) {
+            $this->seragamOlahraga($k['pakaian-olahraga']);
+            $this->kaosBerkrah($k['pakaian-olahraga']);
+            $this->kaosOblong($k['pakaian-olahraga']);
+            $this->kaosKatun($k['pakaian-olahraga']);
         }
 
         $this->panduanUkuranSusulan();
@@ -86,8 +94,28 @@ class CatalogSeeder extends Seeder
             'Jaket' => ['Custom' => 'jaket-custom'],
         ];
 
+        /*
+         * Kategori barang stok toko, dikirim klien apa adanya. Ditaruh sebagai
+         * kategori datar tanpa induk: toko menyebutnya per cabang olahraga,
+         * bukan per jenis barang.
+         */
+        $stok = [
+            'Volly', 'Badminton', 'Sepak Bola & Futsal', 'Basket', 'Tennis', 'Tenis Meja',
+            'Renang', 'Fitness & Gym', 'Running & Training', 'Sepatu Olahraga',
+            'Pakaian Olahraga', 'Support & Pelindung', 'Perlengkapan Olahraga / Latihan',
+            'Perlengkapan Lapangan & Pertandingan', 'Aksesori Olahraga', 'Tarraw',
+            'Tolak Peluru', 'Karambol', 'Sepeda', 'Atletik', 'Yoga', 'Taekwondo',
+        ];
+
         $hasil = [];
         $urutan = 0;
+
+        foreach ($stok as $i => $nama) {
+            $hasil[Str::slug($nama)] = Category::updateOrCreate(
+                ['slug' => Str::slug($nama)],
+                ['nama' => $nama, 'urutan' => 100 + $i]
+            );
+        }
 
         foreach ($pohon as $namaInduk => $anak) {
             $induk = Category::updateOrCreate(
@@ -304,6 +332,109 @@ class CatalogSeeder extends Seeder
         ]);
     }
 
+    /**
+     * Seragam olahraga sekolah: satu set berarti kaos DAN training panjang.
+     * Harganya matriks bahan kali kategori umur, sama seperti jersey.
+     */
+    private function seragamOlahraga(Category $kategori): void
+    {
+        $p = $this->produk($kategori, [
+            'sku' => 'CUST-SERAGAM',
+            'nama' => 'Seragam Olahraga (Kaos + Training)',
+            'fulfillment_type' => FulfillmentType::PREORDER,
+            'moq' => 24,
+            'lead_time_hari' => 10,
+            'deskripsi' => 'Satu set berisi kaos dan training panjang. Harga mengikuti bahan '
+                .'dan jenjang sekolah. Lengan panjang menambah biaya per set.',
+        ]);
+
+        $this->opsi($p, 'Bahan', [
+            ['PE Printing Lotto', 0], ['PE Printing Diadora', 0],
+            ['Katun Lotto', 0], ['Katun Diadora', 0],
+        ]);
+        $this->opsi($p, 'Model Lengan', [['Pendek', 0], ['Panjang', 10_000]]);
+
+        $this->matriksHarga($p, [
+            'SD' => ['PE Printing Lotto' => 65_000, 'PE Printing Diadora' => 75_000,
+                'Katun Lotto' => 85_000, 'Katun Diadora' => 95_000],
+            'SMP' => ['PE Printing Lotto' => 75_000, 'PE Printing Diadora' => 85_000,
+                'Katun Lotto' => 95_000, 'Katun Diadora' => 105_000],
+            'DEWASA' => ['PE Printing Lotto' => 85_000, 'PE Printing Diadora' => 95_000,
+                'Katun Lotto' => 105_000, 'Katun Diadora' => 115_000],
+        ]);
+    }
+
+    /** Kaos berkrah, harganya per bahan dan tidak dipisah jenjang sekolah. */
+    private function kaosBerkrah(Category $kategori): void
+    {
+        $p = $this->produk($kategori, [
+            'sku' => 'CUST-KAOS-KERAH',
+            'nama' => 'Kaos Berkrah',
+            'fulfillment_type' => FulfillmentType::PREORDER,
+            'moq' => 6,
+            'lead_time_hari' => 7,
+            'deskripsi' => 'Kaos berkrah polos. Harga belum termasuk bordir atau sablon; '
+                .'biayanya menyusul setelah desainnya dibicarakan.',
+        ]);
+
+        $this->opsi($p, 'Bahan', [
+            ['PE', 0], ['PE 20', 0], ['Lakos PE', 0], ['Katun', 0], ['Lakos CVC', 0],
+        ]);
+        $this->opsi($p, 'Model Lengan', [['Pendek', 0], ['Panjang', 10_000]]);
+
+        $this->matriksHarga($p, [
+            null => ['PE' => 35_000, 'PE 20' => 40_000, 'Lakos PE' => 45_000,
+                'Katun' => 60_000, 'Lakos CVC' => 70_000],
+        ]);
+    }
+
+    /**
+     * Kaos oblong. Model tunik dan oversize dari daftar harga klien BELUM
+     * dipasang: harganya tidak mengikuti pola pendek-panjang, dan perlu
+     * dipastikan dulu apakah itu produk sendiri atau pilihan di sini.
+     */
+    private function kaosOblong(Category $kategori): void
+    {
+        $p = $this->produk($kategori, [
+            'sku' => 'CUST-KAOS-OBLONG',
+            'nama' => 'Kaos Oblong',
+            'fulfillment_type' => FulfillmentType::PREORDER,
+            'moq' => 6,
+            'lead_time_hari' => 7,
+            'deskripsi' => 'Kaos oblong tanpa krah. Harga belum termasuk bordir atau sablon.',
+        ]);
+
+        $this->opsi($p, 'Bahan', [['PE', 0], ['PE 20 (Semi Katun)', 0]]);
+        $this->opsi($p, 'Model Lengan', [['Pendek', 0], ['Panjang', 10_000]]);
+
+        $this->matriksHarga($p, [
+            null => ['PE' => 25_000, 'PE 20 (Semi Katun)' => 30_000],
+        ]);
+    }
+
+    /** Kaos katun, dipisah per jenjang. Lengan panjangnya hanya +Rp5.000. */
+    private function kaosKatun(Category $kategori): void
+    {
+        $p = $this->produk($kategori, [
+            'sku' => 'CUST-KAOS-KATUN',
+            'nama' => 'Kaos Katun',
+            'fulfillment_type' => FulfillmentType::PREORDER,
+            'moq' => 6,
+            'lead_time_hari' => 7,
+            'deskripsi' => 'Kaos katun 24s atau 30s, dipisah menurut jenjang sekolah. '
+                .'Harga belum termasuk bordir atau sablon.',
+        ]);
+
+        $this->opsi($p, 'Bahan', [['Katun 24s', 0], ['Katun 30s', 0]]);
+        $this->opsi($p, 'Model Lengan', [['Pendek', 0], ['Panjang', 5_000]]);
+
+        $this->matriksHarga($p, [
+            'SD' => ['Katun 24s' => 35_000, 'Katun 30s' => 30_000],
+            'SMP' => ['Katun 24s' => 45_000, 'Katun 30s' => 35_000],
+            'DEWASA' => ['Katun 24s' => 55_000, 'Katun 30s' => 40_000],
+        ]);
+    }
+
     /** C, produk terpenting: tier, dua basis biaya, roster wajib. */
     private function jerseyFutsal(Category $kategori): void
     {
@@ -472,6 +603,32 @@ class CatalogSeeder extends Seeder
      */
     private function panduanUkuranSusulan(): void
     {
+        /*
+         * Kaos dan seragam hanya dijual M, L, dan XL. Angka sentimeternya belum
+         * dikirim klien, jadi barisnya diisi tanpa ukuran badan: yang penting
+         * daftar ukurannya sudah membatasi pesanan.
+         */
+        foreach (['CUST-SERAGAM', 'CUST-KAOS-KERAH', 'CUST-KAOS-OBLONG', 'CUST-KAOS-KATUN'] as $sku) {
+            $kaos = Product::where('sku', $sku)->first();
+
+            if (! $kaos || $kaos->sizeCharts()->exists()) {
+                continue;
+            }
+
+            $kategoriKaos = $kaos->prices()->whereNotNull('kategori')->exists()
+                ? ['SD', 'SMP', 'DEWASA']
+                : [null];
+
+            foreach ($kategoriKaos as $kat) {
+                foreach (['M', 'L', 'XL'] as $urutan => $ukuran) {
+                    ProductSizeChart::updateOrCreate(
+                        ['product_id' => $kaos->id, 'kategori' => $kat, 'ukuran' => $ukuran],
+                        ['ukuran_cm' => [], 'urutan' => $urutan]
+                    );
+                }
+            }
+        }
+
         $celana = Product::where('sku', 'CUST-CELANA-PENDEK')->first();
 
         if ($celana && $celana->sizeCharts()->doesntExist()) {
