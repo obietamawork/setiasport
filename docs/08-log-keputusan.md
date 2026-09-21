@@ -1697,7 +1697,7 @@ Risiko ukuran meleset kini ditanggung panduan ukuran yang tampil di halaman peme
 | KEP-023 | Pembayaran manual (jalur WhatsApp diganti KEP-029) | TERKUNCI |
 | KEP-024 | Halaman depan profil usaha, katalog belakangan | TERKUNCI |
 | KEP-025 | `vendor/` di volume Linux, bukan mount Windows | TERKUNCI |
-| KEP-026 | Pengiriman terbatas, khusus barang stok toko | TERKUNCI |
+| KEP-026 | Pengiriman terbatas, khusus barang stok toko | DIREVISI KEP-055 |
 | KEP-027 | Kustom dan stok toko dipisah jadi dua tab | TERKUNCI |
 | KEP-028 | Alur klien: tahap besar, subprogres produksi, gerbang pelunasan | TERKUNCI |
 | KEP-029 | Bukti bayar diunggah di web, privat, tanpa WhatsApp | TERKUNCI |
