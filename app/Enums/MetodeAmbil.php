@@ -5,9 +5,9 @@ namespace App\Enums;
 /**
  * Cara barang sampai ke pelanggan (KEP-026).
  *
- * Bawaannya selalu AMBIL_TOKO. KIRIM adalah pengecualian yang disepakati lewat
- * WhatsApp untuk pelanggan yang jauh, dan hanya sah untuk pesanan yang isinya
- * murni stok toko: barang kustom dicoba dulu di toko sebelum diserahkan.
+ * Bawaannya selalu AMBIL_TOKO, karena sebagian besar pembeli memang datang ke
+ * toko. Sejak KEP-055 barang kustom pun boleh dikirim: pemesan dari luar kota
+ * terlalu banyak untuk ditolak.
  */
 enum MetodeAmbil: string
 {

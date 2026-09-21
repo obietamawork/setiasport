@@ -1626,6 +1626,48 @@ bisa diubah sendiri dari panel kapan saja.
 
 ---
 
+## KEP-054 — Pesanan bisa diketik admin, dan email pelanggan jadi opsional
+**Status:** TERKUNCI · 2026-09-22
+
+Klien minta pesanan reseller dan pembeli yang datang ke toko tetap masuk sistem, alasannya
+lugas: *"biar bisa tak suruh cek progres di website langsung."* Selama ini pesanan seperti
+itu hanya ada di buku, sehingga pelanggan harus dijawab manual dan konveksi mengerjakannya
+tanpa lembar kerja maupun QR penanda tahap.
+
+**Keputusan:** panel mendapat formulir pesanan baru, dan pesanannya **melewati jalan yang
+sama persis dengan pesanan web**. Pembuatan pesanan di Checkout dipecah jadi dua: membaca
+keranjang, dan membuat pesanan dari daftar baris. Dua jalur pembuatan pesanan yang ditulis
+terpisah pasti berselisih suatu hari.
+
+**Email pelanggan jadi opsional.** Dulu wajib karena ia satu-satunya kanal pemberitahuan
+otomatis (KEP-004). Pembeli di toko sering hanya punya nomor WhatsApp, dan memaksa admin
+mengarang alamat palsu jauh lebih buruk daripada tidak punya alamat: pemberitahuan terkirim
+ke ruang hampa, dan tidak ada yang tahu pelanggannya tidak pernah dikabari. Pengirim email
+sekarang berhenti dengan jujur untuk pelanggan tanpa email, tanpa meninggalkan baris log
+"terkirim" yang palsu.
+
+**Pesanan manual tidak punya batas waktu bayar.** Uangnya sering sudah diterima di toko,
+dan penjadwal yang membatalkannya tengah malam akan menghapus pesanan yang justru sedang
+dikerjakan.
+
+**Uang yang sudah diterima dicatat di formulir yang sama**, lewat baris tagihan yang memang
+sudah dibuat pesanan itu, bukan baris baru: dua tagihan untuk satu pesanan membuat sisa
+tagihannya salah.
+
+---
+
+## KEP-055 — Barang kustom boleh dikirim
+**Status:** TERKUNCI · 2026-09-22
+
+KEP-026 mewajibkan barang kustom diambil di toko, supaya ukuran yang meleset bisa
+diperbaiki saat itu juga. Klien mencabutnya: pemesan dari luar kota terlalu banyak untuk
+ditolak, dan menolak mengirim berarti menolak pesanannya.
+
+Risiko ukuran meleset kini ditanggung panduan ukuran yang tampil di halaman pemesanan
+(KEP-049), bukan dengan melarang pengiriman.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1683,3 +1725,5 @@ bisa diubah sendiri dari panel kapan saja.
 | KEP-051 | Printing ditandai per roll kertas, bukan per pesanan | TERKUNCI |
 | KEP-052 | Harga dan ukuran diisi pemilik toko, bukan lewat pengembang | TERKUNCI |
 | KEP-053 | Seragam olahraga, tiga jenis kaos, dan kategori barang stok | TERKUNCI |
+| KEP-054 | Pesanan bisa diketik admin, dan email pelanggan jadi opsional | TERKUNCI |
+| KEP-055 | Barang kustom boleh dikirim | TERKUNCI |

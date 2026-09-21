@@ -39,7 +39,32 @@ class Checkout
 
         abort_if($isi->isEmpty(), 422, 'Keranjang kosong.');
 
-        return DB::transaction(function () use ($isi, $pelanggan, $tipePembayaran) {
+        $order = $this->buat($isi, $pelanggan, $tipePembayaran);
+
+        $this->keranjang->bersihkan();
+
+        return $order;
+    }
+
+    /**
+     * Membuat pesanan dari daftar baris yang sudah dihitung harganya.
+     *
+     * Dipisah dari proses() supaya pesanan yang diketik admin di panel (KEP-054)
+     * melewati jalan yang sama persis dengan pesanan dari web: nomor pesanan,
+     * token halaman lacak, reservasi stok, antrian produksi, dan pencatatan
+     * potongan borongan. Dua jalur pembuatan pesanan yang ditulis terpisah pasti
+     * berselisih suatu hari.
+     *
+     * @param  \Illuminate\Support\Collection<int, array<string, mixed>>  $isi
+     * @param  array{nama:string, email:string, no_hp:string, catatan:?string}  $pelanggan
+     */
+    public function buat(
+        $isi,
+        array $pelanggan,
+        string $tipePembayaran,
+        bool $manual = false,
+    ): Order {
+        return DB::transaction(function () use ($isi, $pelanggan, $tipePembayaran, $manual) {
             $customer = Customer::firstOrNew(['email' => $pelanggan['email']]);
 
             // Profil pelanggan yang akunnya sudah aktif tidak boleh ditimpa oleh
@@ -59,7 +84,15 @@ class Checkout
                 'status' => OrderStatus::MENUNGGU_PEMBAYARAN,
                 'access_token' => Order::tokenBaru(),
                 'tipe_pembayaran' => $tipePembayaran,
-                'kadaluarsa_pada' => now()->addHours((int) Setting::ambil('batas_bayar_jam', 24)),
+                /*
+                 * Pesanan yang diketik admin tidak punya batas waktu bayar
+                 * (KEP-054): uangnya sering sudah diterima di toko, dan
+                 * penjadwal yang membatalkannya tengah malam akan menghapus
+                 * pesanan yang sebenarnya sedang dikerjakan.
+                 */
+                'kadaluarsa_pada' => $manual
+                    ? null
+                    : now()->addHours((int) Setting::ambil('batas_bayar_jam', 24)),
                 'catatan' => $pelanggan['catatan'] ?? null,
 
                 // Dibekukan di sini (KEP-048). Tarifnya boleh berubah nanti tanpa
@@ -139,11 +172,9 @@ class Checkout
             OrderStatusLog::create([
                 'order_id' => $order->id,
                 'ke' => OrderStatus::MENUNGGU_PEMBAYARAN->value,
-                'catatan' => 'Pesanan dibuat pelanggan.',
+                'catatan' => $manual ? 'Pesanan diketik admin di panel.' : 'Pesanan dibuat pelanggan.',
                 'created_at' => now(),
             ]);
-
-            $this->keranjang->bersihkan();
 
             return $order;
         });

@@ -29,10 +29,21 @@ class PengirimEmail
         'pengingat-ambil' => 'Pengingat: pesanan %s masih menunggu diambil',
     ];
 
-    public function kirim(Order $order, string $template): EmailLog
+    /**
+     * Mengembalikan null untuk pelanggan tanpa alamat email (KEP-054): pesanan
+     * yang diketik admin sering datang dari pembeli yang hanya punya nomor
+     * WhatsApp. Yang tidak boleh terjadi adalah baris log "terkirim" ke alamat
+     * kosong, karena dashboard memakainya untuk memutuskan siapa yang perlu
+     * dihubungi manual.
+     */
+    public function kirim(Order $order, string $template): ?EmailLog
     {
         $subjek = sprintf(self::SUBJEK[$template], $order->kode);
         $ke = $order->customer->email;
+
+        if (blank($ke)) {
+            return null;
+        }
 
         // Baris log dibuat lebih dulu supaya id-nya bisa ikut sebagai header,
         // dan id pesan dari Resend punya tempat untuk dicatat balik.

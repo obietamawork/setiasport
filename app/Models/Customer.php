@@ -108,6 +108,10 @@ class Customer extends Authenticatable
 
     public function getEmailSamarAttribute(): string
     {
+        if (blank($this->email)) {
+            return 'tanpa email';
+        }
+
         [$lokal, $domain] = array_pad(explode('@', $this->email, 2), 2, '');
         $samar = strlen($lokal) <= 2 ? $lokal : substr($lokal, 0, 2).str_repeat('*', strlen($lokal) - 2);
 

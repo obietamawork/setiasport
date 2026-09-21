@@ -43,16 +43,12 @@ class PengirimanController extends Controller
         $metode = MetodeAmbil::from($data['metode_ambil']);
 
         /*
-         * Barang kustom dicoba dulu di toko; kalau ukurannya meleset kami
-         * perbaiki saat itu juga. Dijaga di sini, bukan hanya disembunyikan di
-         * tampilan, karena inilah satu-satunya tempat yang pasti dilewati.
+         * Barang kustom dulu wajib diambil di toko supaya ukuran yang meleset
+         * bisa diperbaiki saat itu juga (KEP-026). Klien mencabutnya: banyak
+         * pemesan datang dari luar kota, dan menolak mengirim berarti menolak
+         * pesanannya (KEP-055). Risiko ukuran meleset ditanggung dengan panduan
+         * ukuran yang kini tampil di halaman pemesanan (KEP-049).
          */
-        if ($metode === MetodeAmbil::KIRIM && $pesanan->punyaKustom()) {
-            return back()->withErrors(
-                'Pesanan ini memuat barang kustom, dan barang kustom diambil di toko. '
-                .'Kalau pelanggan tetap ingin dikirim, pisahkan barang stoknya jadi pesanan tersendiri.'
-            );
-        }
 
         if ($metode === MetodeAmbil::KIRIM && trim((string) ($data['alamat_kirim'] ?? '')) === '') {
             return back()->withErrors('Tulis alamat lengkapnya. Tanpa itu paket tidak bisa dibuatkan resi.');

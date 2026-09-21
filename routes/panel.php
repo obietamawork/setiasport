@@ -22,6 +22,7 @@ use App\Http\Controllers\Panel\PengirimanController;
 use App\Http\Controllers\Panel\PortofolioController;
 use App\Http\Controllers\Panel\RollCetakController;
 use App\Http\Controllers\Panel\PesananController;
+use App\Http\Controllers\Panel\PesananManualController;
 use App\Http\Controllers\Panel\SerahTerimaController;
 use App\Http\Controllers\Panel\WorksheetController;
 use App\Http\Controllers\Panel\ProdukController;
@@ -43,6 +44,12 @@ Route::prefix('panel')->name('panel.')->group(function () {
     Route::middleware('auth:web')->group(function () {
         Route::post('/keluar', [AuthController::class, 'keluar'])->name('keluar');
         Route::get('/', DashboardController::class)->name('dashboard');
+
+        // Pesanan yang diketik admin untuk pembeli offline (KEP-054).
+        Route::middleware('izin:order.kelola')->group(function () {
+            Route::get('pesanan/baru', [PesananManualController::class, 'form'])->name('pesanan.baru');
+            Route::post('pesanan/baru', [PesananManualController::class, 'simpan'])->name('pesanan.baru.simpan');
+        });
 
         Route::middleware('izin:order.lihat')->group(function () {
             Route::get('pesanan', [PesananController::class, 'index'])->name('pesanan.index');

@@ -7,8 +7,16 @@
 <div class="kop-halaman">
     <div>
         <h1 class="kop-judul">Pesanan</h1>
-        <p class="kop-catatan">Semua pesanan yang masuk lewat web, terbaru di atas.</p>
+        <p class="kop-catatan">
+            Pesanan dari web maupun yang diketik admin untuk pembeli di toko, terbaru di atas.
+        </p>
     </div>
+
+    @if (auth('web')->user()->punyaIzin('order.kelola'))
+        <a href="{{ route('panel.pesanan.baru') }}" class="tombol tombol-navy tombol-sm">
+            Pesanan baru
+        </a>
+    @endif
 </div>
 
 {{-- Kustom dan stok toko dipisah karena alurnya berbeda (KEP-027). Ini tab,

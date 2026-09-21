@@ -20,11 +20,11 @@ use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
- * Pengiriman terbatas untuk barang stok toko (KEP-026).
+ * Pengiriman pesanan (KEP-026, dilonggarkan KEP-055).
  *
- * Yang paling penting diuji bukan jalan mulusnya, melainkan penjaganya: barang
- * kustom tidak boleh dikirim, paket tidak boleh berangkat sebelum lunas, dan
- * pesanan yang dikirim tidak boleh bisa diserahkan lewat meja kasir.
+ * Yang paling penting diuji bukan jalan mulusnya, melainkan penjaganya: paket
+ * tidak boleh berangkat sebelum lunas, alamat tidak boleh kosong, dan pesanan
+ * yang dikirim tidak boleh bisa diserahkan lewat meja kasir.
  */
 class PengirimanTest extends TestCase
 {
@@ -112,7 +112,11 @@ class PengirimanTest extends TestCase
         $this->assertSame(OrderStatus::SELESAI, $order->fresh()->status);
     }
 
-    public function test_barang_kustom_tidak_boleh_dikirim(): void
+    /**
+     * Dulu barang kustom wajib diambil di toko (KEP-026). Klien mencabutnya
+     * karena pemesan dari luar kota terlalu banyak untuk ditolak (KEP-055).
+     */
+    public function test_barang_kustom_boleh_dikirim(): void
     {
         $jersey = Product::where('sku', 'JRS-FUTSAL-FP')->firstOrFail();
 
@@ -135,9 +139,9 @@ class PengirimanTest extends TestCase
                 'metode_ambil' => 'KIRIM',
                 'alamat_kirim' => 'Jalan Mawar 5, Wonogiri',
             ])
-            ->assertSessionHasErrors();
+            ->assertSessionHas('sukses');
 
-        $this->assertSame(MetodeAmbil::AMBIL_TOKO, $order->fresh()->metode_ambil);
+        $this->assertSame(MetodeAmbil::KIRIM, $order->fresh()->metode_ambil);
     }
 
     public function test_alamat_wajib_diisi_saat_memilih_kirim(): void
