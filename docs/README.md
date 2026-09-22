@@ -1,7 +1,7 @@
 # Dokumentasi Setia Sport
 
 Toko alat olahraga + workshop kustom (jersey dll). Satu aplikasi web, dua alur pesanan,
-tracking pesanan sampai **diambil di toko**, atau dikirim untuk barang stok (KEP-026).
+tracking pesanan sampai **diambil di toko atau sampai di alamat pelanggan** (KEP-058).
 
 ## Daftar Dokumen
 

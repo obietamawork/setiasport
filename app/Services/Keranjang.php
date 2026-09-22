@@ -228,6 +228,23 @@ class Keranjang
         );
     }
 
+    /**
+     * Berat seluruh isi keranjang, dipakai untuk menghitung ongkir (KEP-058).
+     *
+     * Produk yang beratnya belum diisi memakai berat bawaan dari Pengaturan,
+     * bukan nol: paket seberat nol gram membuat penyedia ongkir menolak
+     * menghitung, dan pelanggan kehilangan pilihan kurirnya gara-gara satu
+     * kolom master yang lupa diisi.
+     */
+    public function beratGram(): int
+    {
+        $bawaan = (int) \App\Models\Setting::ambil('berat_bawaan_gram', 300);
+
+        return (int) $this->isi()->sum(
+            fn (array $b) => max(1, (int) ($b['produk']->berat_gram ?: $bawaan)) * $b['qty']
+        );
+    }
+
     public function adaMasalah(): bool
     {
         return $this->isi()->contains(fn (array $b) => $b['masalah'] !== null);

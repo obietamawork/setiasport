@@ -19,9 +19,11 @@ use Illuminate\Validation\Rule;
  * di depan meja kasir. Yang dicatat di sini hanya apa yang benar-benar diketahui
  * orang di toko: alamat yang disepakati, nama jasa kirim, dan nomor resi.
  *
- * Ongkirnya TIDAK dicatat di sini. Ia masuk sebagai baris penyesuaian biaya
- * (KEP-007) supaya pelanggan melihatnya sebagai angka yang bisa dijelaskan,
- * bukan sebagai selisih yang muncul entah dari mana.
+ * Ongkirnya kini punya kolom sendiri (KEP-058), bukan lagi baris penyesuaian
+ * biaya: pelanggan yang memilih dikirim di checkout sudah melihat angkanya
+ * sebelum memesan, dan penyesuaian biaya harus tetap berarti "ada yang berubah
+ * setelah disepakati". Selama penyedia ongkir belum dinyalakan, angkanya
+ * diketik di sini setelah paket ditimbang di konter.
  */
 class PengirimanController extends Controller
 {
@@ -38,7 +40,12 @@ class PengirimanController extends Controller
         $data = $request->validate([
             'metode_ambil' => ['required', Rule::enum(MetodeAmbil::class)],
             'alamat_kirim' => ['nullable', 'string', 'max:500'],
-        ], [], ['metode_ambil' => 'cara pengambilan', 'alamat_kirim' => 'alamat pengiriman']);
+            'ongkir' => ['nullable', 'integer', 'min:0', 'max:10000000'],
+        ], [], [
+            'metode_ambil' => 'cara pengambilan',
+            'alamat_kirim' => 'alamat pengiriman',
+            'ongkir' => 'ongkos kirim',
+        ]);
 
         $metode = MetodeAmbil::from($data['metode_ambil']);
 
@@ -54,15 +61,24 @@ class PengirimanController extends Controller
             return back()->withErrors('Tulis alamat lengkapnya. Tanpa itu paket tidak bisa dibuatkan resi.');
         }
 
+        $ongkir = (int) ($data['ongkir'] ?? 0);
+
         $pesanan->update([
             'metode_ambil' => $metode,
             'alamat_kirim' => $metode === MetodeAmbil::KIRIM ? $data['alamat_kirim'] : null,
+            // Pesanan yang batal dikirim tidak boleh menyisakan ongkir di
+            // tagihannya. Dikosongkan di sini, bukan dipercayakan kepada orang
+            // yang menyetelnya, karena yang tertinggal adalah uang pelanggan.
+            'ongkir' => $metode === MetodeAmbil::KIRIM ? $ongkir : 0,
         ]);
 
-        ActivityLog::catat('pesanan.pengiriman-disetel', $pesanan, ['metode' => $metode->value]);
+        ActivityLog::catat('pesanan.pengiriman-disetel', $pesanan, [
+            'metode' => $metode->value,
+            'ongkir' => $metode === MetodeAmbil::KIRIM ? $ongkir : 0,
+        ]);
 
         return back()->with('sukses', $metode === MetodeAmbil::KIRIM
-            ? 'Pesanan ini akan dikirim. Jangan lupa catat ongkirnya sebagai penyesuaian biaya.'
+            ? 'Pesanan ini akan dikirim'.($ongkir > 0 ? ', ongkir '.rupiah($ongkir).' masuk tagihan.' : '. Ongkirnya belum diisi.')
             : 'Pesanan ini kembali ke pengambilan di toko.');
     }
 

@@ -44,9 +44,10 @@ dari pekerjaan nyata yang diselesaikan operator.
 > menggantikannya jauh lebih murah: estimasi tanggal siap ambil + kode ambil +
 > verifikasi saat serah terima.
 >
-> Pengiriman untuk barang stok (KEP-026) tidak membatalkan itu, justru menegaskannya:
-> yang ditambahkan cuma satu kolom nomor resi dan satu kolom alamat, bukan mesin ongkir.
-> Barang kustom tetap wajib diambil di toko, karena ukurannya perlu dicoba.
+> Pengiriman tidak membatalkan itu. Pelanggan memilih sendiri kirim atau ambil di
+> checkout, lengkap dengan kurir dan ongkirnya (KEP-058); yang ambil di toko tetap
+> mendapat kode ambil dan verifikasi serah terima. Barang kustom pun boleh dikirim
+> sejak klien mencabut larangannya (KEP-055).
 
 ## Dua sisi, satu masalah yang sama
 

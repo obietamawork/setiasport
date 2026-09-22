@@ -17,7 +17,12 @@
       <p style="margin:0 0 6px;">{{ setting('toko_alamat') }}</p>
       <p style="margin:0 0 6px;">Jam buka:<br>{{ baris_html(setting('toko_jam_buka')) }}</p>
       <p style="margin:0;">
-        Pesanan diambil sendiri di toko. Ada pertanyaan atau komplain? Hubungi kami lewat {{ kanal_kontak() }}.
+        @if (isset($order) && $order->dikirim())
+          Pesanan ini dikirim ke alamat Anda.
+        @else
+          Pesanan diambil sendiri di toko.
+        @endif
+        Ada pertanyaan atau komplain? Hubungi kami lewat {{ kanal_kontak() }}.
       </p>
     </div>
   </div>

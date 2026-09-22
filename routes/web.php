@@ -4,6 +4,7 @@ use App\Http\Controllers\BuktiBayarController;
 use App\Http\Controllers\Publik\AkunController;
 use App\Http\Controllers\Publik\BerandaController;
 use App\Http\Controllers\Publik\CheckoutController;
+use App\Http\Controllers\Publik\OngkirController;
 use App\Http\Controllers\Publik\CsController;
 use App\Http\Controllers\Publik\KatalogController;
 use App\Http\Controllers\Publik\KerjaController;
@@ -34,6 +35,16 @@ Route::delete('/keranjang', [KeranjangController::class, 'hapus'])->name('keranj
 
 Route::get('/checkout', [CheckoutController::class, 'form'])->name('checkout');
 Route::post('/checkout', [CheckoutController::class, 'proses'])->name('checkout.proses');
+
+/*
+ * Pilihan pengiriman di checkout (KEP-058). Dibatasi lajunya karena tiap
+ * panggilan ke penyedia ongkir berbiaya, dan kotak pencarian yang mengetik
+ * sendiri adalah cara termudah menghabiskan saldo orang lain.
+ */
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/pengiriman/area', [OngkirController::class, 'area'])->name('pengiriman.area');
+    Route::get('/pengiriman/tarif', [OngkirController::class, 'tarif'])->name('pengiriman.tarif');
+});
 
 /*
  * Akun pelanggan: jalur kedua, bukan pengganti (KEP-020). Tautan bertoken di

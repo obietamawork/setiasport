@@ -484,6 +484,17 @@
                     <dd class="tabular">{{ rupiah($order->biaya_layanan) }}</dd>
                 </div>
             @endif
+            {{-- Ongkir ditulis walau masih nol (KEP-058): pelanggan yang minta
+                 dikirim berhak tahu angkanya belum masuk, bukan menemukan
+                 tagihannya bertambah diam-diam nanti. --}}
+            @if ($order->dikirim())
+                <div class="flex justify-between gap-3 text-muted">
+                    <dt>Ongkos kirim</dt>
+                    <dd class="tabular">
+                        {{ $order->ongkir > 0 ? rupiah($order->ongkir) : 'dihitung dulu, menyusul' }}
+                    </dd>
+                </div>
+            @endif
             <div class="flex justify-between gap-3">
                 <dt class="font-semibold">Total</dt>
                 <dd class="tabular font-semibold">{{ rupiah($order->total) }}</dd>

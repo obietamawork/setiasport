@@ -1722,6 +1722,49 @@ sesungguhnya, dan itu diperiksa sekali saat kuncinya sudah ada.
 
 ---
 
+## KEP-058 — Pelanggan memilih sendiri kirim atau ambil, ongkir jadi baris tagihan
+**Status:** TERKUNCI · 2026-09-22
+
+Checkout dulu menulis "pesanan diambil sendiri di toko" dan menyuruh pemesan luar kota
+mengabari lewat WhatsApp kalau mau dikirim. Itu bertentangan dengan KEP-040 (WhatsApp
+bantuan, bukan jalur pemesanan) sekaligus dengan KEP-055 (barang kustom boleh dikirim).
+
+**Keputusan: pilihan kirim atau ambil ada di halaman checkout**, lengkap dengan alamat,
+pencarian kota tujuan, dan daftar kurir beserta harganya, semua sebelum tombol pesan
+ditekan.
+
+**Ongkir punya kolomnya sendiri di pesanan, bukan penyesuaian biaya.** KEP-007 menyediakan
+penyesuaian biaya untuk hal yang berubah SETELAH kesepakatan; ongkir yang dipilih sendiri
+oleh pelanggan sebelum memesan bukan perubahan. Menyamakan keduanya membuat riwayat
+pesanan tidak bisa lagi menjawab "apa yang berubah setelah saya bayar".
+
+**Angkanya dibekukan di pesanan** (seperti biaya layanan, KEP-048): tarif kurir berubah
+sewaktu-waktu, tagihan yang sudah disepakati tidak.
+
+**Berat dan harga dihitung ulang di server** (KEP-009). Berat dijumlahkan dari isi
+keranjang, bukan diterima dari formulir, dan kode kurir yang dikirim browser hanya dipakai
+untuk mencocokkan; harganya selalu dari daftar yang baru saja dihitung. Kurir yang sudah
+tidak ada di daftar ditolak dengan permintaan memilih ulang, bukan diam-diam dianggap
+gratis.
+
+**Penyedia mati atau error tidak menggagalkan pemesanan.** Alamatnya tercatat, ongkirnya
+diisi admin di halaman pesanan, dan pelanggan diberi tahu terus terang bahwa angkanya
+menyusul. Itu bukan keadaan darurat: sampai kunci Biteship ada, itulah cara kerja normal
+toko.
+
+**Uang muka tidak menghitung ongkir.** DP adalah tanda jadi atas barangnya; ongkos kirim
+dibayar bersama pelunasan, dan paket memang hanya berangkat setelah lunas.
+
+**Gratis ongkir di atas nominal tertentu** disediakan sebagai pengaturan yang bisa diisi
+pemilik toko (0 berarti mati), menjawab permintaan klien memotong ongkir untuk belanja
+besar tanpa perlu mengubah harga barangnya.
+
+Sekalian dibereskan: `Order::bolehDikirim()` masih melarang barang kustom berangkat,
+padahal KEP-026 sudah dicabut KEP-055. Kalau dibiarkan, pesanan kustom yang memilih dikirim
+akan tersangkut tanpa jalan keluar di panel.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1783,3 +1826,4 @@ sesungguhnya, dan itu diperiksa sekali saat kuncinya sudah ada.
 | KEP-055 | Barang kustom boleh dikirim | TERKUNCI |
 | KEP-056 | Lembar kerja memuat desainnya, bukan nomor pelanggan | TERKUNCI |
 | KEP-057 | Ongkir dan pelacakan lewat Biteship, di belakang satu lapisan | TERKUNCI |
+| KEP-058 | Pelanggan memilih sendiri kirim atau ambil, ongkir jadi baris tagihan | TERKUNCI |

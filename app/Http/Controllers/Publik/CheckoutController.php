@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Publik;
 
 use App\Http\Controllers\Controller;
 use App\Services\Checkout;
+use App\Enums\MetodeAmbil;
 use App\Services\Keranjang;
+use App\Services\Ongkir\Pengiriman;
+use App\Services\Ongkir\PilihanKirim;
 use App\Services\PengirimEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,6 +21,7 @@ class CheckoutController extends Controller
         private Keranjang $keranjang,
         private Checkout $checkout,
         private PengirimEmail $email,
+        private Pengiriman $pengiriman,
     ) {}
 
     public function form()
@@ -37,7 +41,26 @@ class CheckoutController extends Controller
             'bolehDp' => $isi->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::PREORDER),
             'persenDp' => (int) setting('dp_minimum_persen', 50),
             'biayaLayanan' => (int) setting('biaya_layanan', 0),
+            /*
+             * Dihitung dengan aturan yang sama persis dengan Order::dpMinimum():
+             * dari harga SEBELUM potongan borongan (KEP-050) dan tanpa ongkir
+             * (KEP-058). Angka uang muka yang tertulis di sini harus sama dengan
+             * yang ditagih sesudahnya; selisih sedikit pun terbaca sebagai
+             * tagihan yang diam-diam dinaikkan.
+             */
+            'dpMinimum' => (int) ceil(
+                ((int) $isi->sum(fn ($b) => $b['rincian']?->subtotal ?? 0) + (int) setting('biaya_layanan', 0))
+                * (int) setting('dp_minimum_persen', 50) / 100
+            ),
             'pelanggan' => Auth::guard('pelanggan')->user(),
+
+            // Pengiriman (KEP-058). Saat penyedia ongkirnya belum dinyalakan,
+            // pelanggan tetap boleh minta dikirim: alamatnya dicatat dan
+            // ongkirnya menyusul dari admin. Menyembunyikan pilihannya berarti
+            // menolak pemesan luar kota, dan itu justru yang mau dihindari.
+            'ongkirOtomatis' => $this->pengiriman->otomatis(),
+            'gratisOngkirMulai' => $this->pengiriman->gratisMulai(),
+            'beratGram' => $this->keranjang->beratGram(),
         ]);
     }
 
@@ -73,6 +96,54 @@ class CheckoutController extends Controller
         $this->email->kirimKonfirmasiAkun($pelanggan, route('daftar.konfirmasi', $token));
     }
 
+    /**
+     * Cara pesanan ini diserahkan, dihitung ulang di server (KEP-009).
+     *
+     * Harga ongkir dari formulir tidak dipakai sama sekali: yang masuk pesanan
+     * adalah tarif yang baru saja ditanyakan lagi ke penyedia. Pilihan yang
+     * sudah hilang dari daftar ditolak, bukan diam-diam dianggap gratis.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function pilihanKirim(array $data): PilihanKirim
+    {
+        if (($data['metode_ambil'] ?? 'AMBIL_TOKO') !== 'KIRIM') {
+            return PilihanKirim::ambilDiToko();
+        }
+
+        $alamat = trim((string) ($data['alamat_kirim'] ?? ''));
+        $area = trim((string) ($data['area_tujuan'] ?? ''));
+        $kode = trim((string) ($data['tarif'] ?? ''));
+
+        // Penyedia ongkirnya mati, atau tujuannya belum ketemu di daftar area.
+        // Pesanannya tetap dibuat: alamatnya tercatat dan ongkirnya menyusul
+        // dari admin, persis cara kerja toko sebelum ada hitungan otomatis.
+        if (! $this->pengiriman->otomatis() || $area === '' || $kode === '') {
+            return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area !== '' ? $area : null);
+        }
+
+        $pilihan = $this->pengiriman->pilihan(
+            $area, $this->keranjang->beratGram(), $this->keranjang->total()
+        );
+
+        // Penyedianya sedang tidak bisa menjawab. Sama seperti saat ia mati:
+        // pesanan tetap jadi, ongkirnya menyusul. Menggagalkan checkout karena
+        // API pihak ketiga sedang bermasalah berarti kehilangan pesanan.
+        if ($pilihan === []) {
+            return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area);
+        }
+
+        $tarif = collect($pilihan)->first(fn ($t) => $t->kode() === $kode);
+
+        if ($tarif === null) {
+            throw ValidationException::withMessages([
+                'tarif' => 'Pilihan pengirimannya sudah tidak berlaku. Pilih ulang kurirnya, ya.',
+            ]);
+        }
+
+        return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area, $tarif);
+    }
+
     public function proses(Request $request): RedirectResponse
     {
         $this->isiOtomatis($request);
@@ -93,6 +164,13 @@ class CheckoutController extends Controller
             'email' => ['required', 'email', 'max:150'],
             'no_hp' => ['required', 'string', 'max:20', 'regex:/^[0-9+\-\s]+$/'],
             'catatan' => ['nullable', 'string', 'max:500'],
+
+            // Pengiriman (KEP-058). Alamat wajib kalau minta dikirim; kurirnya
+            // hanya wajib kalau memang ada daftar tarif untuk dipilih.
+            'metode_ambil' => ['nullable', 'in:AMBIL_TOKO,KIRIM'],
+            'alamat_kirim' => ['nullable', 'string', 'max:500', 'required_if:metode_ambil,KIRIM'],
+            'area_tujuan' => ['nullable', 'string', 'max:60'],
+            'tarif' => ['nullable', 'string', 'max:60'],
             // Longgar dengan sengaja: keranjang berisi barang stok saja tidak
             // menampilkan pilihan ini, dan lunas adalah satu-satunya arti yang
             // masuk akal di sana.
@@ -107,10 +185,14 @@ class CheckoutController extends Controller
             'password.confirmed' => 'Ulangi kata sandi belum sama.',
             'email.required' => 'Email wajib diisi: ke sanalah tautan pesanan dan kabar progres dikirim.',
             'no_hp.regex' => 'Nomor HP hanya boleh berisi angka, spasi, tanda plus, dan strip.',
-            'setuju.accepted' => 'Centang persetujuan pengambilan di toko untuk melanjutkan.',
+            'setuju.accepted' => 'Centang persetujuannya dulu untuk melanjutkan.',
+            'alamat_kirim.required_if' => 'Tulis alamat lengkapnya. Tanpa itu paket tidak bisa dibuatkan resi.',
         ], [
             'nama' => 'nama', 'email' => 'email', 'no_hp' => 'nomor HP',
+            'alamat_kirim' => 'alamat pengiriman',
         ]);
+
+        $kirim = $this->pilihanKirim($data);
 
         $adaKustom = $this->keranjang->isi()
             ->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::PREORDER);
@@ -118,7 +200,7 @@ class CheckoutController extends Controller
         $tipe = (($data['tipe_pembayaran'] ?? 'LUNAS') === 'DP' && $adaKustom) ? 'DP' : 'LUNAS';
 
         try {
-            $order = $this->checkout->proses($data, $tipe);
+            $order = $this->checkout->proses($data, $tipe, $kirim);
         } catch (\RuntimeException $e) {
             // Umumnya stok habis diambil pembeli lain di detik terakhir.
             throw ValidationException::withMessages(['nama' => $e->getMessage()]);
@@ -127,6 +209,10 @@ class CheckoutController extends Controller
         $this->email->kirim($order, 'order-dibuat');
 
         $pesan = 'Pesanan Anda dibuat. Rincian pembayaran ada di bawah.';
+
+        if ($kirim->dikirim() && $kirim->ongkir() === 0 && ! $this->pengiriman->otomatis()) {
+            $pesan .= ' Ongkos kirimnya kami hitung dulu setelah paket ditimbang, lalu muncul di tagihan ini.';
+        }
 
         if ($request->boolean('buat_akun')) {
             $this->buatkanAkun($order->customer, $request->string('password')->toString());

@@ -21,6 +21,7 @@ class Order extends Model
 {
     protected $fillable = [
         'kode', 'customer_id', 'status', 'access_token', 'tipe_pembayaran', 'diskon', 'biaya_layanan',
+        'ongkir', 'area_tujuan', 'layanan_kirim',
         'target_siap_pada', 'kadaluarsa_pada', 'siap_pada', 'diambil_pada',
         'kode_ambil', 'diambil_oleh', 'diserahkan_oleh', 'catatan',
         'metode_ambil', 'alamat_kirim', 'jasa_kirim', 'no_resi',
@@ -89,6 +90,7 @@ class Order extends Model
         return $this->subtotal
             + (int) $this->adjustments->sum('jumlah')
             + (int) $this->biaya_layanan
+            + (int) $this->ongkir
             - $this->diskon;
     }
 
@@ -107,12 +109,16 @@ class Order extends Model
      *
      * Dihitung dari harga SEBELUM potongan borongan (KEP-050): toko memberi
      * potongannya saat pelunasan, bukan saat uang muka.
+     *
+     * Ongkir juga tidak ikut dihitung (KEP-058). Uang muka adalah tanda jadi
+     * atas barangnya; ongkos kirim baru dibayar bersama pelunasan, dan paket
+     * memang hanya berangkat setelah lunas.
      */
     public function dpMinimum(): int
     {
         $persen = (int) Setting::ambil('dp_minimum_persen', 50);
 
-        return (int) ceil(($this->total + $this->diskon) * $persen / 100);
+        return (int) ceil(($this->total + $this->diskon - (int) $this->ongkir) * $persen / 100);
     }
 
     /** Sudah melewati batas hari pengambilan (KEP-043). */
@@ -147,9 +153,8 @@ class Order extends Model
     }
 
     /**
-     * Pesanan ini memuat barang yang dikerjakan di workshop. Dipakai di dua
-     * tempat yang alurnya memang berbeda: pemisahan tab di panel (KEP-027) dan
-     * larangan mengirim barang kustom (KEP-026).
+     * Pesanan ini memuat barang yang dikerjakan di workshop. Dipakai untuk
+     * memisahkan tab di panel (KEP-027).
      */
     public function punyaKustom(): bool
     {
@@ -162,15 +167,16 @@ class Order extends Model
     }
 
     /**
-     * Penjaga KEP-026. Barang kustom TIDAK boleh dikirim: ukurannya dicoba dulu
-     * di toko, dan kalau meleset kami perbaiki saat itu juga. Selain itu paket
-     * hanya berangkat setelah lunas, karena tidak ada kasir di depan pintu
+     * Paket hanya berangkat setelah lunas: tidak ada kasir di depan pintu
      * pelanggan yang bisa menagih sisanya.
+     *
+     * Larangan mengirim barang kustom (KEP-026) sudah dicabut klien (KEP-055),
+     * dan sejak pelanggan boleh memilih kirim sendiri di checkout (KEP-058)
+     * larangan itu hanya akan membuat pesanan tersangkut tanpa jalan keluar.
      */
     public function bolehDikirim(): bool
     {
         return $this->dikirim()
-            && ! $this->punyaKustom()
             && $this->status === OrderStatus::SIAP_DIAMBIL
             && $this->lunas();
     }
@@ -179,7 +185,6 @@ class Order extends Model
     {
         return match (true) {
             ! $this->dikirim() => 'Pesanan ini disetel untuk diambil di toko.',
-            $this->punyaKustom() => 'Pesanan ini memuat barang kustom, dan barang kustom diambil di toko.',
             $this->status !== OrderStatus::SIAP_DIAMBIL => 'Barangnya belum siap.',
             ! $this->lunas() => 'Masih ada sisa tagihan '.rupiah($this->sisa_tagihan)
                 .'. Paket hanya berangkat setelah lunas.',

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('judul', 'Perlengkapan tim, siap hari ini atau dibuat dari nol') | {{ setting('toko_nama', 'Setia Sport') }}</title>
-    <meta name="description" content="@yield('deskripsi', 'Toko alat olahraga dan workshop jersey kustom di Wonogiri. Pesanan diambil sendiri di toko.')">
+    <meta name="description" content="@yield('deskripsi', 'Toko alat olahraga dan workshop jersey kustom di Wonogiri. Pesanan diambil di toko atau dikirim.')">
     <meta name="theme-color" content="#16255b">
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
@@ -177,7 +177,7 @@
                 <p class="tabular mt-1 text-sm text-muted">WhatsApp {{ setting('toko_telepon') }}</p>
             @endif
             <p class="mt-3 text-sm leading-relaxed text-muted">
-                Pesanan diambil sendiri di toko. Barang stok bisa dikirim, diatur lewat {{ cs_aktif() ? 'chat CS' : 'WhatsApp' }}.
+                Pesanan bisa diambil sendiri di toko atau dikirim ke alamat Anda, dipilih saat memesan.
             </p>
         </div>
     </div>

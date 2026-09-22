@@ -168,6 +168,13 @@
             <td class="angka">{{ rupiah($pesanan->biaya_layanan) }}</td>
         </tr>
     @endif
+    @if ($pesanan->ongkir > 0)
+        <tr>
+            <td></td>
+            <td>Ongkos kirim</td>
+            <td class="angka">{{ rupiah($pesanan->ongkir) }}</td>
+        </tr>
+    @endif
     @if ($pesanan->diskon > 0)
         <tr>
             <td></td>

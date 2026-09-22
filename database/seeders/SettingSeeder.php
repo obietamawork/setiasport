@@ -81,6 +81,14 @@ Minggu 08.00-14.00", 'teks', 'toko', 'Jam Buka Toko',
              * hitung ongkir dan tidak ada API kurir: admin mengisi nomor resi,
              * pelanggan melacaknya sendiri di situs pihak ketiga.
              */
+            ['berat_bawaan_gram', '300', 'int', 'pengiriman', 'Berat Bawaan per Pcs (gram)',
+                'Dipakai menghitung ongkir untuk produk yang kolom beratnya belum diisi. '
+                .'Lebih baik kelebihan sedikit daripada kurang: ongkir yang kurang ditanggung toko.'],
+
+            ['gratis_ongkir_minimal', '0', 'int', 'pengiriman', 'Gratis Ongkir di Atas (Rp)',
+                'Belanja di atas nominal ini tidak dikenai ongkos kirim. Isi 0 untuk mematikan. '
+                .'Ongkir tetap dibayar toko ke kurir, jadi pastikan angkanya masih menguntungkan.'],
+
             ['jasa_kirim_daftar', "JNE
 J&T Express
 SiCepat

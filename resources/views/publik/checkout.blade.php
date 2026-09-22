@@ -6,12 +6,19 @@
 <div class="mx-auto max-w-4xl px-5 py-10">
     <h1 class="text-3xl font-extrabold">Data pemesan</h1>
     <p class="kolom-baca mt-3 text-muted">
-        Kami tidak meminta alamat: pesanan diambil sendiri di toko. Kalau Anda jauh dan
-        ingin barang stok dikirim, kabari kami lewat {{ kanal_kontak() }} setelah memesan.
-        Yang kami butuhkan hanya cara menghubungi Anda saat pesanan siap.
+        Pesanan boleh diambil sendiri di toko atau dikirim ke alamat Anda. Yang kami
+        butuhkan hanya cara menghubungi Anda saat pesanan siap.
     </p>
 
-    <div class="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <div class="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]"
+         x-data="pilihPengiriman({
+             otomatis: {{ $ongkirOtomatis ? 'true' : 'false' }},
+             metode: '{{ old('metode_ambil', 'AMBIL_TOKO') }}',
+             area: '{{ old('area_tujuan') }}',
+             tarif: '{{ old('tarif') }}',
+             urlArea: '{{ route('pengiriman.area') }}',
+             urlTarif: '{{ route('pengiriman.tarif') }}',
+         })">
         <form method="POST" action="{{ route('checkout.proses') }}" class="space-y-4 border border-line bg-field p-6">
             @csrf
 
@@ -38,6 +45,108 @@
                 <p class="mt-1 text-xs text-muted">Dipakai kalau kami perlu menghubungi Anda langsung.</p>
             </div>
 
+            {{-- Pilihan penyerahan (KEP-058). Ditaruh sebelum cara pembayaran
+                 karena ongkirnya ikut mengubah angka yang dibayar. --}}
+            <fieldset class="border-t border-line pt-4">
+                <legend class="label-form">Barangnya mau diapakan?</legend>
+                <div class="space-y-2">
+                    <label class="flex items-start gap-2 text-sm">
+                        <input type="radio" name="metode_ambil" value="AMBIL_TOKO" x-model="metode"
+                               class="mt-0.5 size-4 accent-navy">
+                        <span>
+                            <strong>Saya ambil sendiri di toko</strong>
+                            <span class="block text-muted">{{ setting('toko_alamat', 'Alamat toko') }}. Tanpa ongkos kirim.</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-2 text-sm">
+                        <input type="radio" name="metode_ambil" value="KIRIM" x-model="metode"
+                               class="mt-0.5 size-4 accent-navy">
+                        <span>
+                            <strong>Kirim ke alamat saya</strong>
+                            <span class="block text-muted">
+                                Paket berangkat setelah pesanan lunas dan barangnya selesai.
+                            </span>
+                        </span>
+                    </label>
+                </div>
+
+                <div x-show="metode === 'KIRIM'" x-cloak class="mt-4 space-y-4 border-l-2 border-line-strong pl-4">
+                    <div>
+                        <label for="alamat_kirim" class="label-form">Alamat lengkap</label>
+                        <textarea id="alamat_kirim" name="alamat_kirim" rows="3" maxlength="500"
+                                  class="kotak-input leading-relaxed"
+                                  placeholder="Nama penerima, jalan, RT/RW, kelurahan, kecamatan, kota, kode pos">{{ old('alamat_kirim') }}</textarea>
+                        <p class="bantuan-form">Tulis selengkap mungkin; kurir membaca alamat ini apa adanya.</p>
+                    </div>
+
+                    @if ($ongkirOtomatis)
+                        <div>
+                            <label for="cari_area" class="label-form">Kota atau kecamatan tujuan</label>
+                            <input type="text" id="cari_area" class="kotak-input" autocomplete="off"
+                                   placeholder="Ketik nama kecamatan, misalnya: Wonogiri"
+                                   x-model="kata" @input.debounce.400ms="cariArea()">
+                            <input type="hidden" name="area_tujuan" x-model="area">
+
+                            <ul x-show="daftarArea.length" x-cloak class="mt-2 divide-y divide-line border border-line bg-white text-sm">
+                                <template x-for="a in daftarArea" :key="a.kode">
+                                    <li>
+                                        <button type="button" class="w-full px-3 py-2 text-left hover:bg-navy-50"
+                                                @click="pilihArea(a)" x-text="a.nama"></button>
+                                    </li>
+                                </template>
+                            </ul>
+
+                            <p x-show="area" x-cloak class="mt-2 text-sm">
+                                Tujuan: <strong x-text="namaArea"></strong>
+                                <button type="button" class="ml-1 underline decoration-line-strong underline-offset-4"
+                                        @click="gantiArea()">ganti</button>
+                            </p>
+                        </div>
+
+                        <div x-show="area" x-cloak>
+                            <span class="label-form">Pilih pengiriman</span>
+
+                            <p x-show="memuat" class="text-sm text-muted">Menghitung ongkos kirim&hellip;</p>
+
+                            <div x-show="! memuat &amp;&amp; daftarTarif.length" class="space-y-2">
+                                <template x-for="t in daftarTarif" :key="t.kode">
+                                    <label class="flex items-start justify-between gap-3 border border-line bg-white px-3 py-2 text-sm">
+                                        <span class="flex items-start gap-2">
+                                            <input type="radio" name="tarif" :value="t.kode" x-model="tarif"
+                                                   class="mt-0.5 size-4 accent-navy">
+                                            <span x-text="t.label"></span>
+                                        </span>
+                                        <span class="tabular whitespace-nowrap"
+                                              x-text="t.harga ? rupiah(t.harga) : 'Gratis'"></span>
+                                    </label>
+                                </template>
+                            </div>
+
+                            {{-- Penyedia ongkirnya sedang tidak menjawab. Pesanannya tetap
+                                 boleh dibuat: ongkirnya dihitung admin, seperti sebelum
+                                 hitungan otomatis ada. --}}
+                            <p x-show="! memuat &amp;&amp; ! daftarTarif.length" x-cloak
+                               class="border-l-2 border-kuning bg-kuning-50 p-3 text-sm leading-relaxed">
+                                Ongkos kirim ke sana belum bisa dihitung otomatis sekarang. Pesanan tetap
+                                bisa dibuat, dan kami kabari ongkirnya lewat email sebelum Anda membayar.
+                            </p>
+                        </div>
+                    @else
+                        <p class="border-l-2 border-kuning bg-kuning-50 p-3 text-sm leading-relaxed">
+                            Ongkos kirimnya kami hitung dulu setelah paket ditimbang, lalu kami kabari
+                            lewat email. Angkanya masuk ke tagihan pesanan ini, jadi tidak ada biaya
+                            yang muncul di luar halaman ini.
+                        </p>
+                    @endif
+
+                    @if ($gratisOngkirMulai > 0)
+                        <p class="text-sm text-ok">
+                            Belanja di atas {{ rupiah($gratisOngkirMulai) }} bebas ongkos kirim.
+                        </p>
+                    @endif
+                </div>
+            </fieldset>
+
             <div>
                 <label for="catatan" class="label-form">Catatan untuk toko</label>
                 <textarea id="catatan" name="catatan" rows="3" class="kotak-input">{{ old('catatan') }}</textarea>
@@ -52,8 +161,11 @@
                                    @checked(old('tipe_pembayaran', 'DP') === 'DP')>
                             <span>
                                 <strong>Uang muka {{ $persenDp }}%</strong>
-                                <span class="tabular">{{ rupiah((int) ceil($total * $persenDp / 100)) }}</span> sekarang,
+                                <span class="tabular">{{ rupiah($dpMinimum) }}</span> sekarang,
                                 sisanya dilunasi setelah barang selesai dikerjakan, lewat transfer atau di kasir.
+                                <span x-show="metode === 'KIRIM'" x-cloak class="block text-muted">
+                                    Ongkos kirim ikut dilunasi di akhir, bukan sekarang.
+                                </span>
                             </span>
                         </label>
                         <label class="flex items-start gap-2 text-sm">
@@ -61,7 +173,7 @@
                                    @checked(old('tipe_pembayaran') === 'LUNAS')>
                             <span>
                                 <strong>Bayar lunas</strong>
-                                <span class="tabular">{{ rupiah($total) }}</span> sekarang.
+                                <span class="tabular" x-text="rupiah({{ $total + $biayaLayanan }} + ongkir)">{{ rupiah($total + $biayaLayanan) }}</span> sekarang.
                             </span>
                         </label>
                     </div>
@@ -106,9 +218,10 @@
             <label class="flex items-start gap-2 border-t border-line pt-4 text-sm">
                 <input type="checkbox" name="setuju" value="1" class="mt-0.5 size-4 accent-navy" @checked(old('setuju'))>
                 <span>
-                    Saya paham pesanan ini <strong>diambil sendiri di toko</strong> dan pembayaran
-                    perlu diselesaikan dalam {{ setting('batas_bayar_jam', 24) }} jam sebelum
-                    pesanan otomatis dibatalkan.
+                    Saya paham pembayaran perlu diselesaikan dalam
+                    {{ setting('batas_bayar_jam', 24) }} jam sebelum pesanan otomatis dibatalkan,
+                    <span x-show="metode === 'KIRIM'" x-cloak>dan paket baru berangkat setelah pesanan lunas.</span><span
+                          x-show="metode !== 'KIRIM'">dan barangnya diambil sendiri di toko.</span>
                 </span>
             </label>
 
@@ -153,28 +266,123 @@
                     @endforeach
                 </ul>
                 <div class="border-t border-line px-5 py-4">
-                    {{-- Biaya layanan disebut terbuka di sini (KEP-048). Angka yang
-                         baru muncul di halaman tagihan adalah cara tercepat membuat
-                         pelanggan merasa ditambah-tambahi diam-diam. --}}
+                    {{-- Biaya layanan dan ongkir disebut terbuka di sini (KEP-048,
+                         KEP-058). Angka yang baru muncul di halaman tagihan adalah
+                         cara tercepat membuat pelanggan merasa ditambah-tambahi
+                         diam-diam. --}}
+                    <div class="flex items-baseline justify-between gap-3 text-sm">
+                        <span class="text-muted">Subtotal</span>
+                        <span class="tabular">{{ rupiah($total) }}</span>
+                    </div>
                     @if ($biayaLayanan > 0)
-                        <div class="flex items-baseline justify-between gap-3 text-sm">
-                            <span class="text-muted">Subtotal</span>
-                            <span class="tabular">{{ rupiah($total) }}</span>
-                        </div>
                         <div class="mt-1 flex items-baseline justify-between gap-3 text-sm">
                             <span class="text-muted">Biaya layanan</span>
                             <span class="tabular">{{ rupiah($biayaLayanan) }}</span>
                         </div>
                     @endif
+                    <div x-show="metode === 'KIRIM'" x-cloak
+                         class="mt-1 flex items-baseline justify-between gap-3 text-sm">
+                        <span class="text-muted">Ongkos kirim</span>
+                        <span class="tabular" x-text="ongkir ? rupiah(ongkir) : 'menyusul'"></span>
+                    </div>
 
                     <div class="mt-2 flex items-baseline justify-between gap-3">
                         <span class="font-semibold">Total</span>
-                        <span class="numeral text-2xl text-merah">{{ rupiah($total + $biayaLayanan) }}</span>
+                        <span class="numeral text-2xl text-merah"
+                              x-text="rupiah({{ $total + $biayaLayanan }} + ongkir)">{{ rupiah($total + $biayaLayanan) }}</span>
                     </div>
-                    <p class="mt-2 text-xs text-muted">Diambil di toko, tanpa ongkos kirim.</p>
+                    <p class="mt-2 text-xs text-muted" x-show="metode !== 'KIRIM'">
+                        Diambil di toko, tanpa ongkos kirim.
+                    </p>
+                    <p class="mt-2 text-xs leading-relaxed text-muted" x-show="metode === 'KIRIM' && ! ongkir" x-cloak>
+                        Ongkos kirimnya ditambahkan ke tagihan ini setelah kami hitung, bukan ditagih terpisah.
+                    </p>
                 </div>
             </div>
         </aside>
     </div>
 </div>
+
+@push('skrip')
+<script>
+    /*
+     * Pilihan pengiriman di checkout (KEP-058).
+     *
+     * Beratnya sengaja TIDAK dikirim dari sini: server menjumlahkannya sendiri
+     * dari isi keranjang. Begitu juga harga ongkirnya, yang di sini cuma untuk
+     * dilihat dan dihitung ulang saat pesanan disimpan (KEP-009).
+     */
+    function pilihPengiriman(cfg) {
+        return {
+            ...cfg,
+            kata: '',
+            namaArea: '',
+            daftarArea: [],
+            daftarTarif: [],
+            memuat: false,
+
+            get ongkir() {
+                return this.daftarTarif.find(t => t.kode === this.tarif)?.harga ?? 0;
+            },
+
+            rupiah(n) {
+                return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n || 0));
+            },
+
+            async cariArea() {
+                if (this.kata.trim().length < 3) {
+                    this.daftarArea = [];
+                    return;
+                }
+
+                try {
+                    const r = await fetch(this.urlArea + '?q=' + encodeURIComponent(this.kata));
+                    this.daftarArea = (await r.json()).area ?? [];
+                } catch (e) {
+                    // Jaringan pelanggan putus. Dibiarkan kosong: formulirnya
+                    // tetap bisa dikirim, ongkirnya menyusul dari admin.
+                    this.daftarArea = [];
+                }
+            },
+
+            pilihArea(a) {
+                this.area = a.kode;
+                this.namaArea = a.nama;
+                this.daftarArea = [];
+                this.kata = '';
+                this.ambilTarif();
+            },
+
+            gantiArea() {
+                this.area = '';
+                this.namaArea = '';
+                this.tarif = '';
+                this.daftarTarif = [];
+            },
+
+            async ambilTarif() {
+                if (! this.area) return;
+
+                this.memuat = true;
+                this.tarif = '';
+
+                try {
+                    const r = await fetch(this.urlTarif + '?area=' + encodeURIComponent(this.area));
+                    this.daftarTarif = (await r.json()).tarif ?? [];
+                } catch (e) {
+                    this.daftarTarif = [];
+                } finally {
+                    this.memuat = false;
+                }
+            },
+
+            init() {
+                // Formulir yang dikembalikan karena ada isian salah tidak boleh
+                // kehilangan pilihan kurir yang sudah susah payah dipilih.
+                if (this.area) this.ambilTarif();
+            },
+        };
+    }
+</script>
+@endpush
 @endsection

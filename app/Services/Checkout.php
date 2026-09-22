@@ -13,6 +13,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderStatusLog;
 use App\Models\Setting;
+use App\Services\Ongkir\PilihanKirim;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -33,13 +34,13 @@ class Checkout
     /**
      * @param  array{nama:string, email:string, no_hp:string, catatan:?string}  $pelanggan
      */
-    public function proses(array $pelanggan, string $tipePembayaran): Order
+    public function proses(array $pelanggan, string $tipePembayaran, ?PilihanKirim $kirim = null): Order
     {
         $isi = $this->keranjang->isi();
 
         abort_if($isi->isEmpty(), 422, 'Keranjang kosong.');
 
-        $order = $this->buat($isi, $pelanggan, $tipePembayaran);
+        $order = $this->buat($isi, $pelanggan, $tipePembayaran, kirim: $kirim);
 
         $this->keranjang->bersihkan();
 
@@ -63,8 +64,9 @@ class Checkout
         array $pelanggan,
         string $tipePembayaran,
         bool $manual = false,
+        ?PilihanKirim $kirim = null,
     ): Order {
-        return DB::transaction(function () use ($isi, $pelanggan, $tipePembayaran, $manual) {
+        return DB::transaction(function () use ($isi, $pelanggan, $tipePembayaran, $manual, $kirim) {
             $customer = Customer::firstOrNew(['email' => $pelanggan['email']]);
 
             // Profil pelanggan yang akunnya sudah aktif tidak boleh ditimpa oleh
@@ -98,7 +100,7 @@ class Checkout
                 // Dibekukan di sini (KEP-048). Tarifnya boleh berubah nanti tanpa
                 // mengubah tagihan pesanan yang sudah berjalan.
                 'biaya_layanan' => (int) Setting::ambil('biaya_layanan', 0),
-            ]);
+            ] + ($kirim?->kolomPesanan() ?? []));
 
             $diskon = 0;
 

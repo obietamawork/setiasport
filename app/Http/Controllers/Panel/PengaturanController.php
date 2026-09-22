@@ -45,7 +45,9 @@ class PengaturanController extends Controller
             'bagian' => [
                 ['judul' => 'Desain & produksi', 'kunci' => ['revisi_gratis_maks', 'upload_maks_mb']],
                 ['judul' => 'Pengambilan', 'kunci' => ['pengingat_ambil_hari', 'ambil_peringatan_hari', 'hangus_hari']],
-                ['judul' => 'Pengiriman', 'kunci' => ['jasa_kirim_daftar', 'panduan_resi']],
+                ['judul' => 'Pengiriman', 'kunci' => [
+                    'jasa_kirim_daftar', 'panduan_resi', 'berat_bawaan_gram', 'gratis_ongkir_minimal',
+                ]],
                 ['judul' => 'Email', 'kunci' => ['email_tindak_lanjut_hari']],
             ],
         ],
@@ -114,7 +116,10 @@ class PengaturanController extends Controller
 
         foreach ($baris as $b) {
             $aturan['setting.'.$b->key] = match ($b->tipe) {
-                'int' => ['required', 'integer', 'min:0', 'max:1000000'],
+                // Batas atasnya dinaikkan jadi 10 juta (KEP-058): batas gratis
+                // ongkir untuk pesanan tim bisa lewat sejuta, dan pemilik toko
+                // tidak punya cara lain mengisinya.
+                'int' => ['required', 'integer', 'min:0', 'max:10000000'],
                 'bool' => ['required', 'in:0,1'],
                 // Profil usaha ditulis berparagraf, tidak muat di batas satu baris.
                 'teks' => ['nullable', 'string', 'max:5000'],

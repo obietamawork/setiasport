@@ -473,9 +473,13 @@
                     <span class="chip {{ $pesanan->dikirim() ? 'chip-kuning' : 'chip-netral' }}">
                         {{ $pesanan->metode_ambil->label() }}
                     </span>
-                    @if ($pesanan->punyaKustom())
-                        <span class="text-sm text-muted">
-                            Memuat barang kustom, jadi hanya bisa diambil di toko.
+                    @if ($pesanan->dikirim())
+                        <span class="text-sm {{ $pesanan->ongkir > 0 ? 'text-muted' : 'text-merah' }}">
+                            @if ($pesanan->ongkir > 0)
+                                Ongkir <span class="tabular">{{ rupiah($pesanan->ongkir) }}</span> sudah masuk tagihan.
+                            @else
+                                Ongkirnya belum diisi, jadi tagihannya masih kurang.
+                            @endif
                         </span>
                     @endif
                 </div>
@@ -580,11 +584,16 @@
                                 </p>
                             </div>
                             <div>
-                                <button type="submit" class="tombol tombol-navy">Simpan</button>
-                                <p class="mt-2 text-xs leading-relaxed text-muted">
-                                    Ongkirnya dicatat terpisah sebagai penyesuaian biaya di bawah, supaya pelanggan
-                                    melihatnya sebagai angka yang bisa dijelaskan.
+                                <label for="ongkir" class="label-form">Ongkos kirim (Rp)</label>
+                                <input type="number" id="ongkir" name="ongkir" min="0" step="1000"
+                                       value="{{ old('ongkir', $pesanan->ongkir) }}" class="kotak-input tabular">
+                                <p class="mt-1 text-xs leading-relaxed text-muted">
+                                    Masuk tagihan sebagai barisnya sendiri, bukan penyesuaian biaya. Kalau pelanggan
+                                    sudah memilih kurir sendiri saat memesan, kolom ini sudah terisi.
                                 </p>
+                            </div>
+                            <div>
+                                <button type="submit" class="tombol tombol-navy">Simpan</button>
                             </div>
                         </form>
                     </details>
@@ -690,6 +699,14 @@
                     <div class="flex justify-between gap-3">
                         <dt class="text-muted">Biaya layanan</dt>
                         <dd class="tabular">{{ rupiah($pesanan->biaya_layanan) }}</dd>
+                    </div>
+                @endif
+                @if ($pesanan->dikirim())
+                    <div class="flex justify-between gap-3">
+                        <dt class="text-muted">Ongkos kirim</dt>
+                        <dd class="tabular {{ $pesanan->ongkir > 0 ? '' : 'text-merah' }}">
+                            {{ $pesanan->ongkir > 0 ? rupiah($pesanan->ongkir) : 'belum diisi' }}
+                        </dd>
                     </div>
                 @endif
                 <div class="flex justify-between gap-3">
