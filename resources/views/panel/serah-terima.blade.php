@@ -2,19 +2,20 @@
 @section('judul', 'Serah terima')
 
 @section('isi')
-<div class="kop-halaman">
-    <div>
-        <h1 class="kop-judul">Serah terima</h1>
-        <p class="kop-catatan">Pelunasan dan pengambilan diselesaikan di layar ini. Masukkan kode ambil yang
-    dibawa pelanggan, atau kode pesanannya.</p>
-    </div>
-</div>
+<x-kop judul="Serah terima"
+       catatan="Pelunasan dan pengambilan diselesaikan di layar ini. Masukkan kode ambil yang dibawa pelanggan, atau kode pesanannya." />
 
-<form method="GET" class="mt-5 flex flex-wrap gap-2">
+{{-- Kotak kode dibuat besar dengan sengaja: ini satu-satunya isian di layar
+     kasir, diketik sambil berdiri, sering dari layar sentuh, dan kodenya
+     dibacakan pelanggan dari HP-nya. --}}
+<form method="GET" class="flex flex-wrap items-center gap-2">
     <label class="sr-only" for="kode">Kode ambil atau kode pesanan</label>
-    <input type="text" id="kode" name="kode" value="{{ $kode }}" autofocus
-           placeholder="ABC-1234 atau SS-2609-0042"
-           class="kotak-input max-w-xs tabular uppercase">
+    <div class="relative min-w-60 flex-1 sm:max-w-sm">
+        <x-ikon nama="cari" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-navy-300" />
+        <input type="text" id="kode" name="kode" value="{{ $kode }}" autofocus
+               placeholder="ABC-1234 atau SS-2609-0042"
+               class="kotak-input tabular py-3 pl-11 text-lg uppercase">
+    </div>
     <button type="submit" class="tombol tombol-navy">Cari pesanan</button>
 </form>
 
@@ -85,7 +86,10 @@
                         <option value="TRANSFER">Transfer bank</option>
                     </select></div>
                 <input type="hidden" name="jenis" value="PELUNASAN">
-                <button type="submit" class="tombol tombol-utama">Catat pelunasan</button>
+                <button type="submit" class="tombol tombol-utama">
+                    <x-ikon nama="uang" ukuran="size-4" />
+                    Catat pelunasan
+                </button>
             </form>
         @elseif ($order->dikirim())
             {{-- Pesanan yang dikirim tidak lewat meja kasir (KEP-026). Resinya
@@ -106,7 +110,10 @@
                            value="{{ $order->customer->nama }}">
                     <p class="mt-1 text-xs text-muted">Ubah kalau diwakilkan orang lain.</p>
                 </div>
-                <button type="submit" class="tombol tombol-navy">Serahkan barang</button>
+                <button type="submit" class="tombol tombol-navy">
+                    <x-ikon nama="serah-terima" ukuran="size-4" />
+                    Serahkan barang
+                </button>
             </form>
         @else
             <p class="border-t border-line px-5 py-4 text-sm text-muted">
@@ -125,9 +132,11 @@
         <h2 class="text-lg font-extrabold">Menunggu diambil</h2>
         <ul class="kartu mt-4 divide-y divide-line overflow-hidden text-sm">
             @foreach ($siapHariIni as $o)
-                <li class="flex flex-wrap items-center gap-3 px-4 py-2.5">
+                {{-- Seluruh baris jadi sasaran klik: di layar sentuh, kode ambil
+                     selebar delapan karakter terlalu kecil untuk jempol. --}}
+                <li class="relative flex flex-wrap items-center gap-3 px-4 py-3 hover:bg-navy-50">
                     <a href="{{ route('panel.serah-terima', ['kode' => $o->kode_ambil]) }}"
-                       class="tautan tabular font-medium">{{ $o->kode_ambil }}</a>
+                       class="tabular font-semibold text-navy-700 before:absolute before:inset-0 before:content-['']">{{ $o->kode_ambil }}</a>
                     <span class="min-w-32 flex-1">
                         {{ $o->customer->nama }}
                         @if ($o->dikirim())

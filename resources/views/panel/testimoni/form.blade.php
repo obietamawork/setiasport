@@ -2,9 +2,7 @@
 @section('judul', $testimoni->exists ? 'Ubah testimoni' : 'Tambah testimoni')
 
 @section('isi')
-<h1 class="text-2xl font-extrabold">
-    {{ $testimoni->exists ? 'Ubah testimoni' : 'Tambah testimoni' }}
-</h1>
+<x-kop :judul="$testimoni->exists ? 'Ubah testimoni' : 'Tambah testimoni'" :kembali="route('panel.testimoni.index')" kembali-label="Daftar testimoni" />
 
 <form method="POST"
       action="{{ $testimoni->exists ? route('panel.testimoni.update', $testimoni) : route('panel.testimoni.store') }}"

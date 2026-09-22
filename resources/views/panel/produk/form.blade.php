@@ -2,34 +2,24 @@
 @section('judul', $produk->exists ? $produk->nama : 'Tambah produk')
 
 @section('isi')
-<a href="{{ route('panel.produk.index') }}" class="tautan text-sm text-muted">Kembali ke daftar produk</a>
-
-<div class="kop-halaman mt-3">
-    <div>
-        <h1 class="kop-judul">{{ $produk->exists ? $produk->nama : 'Tambah produk' }}</h1>
-        @if ($produk->exists)
-            <p class="kop-catatan tabular">
-                {{ $produk->sku }}, {{ $produk->fulfillment_type->label() }}
-            </p>
-        @else
-            <p class="kop-catatan">
-                Isi keterangan dasarnya dulu. Gambar, varian, harga, dan opsi diisi
-                setelah produk dibuat.
-            </p>
-        @endif
-    </div>
-
+<x-kop :judul="$produk->exists ? $produk->nama : 'Tambah produk'"
+       :kembali="route('panel.produk.index')" kembali-label="Daftar produk"
+       :catatan="$produk->exists
+            ? $produk->sku.', '.$produk->fulfillment_type->label()
+            : 'Isi keterangan dasarnya dulu. Gambar, varian, harga, dan opsi diisi setelah produk dibuat.'">
     @if ($produk->exists)
-        <a href="{{ route('produk', $produk) }}" target="_blank" rel="noopener" class="tombol tombol-garis tombol-sm">
+        <a href="{{ route('produk', $produk) }}" target="_blank" rel="noopener"
+           class="tombol tombol-garis tombol-sm">
+            <x-ikon nama="buka-luar" ukuran="size-4" />
             Lihat di toko
         </a>
     @endif
-</div>
+</x-kop>
 
 {{-- Halaman ini panjang. Tautan lompat membuat bagian yang dituju bisa dicapai
      tanpa menggulir lima layar. --}}
 @if ($produk->exists)
-    <nav class="mb-6 flex flex-wrap gap-1 text-sm" aria-label="Bagian halaman">
+    <nav class="segmen mb-6" aria-label="Bagian halaman">
         @php
             $bagian = array_filter([
                 ['#detail', 'Keterangan'],
@@ -42,10 +32,7 @@
             ]);
         @endphp
         @foreach ($bagian as [$anchor, $label])
-            <a href="{{ $anchor }}"
-               class="rounded-[7px] bg-field px-3 py-1.5 font-medium text-muted transition-colors hover:bg-navy-50 hover:text-ink">
-                {{ $label }}
-            </a>
+            <a href="{{ $anchor }}" class="segmen-item">{{ $label }}</a>
         @endforeach
     </nav>
 @endif

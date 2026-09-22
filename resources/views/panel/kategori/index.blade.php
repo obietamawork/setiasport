@@ -2,15 +2,13 @@
 @section('judul', 'Kategori')
 
 @section('isi')
-<div class="kop-halaman">
-    <div>
-        <h1 class="kop-judul">Kategori</h1>
-        <p class="kop-catatan">
-            Cara pelanggan menelusuri katalog. Kategori utama boleh punya subkategori.
-        </p>
-    </div>
-    <a href="{{ route('panel.kategori.create') }}" class="tombol tombol-navy">Tambah kategori</a>
-</div>
+<x-kop judul="Kategori"
+       catatan="Cara pelanggan menelusuri katalog. Kategori utama boleh punya subkategori.">
+    <a href="{{ route('panel.kategori.create') }}" class="tombol tombol-navy tombol-sm">
+        <x-ikon nama="tambah" ukuran="size-4" />
+        Tambah kategori
+    </a>
+</x-kop>
 
 @if ($induk->isEmpty())
     <div class="kartu mt-6 p-8 text-center">

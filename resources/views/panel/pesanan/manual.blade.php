@@ -37,16 +37,8 @@
     ])->values();
 @endphp
 
-<div class="kop-halaman">
-    <div>
-        <h1 class="kop-judul">Pesanan baru</h1>
-        <p class="kop-catatan">
-            Untuk pesanan yang datang langsung ke toko atau lewat WhatsApp. Pesanannya
-            mendapat nomor, halaman lacak, lembar kerja, dan QR produksi seperti pesanan
-            dari web, jadi pelanggan bisa memantau sendiri.
-        </p>
-    </div>
-</div>
+<x-kop judul="Pesanan baru" :kembali="route('panel.pesanan.index')" kembali-label="Daftar pesanan"
+       catatan="Untuk pesanan yang datang langsung ke toko atau lewat WhatsApp. Pesanannya mendapat nomor, halaman lacak, lembar kerja, dan QR produksi seperti pesanan dari web, jadi pelanggan bisa memantau sendiri." />
 
 <form method="POST" action="{{ route('panel.pesanan.baru.simpan') }}" class="mt-6 max-w-4xl space-y-6"
       x-data="pesananManual(@js($dataProduk), {{ $persenDp }})">

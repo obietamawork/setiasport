@@ -608,6 +608,14 @@
      * dipakai berulang kali dalam sehari; sisanya lewat laci menu. Bilah yang
      * memuat sepuluh ikon sama sulitnya dengan tidak ada bilah sama sekali.
      */
+    /* Tinggi bilah bawah dibagi ke seluruh halaman: yang menempel di dasar
+       layar perlu tahu ruang yang sudah dipakainya. */
+    :root { --nav-bawah: 0px; }
+
+    @media (width < 64rem) {
+        :root { --nav-bawah: 3.9rem; }
+    }
+
     .nav-bawah {
         position: fixed;
         inset-inline: 0;
@@ -784,6 +792,17 @@
     .tabel-lekat tbody tr:last-child td:first-child { border-bottom-left-radius: calc(var(--radius-kartu) - 1px); }
     .tabel-lekat tbody tr:last-child td:last-child { border-bottom-right-radius: calc(var(--radius-kartu) - 1px); }
 
+    /* Kartu hanya mulai layar sedang: tabel yang berubah jadi kartu di HP tidak
+       boleh dibungkus kotak lagi, nanti berkartu dua lapis. */
+    @media (width >= 48rem) {
+        .kartu-md {
+            background: var(--color-field);
+            border: 1px solid var(--color-line);
+            border-radius: var(--radius-kartu);
+            box-shadow: var(--bayang-kartu);
+        }
+    }
+
     /*
      * Tabel yang berubah jadi kartu di layar sempit. Tabel enam kolom yang
      * digeser ke samping di HP praktis tidak terbaca; yang dibaca orang di
@@ -845,7 +864,9 @@
      */
     .bilah-aksi {
         position: sticky;
-        bottom: 0;
+        /* Di layar sentuh ia berhenti di atas bilah navigasi bawah; kalau
+           tidak, tombol simpan bersembunyi persis di belakangnya. */
+        bottom: var(--nav-bawah, 0px);
         z-index: 15;
         display: flex;
         flex-wrap: wrap;

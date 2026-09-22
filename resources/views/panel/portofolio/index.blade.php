@@ -2,17 +2,13 @@
 @section('judul', 'Portofolio')
 
 @section('isi')
-<div class="kop-halaman">
-    <div>
-        <h1 class="kop-judul">Portofolio</h1>
-        <p class="kop-catatan">
-            Pekerjaan yang pernah selesai, dipajang di halaman depan. Sekolah dan instansi
-            memilih berdasarkan bukti pernah mengerjakan yang serupa, jadi isi ini yang
-            paling sering dibaca calon pemesan.
-        </p>
-    </div>
-    <a href="{{ route('panel.portofolio.create') }}" class="tombol tombol-navy">Tambah pekerjaan</a>
-</div>
+<x-kop judul="Portofolio"
+       catatan="Pekerjaan yang pernah selesai, dipajang di halaman depan. Sekolah dan instansi memilih berdasarkan bukti pernah mengerjakan yang serupa, jadi isi ini yang paling sering dibaca calon pemesan.">
+    <a href="{{ route('panel.portofolio.create') }}" class="tombol tombol-navy tombol-sm">
+        <x-ikon nama="tambah" ukuran="size-4" />
+        Tambah pekerjaan
+    </a>
+</x-kop>
 
 @include('panel.komponen.banner-contoh')
 

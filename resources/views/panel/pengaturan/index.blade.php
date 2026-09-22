@@ -11,13 +11,8 @@
     $tabAwal = $tabGalat ?? (array_key_exists(request('tab'), $tab) ? request('tab') : array_key_first($tab));
 @endphp
 
-<div class="kop-halaman">
-    <div>
-        <h1 class="kop-judul">Pengaturan</h1>
-        <p class="kop-catatan">Berlaku di seluruh website begitu disimpan: halaman produk, checkout,
-            halaman pesanan, dan email pelanggan.</p>
-    </div>
-</div>
+<x-kop judul="Pengaturan"
+       catatan="Berlaku di seluruh website begitu disimpan: halaman produk, checkout, halaman pesanan, dan email pelanggan." />
 
 <div x-data="{
         tab: @js($tabAwal),
@@ -35,7 +30,7 @@
     }"
      x-init="window.addEventListener('beforeunload', (e) => { if (berubah && !menyimpan) { e.preventDefault(); e.returnValue = ''; } })"
      @input="tandai($event)" @change="tandai($event)"
-     class="mt-6 lg:grid lg:grid-cols-[12rem_minmax(0,1fr)] lg:items-start lg:gap-8">
+     class="lg:grid lg:grid-cols-[12rem_minmax(0,1fr)] lg:items-start lg:gap-8">
 
     {{-- Formulirnya kosong; setiap isian menunjuk ke sini lewat atribut form.
          Dengan begitu kartu QRIS, yang punya formulir unggah sendiri, bisa
@@ -47,7 +42,7 @@
     </form>
 
     {{-- Menu tab: berderet dan bisa digeser di HP, jadi kolom kiri di layar lebar. --}}
-    <nav class="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 lg:sticky lg:top-20 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0"
+    <nav class="segmen lg:sticky lg:top-24 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0"
          aria-label="Kelompok pengaturan">
         @foreach ($tab as $kunci => $t)
             @php
@@ -55,8 +50,8 @@
                     ->contains(fn ($k) => $errors->has('setting.'.$k));
             @endphp
             <button type="button" @click="pilih(@js($kunci))" :aria-current="tab === @js($kunci) ? 'page' : null"
-                    class="flex shrink-0 items-center gap-2 rounded-[8px] px-3 py-2 text-left text-sm font-medium whitespace-nowrap transition-colors"
-                    :class="tab === @js($kunci) ? 'bg-navy text-white' : 'text-muted hover:bg-navy-50 hover:text-ink'">
+                    class="segmen-item lg:w-full lg:justify-start lg:rounded-[8px]"
+                    :class="tab === @js($kunci) ? 'segmen-item-aktif' : ''">
                 {{ $t['judul'] }}
                 @if ($adaGalat)
                     <span class="size-2 shrink-0 rounded-full bg-merah" aria-label="ada kesalahan"></span>
@@ -148,10 +143,14 @@
 
         {{-- Tombol simpan selalu terlihat, di tab mana pun. Satu tombol untuk semua
              tab: berpindah tab tidak membuang isian yang sudah diketik. --}}
-        <div class="sticky bottom-0 z-10 mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-paper/95 py-3 backdrop-blur">
-            <p class="text-sm" :class="berubah ? 'font-medium text-ink' : 'text-muted'"
-               x-text="berubah ? 'Ada perubahan yang belum disimpan' : 'Tidak ada perubahan'"></p>
+        <div class="bilah-aksi mt-6 justify-between">
+            <p class="flex items-center gap-2 text-sm"
+               :class="berubah ? 'font-medium text-ink' : 'text-muted'">
+                <span x-show="berubah" x-cloak class="size-2 shrink-0 rounded-full bg-kuning"></span>
+                <span x-text="berubah ? 'Ada perubahan yang belum disimpan' : 'Tidak ada perubahan'"></span>
+            </p>
             <button type="submit" form="form-pengaturan" class="tombol tombol-navy" :disabled="!berubah">
+                <x-ikon nama="centang" ukuran="size-4" />
                 Simpan pengaturan
             </button>
         </div>

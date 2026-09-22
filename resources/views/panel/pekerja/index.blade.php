@@ -2,15 +2,8 @@
 @section('judul', 'Pekerja konveksi')
 
 @section('isi')
-<div class="kop-halaman">
-    <div>
-        <h1 class="kop-judul">Pekerja konveksi</h1>
-        <p class="kop-catatan">
-            Yang memindai QR di lembar kerja. Mereka tidak punya akun panel dan tidak bisa
-            melihat harga atau data pelanggan, hanya menandai tahap yang baru selesai.
-        </p>
-    </div>
-</div>
+<x-kop judul="Pekerja konveksi"
+       catatan="Yang memindai QR di lembar kerja. Mereka tidak punya akun panel dan tidak bisa melihat harga atau data pelanggan, hanya menandai tahap yang baru selesai." />
 
 <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
     <section class="kartu overflow-hidden">

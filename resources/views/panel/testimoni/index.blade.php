@@ -2,16 +2,13 @@
 @section('judul', 'Testimoni')
 
 @section('isi')
-<div class="kop-halaman">
-    <div>
-        <h1 class="kop-judul">Testimoni</h1>
-        <p class="kop-catatan">
-            Kutipan pelanggan yang tampil di halaman depan. Diketik ulang di sini dari pesan
-            WhatsApp atau percakapan di toko, jadi tidak ada antrian moderasi yang menumpuk.
-        </p>
-    </div>
-    <a href="{{ route('panel.testimoni.create') }}" class="tombol tombol-navy">Tambah testimoni</a>
-</div>
+<x-kop judul="Testimoni"
+       catatan="Kutipan pelanggan yang tampil di halaman depan. Diketik ulang di sini dari pesan WhatsApp atau percakapan di toko, jadi tidak ada antrian moderasi yang menumpuk.">
+    <a href="{{ route('panel.testimoni.create') }}" class="tombol tombol-navy tombol-sm">
+        <x-ikon nama="tambah" ukuran="size-4" />
+        Tambah testimoni
+    </a>
+</x-kop>
 
 @include('panel.komponen.banner-contoh')
 

@@ -2,13 +2,8 @@
 @section('judul', 'Stok')
 
 @section('isi')
-<div class="kop-halaman">
-    <div>
-        <h1 class="kop-judul">Stok</h1>
-        <p class="kop-catatan">Hanya produk yang dijual dari rak. Angka dalam kurung adalah stok yang sudah
-    direservasi pesanan dan tidak boleh dijual ulang.</p>
-    </div>
-</div>
+<x-kop judul="Stok"
+       catatan="Hanya produk yang dijual dari rak. Angka dalam kurung adalah stok yang sudah direservasi pesanan dan tidak boleh dijual ulang." />
 
 <form method="GET" class="mt-5 flex flex-wrap gap-2">
     <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari produk atau SKU"
@@ -72,13 +67,18 @@
 
         {{-- Stok yang berubah tanpa jejak adalah sumber perselisihan internal,
              jadi alasan wajib diisi sebelum penyimpanan diterima. --}}
-        <div class="sticky bottom-0 mt-6 flex flex-wrap items-end gap-3 rounded-[10px] border border-line bg-field p-4 shadow-[0_-4px_16px_-8px_rgba(19,26,46,0.25)]">
-            <div class="min-w-64 flex-1">
+        {{-- Di HP bilah ini duduk di atas bilah navigasi bawah, jadi jarak
+             amannya diambil dari tinggi bilah itu, bukan dari tepi layar. --}}
+        <div class="bilah-aksi mt-6 items-end">
+            <div class="min-w-56 flex-1">
                 <label for="alasan" class="label-form">Alasan penyesuaian</label>
                 <input type="text" id="alasan" name="alasan" class="kotak-input" required
                        placeholder="Opname 7 September / barang rusak / retur supplier">
             </div>
-            <button type="submit" class="tombol tombol-navy">Simpan stok</button>
+            <button type="submit" class="tombol tombol-navy">
+                <x-ikon nama="centang" ukuran="size-4" />
+                Simpan stok
+            </button>
         </div>
     </form>
 @endif

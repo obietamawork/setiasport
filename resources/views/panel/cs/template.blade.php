@@ -2,19 +2,10 @@
 @section('judul', 'Template balasan')
 
 @section('isi')
-<a href="{{ route('panel.cs.index') }}" class="tautan text-sm text-muted">Kembali ke chat</a>
+<x-kop judul="Template balasan" :kembali="route('panel.cs.index')" kembali-label="Chat"
+       catatan="Jawaban siap pakai untuk pertanyaan yang berulang. Muncul sebagai tombol di atas kolom balasan; menekannya menyalin isinya, dan Anda masih bisa menyuntingnya sebelum dikirim." />
 
-<div class="kop-halaman mt-3">
-    <div>
-        <h1 class="kop-judul">Template balasan</h1>
-        <p class="kop-catatan">
-            Jawaban siap pakai untuk pertanyaan yang berulang. Muncul sebagai tombol di atas kolom
-            balasan; menekannya menyalin isinya, dan Anda masih bisa menyuntingnya sebelum dikirim.
-        </p>
-    </div>
-</div>
-
-<div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start">
+<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start">
     <div class="kartu divide-y divide-line overflow-hidden">
         @forelse ($daftar as $t)
             <div class="flex items-start gap-4 px-4 py-3">

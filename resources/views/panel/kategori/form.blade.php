@@ -2,9 +2,7 @@
 @section('judul', $kategori->exists ? 'Ubah kategori' : 'Tambah kategori')
 
 @section('isi')
-<h1 class="text-2xl font-extrabold">
-    {{ $kategori->exists ? 'Ubah kategori' : 'Tambah kategori' }}
-</h1>
+<x-kop :judul="$kategori->exists ? 'Ubah kategori' : 'Tambah kategori'" :kembali="route('panel.kategori.index')" kembali-label="Daftar kategori" />
 
 <form method="POST"
       action="{{ $kategori->exists ? route('panel.kategori.update', $kategori) : route('panel.kategori.store') }}"
