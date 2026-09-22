@@ -220,6 +220,15 @@
         color: var(--color-muted);
         cursor: not-allowed;
     }
+
+    /* Tombol halus yang mati tidak boleh malah lebih menonjol daripada yang
+       hidup: ia cuma diredupkan, bukan diberi kotak. */
+    .tombol-halus:disabled,
+    .tombol-halus[aria-disabled="true"] {
+        background: transparent;
+        border-color: transparent;
+        color: var(--color-line-strong);
+    }
 }
 
 @layer components {
@@ -665,9 +674,20 @@
 
     /* ------------------------------------------------ pola isi halaman */
 
-    /* Halaman yang kepalanya menempel memberi tahu sisa halaman berapa tinggi
-       ruang yang sudah terpakai, supaya elemen lekat lain berhenti di bawahnya. */
-    .punya-kop-lekat { --kop-lekat: 4.25rem; }
+    /*
+     * Tinggi kepala halaman yang menempel, dibagi ke seluruh halaman supaya
+     * elemen lekat lain (kepala tabel, daftar bagian) berhenti tepat di
+     * bawahnya, bukan bersembunyi di belakangnya.
+     *
+     * Di layar sempit kepalanya lebih tinggi karena judul, tautan kembali, dan
+     * tombolnya melipat ke beberapa baris.
+     */
+    :root { --kop-lekat: 4.5rem; }
+
+    @media (width < 40rem) {
+        :root { --kop-lekat: 7.5rem; }
+    }
+
 
     /*
      * Kepala halaman yang ikut menempel. Di halaman panjang, tombol aksi utama
@@ -675,10 +695,6 @@
      * harus menggulung balik ke puncak.
      */
     .kop-lekat {
-        /* Tinggi kepala halaman saat melayang, jadi patokan kepala tabel di
-           bawahnya. Keduanya menempel; kalau angkanya tidak dibagi, yang satu
-           pasti menutupi yang lain. */
-        --kop-lekat: 4.25rem;
         position: sticky;
         top: var(--bilah-atas);
         z-index: 20;
@@ -727,6 +743,24 @@
             overflow: visible;
             margin-inline: 0;
             padding-inline: 0;
+        }
+    }
+
+    /* Deret yang berubah jadi kolom di layar lebar, dipakai sebagai daftar isi
+       di samping halaman panjang. Tanpa ini, labelnya yang tidak boleh terpotong
+       melebar melewati kolomnya dan menindih isi halaman. */
+    @media (width >= 64rem) {
+        .segmen-kolom {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .segmen-kolom > * {
+            width: 100%;
+            justify-content: flex-start;
+            white-space: normal;
+            text-align: left;
+            border-radius: 8px;
         }
     }
 

@@ -1820,6 +1820,47 @@ menjangkau, bukan soal siapa boleh melakukan apa.
 
 ---
 
+## KEP-060 — Layar katalog dibenahi, dan panel punya halaman bantuannya sendiri
+**Status:** TERKUNCI · 2026-09-23
+
+Lanjutan KEP-059, atas permintaan klien: produk, kategori, dan stok masih terasa kuno dan
+membingungkan, dan orang toko butuh tempat bertanya yang tidak berupa chat ke pembuatnya.
+
+**Produk:** daftarnya kini memuat gambar kecil dan penanda produk yang belum lengkap, plus
+penyaring "Belum lengkap" tersendiri. Dashboard sudah lama memperingatkan bahwa ada produk
+tanpa gambar atau tanpa harga; memberi tahu ada sepuluh yang bermasalah tanpa menyediakan
+jalan melihatnya satu per satu hanya membuat orang menyerah.
+
+**Kategori:** urutannya digeser dengan dua tombol dari daftarnya, bukan dengan mengetik
+angka di formulir lalu menebak hasilnya. Urutan lama yang nol semua dirapikan dulu jadi
+0,1,2 saat tombol ditekan, karena menukar dua angka nol tidak mengubah apa pun dan membuat
+tombolnya terasa rusak. Slug ikut ditampilkan: itu yang dilihat pelanggan di alamat.
+
+**Stok:** yang diketik adalah JUMLAH DI RAK, dan itu ditulis terang-terangan. Sebelumnya
+kotak isian memuat stok fisik sementara di sebelahnya tertulis "tersedia", dua angka
+berbeda arti yang berdempetan dan tertukar terus. Ditambah tombol kurang/tambah untuk
+opname sambil berdiri memegang barang, penanda baris yang diubah, dan penghitung "berapa
+varian diubah" di bilah simpan.
+
+**Halaman bantuan di bilah atas.** Ditulis seperti menjelaskan ke teman kerja: pertanyaan
+yang memang ditanyakan ("pelanggan sudah transfer tapi statusnya belum berubah"), jawaban
+yang menyebut tombolnya, dan alasan di baliknya. Alasannya ikut ditulis karena aturan yang
+tidak dimengerti akan dicari jalan pintasnya, dan jalan pintas di toko ini berarti uang
+atau kain hilang.
+
+Isinya ditaruh di kode, bukan di Pengaturan yang bisa disunting, supaya tidak pernah
+berselisih dengan cara sistemnya benar-benar bekerja. Bisa dibuka semua orang yang boleh
+masuk panel tanpa izin khusus: yang perannya paling sempit justru yang paling butuh
+penjelasan.
+
+**Pesanan diperiksa langsung di tabelnya.** Atas permintaan klien, ditambahkan tes yang
+mengikuti satu pesanan dari keranjang sampai penyesuaian biaya dan memeriksa isi tabel
+sebenarnya — pesanan, barang, daftar pemain, opsi yang dibekukan, tagihan, antrian
+produksi, riwayat status, dan reservasi stok. Pertanyaan "apa betul semuanya tersimpan?"
+sekarang dijawab oleh tes, bukan oleh keyakinan.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1883,3 +1924,4 @@ menjangkau, bukan soal siapa boleh melakukan apa.
 | KEP-057 | Ongkir dan pelacakan lewat Biteship, di belakang satu lapisan | TERKUNCI |
 | KEP-058 | Pelanggan memilih sendiri kirim atau ambil, ongkir jadi baris tagihan | TERKUNCI |
 | KEP-059 | Panel dirombak: satu pola, berikon, dan bisa dipakai dengan jempol | TERKUNCI |
+| KEP-060 | Layar katalog dibenahi, dan panel punya halaman bantuannya sendiri | TERKUNCI |

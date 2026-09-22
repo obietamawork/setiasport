@@ -51,6 +51,7 @@
         'keluar' => '<path d="M14 5h4a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-4"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h9"/>',
         'menu' => '<path d="M4 6h16M4 12h16M4 18h16"/>',
         'qr' => '<path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Z"/><path d="M14 14h2.5v2.5H14V14Zm5.5 0H20v2.5M14 19.5h2.5V20M19.5 19.5H20"/>',
+        'bantuan' => '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.9.7c0 1.7-2.5 2-2.5 3.5"/><path d="M12 17v.2"/>',
         'gambar' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m5 17 4.5-4.5 3 2.6L16 11l3 3.4"/><circle cx="9" cy="9.5" r="1.3"/>',
     ];
 

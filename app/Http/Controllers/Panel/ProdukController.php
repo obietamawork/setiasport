@@ -16,14 +16,42 @@ class ProdukController extends Controller
 {
     public function index(Request $request)
     {
+        $saring = $request->string('saring')->toString();
+
+        $dasar = fn () => Product::query()
+            ->when($request->filled('q'), function ($q) use ($request) {
+                $cari = '%'.$request->string('q').'%';
+                $q->where(fn ($w) => $w->where('nama', 'like', $cari)->orWhere('sku', 'like', $cari));
+            });
+
+        /*
+         * Penyaring "belum lengkap" menggabungkan dua hal yang sama-sama membuat
+         * produk tidak bisa dijual sendiri: tanpa foto pelanggan tidak percaya,
+         * dan tanpa harga ia harus bertanya ke admin. Keduanya muncul di
+         * dashboard sebagai peringatan; di sini disediakan jalan memperbaikinya.
+         */
+        $belumLengkap = fn ($q) => $q->where(fn ($w) => $w
+            ->whereDoesntHave('images')
+            ->orWhere(fn ($h) => $h
+                ->whereIn('fulfillment_type', [FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value])
+                ->whereDoesntHave('priceTiers')
+                ->whereDoesntHave('prices')));
+
         return view('panel.produk.index', [
-            'produk' => Product::query()
-                ->with('category')
+            'saring' => $saring,
+            'jumlah' => [
+                '' => $dasar()->count(),
+                'tayang' => $dasar()->where('aktif', true)->count(),
+                'sembunyi' => $dasar()->where('aktif', false)->count(),
+                'belum-lengkap' => $dasar()->where('aktif', true)->tap($belumLengkap)->count(),
+            ],
+            'produk' => $dasar()
+                ->with(['category', 'images'])
                 ->withCount('variants')
-                ->when($request->filled('q'), function ($q) use ($request) {
-                    $cari = '%'.$request->string('q').'%';
-                    $q->where(fn ($w) => $w->where('nama', 'like', $cari)->orWhere('sku', 'like', $cari));
-                })
+                ->when($saring === 'tayang', fn ($q) => $q->where('aktif', true))
+                ->when($saring === 'sembunyi', fn ($q) => $q->where('aktif', false))
+                ->when($saring === 'belum-lengkap',
+                    fn ($q) => $q->where('aktif', true)->tap($belumLengkap))
                 ->orderBy('nama')
                 ->paginate(20)
                 ->withQueryString(),

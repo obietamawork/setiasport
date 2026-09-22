@@ -80,6 +80,54 @@ class KategoriController extends Controller
         return redirect()->route('panel.kategori.index')->with('sukses', "Kategori \"{$nama}\" dihapus.");
     }
 
+    /**
+     * Menggeser urutan kategori satu langkah, naik atau turun.
+     *
+     * Urutannya dulu hanya bisa diubah dengan mengetik angka di formulir, dan
+     * angka itu tidak berarti apa-apa sampai seluruh daftarnya dibuka lagi untuk
+     * dilihat hasilnya. Yang dilakukan orang di sini sebenarnya sederhana:
+     * "yang ini naikkan satu".
+     */
+    public function pindah(Request $request, Category $kategori): RedirectResponse
+    {
+        $arah = $request->string('arah')->toString();
+
+        abort_unless(in_array($arah, ['naik', 'turun'], true), 422);
+
+        $saudara = Category::where('parent_id', $kategori->parent_id)
+            ->orderBy('urutan')
+            ->orderBy('nama')
+            ->get();
+
+        /*
+         * Urutannya dirapikan dulu jadi 0,1,2,... Data lama banyak yang urutannya
+         * nol semua, dan menukar dua angka nol tidak mengubah apa pun sehingga
+         * tombolnya terasa rusak.
+         */
+        $saudara->each(function (Category $k, int $i) {
+            if ($k->urutan !== $i) {
+                $k->update(['urutan' => $i]);
+            }
+        });
+
+        $posisi = $saudara->search(fn (Category $k) => $k->is($kategori));
+        $tujuan = $arah === 'naik' ? $posisi - 1 : $posisi + 1;
+
+        // Sudah di ujung: tidak ada yang perlu dikerjakan, dan itu bukan galat.
+        if ($tujuan < 0 || $tujuan >= $saudara->count()) {
+            return back();
+        }
+
+        $tetangga = $saudara[$tujuan];
+
+        $kategori->update(['urutan' => $tujuan]);
+        $tetangga->update(['urutan' => $posisi]);
+
+        ActivityLog::catat('kategori.diurutkan', $kategori, ['arah' => $arah]);
+
+        return back()->with('sukses', "Urutan \"{$kategori->nama}\" diubah.");
+    }
+
     private function validasi(Request $request, ?Category $kategori = null): array
     {
         $data = $request->validate([

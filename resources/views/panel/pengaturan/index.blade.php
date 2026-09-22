@@ -42,7 +42,7 @@
     </form>
 
     {{-- Menu tab: berderet dan bisa digeser di HP, jadi kolom kiri di layar lebar. --}}
-    <nav class="segmen lg:sticky lg:top-24 lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0"
+    <nav class="segmen segmen-kolom lg:sticky lg:top-24 lg:mx-0 lg:overflow-visible lg:px-0"
          aria-label="Kelompok pengaturan">
         @foreach ($tab as $kunci => $t)
             @php

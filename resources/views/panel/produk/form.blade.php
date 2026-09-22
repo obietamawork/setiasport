@@ -19,7 +19,23 @@
 {{-- Halaman ini panjang. Tautan lompat membuat bagian yang dituju bisa dicapai
      tanpa menggulir lima layar. --}}
 @if ($produk->exists)
-    <nav class="segmen mb-6" aria-label="Bagian halaman">
+    {{-- Menempel di bawah kop. Halaman produk panjangnya enam layar; daftar
+         bagian yang ikut tergulung ke atas tidak menolong siapa pun. Bagian yang
+         sedang dibaca ikut ditandai, supaya orang tahu ada di mana. --}}
+    <nav class="segmen sticky z-10 mb-6 bg-paper py-1.5"
+         style="top: calc(var(--bilah-atas) + var(--kop-lekat, 4.25rem))"
+         aria-label="Bagian halaman"
+         x-data="{
+             aktif: '',
+             init() {
+                 const bagian = [...document.querySelectorAll('section[id], form[id]')];
+                 const pengawas = new IntersectionObserver((baris) => {
+                     baris.filter((b) => b.isIntersecting)
+                         .forEach((b) => { this.aktif = b.target.id });
+                 }, { rootMargin: '-30% 0px -60% 0px' });
+                 bagian.forEach((b) => pengawas.observe(b));
+             },
+         }">
         @php
             $bagian = array_filter([
                 ['#detail', 'Keterangan'],
@@ -32,7 +48,8 @@
             ]);
         @endphp
         @foreach ($bagian as [$anchor, $label])
-            <a href="{{ $anchor }}" class="segmen-item">{{ $label }}</a>
+            <a href="{{ $anchor }}" class="segmen-item"
+               :class="aktif === '{{ ltrim($anchor, '#') }}' ? 'segmen-item-aktif' : ''">{{ $label }}</a>
         @endforeach
     </nav>
 @endif
@@ -173,6 +190,17 @@
     </div>
 </form>
 
+@if ($produk->exists)
+    {{-- Bagian di bawah ini menyimpan sendiri-sendiri: gambar, varian, harga,
+         dan opsi masing-masing punya tombolnya. Disebutkan terang-terangan,
+         karena formulir panjang yang punya satu tombol simpan di puncak membuat
+         orang ragu apakah perubahannya sudah tercatat. --}}
+    <p class="kolom-baca mt-3 text-sm leading-relaxed text-muted">
+        Tombol di atas hanya menyimpan keterangan dasar ini. Gambar, varian, harga, dan opsi
+        di bawah punya tombol simpannya masing-masing.
+    </p>
+@endif
+
 @unless ($produk->exists)
     <p class="mt-4 max-w-2xl text-sm text-muted">
         Varian, tier harga, dan opsi diisi setelah produk dibuat.
@@ -181,7 +209,7 @@
 
 @if ($produk->exists)
 <section id="gambar" class="mt-10 max-w-4xl scroll-mt-20">
-    <h2 class="text-lg font-extrabold">Gambar produk</h2>
+    <h2 class="flex items-center gap-2 text-lg font-extrabold"><x-ikon nama="gambar" class="text-navy-400" />Gambar produk</h2>
     <p class="mt-1 text-sm text-muted">
         Bisa diunggah langsung ke hosting, atau ditunjuk ke tautan CDN. Yang diunggah
         otomatis dikecilkan dan dikonversi ke WebP supaya katalog tetap ringan dibuka
@@ -288,7 +316,7 @@
 
 @if ($produk->punyaJalurReadyStock())
 <section id="varian" class="mt-10 max-w-4xl scroll-mt-20">
-    <h2 class="text-lg font-extrabold">Varian &amp; stok</h2>
+    <h2 class="flex items-center gap-2 text-lg font-extrabold"><x-ikon nama="stok" class="text-navy-400" />Varian &amp; stok</h2>
     <p class="mt-1 text-sm text-muted">
         Setiap kombinasi ukuran dan warna berdiri sendiri, lengkap dengan stoknya.
     </p>
@@ -360,7 +388,7 @@
 
 @if ($produk->punyaJalurKustom())
 <section id="harga" class="mt-10 max-w-4xl scroll-mt-20">
-    <h2 class="text-lg font-extrabold">Tier harga kustom</h2>
+    <h2 class="flex items-center gap-2 text-lg font-extrabold"><x-ikon nama="uang" class="text-navy-400" />Tier harga kustom</h2>
     <p class="mt-1 text-sm text-muted">
         Harga per pcs menurut jumlah pesanan. Tanpa ini, pelanggan tidak bisa menghitung
         biayanya sendiri dan akan bertanya ke admin.
@@ -413,7 +441,7 @@
 </section>
 
 <section id="opsi" class="mt-10 max-w-4xl scroll-mt-20">
-    <h2 class="text-lg font-extrabold">Opsi produk</h2>
+    <h2 class="flex items-center gap-2 text-lg font-extrabold"><x-ikon nama="kategori" class="text-navy-400" />Opsi produk</h2>
     <p class="mt-1 text-sm text-muted">
         Bahan, lengan, kerah, nameset, dan biaya setup. Perhatikan kolom cara hitung: biaya setup dikenakan sekali per pesanan, bukan per potong.
     </p>
@@ -487,7 +515,7 @@
 
 {{-- MATRIKS HARGA (KEP-052) ------------------------------------------------ --}}
 <section id="matriks" class="mt-10 max-w-4xl scroll-mt-20">
-    <h2 class="text-lg font-extrabold">Matriks harga per ukuran</h2>
+    <h2 class="flex items-center gap-2 text-lg font-extrabold"><x-ikon nama="laporan" class="text-navy-400" />Matriks harga per ukuran</h2>
     <p class="kolom-baca mt-1 text-sm leading-relaxed text-muted">
         Dipakai produk yang harganya berbeda menurut umur pemakainya, misalnya jersey SD,
         SMP, dan dewasa. Isi harga dasar tiap bahan; tambahan kerah, lengan panjang, dan
@@ -570,7 +598,7 @@
 
 {{-- PANDUAN UKURAN (KEP-052) ----------------------------------------------- --}}
 <section id="panduan" class="mt-10 max-w-4xl scroll-mt-20">
-    <h2 class="text-lg font-extrabold">Panduan ukuran</h2>
+    <h2 class="flex items-center gap-2 text-lg font-extrabold"><x-ikon nama="produk" class="text-navy-400" />Panduan ukuran</h2>
     <p class="kolom-baca mt-1 text-sm leading-relaxed text-muted">
         Daftar ini yang menentukan ukuran mana yang boleh dipesan pelanggan, sekaligus
         tampil sebagai tabel sentimeter di halaman pemesanan. Selama kosong, sistem memakai

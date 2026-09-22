@@ -138,6 +138,16 @@
                 </a>
             @endif
 
+            {{-- Bantuan berdiri sendiri di bilah atas, tidak disembunyikan di
+                 dalam menu: yang sedang bingung tidak akan menemukannya kalau
+                 harus menebak dulu di mana letaknya. --}}
+            <a href="{{ route('panel.bantuan') }}" title="Bantuan"
+               class="flex items-center gap-1.5 rounded-[7px] px-2.5 py-1.5 text-white/70 hover:bg-white/10 hover:text-white
+                      {{ request()->routeIs('panel.bantuan') ? 'bg-white/10 text-white' : '' }}">
+                <x-ikon nama="bantuan" ukuran="size-5" />
+                <span class="hidden sm:inline">Bantuan</span>
+            </a>
+
             {{-- Identitas, "lihat toko", dan keluar dirangkum ke satu menu.
                  Tiga hal yang jarang ditekan tidak perlu memakan bilah atas,
                  apalagi di layar HP tempat ruangnya paling sempit. --}}
@@ -223,6 +233,14 @@
                 @endforeach
             @endforeach
         </nav>
+
+        {{-- Di layar sentuh, bilah atas hanya memuat ikonnya; tautan berlabel
+             tetap disediakan di laci supaya tidak perlu menebak. --}}
+        <a href="{{ route('panel.bantuan') }}" @click="menu = false"
+           class="menu-panel mt-4 border-t border-line pt-4 lg:hidden">
+            <x-ikon nama="bantuan" />
+            <span class="menu-teks">Bantuan</span>
+        </a>
     </aside>
 
     <main class="min-w-0 flex-1">

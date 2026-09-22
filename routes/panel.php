@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BuktiBayarController;
 use App\Http\Controllers\Panel\AuthController;
+use App\Http\Controllers\Panel\BantuanController;
 use App\Http\Controllers\Panel\ContohProfilController;
 use App\Http\Controllers\Panel\CsController;
 use App\Http\Controllers\Panel\TemplateBalasanController;
@@ -44,6 +45,10 @@ Route::prefix('panel')->name('panel.')->group(function () {
     Route::middleware('auth:web')->group(function () {
         Route::post('/keluar', [AuthController::class, 'keluar'])->name('keluar');
         Route::get('/', DashboardController::class)->name('dashboard');
+
+        // Bantuan dibuka semua orang yang boleh masuk panel, tanpa izin khusus:
+        // yang paling butuh penjelasan justru yang perannya paling sempit.
+        Route::get('/bantuan', BantuanController::class)->name('bantuan');
 
         // Pesanan yang diketik admin untuk pembeli offline (KEP-054).
         Route::middleware('izin:order.kelola')->group(function () {
@@ -143,6 +148,11 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::resource('kategori', KategoriController::class)
                 ->except('show')
                 ->parameters(['kategori' => 'kategori']);
+
+            // Urutan kategori digeser satu langkah dari daftarnya, bukan dengan
+            // mengetik angka di formulir dan menebak hasilnya.
+            Route::post('kategori/{kategori}/pindah', [KategoriController::class, 'pindah'])
+                ->name('kategori.pindah');
 
             Route::resource('produk', ProdukController::class)
                 ->except('show')

@@ -137,7 +137,7 @@
     {{-- Tanpa pembungkus yang bisa digulir: lihat .tabel-lekat. Di bawah 48rem
          daftarnya memang sudah berganti jadi kartu, jadi tidak ada yang perlu
          digeser ke samping. --}}
-    <div class="kartu punya-kop-lekat mt-5 hidden md:block">
+    <div class="kartu mt-5 hidden md:block">
         <table class="tabel tabel-lekat">
             <thead>
                 <tr>
