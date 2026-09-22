@@ -1688,6 +1688,40 @@ ada gunanya di meja kerja.
 
 ---
 
+## KEP-057 — Ongkir dan pelacakan lewat Biteship, di belakang satu lapisan
+**Status:** TERKUNCI · 2026-09-22
+
+Toko perlu hitung ongkir otomatis dan status paket di halaman pelanggan. Penyedia yang
+disurvei: RajaOngkir (gratis untuk ongkir, tetapi pelacakannya berbayar bulanan),
+api.co.id (murah, tetapi **tidak punya pelacakan sama sekali**), KiriminAja dan Shipper
+(gratis, tetapi paket wajib dipesan lewat mereka dan JNE minta deposit Rp2 juta).
+
+**Keputusan: Biteship.** Satu penyedia mengerjakan keduanya, dibayar per panggilan tanpa
+langganan, dan **pelacakannya bisa dipakai untuk resi yang dibuat sendiri di konter**.
+Yang terakhir itu penentu: toko mengantar paketnya sendiri ke JNE atau J&T, jadi penyedia
+yang hanya bisa melacak paket pesanan mereka tidak akan pernah terpakai.
+
+**Ditaruh di belakang satu antarmuka.** Harga dan syarat layanan penyedia semacam ini
+berubah tiap tahun; berpindah penyedia harus berarti mengganti satu kelas, bukan
+menyentuh checkout.
+
+**Bawaannya "mati".** Selama kuncinya belum ada, tidak ada panggilan keluar sama sekali
+dan ongkir tetap dihitung admin lalu ditulis sebagai penyesuaian biaya. Itu bukan keadaan
+darurat, melainkan cara kerja toko hari ini.
+
+**Kegagalan ditelan, bukan dilempar ke atas.** API mati, saldo habis, atau jaringan
+hosting putus menghasilkan daftar tarif kosong, dan pemesanan tetap jalan. Checkout yang
+gagal karena penyedia pihak ketiga sedang mati adalah pesanan yang hilang.
+
+**Tarif disimpan sementara satu jam** per tujuan dan berat. Tiap panggilan berbiaya, dan
+tarif kurir tidak berubah tiap menit.
+
+Diuji penuh dengan jawaban API palsu, jadi tidak perlu kunci maupun saldo untuk memastikan
+pembacaannya benar. Yang belum bisa diuji tanpa kunci asli: bentuk jawaban Biteship yang
+sesungguhnya, dan itu diperiksa sekali saat kuncinya sudah ada.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1748,3 +1782,4 @@ ada gunanya di meja kerja.
 | KEP-054 | Pesanan bisa diketik admin, dan email pelanggan jadi opsional | TERKUNCI |
 | KEP-055 | Barang kustom boleh dikirim | TERKUNCI |
 | KEP-056 | Lembar kerja memuat desainnya, bukan nomor pelanggan | TERKUNCI |
+| KEP-057 | Ongkir dan pelacakan lewat Biteship, di belakang satu lapisan | TERKUNCI |
