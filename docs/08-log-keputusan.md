@@ -1668,6 +1668,26 @@ Risiko ukuran meleset kini ditanggung panduan ukuran yang tampil di halaman peme
 
 ---
 
+## KEP-056 — Lembar kerja memuat desainnya, bukan nomor pelanggan
+**Status:** TERKUNCI · 2026-09-22
+
+Lembar kerja dulu hanya menulis "Mockup: v2", sehingga orang potong dan jahit tetap harus
+membuka HP untuk melihat desainnya. Sebaliknya, ia mencetak nomor HP pelanggan yang tidak
+ada gunanya di meja kerja.
+
+**Keputusan:**
+
+- **Gambar desain yang disetujui ikut tercetak** di lembar kerja.
+- **Nomor HP pelanggan tidak dicetak.** Sejak lembar ini difoto dan dikirim ke grup
+  WhatsApp konveksi (KEP-047), nomor pelanggan ikut beredar tanpa alasan. Yang perlu
+  menghubungi pelanggan membukanya di panel.
+- **Tiga keadaan dibedakan dengan jelas**, dan ini yang paling menentukan di lapangan:
+  ada gambarnya, disetujui tetapi gambarnya ditukar lewat tautan Drive (KEP-002), dan
+  belum disetujui sama sekali. Menulis "belum disetujui" untuk keadaan kedua menghentikan
+  pekerjaan yang sebenarnya sudah boleh jalan.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1727,3 +1747,4 @@ Risiko ukuran meleset kini ditanggung panduan ukuran yang tampil di halaman peme
 | KEP-053 | Seragam olahraga, tiga jenis kaos, dan kategori barang stok | TERKUNCI |
 | KEP-054 | Pesanan bisa diketik admin, dan email pelanggan jadi opsional | TERKUNCI |
 | KEP-055 | Barang kustom boleh dikirim | TERKUNCI |
+| KEP-056 | Lembar kerja memuat desainnya, bukan nomor pelanggan | TERKUNCI |

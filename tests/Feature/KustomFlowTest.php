@@ -329,6 +329,48 @@ class KustomFlowTest extends TestCase
         $this->assertSame(OrderItemStatus::MENUNGGU_PERSETUJUAN, $item->fresh()->status_item);
     }
 
+    /**
+     * Lembar kerja memuat gambar desain yang disetujui, dan TIDAK memuat nomor
+     * HP pelanggan (KEP-056): lembar ini difoto dan beredar di grup WhatsApp
+     * konveksi, sementara nomor pelanggan tidak ada gunanya di meja potong.
+     */
+    public function test_worksheet_memuat_mockup_dan_menyembunyikan_nomor_pelanggan(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+        $this->setujui($item);
+
+        $item = $item->fresh(['approvedDesign', 'order.customer']);
+        $staf = $this->staf('admin@setiasport.test');
+
+        $html = $this->actingAs($staf)
+            ->get(route('panel.pesanan.worksheet', $item->order))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Desain yang disetujui', $html);
+        $this->assertStringContainsString($item->approvedDesign->path, $html);
+        $this->assertStringNotContainsString($item->order->customer->no_hp, $html);
+    }
+
+    /**
+     * Desain yang disetujui tapi gambarnya ditukar lewat tautan Drive (KEP-002)
+     * tidak boleh membuat lembar kerja menulis "belum disetujui": itu
+     * menghentikan pekerjaan yang sebenarnya sudah boleh jalan.
+     */
+    public function test_worksheet_membedakan_belum_disetujui_dari_gambar_yang_tidak_tersimpan(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+        $this->setujui($item);
+
+        $item->fresh()->approvedDesign->update(['path' => null, 'external_url' => 'https://drive.contoh/desain']);
+
+        $this->actingAs($this->staf('admin@setiasport.test'))
+            ->get(route('panel.pesanan.worksheet', $item->order))
+            ->assertOk()
+            ->assertSee('Desain sudah disetujui, gambarnya tidak ada di sistem')
+            ->assertDontSee('Desain belum disetujui pelanggan');
+    }
+
     /** Menjalankan antrian produksi sampai item meninggalkan Finishing & Packing. */
     private function kerjakanProduksi(OrderItem $item): void
     {

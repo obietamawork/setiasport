@@ -33,6 +33,11 @@
         .ringkas { padding: 8px 10px; font-weight: bold; }
         .catatan { border: 1px solid #000; padding: 8px 10px; margin-top: 4px; min-height: 40px; }
         .cetak { margin-bottom: 14px; }
+        .desain { display: flex; gap: 12px; padding: 10px; border-bottom: 1px solid #ccc;
+                  align-items: flex-start; }
+        .desain img { width: 46mm; border: 1px solid #000; }
+        .desain .ket { font-size: 11px; line-height: 1.5; }
+        .desain .ket strong { font-size: 13px; }
         .kerja { display: flex; gap: 12px; align-items: center; padding: 10px;
                  border-top: 1px solid #000; }
         .kerja .petunjuk { font-size: 11px; line-height: 1.5; }
@@ -47,10 +52,12 @@
     <button type="button" onclick="window.print()">Cetak worksheet</button>
 </div>
 
+{{-- Nomor HP pelanggan sengaja TIDAK dicetak (KEP-056). Lembar ini difoto dan
+     dikirim ke grup WhatsApp konveksi, dan nomor pelanggan tidak ada gunanya di
+     meja potong. Yang butuh menghubungi pelanggan membukanya di panel. --}}
 <div class="kop">
     <div>
         <h1>{{ $pesanan->customer->nama }}</h1>
-        <div>{{ $pesanan->customer->no_hp }}</div>
         @if ($pesanan->target_siap_pada)
             <div><strong>Target siap: {{ $pesanan->target_siap_pada->translatedFormat('l, j F Y') }}</strong></div>
         @endif
@@ -80,6 +87,51 @@
                     ({{ $item->approved_at->translatedFormat('j M Y') }})</span>
             @endif
         </div>
+
+        {{-- Mockup yang disetujui pelanggan dicetak di lembar ini (KEP-056).
+             Sebelumnya hanya tertulis "Mockup: v2", dan orang potong maupun
+             jahit tetap harus membuka HP untuk melihat desainnya. --}}
+        @if ($item->approvedDesign?->path)
+            <div class="desain">
+                <img src="{{ asset('storage/'.$item->approvedDesign->path) }}"
+                     alt="Mockup {{ $item->nama_produk }}">
+                <div class="ket">
+                    <strong>Desain yang disetujui</strong><br>
+                    Versi {{ $item->approvedDesign->versi }}
+                    @if ($item->approved_by_name)
+                        &middot; disetujui {{ $item->approved_by_name }}
+                        {{ $item->approved_at?->translatedFormat('j M Y') }}
+                    @endif
+                    <br>
+                    Kerjakan persis seperti gambar ini. Kalau ada yang tidak jelas,
+                    tanyakan ke admin konveksi sebelum memotong kain.
+                    @if ($item->approvedDesign->external_url)
+                        <br>File siap cetak: {{ $item->approvedDesign->external_url }}
+                    @endif
+                </div>
+            </div>
+        @elseif ($item->sudahDisetujui())
+            {{-- Disetujui, tetapi gambarnya tidak tersimpan di sistem: desainnya
+                 ditukar lewat tautan Drive (KEP-002). Jangan sampai lembar ini
+                 menulis "belum disetujui", karena itu menghentikan pekerjaan
+                 yang sebenarnya sudah boleh jalan. --}}
+            <div class="desain">
+                <div class="ket">
+                    <strong>Desain sudah disetujui, gambarnya tidak ada di sistem</strong><br>
+                    Minta file siap cetaknya ke admin konveksi sebelum mulai.
+                    @if ($item->approvedDesign?->external_url)
+                        <br>{{ $item->approvedDesign->external_url }}
+                    @endif
+                </div>
+            </div>
+        @elseif ($item->kustom())
+            <div class="desain">
+                <div class="ket">
+                    <strong>Desain belum disetujui pelanggan</strong><br>
+                    Jangan dipotong atau dicetak dulu.
+                </div>
+            </div>
+        @endif
 
         @if ($item->rosters->isNotEmpty())
             <div class="ringkas">{{ $item->ringkasanUkuran() }}</div>
