@@ -879,6 +879,24 @@
         backdrop-filter: blur(8px);
     }
 
+    /* Penanda "sedang diproses" di tombol yang baru ditekan. Tanpa ini, tombol
+       yang berubah tulisannya tetap terasa seperti tidak terjadi apa-apa di
+       jaringan konveksi yang lambat. */
+    .pemuat {
+        display: inline-block;
+        width: 0.95em;
+        height: 0.95em;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 999px;
+        opacity: 0.7;
+        animation: putar 0.6s linear infinite;
+    }
+
+    @keyframes putar {
+        to { rotate: 360deg; }
+    }
+
     /* Kartu angka di dashboard: satu angka, satu label, tanpa hiasan. */
     .kartu-metrik {
         display: flex;

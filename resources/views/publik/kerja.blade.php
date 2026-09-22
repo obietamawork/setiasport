@@ -1,7 +1,6 @@
-@extends('layouts.publik')
+@extends('layouts.kerja')
 @section('judul', 'Lembar kerja '.$item->order->kode)
-@section('subjudul', $item->order->kode)
-@section('subcatatan', $item->nama_produk)
+@section('kop', $item->order->kode)
 
 @section('isi')
 @php
@@ -13,12 +12,6 @@
         ->values();
     $posisi = $alur->search($item->status_item);
 @endphp
-
-<div class="mx-auto max-w-lg px-5 py-6">
-
-    @if (session('sukses'))
-        <p class="notis notis-ok mb-5">{{ session('sukses') }}</p>
-    @endif
 
     <p class="tabular text-sm text-muted">{{ $item->order->kode }}</p>
     <h1 class="mt-1 text-2xl font-extrabold">{{ $item->nama_produk }}</h1>
@@ -110,5 +103,4 @@
             {{ $item->catatan }}
         </div>
     @endif
-</div>
 @endsection

@@ -39,8 +39,15 @@ document.addEventListener('submit', (e) => {
     form.dataset.terkirim = '1';
 
     form.querySelectorAll('button[type="submit"], button:not([type])').forEach((tombol) => {
-        tombol.dataset.teksAsli = tombol.textContent;
+        // Disimpan sebagai HTML, bukan teks: tombol panel memuat ikon, dan
+        // menyimpan teksnya saja akan menghapus ikon itu tanpa bisa dikembalikan
+        // saat halaman dipulihkan dari cache tombol Kembali.
+        tombol.dataset.isiAsli = tombol.innerHTML;
         tombol.textContent = tombol.dataset.teksProses || 'Memproses...';
+        tombol.prepend(Object.assign(document.createElement('span'), {
+            className: 'pemuat',
+            ariaHidden: 'true',
+        }));
 
         // Ditunda satu tick: menonaktifkan tombol sebelum peramban selesai
         // menyusun data formulir bisa menggugurkan nilainya.
@@ -55,9 +62,9 @@ window.addEventListener('pageshow', (e) => {
     document.querySelectorAll('form[data-terkirim]').forEach((form) => {
         delete form.dataset.terkirim;
 
-        form.querySelectorAll('button[data-teks-asli]').forEach((tombol) => {
+        form.querySelectorAll('button[data-isi-asli]').forEach((tombol) => {
             tombol.disabled = false;
-            tombol.textContent = tombol.dataset.teksAsli;
+            tombol.innerHTML = tombol.dataset.isiAsli;
         });
     });
 });

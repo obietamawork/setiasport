@@ -1,15 +1,8 @@
-@extends('layouts.publik')
+@extends('layouts.kerja')
 @section('judul', 'Roll printing '.$roll->kode)
-@section('subjudul', $roll->kode)
-@section('subcatatan', $roll->items->count().' pesanan dalam satu roll')
+@section('kop', $roll->kode)
 
 @section('isi')
-<div class="mx-auto max-w-lg px-5 py-6">
-
-    @if (session('sukses'))
-        <p class="notis notis-ok mb-5">{{ session('sukses') }}</p>
-    @endif
-
     <h1 class="text-2xl font-extrabold">{{ $roll->kode }}</h1>
     <p class="mt-1 text-sm text-muted">
         Dibuat {{ $roll->created_at->translatedFormat('j M Y, H:i') }}
@@ -69,5 +62,4 @@
             </li>
         @endforeach
     </ul>
-</div>
 @endsection

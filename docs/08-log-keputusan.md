@@ -1765,6 +1765,61 @@ akan tersangkut tanpa jalan keluar di panel.
 
 ---
 
+## KEP-059 — Panel dirombak: satu pola, berikon, dan bisa dipakai dengan jempol
+**Status:** TERKUNCI · 2026-09-22
+
+Klien minta panel internal lebih mudah dipakai dan tidak terlihat kuno, dan menegaskan
+panel itu dibuka dari HP, tablet, maupun PC — ketiganya sama pentingnya.
+
+**Keputusan: dirombak bertahap, visual sekaligus alur**, bukan sekadar dipercantik.
+Layar yang membingungkan tetap membingungkan walau warnanya diganti.
+
+**Ikon digambar sendiri sebagai SVG sebaris**, bukan mengambil pustaka ikon. Konveksi
+jaringannya putus-putus; ikon yang gagal dimuat membuat menu jadi deretan kotak kosong.
+Ikon selalu menemani teks, tidak pernah menggantikannya, kecuali di rail sempit yang
+labelnya tetap terbawa untuk pembaca layar.
+
+**Sasaran sentuh minimal 44px di perangkat sentuh.** Panel ini dipakai sambil berdiri di
+konveksi dan di kasir, dengan jempol. Tombol setinggi 32px di sana berarti salah tekan,
+dan salah tekan di halaman pesanan berarti uang tercatat di tempat yang keliru.
+
+**Bilah navigasi bawah di HP dan tablet**, berisi empat tujuan tersering saja. Sisanya
+lewat laci menu: bilah bawah yang memuat sepuluh ikon sama sulitnya dengan tidak ada
+bilah sama sekali.
+
+**Menu samping yang dikuncupkan jadi rail ikon, bukan hilang.** Menu yang lenyap sama
+sekali memaksa orang mengingat isinya untuk bisa membukanya lagi.
+
+**Kepala halaman menempel** di semua halaman panel, lewat satu komponen. Halaman panel
+panjang; tombol aksi utama dan kotak pencarian dulu tertinggal di puncak, sehingga
+menekan "Catat pembayaran" berarti menggulung balik melewati sepuluh layar.
+
+**Satu kotak "langkah berikutnya" di halaman pesanan.** Halaman itu memuat sembilan
+bagian berbobot sama, dan giliran siapa sekarang hanya bisa disimpulkan setelah membaca
+semuanya — puluhan kali sehari. Kalimatnya DITURUNKAN dari keadaan pesanan, bukan dari
+kolom baru yang harus dijaga tetap benar, dan ia hanya menunjuk ke formulir yang sudah
+ada berikut seluruh penjagaannya: tidak ada jalan pintas baru yang melewati KEP-006 atau
+KEP-019.
+
+**Warna status diputuskan sekali di enum**, bukan ditulis ulang di tiap tampilan. Merah
+menuntut tindakan hari ini, kuning menunggu orang lain, navy sedang berjalan, hijau
+selesai, abu-abu sudah tidak hidup. Warna yang berbeda-beda antar halaman membuat staf
+berhenti mempercayai warnanya dan kembali membaca teksnya satu per satu.
+
+**Tabel berubah jadi kartu di bawah 48rem**, bukan digeser ke samping. Tabel enam kolom
+yang digeser di HP praktis tidak terbaca.
+
+**Lembar kerja dan lembar roll keluar dari kerangka etalase.** Tukang jahit yang memindai
+QR mendapat keranjang belanja, tombol "Masuk", dan kaki halaman berisi jam buka toko:
+tidak satu pun berguna di meja kerja. Kerangkanya juga bukan kerangka panel, karena
+pekerja memang tidak punya akun panel (KEP-053).
+
+Yang TIDAK diubah: aturan bisnisnya. Tidak ada tombol baru yang bisa memajukan status,
+menyetujui desain, atau mengeluarkan barang; seluruh perombakan ini soal cara melihat dan
+menjangkau, bukan soal siapa boleh melakukan apa.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1827,3 +1882,4 @@ akan tersangkut tanpa jalan keluar di panel.
 | KEP-056 | Lembar kerja memuat desainnya, bukan nomor pelanggan | TERKUNCI |
 | KEP-057 | Ongkir dan pelacakan lewat Biteship, di belakang satu lapisan | TERKUNCI |
 | KEP-058 | Pelanggan memilih sendiri kirim atau ambil, ongkir jadi baris tagihan | TERKUNCI |
+| KEP-059 | Panel dirombak: satu pola, berikon, dan bisa dipakai dengan jempol | TERKUNCI |
