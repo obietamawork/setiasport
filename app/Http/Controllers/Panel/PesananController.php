@@ -94,6 +94,15 @@ class PesananController extends Controller
             // pekerjaan tetap berjalan, jadi ia ditaruh paling atas di layar.
             'pembatalan' => $kebijakan->pengajuanTertunda($pesanan),
             'biayaSetup' => $kebijakan->biayaSetup($pesanan),
+
+            // Satu kalimat yang menjawab "sekarang saya harus apa", supaya
+            // halaman sepanjang ini tidak perlu dibaca seluruhnya lebih dulu.
+            'langkah' => app(\App\Services\LangkahBerikut::class)->untuk($pesanan),
+
+
+            // Satu kalimat yang menjawab "sekarang saya harus apa", supaya
+            // halaman sepanjang ini tidak perlu dibaca seluruhnya lebih dulu.
+            'langkah' => app(\App\Services\LangkahBerikut::class)->untuk($pesanan),
         ]);
     }
 

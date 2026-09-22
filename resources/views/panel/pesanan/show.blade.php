@@ -11,28 +11,59 @@
     $izin = auth('web')->user();
 @endphp
 
-<a href="{{ route('panel.pesanan.index') }}" class="tautan text-sm text-muted">Kembali ke daftar pesanan</a>
+{{-- Judulnya kode pesanan, bukan status. Kode itulah yang dicari, disebut di
+     telepon, dan dicocokkan dengan lembar kerja; statusnya sudah terbaca
+     sebagai chip berwarna di sebelahnya. --}}
+<x-kop :judul="$pesanan->kode" :kembali="route('panel.pesanan.index')" kembali-label="Daftar pesanan">
+    <x-slot:bawahJudul>
+        <div class="flex flex-wrap items-center gap-2 text-sm text-muted">
+            <span class="chip {{ $pesanan->status->warna() }}">
+                <x-ikon :nama="$pesanan->status->ikon()" ukuran="size-3.5" />
+                {{ $pesanan->status->label() }}
+            </span>
+            <span>
+                Dibuat {{ $pesanan->created_at->translatedFormat('j M Y, H:i') }}
+                @if ($pesanan->target_siap_pada)
+                    &middot; target siap {{ $pesanan->target_siap_pada->translatedFormat('j M Y') }}
+                @endif
+            </span>
+        </div>
+    </x-slot:bawahJudul>
 
-<div class="kop-halaman mt-3">
-    <div>
-        <p class="tabular text-sm text-muted">{{ $pesanan->kode }}</p>
-        <h1 class="kop-judul mt-0.5">{{ $pesanan->status->label() }}</h1>
-        <p class="kop-catatan">
-            Dibuat {{ $pesanan->created_at->translatedFormat('l, j F Y, H:i') }}
-            @if ($pesanan->target_siap_pada)
-                , target siap {{ $pesanan->target_siap_pada->translatedFormat('j F Y') }}
-            @endif
-        </p>
+    <a href="{{ route('panel.pesanan.worksheet', $pesanan) }}" target="_blank" rel="noopener"
+       class="tombol tombol-garis tombol-sm">
+        <x-ikon nama="cetak" ukuran="size-4" />
+        Worksheet
+    </a>
+    <a href="{{ route('panel.pesanan.invoice', $pesanan) }}" target="_blank" rel="noopener"
+       class="tombol tombol-garis tombol-sm">
+        <x-ikon nama="uang" ukuran="size-4" />
+        Invoice
+    </a>
+    <a href="{{ route('lacak.token', $pesanan->access_token) }}" target="_blank" rel="noopener"
+       class="tombol tombol-halus tombol-sm">
+        <x-ikon nama="buka-luar" ukuran="size-4" />
+        <span class="hidden sm:inline">Lihat seperti pelanggan</span>
+    </a>
+</x-kop>
+
+{{-- Satu kalimat yang menjawab "sekarang saya harus apa". Tanpa ini, giliran
+     siapa sekarang hanya bisa disimpulkan setelah membaca sembilan kartu. --}}
+<div class="langkah-berikut mt-1 mb-6
+            {{ $langkah['nada'] === 'mendesak' ? 'langkah-berikut-mendesak' : '' }}
+            {{ $langkah['nada'] === 'selesai' ? 'langkah-berikut-selesai' : '' }}">
+    <div class="min-w-0 flex-1">
+        <p class="font-bold">{{ $langkah['judul'] }}</p>
+        <p class="kolom-baca mt-0.5 text-sm leading-relaxed text-muted">{{ $langkah['isi'] }}</p>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3">
-        <a href="{{ route('panel.pesanan.worksheet', $pesanan) }}" target="_blank" rel="noopener"
-           class="tombol tombol-garis tombol-sm">Worksheet</a>
-        <a href="{{ route('panel.pesanan.invoice', $pesanan) }}" target="_blank" rel="noopener"
-           class="tombol tombol-garis tombol-sm">Invoice</a>
-        <a href="{{ route('lacak.token', $pesanan->access_token) }}" target="_blank" rel="noopener"
-           class="tautan text-sm">Lihat seperti pelanggan</a>
-    </div>
+    @if ($langkah['tuju'])
+        <a href="{{ $langkah['tuju'] }}"
+           class="tombol tombol-sm {{ $langkah['nada'] === 'mendesak' ? 'tombol-utama' : 'tombol-garis' }}">
+            {{ $langkah['label'] }}
+            <x-ikon nama="lanjut" ukuran="size-4" />
+        </a>
+    @endif
 </div>
 
 {{-- Tumpukan biasa di layar sempit, grid baru mulai lg. Trek grid "auto"
@@ -43,7 +74,7 @@
         {{-- Pengajuan pembatalan (KEP-041) ditaruh paling atas: selama belum
              diputuskan, produksi tetap berjalan dan kain tetap terpakai. --}}
         @if ($pembatalan)
-            <section class="kartu overflow-hidden border-kuning">
+            <section id="pembatalan" class="kartu scroll-mt-32 overflow-hidden border-kuning">
                 <h2 class="kartu-kop bg-kuning-50">Pengajuan pembatalan</h2>
                 <div class="space-y-4 p-5">
                     <div>
@@ -119,7 +150,7 @@
             </section>
         @endif
 
-        <section class="kartu overflow-hidden">
+        <section id="barang" class="kartu scroll-mt-32 overflow-hidden">
             <h2 class="kartu-kop">Barang</h2>
             <div class="divide-y divide-line">
                 @foreach ($pesanan->items as $item)
@@ -282,15 +313,21 @@
 
                         @unless ($batal)
                             <div class="mt-4 flex flex-wrap items-center gap-3 border-t border-line pt-4">
-                                <div class="flex items-center gap-1.5" title="{{ $item->status_item->label() }}">
+                                {{-- Tahapan berlabel, bukan deretan titik. Titik tanpa nama hanya
+                                     terbaca oleh orang yang sudah hafal urutannya, dan yang paling
+                                     sering bertanya "sekarang sampai mana" justru yang belum hafal. --}}
+                                <div class="tangga w-full" aria-label="Tahap: {{ $item->status_item->labelStaf() }}">
                                     @foreach ($alur as $i => $tahap)
-                                        <span class="tahap-titik
-                                            {{ $posisi !== false && $i < $posisi ? 'tahap-titik-lewat' : '' }}
-                                            {{ $posisi === $i ? 'tahap-titik-kini' : '' }}"></span>
+                                        <span class="tangga-langkah
+                                            {{ $posisi !== false && $i < $posisi ? 'tangga-lewat' : '' }}
+                                            {{ $posisi === $i ? 'tangga-kini' : '' }}">
+                                            @if ($posisi !== false && $i < $posisi)
+                                                <x-ikon nama="centang" ukuran="size-3.5" />
+                                            @endif
+                                            {{ $tahap->labelStaf() }}
+                                        </span>
                                     @endforeach
                                 </div>
-
-                                <span class="text-sm font-medium">{{ $item->status_item->label() }}</span>
 
                                 @if ($menungguPelanggan)
                                     <span class="ml-auto text-sm text-muted">
@@ -322,7 +359,7 @@
             </div>
         </section>
 
-        <section class="kartu overflow-hidden">
+        <section id="pembayaran" class="kartu scroll-mt-32 overflow-hidden">
             <h2 class="kartu-kop">Pembayaran</h2>
 
             <ul class="divide-y divide-line text-sm">
@@ -465,7 +502,7 @@
         {{-- Pengambilan vs pengiriman (KEP-026). Disetel di sini, bukan di layar
              kasir: kesepakatan mengirim terjadi lewat WhatsApp jauh sebelum
              barangnya siap, bukan di depan meja kasir. --}}
-        <section class="kartu overflow-hidden">
+        <section id="pengambilan" class="kartu scroll-mt-32 overflow-hidden">
             <h2 class="kartu-kop">Pengambilan</h2>
 
             <div class="space-y-4 p-5">
@@ -601,7 +638,7 @@
             </div>
         </section>
 
-        <section class="kartu overflow-hidden">
+        <section id="penyesuaian" class="kartu scroll-mt-32 overflow-hidden">
             <h2 class="kartu-kop">Penyesuaian biaya</h2>
 
             @if ($pesanan->adjustments->isEmpty())
@@ -741,7 +778,7 @@
             @endif
         </div>
 
-        <div class="kartu p-5">
+        <div id="pelanggan" class="kartu scroll-mt-32 p-5">
             <h2 class="font-semibold">Pelanggan</h2>
             <p class="mt-2 flex flex-wrap items-center gap-2 text-sm font-medium">
                 {{ $pesanan->customer->nama }}

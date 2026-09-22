@@ -2,43 +2,41 @@
 @section('judul', 'Dashboard')
 
 @section('isi')
-<div class="kop-halaman">
-    <div>
-        <h1 class="kop-judul">Dashboard</h1>
-        <p class="kop-catatan">
-            Daftar tindakan, bukan grafik. Kalau bagian bawah kosong, toko sedang sehat.
-        </p>
-    </div>
-</div>
+<x-kop judul="Dashboard"
+       catatan="Daftar tindakan, bukan grafik. Kalau bagian bawah kosong, toko sedang sehat." />
 
 {{-- Pemilik toko membuka halaman ini tiap pagi. Pertanyaan pertamanya selalu
-     sama: apa yang terjadi hari ini, dan apa yang sedang menunggu. --}}
-<div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
-    <div class="kartu p-4">
-        <p class="text-xs text-muted">Pesanan masuk hari ini</p>
-        <p class="numeral mt-2 text-2xl">{{ $pesananHariIni }}</p>
+     sama: apa yang terjadi hari ini, dan apa yang sedang menunggu.
+
+     Kartu yang bisa ditindaklanjuti dibuat menjadi tautan, yang sekadar kabar
+     tidak. Kartu yang terlihat bisa diklik tetapi diam adalah janji yang
+     tidak ditepati. --}}
+<dl class="grid grid-cols-2 gap-3 lg:grid-cols-5">
+    <div class="kartu kartu-metrik">
+        <dt><x-ikon nama="pesanan" ukuran="size-4" class="text-navy-400" /> Pesanan masuk hari ini</dt>
+        <dd>{{ $pesananHariIni }}</dd>
     </div>
-    <div class="kartu p-4">
-        <p class="text-xs text-muted">Uang diterima hari ini</p>
-        <p class="numeral mt-2 text-2xl">{{ rupiah_ringkas($uangHariIni) }}</p>
+    <div class="kartu kartu-metrik">
+        <dt><x-ikon nama="uang" ukuran="size-4" class="text-navy-400" /> Uang diterima hari ini</dt>
+        <dd>{{ rupiah_ringkas($uangHariIni) }}</dd>
     </div>
-    <a href="{{ route('panel.pesanan.index', ['status' => 'DIPROSES']) }}" class="kartu kartu-tautan p-4">
-        <p class="text-xs text-muted">Sedang dikerjakan</p>
-        <p class="numeral mt-2 text-2xl">{{ $sedangDikerjakan }}</p>
+    <a href="{{ route('panel.pesanan.index', ['status' => 'DIPROSES']) }}" class="kartu kartu-tautan kartu-metrik">
+        <dt><x-ikon nama="antrian" ukuran="size-4" class="text-navy-400" /> Sedang dikerjakan</dt>
+        <dd>{{ $sedangDikerjakan }}</dd>
     </a>
     {{-- Barang sudah jadi tapi uangnya belum (KEP-028). Ditaruh di antara
          "dikerjakan" dan "siap" karena memang di situlah ia berada. --}}
-    <a href="{{ route('panel.pesanan.index', ['status' => 'MENUNGGU_PELUNASAN']) }}" class="kartu kartu-tautan p-4">
-        <p class="text-xs text-muted">Menunggu pelunasan</p>
-        <p class="numeral mt-2 text-2xl">{{ $menungguPelunasan }}</p>
+    <a href="{{ route('panel.pesanan.index', ['status' => 'MENUNGGU_PELUNASAN']) }}" class="kartu kartu-tautan kartu-metrik">
+        <dt><x-ikon nama="jam" ukuran="size-4" class="text-navy-400" /> Menunggu pelunasan</dt>
+        <dd class="{{ $menungguPelunasan > 0 ? 'text-warn' : '' }}">{{ $menungguPelunasan }}</dd>
     </a>
-    <a href="{{ route('panel.serah-terima') }}" class="kartu kartu-tautan col-span-2 p-4 lg:col-span-1">
-        <p class="text-xs text-muted">Siap diambil</p>
-        <p class="numeral mt-2 text-2xl {{ $siapDiambil > 0 ? 'text-merah' : '' }}">{{ $siapDiambil }}</p>
+    <a href="{{ route('panel.serah-terima') }}" class="kartu kartu-tautan kartu-metrik col-span-2 lg:col-span-1">
+        <dt><x-ikon nama="toko" ukuran="size-4" class="text-navy-400" /> Siap diambil</dt>
+        <dd class="{{ $siapDiambil > 0 ? 'text-merah' : '' }}">{{ $siapDiambil }}</dd>
     </a>
-</div>
+</dl>
 
-<h2 class="mt-9 text-lg font-extrabold">Yang perlu ditangani</h2>
+<h2 class="mt-8 text-lg font-extrabold">Yang perlu ditangani</h2>
 
 @foreach ($masalahSistem as $m)
     <section class="notis notis-galat mt-4">
@@ -222,7 +220,8 @@
          && $perluVerifikasi->isEmpty() && $lamaBelumDiambil->isEmpty() && $emailBermasalah->isEmpty()
          && $pembatalanMenunggu->isEmpty() && $bolehHangus->isEmpty())
         <section class="kartu p-8 text-center">
-            <p class="text-lg font-bold">Tidak ada yang perlu ditangani</p>
+            <x-ikon nama="centang" ukuran="size-9" class="mx-auto text-ok" />
+            <p class="mt-3 text-lg font-bold">Tidak ada yang perlu ditangani</p>
             <p class="kolom-baca mx-auto mt-2 text-sm text-muted">
                 Harga lengkap, stok aman, dan semua email sampai. Waktu yang baik untuk
                 menambah produk atau merapikan katalog.

@@ -7,16 +7,25 @@
     use App\Enums\ProductionStage;
 @endphp
 
-<div class="flex flex-wrap items-baseline justify-between gap-3">
-    <h1 class="text-2xl font-extrabold">Antrian {{ $stage->label() }}</h1>
-    <span class="tabular text-muted">{{ $pekerjaan->count() }} pekerjaan</span>
-</div>
+<x-kop :judul="'Antrian '.$stage->label()"
+       :kembali="$tahapLain->isNotEmpty() ? route('panel.antrian.index') : null"
+       kembali-label="Semua divisi">
+    <x-slot:bawahJudul>
+        <p class="text-sm text-muted">
+            {{ $pekerjaan->count() }} pekerjaan menunggu di meja ini.
+        </p>
+    </x-slot:bawahJudul>
+</x-kop>
 
+{{-- Pindah divisi tanpa kembali ke daftar: orang yang memegang dua meja
+     bolak-balik di antara keduanya sepanjang hari. --}}
 @if ($tahapLain->isNotEmpty())
-    <div class="mt-3 flex flex-wrap gap-1 text-sm">
+    <div class="segmen -mt-2 mb-4">
         @foreach ($tahapLain as $t)
-            <a href="{{ route('panel.antrian.tahap', strtolower($t->value)) }}"
-               class="rounded-sm bg-field px-3 py-1.5 hover:bg-navy-50">{{ $t->label() }}</a>
+            <a href="{{ route('panel.antrian.tahap', strtolower($t->value)) }}" class="segmen-item">
+                <x-ikon :nama="$t->ikon()" ukuran="size-4" />
+                {{ $t->label() }}
+            </a>
         @endforeach
     </div>
 @endif
@@ -25,7 +34,8 @@
 
 @if ($pekerjaan->isEmpty())
     <div class="kartu mt-6 p-8 text-center">
-        <p class="text-lg font-bold">Antrian kosong</p>
+        <x-ikon :nama="$stage->ikon()" ukuran="size-9" class="mx-auto text-navy-300" />
+        <p class="mt-3 text-lg font-bold">Antrian kosong</p>
         <p class="mt-2 text-sm text-muted">
             Tidak ada pekerjaan {{ Str::lower($stage->label()) }} yang menunggu. Cek lagi nanti.
         </p>
@@ -108,19 +118,28 @@
 
                     <div class="flex flex-wrap items-center gap-2">
                         <a href="{{ route('panel.pesanan.worksheet', $item->order) }}" target="_blank"
-                           rel="noopener" class="tombol tombol-garis text-sm">Worksheet</a>
+                           rel="noopener" class="tombol tombol-garis text-sm">
+                            <x-ikon nama="cetak" ukuran="size-4" />
+                            Worksheet
+                        </a>
 
                         @unless ($dikerjakan)
                             <form method="POST" action="{{ route('panel.antrian.mulai', $item) }}">
                                 @csrf
-                                <button type="submit" class="tombol tombol-garis text-sm">Mulai kerjakan</button>
+                                <button type="submit" class="tombol tombol-garis text-sm">
+                                    <x-ikon nama="jam" ukuran="size-4" />
+                                    Mulai kerjakan
+                                </button>
                             </form>
                         @endunless
 
                         @if ($stage !== ProductionStage::DESAIN)
                             <form method="POST" action="{{ route('panel.antrian.selesai', $item) }}">
                                 @csrf
-                                <button type="submit" class="tombol tombol-navy text-sm">Selesai</button>
+                                <button type="submit" class="tombol tombol-navy text-sm">
+                                    <x-ikon nama="centang" ukuran="size-4" />
+                                    Selesai
+                                </button>
                             </form>
                         @endif
                     </div>

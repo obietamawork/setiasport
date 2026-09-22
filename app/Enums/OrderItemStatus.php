@@ -67,6 +67,22 @@ enum OrderItemStatus: string
     }
 
     /**
+     * Label untuk layar orang dalam: panel, lembar kerja, dan halaman pekerja.
+     *
+     * label() ditulis untuk pelanggan, dan "Menunggu Persetujuan Anda" terbaca
+     * salah orang begitu muncul di layar admin atau di HP tukang jahit: yang
+     * ditunggu pelanggan, bukan mereka.
+     */
+    public function labelStaf(): string
+    {
+        return match ($this) {
+            self::MENUNGGU_PERSETUJUAN => 'Menunggu Persetujuan Pelanggan',
+            self::DIPROSES => 'Disiapkan',
+            default => $this->label(),
+        };
+    }
+
+    /**
      * Urutan tahap untuk satu jalur pemenuhan. Dipakai menggambar timeline
      * pelanggan dan menentukan tahap berikutnya.
      *

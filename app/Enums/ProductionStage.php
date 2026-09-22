@@ -42,6 +42,20 @@ enum ProductionStage: string
         };
     }
 
+    /** Ikon tahap, dipakai di layar antrian dan lembar kerja. */
+    public function ikon(): string
+    {
+        return match ($this) {
+            self::DESAIN => 'gambar',
+            self::PRINT => 'cetak',
+            self::PRESS => 'stok',
+            self::POTONG => 'kategori',
+            self::JAHIT => 'antrian',
+            self::QC => 'centang',
+            self::PACKING => 'produk',
+        };
+    }
+
     /**
      * Status item yang sedang dipegang divisi ini (KEP-014). Satu-satunya
      * sumber: layar antrian dan badge menu dulu menyimpan salinannya sendiri,

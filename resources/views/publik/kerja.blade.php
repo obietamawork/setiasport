@@ -57,7 +57,7 @@
             </form>
         @else
             <p class="text-sm text-muted">Tahap sekarang</p>
-            <p class="mt-1 text-2xl font-extrabold">{{ $item->status_item->label() }}</p>
+            <p class="mt-1 text-2xl font-extrabold">{{ $item->status_item->labelStaf() }}</p>
             <p class="mt-3 text-sm leading-relaxed text-muted">
                 Barang ini sedang tidak berada di meja produksi, jadi belum ada yang perlu ditandai.
             </p>

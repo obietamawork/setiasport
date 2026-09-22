@@ -44,8 +44,19 @@
     --color-warn: #a16207;
     --color-warn-50: #fefaec;
 
-    --radius-kartu: 10px;
-    --radius-kontrol: 7px;
+    --radius-kartu: 12px;
+    --radius-kontrol: 8px;
+
+    /* Tinggi bilah atas panel. Dipakai sebagai patokan semua yang menempel:
+       sidebar, kepala tabel, bilah aksi. Ditulis sekali supaya tidak ada
+       elemen lekat yang meleset beberapa piksel dari yang lain. */
+    --bilah-atas: 3.5rem;
+
+    /* Bayangan tipis. Struktur tetap dibentuk garis; bayangan hanya memberi
+       tahu apa yang mengambang di atas apa. */
+    --bayang-kartu: 0 1px 2px rgb(13 23 51 / 0.04);
+    --bayang-lekat: 0 1px 3px rgb(13 23 51 / 0.07), 0 6px 16px rgb(13 23 51 / 0.05);
+    --bayang-laci: 0 10px 40px rgb(13 23 51 / 0.25);
 }
 
 @layer base {
@@ -170,6 +181,17 @@
         font-size: 0.8125rem;
     }
 
+    /*
+     * Di layar sentuh tombol diberi tinggi minimum. Panel ini dipakai sambil
+     * berdiri di konveksi dan di kasir, dengan jempol, bukan tetikus: tombol
+     * setinggi 32px di sana berarti salah tekan, dan salah tekan di halaman
+     * pesanan berarti uang tercatat di tempat yang keliru.
+     */
+    @media (pointer: coarse) {
+        .tombol { min-height: 2.75rem; }
+        .tombol-sm { min-height: 2.25rem; }
+    }
+
     /* Merah dipakai untuk satu aksi utama per layar, tidak lebih. */
     .tombol-utama { background: var(--color-merah); color: #fff; }
     .tombol-utama:hover { background: var(--color-merah-tua); }
@@ -207,6 +229,7 @@
         background: var(--color-field);
         border: 1px solid var(--color-line);
         border-radius: var(--radius-kartu);
+        box-shadow: var(--bayang-kartu);
     }
 
     .kartu-kop {
@@ -450,14 +473,58 @@
 }
 
 /*
- * Sidebar panel. Di layar lebar ia kolom yang menempel di bawah bilah atas
- * saat halaman digulir: di halaman panjang (pengaturan, pesanan) menu dulu
- * ikut tergulung dan hilang. Di HP ia laci dari kiri, di atas konten, bukan
- * blok yang mendorong isi halaman ke bawah.
+ * Kerangka navigasi panel.
+ *
+ * Tiga bentuk untuk tiga cara memegang alatnya, bukan tiga halaman berbeda:
+ *
+ * - Layar lebar: kolom menempel di bawah bilah atas. Boleh dikuncupkan jadi
+ *   rail ikon (bukan disembunyikan sama sekali seperti dulu) supaya tabel lebar
+ *   mendapat ruang tanpa membuat orang kehilangan jalan pulang.
+ * - Tablet dan HP: laci dari kiri untuk menu lengkap, ditambah bilah bawah
+ *   berisi empat tujuan tersering. Di layar sentuh, jempol berada di bawah,
+ *   bukan di pojok kiri atas.
  */
 @layer components {
     .sidebar-panel {
         flex-shrink: 0;
+    }
+
+    .menu-panel {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        border-radius: var(--radius-kontrol);
+        padding: 0.625rem 0.75rem;
+        font-weight: 500;
+        color: var(--color-ink);
+        transition: background-color 130ms, color 130ms;
+    }
+
+    .menu-panel:hover {
+        background: var(--color-navy-50);
+    }
+
+    .menu-panel svg {
+        color: var(--color-navy-400);
+        transition: color 130ms;
+    }
+
+    .menu-panel-aktif {
+        background: var(--color-navy);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .menu-panel-aktif:hover {
+        background: var(--color-navy);
+    }
+
+    .menu-panel-aktif svg {
+        color: #fff;
+    }
+
+    @media (pointer: coarse) {
+        .menu-panel { padding-block: 0.8rem; }
     }
 
     @media (width < 64rem) {
@@ -469,9 +536,9 @@
             width: min(18rem, 85vw);
             overflow-y: auto;
             overscroll-behavior: contain;
-            background: var(--color-paper);
+            background: var(--color-field);
             padding: 1rem;
-            box-shadow: 0 10px 40px rgb(13 23 51 / 0.25);
+            box-shadow: var(--bayang-laci);
             translate: -100% 0;
             visibility: hidden;
             transition: translate 0.2s ease, visibility 0.2s;
@@ -486,24 +553,407 @@
     @media (width >= 64rem) {
         .sidebar-panel {
             position: sticky;
-            top: 5rem;
+            top: calc(var(--bilah-atas) + 1.5rem);
             align-self: flex-start;
-            width: 13rem;
-            max-height: calc(100dvh - 6rem);
+            width: 13.5rem;
+            max-height: calc(100dvh - var(--bilah-atas) - 2.5rem);
             overflow-y: auto;
             /* Ruang untuk cincin fokus, supaya tidak terpotong oleh overflow. */
             margin: -3px;
             padding: 3px;
+            transition: width 0.18s ease;
         }
 
+        /*
+         * Rail ikon. Menyembunyikan menu sepenuhnya membuat orang harus
+         * mengingat isi menu untuk bisa membukanya lagi; rail menyisakan
+         * jangkar yang tetap bisa ditunjuk dan diklik.
+         */
         .sidebar-tutup .sidebar-panel {
+            width: 3.25rem;
+        }
+
+        .sidebar-tutup .menu-panel {
+            justify-content: center;
+            padding-inline: 0;
+        }
+
+        .sidebar-tutup .menu-teks,
+        .sidebar-tutup .grup-menu,
+        .sidebar-tutup .sidebar-kaki {
             display: none;
+        }
+
+        /* Di rail, penghitung tidak muat sebagai angka. Ia menyusut jadi titik
+           merah: "ada yang menunggu" tetap tersampaikan, jumlahnya dibaca
+           setelah menu dibentangkan lagi. */
+        .sidebar-tutup .lencana-menu {
+            position: absolute;
+            top: 0.3rem;
+            right: 0.45rem;
+            min-width: 0.5rem;
+            height: 0.5rem;
+            padding: 0;
+            font-size: 0;
+            border-radius: 999px;
+        }
+
+        .sidebar-tutup .menu-panel {
+            position: relative;
         }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        .sidebar-panel {
-            transition: none;
+    /*
+     * Bilah bawah untuk layar sentuh. Hanya empat tujuan yang benar-benar
+     * dipakai berulang kali dalam sehari; sisanya lewat laci menu. Bilah yang
+     * memuat sepuluh ikon sama sulitnya dengan tidak ada bilah sama sekali.
+     */
+    .nav-bawah {
+        position: fixed;
+        inset-inline: 0;
+        bottom: 0;
+        z-index: 40;
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        border-top: 1px solid var(--color-line);
+        background: color-mix(in srgb, var(--color-field) 92%, transparent);
+        backdrop-filter: blur(8px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .nav-bawah a {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.15rem;
+        padding: 0.5rem 0.25rem 0.55rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        color: var(--color-muted);
+    }
+
+    .nav-bawah a[aria-current="page"] {
+        color: var(--color-navy);
+    }
+
+    .nav-bawah a[aria-current="page"]::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        width: 2rem;
+        height: 2px;
+        border-radius: 0 0 2px 2px;
+        background: var(--color-kuning);
+    }
+
+    @media (width >= 64rem) {
+        .nav-bawah { display: none; }
+    }
+}
+
+@layer components {
+
+    /* ------------------------------------------------ pola isi halaman */
+
+    /* Halaman yang kepalanya menempel memberi tahu sisa halaman berapa tinggi
+       ruang yang sudah terpakai, supaya elemen lekat lain berhenti di bawahnya. */
+    .punya-kop-lekat { --kop-lekat: 4.25rem; }
+
+    /*
+     * Kepala halaman yang ikut menempel. Di halaman panjang, tombol aksi utama
+     * dulu tertinggal jauh di atas: untuk menekan "Catat pembayaran" orang
+     * harus menggulung balik ke puncak.
+     */
+    .kop-lekat {
+        /* Tinggi kepala halaman saat melayang, jadi patokan kepala tabel di
+           bawahnya. Keduanya menempel; kalau angkanya tidak dibagi, yang satu
+           pasti menutupi yang lain. */
+        --kop-lekat: 4.25rem;
+        position: sticky;
+        top: var(--bilah-atas);
+        z-index: 20;
+        margin-inline: -1rem;
+        padding-inline: 1rem;
+        padding-block: 0.75rem;
+        background: color-mix(in srgb, var(--color-paper) 92%, transparent);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid transparent;
+        transition: border-color 130ms, box-shadow 130ms;
+    }
+
+    /* Saat melayang latarnya dibuat pekat. Latar tembus pandang membuat chip
+       penyaring yang lewat di bawahnya terbaca samar-samar seperti noda. */
+    .kop-lekat.melayang {
+        background: var(--color-paper);
+        border-bottom-color: var(--color-line);
+        box-shadow: var(--bayang-lekat);
+    }
+
+    /*
+     * Deret penyaring. Di HP ia menggeser ke samping dengan titik henti, bukan
+     * melipat jadi empat baris yang mendorong data keluar layar.
+     */
+    .segmen {
+        display: flex;
+        gap: 0.375rem;
+        overflow-x: auto;
+        scrollbar-width: none;
+        scroll-snap-type: x proximity;
+        margin-inline: -1rem;
+        padding-inline: 1rem;
+        padding-bottom: 0.15rem;
+    }
+
+    .segmen::-webkit-scrollbar { display: none; }
+
+    .segmen > * {
+        scroll-snap-align: start;
+        white-space: nowrap;
+    }
+
+    @media (width >= 48rem) {
+        .segmen {
+            flex-wrap: wrap;
+            overflow: visible;
+            margin-inline: 0;
+            padding-inline: 0;
         }
+    }
+
+    .segmen-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        border: 1px solid var(--color-line);
+        background: var(--color-field);
+        border-radius: 999px;
+        padding: 0.42rem 0.85rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-muted);
+        transition: border-color 130ms, background-color 130ms, color 130ms;
+    }
+
+    .segmen-item:hover {
+        border-color: var(--color-navy-300);
+        color: var(--color-ink);
+    }
+
+    .segmen-item-aktif {
+        background: var(--color-navy);
+        border-color: var(--color-navy);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .segmen-item-aktif:hover {
+        color: #fff;
+    }
+
+    .segmen-jumlah {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        opacity: 0.65;
+    }
+
+    @media (pointer: coarse) {
+        .segmen-item { padding-block: 0.6rem; }
+    }
+
+    /*
+     * Kepala tabel yang ikut menempel saat daftar panjang digulung. Tanpa ini,
+     * kolom angka di baris keenam puluh tidak lagi punya nama.
+     *
+     * Ia berhenti tepat di bawah kepala halaman yang juga menempel, dan
+     * pembungkusnya TIDAK boleh punya overflow: kotak yang bisa digulir jadi
+     * patokan baru bagi posisi lekat, sehingga kepala tabel malah turun sendiri
+     * dan menutupi baris pertama.
+     */
+    .tabel-lekat thead th {
+        position: sticky;
+        top: calc(var(--bilah-atas) + var(--kop-lekat, 0px));
+        z-index: 10;
+    }
+
+    /* Sudut membulat tanpa overflow: hidden, karena overflow apa pun pada
+       pembungkusnya akan mematahkan kepala tabel yang menempel. */
+    .tabel-lekat thead th:first-child { border-top-left-radius: calc(var(--radius-kartu) - 1px); }
+    .tabel-lekat thead th:last-child { border-top-right-radius: calc(var(--radius-kartu) - 1px); }
+    .tabel-lekat tbody tr:last-child td:first-child { border-bottom-left-radius: calc(var(--radius-kartu) - 1px); }
+    .tabel-lekat tbody tr:last-child td:last-child { border-bottom-right-radius: calc(var(--radius-kartu) - 1px); }
+
+    /*
+     * Tabel yang berubah jadi kartu di layar sempit. Tabel enam kolom yang
+     * digeser ke samping di HP praktis tidak terbaca; yang dibaca orang di
+     * layar kecil adalah satu baris = satu kartu, dengan label di kiri.
+     * Setiap <td> membawa label kolomnya lewat data-kolom.
+     */
+    @media (width < 48rem) {
+        .tabel-hp thead { display: none; }
+
+        .tabel-hp tbody tr {
+            display: block;
+            border: 1px solid var(--color-line);
+            border-radius: var(--radius-kartu);
+            background: var(--color-field);
+            padding: 0.35rem 0.85rem;
+            margin-bottom: 0.625rem;
+            box-shadow: var(--bayang-kartu);
+        }
+
+        .tabel-hp tbody td {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 1rem;
+            border: 0;
+            border-bottom: 1px dashed var(--color-line);
+            padding: 0.5rem 0;
+            text-align: right;
+        }
+
+        .tabel-hp tbody td:last-child { border-bottom: 0; }
+
+        .tabel-hp tbody td::before {
+            content: attr(data-kolom);
+            flex: none;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--color-muted);
+            text-align: left;
+        }
+
+        /* Kolom utama (kode pesanan, nama barang) tampil sebagai judul kartu,
+           bukan sebagai pasangan label-nilai seperti kolom lainnya. */
+        .tabel-hp tbody td[data-utama] {
+            display: block;
+            text-align: left;
+            padding-top: 0.7rem;
+            font-weight: 600;
+        }
+
+        .tabel-hp tbody td[data-utama]::before { content: none; }
+    }
+
+    /*
+     * Bilah aksi yang menempel di bawah layar sentuh. Formulir panjang
+     * (pengaturan, produk, matriks harga) menyembunyikan tombol simpannya di
+     * dasar halaman; di HP itu berarti menggulung layar demi layar hanya untuk
+     * menyimpan.
+     */
+    .bilah-aksi {
+        position: sticky;
+        bottom: 0;
+        z-index: 15;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        margin-inline: -1rem;
+        padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid var(--color-line);
+        background: color-mix(in srgb, var(--color-field) 94%, transparent);
+        backdrop-filter: blur(8px);
+    }
+
+    /* Kartu angka di dashboard: satu angka, satu label, tanpa hiasan. */
+    .kartu-metrik {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        padding: 0.9rem 1rem;
+    }
+
+    .kartu-metrik dt {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.75rem;
+        line-height: 1.3;
+        color: var(--color-muted);
+    }
+
+    .kartu-metrik dd {
+        font-size: 1.5rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em;
+    }
+
+    /*
+     * Langkah berikutnya: satu kotak di puncak halaman pesanan yang menjawab
+     * "sekarang saya harus apa". Sebelumnya semua bagian berbobot sama, dan
+     * pekerjaan yang paling mendesak tenggelam di antara kartu lain.
+     */
+    .langkah-berikut {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem 1rem;
+        border: 1px solid var(--color-navy-100);
+        border-left: 3px solid var(--color-navy);
+        border-radius: var(--radius-kartu);
+        background: linear-gradient(180deg, var(--color-navy-50), var(--color-field));
+        padding: 0.9rem 1.1rem;
+    }
+
+    .langkah-berikut-mendesak {
+        border-color: var(--color-merah-50);
+        border-left-color: var(--color-merah);
+        background: linear-gradient(180deg, var(--color-merah-50), var(--color-field));
+    }
+
+    .langkah-berikut-selesai {
+        border-color: var(--color-ok-50);
+        border-left-color: var(--color-ok);
+        background: linear-gradient(180deg, var(--color-ok-50), var(--color-field));
+    }
+
+    /* Tahapan berlabel. Menggantikan deretan titik tanpa keterangan yang hanya
+       bisa dibaca orang yang sudah hafal urutannya. */
+    .tangga {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .tangga::-webkit-scrollbar { display: none; }
+
+    .tangga-langkah {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        white-space: nowrap;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-navy-300);
+    }
+
+    .tangga-langkah::after {
+        content: "";
+        width: 1rem;
+        height: 1px;
+        background: var(--color-line-strong);
+    }
+
+    .tangga-langkah:last-child::after { display: none; }
+
+    .tangga-lewat { color: var(--color-navy); }
+    .tangga-kini {
+        color: var(--color-merah-tua);
+        background: var(--color-merah-50);
+        border-radius: 999px;
+        padding-inline: 0.55rem;
+        padding-block: 0.15rem;
+    }
+
+    .tangga-kini::after { margin-left: 0.2rem; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .sidebar-panel { transition: none; }
     }
 }

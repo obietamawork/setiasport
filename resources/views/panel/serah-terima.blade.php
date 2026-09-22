@@ -37,7 +37,7 @@
             @foreach ($order->items as $item)
                 <li class="flex justify-between gap-3 px-5 py-2.5">
                     <span>{{ $item->nama_produk }} <span class="text-muted tabular">&times; {{ $item->qty }}</span></span>
-                    <span class="text-muted">{{ $item->status_item->label() }}</span>
+                    <span class="text-muted">{{ $item->status_item->labelStaf() }}</span>
                 </li>
             @endforeach
         </ul>

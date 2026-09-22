@@ -64,7 +64,7 @@
                 </span>
                 <span class="text-right">
                     <span class="tabular">{{ $item->qty }} pcs</span>
-                    <span class="block text-xs text-muted">{{ $item->status_item->label() }}</span>
+                    <span class="block text-xs text-muted">{{ $item->status_item->labelStaf() }}</span>
                 </span>
             </li>
         @endforeach

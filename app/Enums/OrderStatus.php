@@ -41,6 +41,38 @@ enum OrderStatus: string
         };
     }
 
+    /**
+     * Warna chip status di panel. Ditaruh di enum, bukan ditulis ulang di tiap
+     * tampilan: warna status yang berbeda-beda antar halaman membuat staf
+     * berhenti mempercayai warnanya dan kembali membaca teksnya satu per satu.
+     *
+     * Artinya seragam: merah menuntut tindakan hari ini, kuning menunggu orang
+     * lain, navy sedang berjalan, hijau selesai, abu-abu sudah tidak hidup.
+     */
+    public function warna(): string
+    {
+        return match ($this) {
+            self::SIAP_DIAMBIL => 'chip-merah',
+            self::MENUNGGU_PEMBAYARAN, self::MENUNGGU_PELUNASAN => 'chip-kuning',
+            self::DIPROSES, self::DIKIRIM => 'chip-navy',
+            self::SELESAI => 'chip-ok',
+            self::DIBATALKAN, self::KADALUARSA => 'chip-netral',
+        };
+    }
+
+    /** Ikon pendamping status, dipakai di chip dan daftar pesanan. */
+    public function ikon(): string
+    {
+        return match ($this) {
+            self::MENUNGGU_PEMBAYARAN, self::MENUNGGU_PELUNASAN => 'uang',
+            self::DIPROSES => 'antrian',
+            self::SIAP_DIAMBIL => 'toko',
+            self::DIKIRIM => 'kirim',
+            self::SELESAI => 'centang',
+            self::DIBATALKAN, self::KADALUARSA => 'silang',
+        };
+    }
+
     public function final(): bool
     {
         return in_array($this, [self::SELESAI, self::DIBATALKAN, self::KADALUARSA], true);

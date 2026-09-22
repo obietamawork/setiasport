@@ -31,11 +31,26 @@ class AntrianController extends Controller
             return redirect()->route('panel.antrian.tahap', strtolower($tahap[0]->value));
         }
 
+        /*
+         * Selain jumlahnya, tiap divisi membawa pekerjaan yang paling lama
+         * menunggu. Angka "3" tidak memberi tahu apa pun tentang urgensi;
+         * "3, tertua 6 hari" langsung menunjukkan mana yang harus dikerjakan
+         * pagi ini.
+         */
+        $ringkas = collect($tahap)->mapWithKeys(function (ProductionStage $t) {
+            $kerjaan = $this->kueri($t)->get();
+
+            return [$t->value => [
+                'jumlah' => $kerjaan->count(),
+                'tertua' => $kerjaan->min('updated_at'),
+                'pesanan' => $kerjaan->pluck('order.kode')->unique()->take(3)->all(),
+            ]];
+        });
+
         return view('panel.antrian.index', [
             'tahap' => $tahap,
-            'jumlah' => collect($tahap)->mapWithKeys(fn (ProductionStage $t) => [
-                $t->value => $this->kueri($t)->count(),
-            ]),
+            'ringkas' => $ringkas,
+            'totalKerjaan' => $ringkas->sum('jumlah'),
         ]);
     }
 
