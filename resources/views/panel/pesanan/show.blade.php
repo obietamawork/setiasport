@@ -541,6 +541,34 @@
                         </div>
                     </dl>
 
+                    {{-- Apa kata kurir (KEP-061). Ditampilkan sebagai ajakan menandai,
+                         bukan sebagai tindakan: kurir bilang "diterima" pun, yang
+                         menutup pesanan tetap orang toko, karena diterima satpam
+                         sekolah dan diterima pemesannya adalah dua hal berbeda. --}}
+                    @if ($pesanan->lacak_status)
+                        <div class="border-t border-line pt-4">
+                            <p class="flex flex-wrap items-center gap-2 text-sm">
+                                <span class="chip {{ $pesanan->paketSampai() ? 'chip-ok' : 'chip-navy' }}">
+                                    <x-ikon nama="kirim" ukuran="size-3.5" />
+                                    Kata kurir: {{ $pesanan->lacak_status }}
+                                </span>
+                                <span class="text-muted">
+                                    {{ $pesanan->lacak_catatan }}
+                                    @if ($pesanan->lacak_pada)
+                                        &middot; diperbarui {{ $pesanan->lacak_pada->diffForHumans() }}
+                                    @endif
+                                </span>
+                            </p>
+
+                            @if ($pesanan->paketSampai() && ! $pesanan->diterima_pada)
+                                <p class="mt-2 text-sm leading-relaxed text-muted">
+                                    Kurir menyatakan paketnya sudah sampai. Pastikan dulu ke pelanggan,
+                                    lalu tandai di bawah supaya pesanan ini keluar dari daftar aktif.
+                                </p>
+                            @endif
+                        </div>
+                    @endif
+
                     @if ($pesanan->status === OrderStatus::DIKIRIM && $izin->punyaIzin('serah_terima.proses'))
                         <form method="POST" action="{{ route('panel.pesanan.pengiriman.diterima', $pesanan) }}"
                               class="border-t border-line pt-4">

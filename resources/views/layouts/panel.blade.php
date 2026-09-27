@@ -74,6 +74,7 @@
             ['panel.pekerja.index', 'Pekerja konveksi', 'pengguna.kelola', 'panel.pekerja.*', null, 'pekerja'],
             ['panel.laporan', 'Laporan', 'laporan.lihat', 'panel.laporan', null, 'laporan'],
             ['panel.pengaturan.index', 'Pengaturan', 'pengaturan.kelola', 'panel.pengaturan.*', null, 'pengaturan'],
+            ['panel.kesiapan', 'Kesiapan tayang', 'pengaturan.kelola', 'panel.kesiapan', null, 'centang'],
         ],
     ];
 

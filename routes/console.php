@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Services\AlurPesanan;
 use App\Services\LayananCs;
 use App\Services\PengirimEmail;
+use App\Services\SinkronPaket;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
@@ -74,4 +75,16 @@ Schedule::call(function (PengirimEmail $email) {
 Schedule::call(fn (LayananCs $cs) => $cs->peringatkanYangMenunggu())
     ->everyFiveMinutes()
     ->name('peringatan-cs')
+    ->withoutOverlapping();
+
+/**
+ * Posisi paket disegarkan dari kurir (KEP-061).
+ *
+ * Setengah jam sekali sudah jauh lebih sering daripada kurir memperbarui datanya
+ * sendiri, dan tiap panggilan berbiaya. Kalau penyedia ongkirnya mati, kode ini
+ * berhenti di baris pertama tanpa memanggil apa pun.
+ */
+Schedule::call(fn (SinkronPaket $paket) => $paket->segarkanSemua())
+    ->everyThirtyMinutes()
+    ->name('sinkron-paket')
     ->withoutOverlapping();

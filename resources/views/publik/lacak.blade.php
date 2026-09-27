@@ -226,6 +226,41 @@
                     </p>
                 </div>
 
+                {{-- Posisi paket menurut kurir (KEP-061). Nomor resi bukan jawaban;
+                     "sudah sampai Solo kemarin sore" baru jawaban. Kalau kurirnya
+                     belum menjawab, bagian ini memang tidak muncul, dan nomor resi
+                     di atas tetap bisa disalin ke situs kurir seperti biasa. --}}
+                @if ($order->lacak_status)
+                    <div class="border-t border-line pt-4">
+                        <p class="flex flex-wrap items-baseline gap-x-2 font-semibold">
+                            {{ $order->lacak_catatan ?: 'Posisi terakhir' }}
+                            @if ($order->lacak_pada)
+                                <span class="text-sm font-normal text-muted">
+                                    diperbarui {{ $order->lacak_pada->diffForHumans() }}
+                                </span>
+                            @endif
+                        </p>
+
+                        @if (! empty($order->lacak_riwayat))
+                            <ol class="mt-3 space-y-2 text-sm">
+                                @foreach ($order->lacak_riwayat as $baris)
+                                    <li class="flex gap-3">
+                                        <span class="tahap-titik {{ $loop->first ? 'tahap-titik-kini' : 'tahap-titik-lewat' }} mt-1.5 shrink-0"></span>
+                                        <span>
+                                            {{ $baris['keterangan'] ?? '' }}
+                                            @if (! empty($baris['waktu']))
+                                                <span class="block text-xs text-muted">
+                                                    {{ \Illuminate\Support\Carbon::parse($baris['waktu'])->translatedFormat('j M Y, H:i') }}
+                                                </span>
+                                            @endif
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ol>
+                        @endif
+                    </div>
+                @endif
+
                 @if (setting('panduan_resi'))
                     <p class="border-l-2 border-navy bg-navy-50 p-4 text-sm leading-relaxed">
                         {{ setting('panduan_resi') }}

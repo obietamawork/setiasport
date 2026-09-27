@@ -10,6 +10,7 @@ use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Panel\InvoiceController;
 use App\Http\Controllers\Panel\IsiPesananController;
 use App\Http\Controllers\Panel\KategoriController;
+use App\Http\Controllers\Panel\KesiapanController;
 use App\Http\Controllers\Panel\AntrianController;
 use App\Http\Controllers\Panel\GambarProdukController;
 use App\Http\Controllers\Panel\LaporanController;
@@ -49,6 +50,11 @@ Route::prefix('panel')->name('panel.')->group(function () {
         // Bantuan dibuka semua orang yang boleh masuk panel, tanpa izin khusus:
         // yang paling butuh penjelasan justru yang perannya paling sempit.
         Route::get('/bantuan', BantuanController::class)->name('bantuan');
+
+        // Kesiapan tayang menyebut pengaturan toko dan isi katalog, jadi hanya
+        // untuk yang memang mengurusnya.
+        Route::get('/kesiapan', KesiapanController::class)
+            ->middleware('izin:pengaturan.kelola')->name('kesiapan');
 
         // Pesanan yang diketik admin untuk pembeli offline (KEP-054).
         Route::middleware('izin:order.kelola')->group(function () {

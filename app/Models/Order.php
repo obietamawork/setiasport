@@ -25,6 +25,7 @@ class Order extends Model
         'target_siap_pada', 'kadaluarsa_pada', 'siap_pada', 'diambil_pada',
         'kode_ambil', 'diambil_oleh', 'diserahkan_oleh', 'catatan',
         'metode_ambil', 'alamat_kirim', 'jasa_kirim', 'no_resi',
+        'lacak_status', 'lacak_catatan', 'lacak_riwayat', 'lacak_pada',
         'dikirim_pada', 'diterima_pada',
     ];
 
@@ -35,6 +36,8 @@ class Order extends Model
         return [
             'status' => OrderStatus::class,
             'metode_ambil' => MetodeAmbil::class,
+            'lacak_riwayat' => 'array',
+            'lacak_pada' => 'datetime',
             'diskon' => 'integer',
             'target_siap_pada' => 'date',
             'kadaluarsa_pada' => 'datetime',
@@ -159,6 +162,17 @@ class Order extends Model
     public function punyaKustom(): bool
     {
         return $this->items->contains(fn (OrderItem $i) => $i->kustom());
+    }
+
+    /**
+     * Kurir menyatakan paketnya sudah diterima (KEP-061).
+     *
+     * Ini BUKAN penutup pesanan: yang menandai selesai tetap orang toko, karena
+     * diterima satpam sekolah dan diterima pemesannya adalah dua hal berbeda.
+     */
+    public function paketSampai(): bool
+    {
+        return in_array(mb_strtolower((string) $this->lacak_status), ['delivered', 'received'], true);
     }
 
     public function dikirim(): bool

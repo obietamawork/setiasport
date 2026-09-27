@@ -1861,6 +1861,52 @@ sekarang dijawab oleh tes, bukan oleh keyakinan.
 
 ---
 
+## KEP-061 — Kesiapan tayang dihitung sendiri, dan posisi paket ikut ditampilkan
+**Status:** TERKUNCI · 2026-09-27
+
+Dua hal yang selama ini dijawab dari ingatan orang yang membangun sistemnya.
+
+**Kesiapan tayang.** Pertanyaan "kurang apa lagi sebelum website dibuka?" muncul di tiap
+pertemuan dengan klien, dan jawabannya selalu ketinggalan sehari: satu pengaturan diisi
+kemarin, satu foto diunggah tadi pagi, daftar di kepala tidak ikut berubah.
+
+Sekarang ada halamannya sendiri di panel, dan seluruh isinya DIHITUNG dari data: identitas
+toko, rekening dan QRIS, produk yang belum berfoto atau belum berharga, data contoh yang
+belum dihapus, berat produk, akun staf, dan pekerja konveksi yang terdaftar. Tidak ada
+centang manual sama sekali — centang manual selalu berbohong lebih cepat daripada datanya.
+
+Tiap butir menyebut **kenapa** ia penting, dan dipisah antara "wajib" dan "sebaiknya".
+Yang wajib benar-benar bisa merugikan: alamat salah berarti orang tersesat sambil membawa
+uang pelunasan, rekening salah berarti uang masuk ke orang lain, data contoh yang lupa
+dihapus sama dengan ulasan palsu di depan pelanggan.
+
+Yang berada di luar jangkauan sistem sengaja TIDAK dimasukkan: domain sudah dibeli, cron
+sudah dipasang penyedia hosting, email pengirim sudah diverifikasi. Sistem tidak bisa
+melihatnya, dan daftar yang berpura-pura tahu lebih buruk daripada daftar yang jujur
+tentang batasnya. Itu tetap di docs/12-deploy.md.
+
+**Posisi paket.** `lacak()` sudah ada sejak KEP-057 tetapi tidak dipakai di mana pun:
+pelanggan yang paketnya berangkat hanya melihat nomor resi dan harus menyalinnya sendiri
+ke situs kurir. Nomor resi bukan jawaban; "sudah sampai Solo kemarin sore" baru jawaban.
+
+Posisi paket kini disimpan di pesanan dan disegarkan setengah jam sekali untuk pesanan
+yang sedang jalan. **Disimpan**, bukan ditanyakan ulang tiap halaman dibuka: tiap
+panggilan berbiaya, dan halaman pesanan justru paling sering dibuka ketika paketnya
+sedang di jalan.
+
+**Jawaban kosong tidak menghapus data lama.** Kurir yang sedang tidak menjawab membuat
+posisi terakhir dibiarkan apa adanya: "sampai Solo kemarin" yang basi sehari masih jauh
+lebih berguna daripada layar kosong.
+
+**Kurir bilang "delivered" TIDAK menutup pesanan.** Yang menandai selesai tetap orang
+toko, karena diterima satpam sekolah dan diterima pemesannya adalah dua hal berbeda.
+Statusnya muncul di panel sebagai ajakan menandai, bukan sebagai tindakan.
+
+Nama jasa kirim yang diketik orang toko ("J&T Express") dicocokkan sendiri ke kode kurir
+yang diminta penyedia ("jnt"), supaya tidak ada yang perlu menghafal kode siapa pun.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1925,3 +1971,4 @@ sekarang dijawab oleh tes, bukan oleh keyakinan.
 | KEP-058 | Pelanggan memilih sendiri kirim atau ambil, ongkir jadi baris tagihan | TERKUNCI |
 | KEP-059 | Panel dirombak: satu pola, berikon, dan bisa dipakai dengan jempol | TERKUNCI |
 | KEP-060 | Layar katalog dibenahi, dan panel punya halaman bantuannya sendiri | TERKUNCI |
+| KEP-061 | Kesiapan tayang dihitung sendiri, dan posisi paket ikut ditampilkan | TERKUNCI |
