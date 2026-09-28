@@ -225,6 +225,32 @@ class Order extends Model
         return strtoupper(Str::random(3)).'-'.random_int(1000, 9999);
     }
 
+    /**
+     * Pesanan yang menunggu tindakan ORANG TOKO, bukan menunggu pelanggan.
+     *
+     * Dipakai sebagai penyaring di daftar pesanan, dan sengaja disempitkan pada
+     * tiga hal yang kalau didiamkan benar-benar merugikan: bukti transfer yang
+     * belum diperiksa (pekerjaan tertahan), pengajuan pembatalan yang belum
+     * diputuskan (kain terus terpakai), dan barang yang sudah siap tetapi belum
+     * diserahkan (rak toko terpakai, uang belum masuk).
+     *
+     * Pesanan yang menunggu pelanggan membayar TIDAK termasuk: tidak ada yang
+     * bisa dikerjakan toko di sana, dan daftar yang memuat hal-hal yang tidak
+     * bisa ditindaklanjuti akan cepat diabaikan.
+     */
+    public function scopePerluTindakan(Builder $q): Builder
+    {
+        return $q->where(fn (Builder $w) => $w
+            ->whereHas('payments', fn ($p) => $p
+                ->where('status', PaymentStatus::MENUNGGU->value)
+                ->whereNotNull('bukti_path'))
+            ->orWhereHas('pembatalans', fn ($p) => $p->where('status', 'DIAJUKAN'))
+            ->orWhereIn('status', [
+                OrderStatus::MENUNGGU_PELUNASAN->value,
+                OrderStatus::SIAP_DIAMBIL->value,
+            ]));
+    }
+
     /** Pesanan yang memuat setidaknya satu barang kustom (KEP-027). */
     public function scopeAdaKustom(Builder $q): Builder
     {

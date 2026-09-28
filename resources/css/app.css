@@ -732,6 +732,16 @@
 
     .segmen::-webkit-scrollbar { display: none; }
 
+    /* Baris yang digeser ke samping di layar sempit, tanpa batang gulir yang
+       terlihat: di bidang gelap, batang gulir abu-abu terbaca seperti cacat
+       tampilan, bukan seperti petunjuk bisa digeser. */
+    .geser-x {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .geser-x::-webkit-scrollbar { display: none; }
+
     .segmen > * {
         scroll-snap-align: start;
         white-space: nowrap;

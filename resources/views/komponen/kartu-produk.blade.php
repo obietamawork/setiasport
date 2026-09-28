@@ -2,14 +2,25 @@
     /** @var \App\Models\Product $produk */
     $stok = $produk->punyaJalurReadyStock();
     $kustom = $produk->punyaJalurKustom();
-    $hargaKustom = $kustom ? $produk->priceTiers->min('harga_satuan') : null;
+    /*
+     * Harga kustom punya dua bentuk: tier menurut jumlah, dan matriks menurut
+     * ukuran (KEP-039). Dulu kartu ini hanya membaca tier, sehingga produk yang
+     * harganya diisi lewat matriks — dan itu sebagian besar produk klien —
+     * tampil "Rp 0" di katalog.
+     */
+    $perUkuran = $kustom && $produk->relationLoaded('prices') && $produk->prices->isNotEmpty();
+    $hargaKustom = match (true) {
+        ! $kustom => null,
+        $perUkuran => $produk->prices->min('harga_satuan'),
+        default => $produk->priceTiers->min('harga_satuan'),
+    };
     $gambar = $produk->images->first();
 
     // Di tab Kustom, harga dihitung ulang mengikuti jumlah yang diketik
     // pelanggan. Yang dicari kapten tim bukan "mulai dari", tapi harga di
     // jumlah dia sendiri.
     $modeJumlah = ($modeJumlah ?? false) && $kustom;
-    $tiers = $modeJumlah
+    $tiers = $modeJumlah && ! $perUkuran
         ? $produk->priceTiers->map(fn ($t) => [
             'min' => $t->min_qty, 'max' => $t->max_qty, 'harga' => $t->harga_satuan,
         ])->values()
@@ -53,7 +64,20 @@
         <h3 class="line-clamp-2 text-sm leading-snug font-semibold">{{ $produk->nama }}</h3>
 
         <div class="mt-auto pt-1">
-            @if ($modeJumlah)
+            @if ($modeJumlah && $perUkuran)
+                {{-- Harga matriks tidak berubah menurut jumlah, melainkan menurut
+                     ukuran badan. Yang ditampilkan harga termurahnya, dengan kata
+                     "mulai" supaya tidak terbaca sebagai harga pasti untuk semua
+                     ukuran. --}}
+                <div x-data="{ moq: {{ $produk->moq }}, mulai: {{ (int) $hargaKustom }} }">
+                    <p class="tabular text-[15px] font-extrabold">
+                        <span class="text-xs font-medium text-muted">mulai</span>
+                        {{ rupiah($hargaKustom) }}<span class="text-xs font-medium text-muted">/pcs</span>
+                    </p>
+                    <p class="truncate text-xs" :class="qty < moq ? 'text-merah' : 'text-muted'"
+                       x-text="qty < moq ? `Minimum ${moq} pcs` : 'mulai ' + rp(mulai * qty) + ' total'"></p>
+                </div>
+            @elseif ($modeJumlah)
                 <div x-data="{ tiers: @js($tiers), moq: {{ $produk->moq }} }">
                     <p class="tabular text-[15px] font-extrabold">
                         <span x-text="rp(hargaDi(tiers))"></span><span class="text-xs font-medium text-muted">/pcs</span>
@@ -66,6 +90,9 @@
                 <p class="truncate text-xs text-muted">{{ $waktu }}</p>
             @elseif ($hargaKustom)
                 <p class="tabular text-[15px] font-extrabold">
+                    @if ($perUkuran)
+                        <span class="text-xs font-medium text-muted">mulai</span>
+                    @endif
                     {{ rupiah($hargaKustom) }}<span class="text-xs font-medium text-muted">/pcs</span>
                 </p>
                 <p class="truncate text-xs text-muted">{{ $waktu }}</p>

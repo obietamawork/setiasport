@@ -112,9 +112,15 @@ Pos Indonesia", 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
                 'Chat yang belum dibalas selama ini dikirimkan ke email staf. Chat yang tidak dijawab lebih buruk daripada tidak ada chat.'],
 
             // Halaman depan adalah profil usaha lebih dulu, katalog belakangan (KEP-024).
-            ['tentang_judul', 'Konveksi dan toko perlengkapan olahraga di Wonogiri', 'string', 'profil', 'Judul Halaman Depan'],
-            ['tentang_ringkas', 'Kami mengerjakan jersey tim, kaos seragam, dan perlengkapan olahraga untuk sekolah, instansi, dan komunitas di sekitar Wonogiri.', 'teks', 'profil', 'Kalimat Pembuka'],
-            ['tentang_lengkap', '', 'teks', 'profil', 'Tentang Usaha',
+            ['tentang_judul', 'Perlengkapan olahraga lengkap & jersey custom di Wonogiri', 'string', 'profil', 'Judul Halaman Depan'],
+            ['tentang_ringkas', 'Bola, sepatu, kaos, dan aksesoris olahraga dari merek yang jelas, ditambah layanan konveksi jersey yang dikerjakan sendiri di workshop kami. Melayani ecer maupun tim.', 'teks', 'profil', 'Kalimat Pembuka'],
+            /*
+             * Draf, bukan naskah final. Halaman depan tanpa cerita usaha terbaca
+             * seperti toko yang belum jadi, jadi lebih baik ada tulisan yang
+             * masuk akal sejak awal dan tinggal dikoreksi pemilik toko dengan
+             * bahasanya sendiri.
+             */
+            ['tentang_lengkap', 'Setia Sport berdiri di Wonogiri sebagai toko perlengkapan olahraga, lalu tumbuh menjadi konveksi jersey karena permintaannya datang terus dari pelanggan sendiri: sekolah yang butuh seragam olahraga, klub futsal yang ingin jersey dengan nama dan nomor punggung, dan komunitas lari yang memesan kaos untuk acara.\n\nJersey dikerjakan di workshop kami sendiri, bukan dilempar ke pihak lain. Itu yang membuat revisi desain bisa cepat, ukuran bisa dicampur dari anak SD sampai dewasa dalam satu pesanan, dan kalau ada yang kurang pas, kami perbaiki tanpa harus menunggu kiriman dari kota lain.\n\nBarang yang ada di rak bisa diambil hari itu juga di toko. Pesanan konveksi punya halaman sendiri di website ini: progres pengerjaan, tagihan, dan nomor resi bisa dilihat kapan saja tanpa perlu menelepon toko.', 'teks', 'profil', 'Tentang Usaha',
                 'Beberapa paragraf tentang toko: sejak kapan berdiri, siapa yang dilayani, apa yang membedakan.'],
             ['maps_embed', '', 'string', 'profil', 'Tautan Peta Google Maps',
                 'Tempel tautan berbagi dari Google Maps. Dipakai sebagai tombol menuju lokasi.'],

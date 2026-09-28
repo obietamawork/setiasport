@@ -84,8 +84,16 @@ class LacakController extends Controller
          * pembayaran sejak checkout. Pelunasan (KEP-028) belum: nominalnya
          * dibaca langsung dari sisa tagihan, supaya penyesuaian biaya yang
          * menyusul, ongkir misalnya, ikut terhitung tanpa ada angka yang basi.
+         *
+         * Yang menentukan ada-tidaknya tagihan adalah SISA TAGIHAN, bukan status
+         * baris pembayarannya. Uang yang diterima tunai di kasir dicatat sebagai
+         * pembayaran lain, sehingga tagihannya lunas sementara baris lama masih
+         * berstatus menunggu; dengan patokan lama, QRIS dan nomor rekening tetap
+         * terpampang di halaman pesanan yang sudah dibayar, dan itu mengundang
+         * pelanggan membayar dua kali.
          */
         $tagihan = match (true) {
+            $order->sisa_tagihan < 1 => null,
             $menunggu !== null => [
                 'jenis' => $menunggu->jenis === PaymentType::PELUNASAN ? 'pelunasan' : 'awal',
                 'jumlah' => $menunggu->jumlah,

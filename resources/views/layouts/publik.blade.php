@@ -23,15 +23,19 @@
     $isiKeranjang = app(\App\Services\Keranjang::class)->jumlahBaris();
     $pelanggan = auth('pelanggan')->user();
 
-    $nav = $pelanggan
-        ? [
-            ['katalog', 'Katalog', ['katalog', 'produk']],
-            ['pesanan-saya', 'Pesanan saya', ['pesanan-saya', 'lacak*']],
-        ]
-        : [
-            ['katalog', 'Katalog', ['katalog', 'produk']],
-            ['lacak', 'Lacak pesanan', ['lacak*']],
-        ];
+    /*
+     * Susunan menu mengikuti rancangan klien (KEP-062). Jersey custom berdiri
+     * sendiri, tidak disembunyikan di dalam katalog: itulah yang membedakan
+     * toko ini dari toko olahraga lain, dan pemesan seragam mencarinya dengan
+     * nama itu, bukan dengan kata "katalog".
+     */
+    $nav = array_values(array_filter([
+        ['katalog', 'Produk', ['katalog', 'produk'], []],
+        ['katalog', 'Custom jersey', [], ['jalur' => 'kustom']],
+        $pelanggan
+            ? ['pesanan-saya', 'Pesanan saya', ['pesanan-saya', 'lacak*'], []]
+            : ['lacak', 'Lacak pesanan', ['lacak*'], []],
+    ]));
 @endphp
 
 <header class="sticky top-0 z-30 border-b border-line bg-field/95 backdrop-blur"
@@ -44,9 +48,15 @@
         {{-- Navigasi penuh hanya muat mulai layar sedang. Di bawah itu ia
              meluber dan memotong dirinya sendiri, jadi dipindah ke panel. --}}
         <nav class="ml-auto hidden h-full items-stretch gap-1 text-sm md:flex" aria-label="Navigasi utama">
-            @foreach ($nav as [$rute, $label, $pola])
-                @php $aktif = request()->routeIs(...$pola); @endphp
-                <a href="{{ route($rute) }}"
+            @foreach ($nav as [$rute, $label, $pola, $parameter])
+                @php
+                    // "Custom jersey" menunjuk ke katalog dengan penyaring, jadi
+                    // keaktifannya dibaca dari penyaring itu, bukan dari nama rute.
+                    $aktif = $parameter === []
+                        ? ($pola !== [] && request()->routeIs(...$pola) && ! request('jalur'))
+                        : request()->routeIs('katalog') && request('jalur') === ($parameter['jalur'] ?? null);
+                @endphp
+                <a href="{{ route($rute, $parameter) }}"
                    class="flex items-center px-3 font-medium transition-colors hover:text-navy
                           {{ $aktif ? 'garis-aktif text-navy' : 'text-muted' }}">
                     {{ $label }}
@@ -95,9 +105,13 @@
     <nav id="menu-mobil" x-show="menu" x-cloak @click="menu = false"
          class="border-t border-line bg-field md:hidden" aria-label="Navigasi utama">
         <div class="mx-auto max-w-6xl px-5 py-2">
-            @foreach ($nav as [$rute, $label, $pola])
-                @php $aktif = request()->routeIs(...$pola); @endphp
-                <a href="{{ route($rute) }}"
+            @foreach ($nav as [$rute, $label, $pola, $parameter])
+                @php
+                    $aktif = $parameter === []
+                        ? ($pola !== [] && request()->routeIs(...$pola) && ! request('jalur'))
+                        : request()->routeIs('katalog') && request('jalur') === ($parameter['jalur'] ?? null);
+                @endphp
+                <a href="{{ route($rute, $parameter) }}"
                    class="block border-l-2 py-3 pl-3 font-medium transition-colors
                           {{ $aktif ? 'border-kuning text-navy' : 'border-transparent text-muted hover:text-ink' }}">
                     {{ $label }}

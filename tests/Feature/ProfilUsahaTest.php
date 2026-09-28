@@ -35,22 +35,47 @@ class ProfilUsahaTest extends TestCase
         return User::where('email', 'owner@setiasport.test')->firstOrFail();
     }
 
-    public function test_beranda_menampilkan_profil_bukan_katalog_lebih_dulu(): void
+    /**
+     * Susunan halaman depan mengikuti rancangan klien (KEP-062): belanja dulu,
+     * bukti belakangan. KEP-024 yang mendahulukan profil sudah direvisi.
+     *
+     * Yang tetap dijaga: jati diri toko dan alamatnya tetap terbaca di halaman
+     * depan, dan langkah memesan kustom tetap dijelaskan, karena keberatan
+     * terbesar pemesan pertama kali adalah tidak tahu uangnya dipegang siapa.
+     */
+    public function test_beranda_mendahulukan_belanja_lalu_bukti_pekerjaan(): void
     {
         Setting::simpan('tentang_judul', 'Konveksi jersey Wonogiri sejak 2011');
         Setting::simpan('toko_alamat', 'Jalan Jenderal Sudirman 10, Wonogiri');
+
+        // Bagian portofolio memang dilewati kalau kosong, jadi urutannya baru
+        // bisa diperiksa setelah ada satu pekerjaan yang dipajang.
+        Portofolio::create([
+            'judul' => 'Jersey futsal SMAN 1 Wonogiri',
+            'slug' => 'jersey-futsal-sman-1',
+            'instansi' => 'SMAN 1 Wonogiri',
+            'tahun' => 2025,
+            'aktif' => true,
+        ]);
 
         $halaman = $this->get(route('beranda'))->assertOk();
 
         $halaman->assertSee('Konveksi jersey Wonogiri sejak 2011');
         $halaman->assertSee('Jalan Jenderal Sudirman 10, Wonogiri');
-        $halaman->assertSee('Cara memesan jersey tim');
+        $halaman->assertSee('Desain dikirim, Anda setujui');
 
-        // Judul profil harus muncul sebelum cuplikan katalog, bukan sesudahnya.
         $isi = $halaman->getContent();
+
         $this->assertLessThan(
-            strpos($isi, 'Yang ada di toko'),
-            strpos($isi, 'Konveksi jersey Wonogiri sejak 2011'),
+            strpos($isi, 'Pernah kami kerjakan'),
+            strpos($isi, 'Kategori produk'),
+            'Kategori produk harus mendahului portofolio.',
+        );
+
+        $this->assertLessThan(
+            strpos($isi, 'Pernah kami kerjakan'),
+            strpos($isi, 'Produk unggulan'),
+            'Produk unggulan harus mendahului portofolio.',
         );
     }
 

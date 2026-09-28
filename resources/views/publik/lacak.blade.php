@@ -89,10 +89,25 @@
                     @endif
                 </div>
 
-                {{-- Langkah 1 --}}
+                {{-- Langkah 1.
+
+                     Begitu buktinya terkirim, tujuan transfer ditutup di balik
+                     ringkasan. Orang yang sudah membayar dan masih melihat QRIS
+                     besar di layar gampang mengira pembayarannya belum masuk,
+                     lalu membayar lagi. --}}
                 <div class="border-t border-line pt-5">
                     <p class="text-xs font-semibold tracking-wide text-muted uppercase">Langkah 1</p>
-                    <p class="mt-1 font-semibold">Transfer sejumlah di atas</p>
+                    <p class="mt-1 font-semibold">
+                        {{ $buktiAda ? 'Transfer sudah Anda kirim' : 'Transfer sejumlah di atas' }}
+                    </p>
+
+                    @if ($buktiAda)
+                        <details class="mt-3">
+                            <summary class="cursor-pointer text-sm text-muted">
+                                Perlu melihat tujuan transfernya lagi?
+                            </summary>
+                            <div class="mt-3">
+                    @endif
 
                     <div class="mt-4 grid gap-5 sm:grid-cols-2">
                         @if (setting('qris_path'))
@@ -167,6 +182,11 @@
                         Kami tidak pernah meminta pembayaran lewat WhatsApp atau ke rekening lain.
                         Kalau ada yang memintanya atas nama kami, jangan dibayar.
                     </p>
+
+                    @if ($buktiAda)
+                            </div>
+                        </details>
+                    @endif
                 </div>
 
                 {{-- Langkah 2 --}}

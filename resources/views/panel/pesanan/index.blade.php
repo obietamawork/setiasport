@@ -45,6 +45,7 @@
 
 @php
     $saringan = [
+        'tindakan' => 'Perlu tindakan',
         '' => 'Semua',
         'aktif' => 'Masih berjalan',
         OrderStatus::MENUNGGU_PEMBAYARAN->value => 'Menunggu pembayaran',
@@ -64,6 +65,9 @@
 
         <a href="{{ route('panel.pesanan.index', array_filter(['jalur' => $jalur, 'status' => $nilai, 'q' => request('q')])) }}"
            class="segmen-item {{ $status === $nilai ? 'segmen-item-aktif' : '' }}">
+            @if ($nilai === 'tindakan')
+                <x-ikon nama="peringatan" ukuran="size-4" />
+            @endif
             {{ $label }}
             @if (isset($jumlahStatus[$nilai]) && $jumlahStatus[$nilai] > 0)
                 <span class="segmen-jumlah">{{ $jumlahStatus[$nilai] }}</span>
@@ -71,6 +75,14 @@
         </a>
     @endforeach
 </div>
+
+@if ($status === 'tindakan')
+    <p class="kolom-baca mt-3 text-sm leading-relaxed text-muted">
+        Yang menunggu Anda, bukan yang menunggu pelanggan: bukti transfer yang belum
+        diperiksa, pengajuan pembatalan yang belum diputuskan, dan barang yang sudah siap
+        tetapi belum diserahkan.
+    </p>
+@endif
 
 @if (request('q'))
     <p class="mt-3 flex flex-wrap items-center gap-2 text-sm text-muted">

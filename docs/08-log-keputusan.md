@@ -674,7 +674,7 @@ daripada dua.
 ---
 
 ## KEP-024 — Halaman depan adalah profil usaha, katalog belakangan
-**Status:** TERKUNCI · 2026-09-09
+**Status:** DIREVISI KEP-062 · 2026-09-09
 
 Pembeli terbesar di sini bukan orang yang iseng menelusuri produk, melainkan
 pengurus sekolah, dinas, atau klub yang sedang memutuskan konveksi mana yang
@@ -1907,6 +1907,61 @@ yang diminta penyedia ("jnt"), supaya tidak ada yang perlu menghafal kode siapa 
 
 ---
 
+## KEP-062 — Halaman depan disusun ulang mengikuti rancangan klien
+**Status:** TERKUNCI · 2026-09-28
+
+Klien mengirim dua rancangan tampilan halaman depan. Keduanya mendahulukan belanja:
+hero, kategori, produk unggulan, layanan custom, alasan memilih, baru galeri dan
+testimoni.
+
+**KEP-024 direvisi.** Susunan lama mendahulukan profil usaha, dengan alasan bahwa pengurus
+sekolah memilih konveksi berdasarkan bukti pekerjaan. Alasan itu masih benar, tetapi hanya
+untuk sebagian pengunjung. Mayoritas yang datang tiap hari adalah orang Wonogiri yang
+mencari bola, sepatu, atau kaos, dan mereka tidak butuh membaca profil lebih dulu.
+
+**Bukti tidak dibuang, hanya turun dan mengecil.** Portofolio kini enam kotak kecil di
+bawah, bukan enam kartu besar di tengah halaman. Yang mencari bukti tetap menemukannya;
+yang mencari bola tidak perlu melewatinya.
+
+**Kategori memakai foto salah satu produknya**, bukan gambar tersendiri. Menambah kolom
+gambar kategori berarti satu lagi yang harus diurus pemilik toko, dan isi kategorinya
+sudah mewakili dirinya.
+
+**Produk unggulan diurutkan dari yang benar-benar paling banyak terjual**, bukan dari
+daftar yang disusun tangan. Daftar tangan basi dalam sebulan dan berubah jadi daftar
+produk kesayangan.
+
+**WhatsApp tetap bantuan, bukan jalur pemesanan (KEP-040).** Rancangan klien memasang
+tombol WhatsApp besar di beberapa tempat; di sini ia tetap ada, tetapi sebagai "tanya
+dulu", sementara ajakan utamanya selalu ke halaman pemesanan. Pesanan yang lahir di chat
+tidak punya nomor, tidak punya halaman lacak, dan tidak punya catatan siapa menyetujui apa.
+
+Sekalian diperbaiki di batch yang sama:
+
+- **Nomor rekening dan QRIS hilang begitu tagihannya lunas.** Dulu patokannya baris
+  pembayaran berstatus "menunggu", dan itu meleset saat uang diterima tunai di kasir:
+  tagihannya lunas, barisnya masih menunggu, dan tujuan transfer tetap terpampang di
+  halaman pesanan yang sudah dibayar. Itu mengundang pelanggan membayar dua kali.
+  Sekarang patokannya sisa tagihan. Begitu buktinya dikirim pun, tujuan transfer ditutup
+  di balik ringkasan.
+- **Harga "Rp 0" di katalog.** Kartu produk hanya membaca tier harga menurut jumlah,
+  padahal sebagian besar produk klien memakai matriks harga per ukuran (KEP-039).
+  Akibatnya sebelas produk kustom tampil berharga nol di etalase.
+- **Daftar pesanan punya penyaring "Perlu tindakan".** Sebelumnya staf harus membuka
+  pesanan satu per satu untuk tahu mana yang menunggu mereka. Penyaringnya sengaja
+  disempitkan pada tiga hal yang kalau didiamkan benar-benar merugikan: bukti transfer
+  yang belum diperiksa, pengajuan pembatalan yang belum diputuskan, dan barang yang sudah
+  siap tetapi belum diserahkan. Pesanan yang menunggu pelanggan membayar tidak termasuk:
+  tidak ada yang bisa dikerjakan toko di sana, dan daftar yang memuat hal-hal yang tidak
+  bisa ditindaklanjuti akan cepat diabaikan.
+- **Panduan ukuran akhirnya berisi angka.** Barisnya sudah ada sejak KEP-049, tetapi kolom
+  ukurannya kosong, jadi pertanyaan "ukuran L itu berapa lebar dadanya" tetap datang lewat
+  WhatsApp. Diisi angka yang lazim dipakai konveksi jersey, lewat seeder yang tidak pernah
+  menimpa koreksi pemilik toko, dan berat satuan tiap produk konveksi ikut diisi supaya
+  ongkir bisa dihitung.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -1934,7 +1989,7 @@ yang diminta penyedia ("jnt"), supaya tidak ada yang perlu menghafal kode siapa 
 | KEP-021 | Pendaftaran wajib dikonfirmasi lewat email | TERKUNCI |
 | KEP-022 | Paket penutup dipilih dari sudut biaya dukungan | TERKUNCI |
 | KEP-023 | Pembayaran manual (jalur WhatsApp diganti KEP-029) | TERKUNCI |
-| KEP-024 | Halaman depan profil usaha, katalog belakangan | TERKUNCI |
+| KEP-024 | Halaman depan profil usaha, katalog belakangan | DIREVISI KEP-062 |
 | KEP-025 | `vendor/` di volume Linux, bukan mount Windows | TERKUNCI |
 | KEP-026 | Pengiriman terbatas, khusus barang stok toko | DIREVISI KEP-055 |
 | KEP-027 | Kustom dan stok toko dipisah jadi dua tab | TERKUNCI |
@@ -1972,3 +2027,4 @@ yang diminta penyedia ("jnt"), supaya tidak ada yang perlu menghafal kode siapa 
 | KEP-059 | Panel dirombak: satu pola, berikon, dan bisa dipakai dengan jempol | TERKUNCI |
 | KEP-060 | Layar katalog dibenahi, dan panel punya halaman bantuannya sendiri | TERKUNCI |
 | KEP-061 | Kesiapan tayang dihitung sendiri, dan posisi paket ikut ditampilkan | TERKUNCI |
+| KEP-062 | Halaman depan disusun ulang mengikuti rancangan klien | TERKUNCI |

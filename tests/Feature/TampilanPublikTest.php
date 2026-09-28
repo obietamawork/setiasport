@@ -104,6 +104,20 @@ class TampilanPublikTest extends TestCase
             ->assertSee('Harga mengikuti bahan dan ukuran');
     }
 
+    /**
+     * Produk yang harganya diisi lewat matriks per ukuran (KEP-039) sempat
+     * tampil "Rp 0" di katalog, karena kartunya hanya membaca tier menurut
+     * jumlah. Itu sebagian besar produk klien, dan harga nol di etalase adalah
+     * kesalahan yang paling cepat merusak kepercayaan.
+     */
+    public function test_katalog_kustom_menampilkan_harga_matriks_bukan_nol(): void
+    {
+        $halaman = $this->get(route('katalog', ['jalur' => 'kustom']))->assertOk();
+
+        $halaman->assertSee(rupiah(45_000));
+        $halaman->assertDontSee('Rp 0');
+    }
+
     /** Pelanggan yang ragu di langkah terakhir menutup halaman kalau tidak ada jalan bertanya. */
     public function test_checkout_menawarkan_bantuan_whatsapp(): void
     {

@@ -21,7 +21,7 @@ class KatalogController extends Controller
 
         $produk = Product::query()
             ->aktif()
-            ->with(['images', 'priceTiers'])
+            ->with(['images', 'priceTiers', 'prices'])
             ->when($kategoriTerpilih, function ($q) use ($kategoriTerpilih) {
                 // Memilih kategori induk ikut menampilkan seluruh anaknya.
                 $ids = Category::where('parent_id', $kategoriTerpilih->id)

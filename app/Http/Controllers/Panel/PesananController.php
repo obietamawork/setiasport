@@ -45,7 +45,9 @@ class PesananController extends Controller
                 ->with(['customer', 'items', 'payments', 'adjustments'])
                 ->tap($saring)
                 ->when($status === 'aktif', fn ($q) => $q->aktif())
-                ->when($status && $status !== 'aktif', fn ($q) => $q->where('status', $status))
+                ->when($status === 'tindakan', fn ($q) => $q->perluTindakan())
+                ->when($status && ! in_array($status, ['aktif', 'tindakan'], true),
+                    fn ($q) => $q->where('status', $status))
                 ->when($request->filled('q'), function ($q) use ($request) {
                     $cari = '%'.$request->string('q').'%';
                     $q->where(fn ($w) => $w->where('kode', 'like', $cari)
@@ -61,6 +63,9 @@ class PesananController extends Controller
             // Hitungan status mengikuti tab yang sedang dibuka; kalau tidak,
             // angkanya menjanjikan hasil yang tidak akan muncul saat diklik.
             'jumlahStatus' => [
+                // Ditaruh paling depan: inilah yang benar-benar menunggu orang
+                // toko, sementara penyaring lain sekadar memilah keadaan.
+                'tindakan' => Order::query()->tap($saring)->perluTindakan()->count(),
                 'aktif' => Order::query()->tap($saring)->aktif()->count(),
                 OrderStatus::MENUNGGU_PEMBAYARAN->value => Order::query()->tap($saring)->where('status', OrderStatus::MENUNGGU_PEMBAYARAN)->count(),
                 OrderStatus::DIPROSES->value => Order::query()->tap($saring)->where('status', OrderStatus::DIPROSES)->count(),
