@@ -36,7 +36,19 @@
     </a>
 </dl>
 
-<h2 class="mt-8 text-lg font-extrabold">Yang perlu ditangani</h2>
+<div class="mt-8 flex flex-wrap items-center justify-between gap-3">
+    <h2 class="text-lg font-extrabold">Yang perlu ditangani</h2>
+
+    {{-- Jalan pintas ke daftar pesanan yang menunggu orang toko. Kartu-kartu di
+         bawah menyebut masalahnya satu per satu; tautan ini untuk yang ingin
+         mengerjakannya berurutan dalam satu daftar. --}}
+    <a href="{{ route('panel.pesanan.index', ['status' => 'tindakan']) }}"
+       class="tombol tombol-garis tombol-sm">
+        <x-ikon nama="pesanan" ukuran="size-4" />
+        Pesanan yang menunggu Anda
+        <x-ikon nama="lanjut" ukuran="size-4" />
+    </a>
+</div>
 
 @foreach ($masalahSistem as $m)
     <section class="notis notis-galat mt-4">

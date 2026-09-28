@@ -157,14 +157,23 @@ class ProfilUsahaTest extends TestCase
         $this->assertSame($awal, ob_get_level(), 'Halaman depan meninggalkan buffer keluaran terbuka.');
     }
 
+    /**
+     * Perbedaan dua jalur belanja dijelaskan di katalog, bukan di halaman depan.
+     * Bentuknya diringkas jadi satu baris (KEP-062), tetapi isinya tetap: yang
+     * satu siap besok, yang satu dikerjakan sekian hari sejak desain disetujui.
+     */
     public function test_pembeda_dua_jalur_pindah_ke_katalog(): void
     {
-        $this->get(route('katalog'))->assertOk()->assertSee('Ambil dari stok toko');
+        $this->get(route('katalog'))
+            ->assertOk()
+            ->assertSee('Stok toko')
+            ->assertSee('siap besok')
+            ->assertSee('hari kerja');
 
-        // Sudah menyaring berarti sudah tahu maunya; bandnya tidak perlu lagi.
+        // Sudah menyaring berarti sudah tahu maunya; penjelasnya tidak perlu lagi.
         $this->get(route('katalog', ['jalur' => 'stok']))
             ->assertOk()
-            ->assertDontSee('Mulai pesan kustom');
+            ->assertDontSee('siap besok');
     }
 
     public function test_owner_menambah_portofolio_lengkap_dengan_foto(): void

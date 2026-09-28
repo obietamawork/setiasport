@@ -11,36 +11,37 @@
         <p class="kolom-baca mt-3 leading-relaxed text-muted">{{ $subjudul }}</p>
     @endif
 
-    {{-- Perbedaan dua jalur ini dulu ada di halaman depan. Sejak halaman depan
-         jadi profil usaha (KEP-024), tempatnya di sini: tepat sebelum orang
-         mulai memilih, dan hanya saat ia belum menyaring apa pun. --}}
+    {{-- Perbedaan dua jalur belanja. Dulu satu bidang penuh setinggi layar, dan
+         itu berarti pengunjung harus menggulir melewati penjelasan sebelum
+         melihat satu pun produk. Isinya tetap, bentuknya diringkas jadi satu
+         baris; yang ingin rinciannya sudah membacanya di halaman depan. --}}
     @unless (request()->hasAny(['jalur', 'kategori', 'q']))
-        <div class="mt-8 grid border border-line lg:grid-cols-2">
-            <div class="border-b border-line p-6 lg:border-r lg:border-b-0 lg:p-8">
-                <p class="text-sm font-semibold text-muted">Ambil dari stok toko</p>
-                <p class="numeral mt-4 text-5xl text-navy">Besok</p>
-                <p class="mt-3 max-w-sm text-sm leading-relaxed text-muted">
-                    Barang yang sudah ada di rak. Bayar hari ini, ambil besok pada jam buka.
-                </p>
-                <a href="{{ route('katalog', ['jalur' => 'stok']) }}" class="tombol tombol-garis mt-5">
-                    Lihat stok toko
-                </a>
-            </div>
+        <div class="kartu mt-6 grid divide-y divide-line sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+            <a href="{{ route('katalog', ['jalur' => 'stok']) }}"
+               class="group flex items-center gap-3 p-4 hover:bg-navy-50">
+                <span class="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-navy-50 text-navy">
+                    <x-ikon nama="toko" />
+                </span>
+                <span class="min-w-0 flex-1">
+                    <span class="block font-semibold">Stok toko &middot; siap besok</span>
+                    <span class="block text-sm text-muted">Sudah ada di rak, bayar hari ini ambil besok.</span>
+                </span>
+                <x-ikon nama="lanjut" ukuran="size-4" class="text-navy-300 group-hover:text-navy" />
+            </a>
 
-            <div class="relative overflow-hidden bg-navy p-6 text-white lg:p-8">
-                <span class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-merah via-merah to-kuning"></span>
-                <p class="text-sm font-semibold text-white/60">Dibuat untuk tim Anda</p>
-                <p class="numeral mt-4 text-5xl">
-                    {{ $leadTime ?? 7 }} <span class="text-2xl font-bold">hari</span>
-                </p>
-                <p class="mt-3 max-w-sm text-sm leading-relaxed text-white/75">
-                    Hari kerja, dihitung sejak Anda menyetujui desain, bukan sejak pesanan
-                    masuk. Sampai desain disetujui, jam produksi belum berjalan.
-                </p>
-                <a href="{{ route('katalog', ['jalur' => 'kustom']) }}" class="tombol tombol-utama mt-5">
-                    Mulai pesan kustom
-                </a>
-            </div>
+            <a href="{{ route('katalog', ['jalur' => 'kustom']) }}"
+               class="group flex items-center gap-3 p-4 hover:bg-navy-50">
+                <span class="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-merah-50 text-merah">
+                    <x-ikon nama="kategori" />
+                </span>
+                <span class="min-w-0 flex-1">
+                    <span class="block font-semibold">Kustom &middot; {{ $leadTime ?? 7 }} hari kerja</span>
+                    <span class="block text-sm text-muted">
+                        Dihitung sejak desain Anda setujui, bukan sejak pesanan masuk.
+                    </span>
+                </span>
+                <x-ikon nama="lanjut" ukuran="size-4" class="text-navy-300 group-hover:text-navy" />
+            </a>
         </div>
     @endunless
 
@@ -59,55 +60,39 @@
         @endforeach
     </div>
 
-    {{-- Di layar sempit filter diringkas jadi satu baris. Formulir bertumpuk
-         memakan hampir 300px sebelum produk pertama terlihat, padahal yang
-         dicari pelanggan ada di bawahnya. --}}
-    <form method="GET" action="{{ route('katalog') }}" class="mt-6"
-          x-data="{ buka: {{ request()->filled('kategori') ? 'true' : 'false' }} }">
-
+    {{-- Satu baris penyaring, bukan dua formulir bertumpuk. Kategori mengirim
+         formulirnya sendiri saat dipilih: tombol "Terapkan" yang berdiri
+         terpisah dari kotak pencarian membuat orang mengira keduanya dua
+         pencarian yang berbeda. --}}
+    <form method="GET" action="{{ route('katalog') }}" class="mt-5 flex flex-wrap items-center gap-2">
         {{-- Tab yang sedang aktif ikut terbawa saat filter dikirim. --}}
         <input type="hidden" name="jalur" value="{{ request('jalur') }}">
 
-        <div class="flex gap-2">
+        <div class="relative min-w-52 flex-1">
             <label class="sr-only" for="q">Cari produk</label>
+            <x-ikon nama="cari" ukuran="size-4"
+                    class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-navy-300" />
             <input type="search" id="q" name="q" value="{{ request('q') }}"
-                   placeholder="Cari jersey, bola, sepatu" class="kotak-input flex-1">
-
-            <button type="button" @click="buka = !buka"
-                    class="tombol tombol-garis shrink-0 sm:hidden"
-                    :aria-expanded="buka">
-                Filter
-                @if (request()->hasAny(['kategori', 'jalur']))
-                    <span class="size-2 rounded-full bg-merah"></span>
-                @endif
-            </button>
-
-            <button type="submit" class="tombol tombol-navy shrink-0">Cari</button>
+                   placeholder="Cari jersey, bola, sepatu&hellip;" class="kotak-input pl-10">
         </div>
 
-        {{-- x-show hanya mengatur layar sempit; mulai sm dipaksa tampil lewat
-             CSS, karena !flex mengalahkan display none dari Alpine. --}}
-        <div x-show="buka" x-cloak class="mt-3 flex flex-wrap gap-3 sm:!flex">
-            <div class="min-w-44 flex-1 sm:max-w-56">
-                <label for="kategori" class="label-form">Kategori</label>
-                <select id="kategori" name="kategori" class="kotak-input">
-                    <option value="">Semua kategori</option>
-                    @foreach ($semuaKategori as $k)
-                        <option value="{{ $k->slug }}" @selected(request('kategori') === $k->slug)>
-                            {{ $k->parent?->nama ? $k->parent->nama.' / ' : '' }}{{ $k->nama }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+        <label class="sr-only" for="kategori">Kategori</label>
+        <select id="kategori" name="kategori" class="kotak-input w-auto min-w-44"
+                onchange="this.form.requestSubmit()">
+            <option value="">Semua kategori</option>
+            @foreach ($semuaKategori as $k)
+                <option value="{{ $k->slug }}" @selected(request('kategori') === $k->slug)>
+                    {{ $k->parent?->nama ? $k->parent->nama.' / ' : '' }}{{ $k->nama }}
+                </option>
+            @endforeach
+        </select>
 
-            <div class="flex items-end gap-3">
-                <button type="submit" class="tombol tombol-garis">Terapkan</button>
-                @if (request()->hasAny(['q', 'kategori']))
-                    <a href="{{ route('katalog', array_filter(['jalur' => request('jalur')])) }}"
-                       class="tautan pb-2.5 text-sm text-muted">Hapus filter</a>
-                @endif
-            </div>
-        </div>
+        <button type="submit" class="tombol tombol-navy">Cari</button>
+
+        @if (request()->hasAny(['q', 'kategori']))
+            <a href="{{ route('katalog', array_filter(['jalur' => request('jalur')])) }}"
+               class="tombol tombol-halus">Hapus filter</a>
+        @endif
     </form>
 
 @php $modeJumlah = request('jalur') === 'kustom'; @endphp
