@@ -160,6 +160,7 @@
                         $lanjut = $item->status_item->berikutnya($item->fulfillment_type);
                         $menungguPelanggan = $item->status_item === OrderItemStatus::MENUNGGU_PERSETUJUAN;
                         $menungguLunas = $item->status_item === OrderItemStatus::MENUNGGU_PELUNASAN;
+                        $menungguBayar = $item->status_item === OrderItemStatus::MENUNGGU_PEMBAYARAN;
                         $batal = $item->status_item === OrderItemStatus::DIBATALKAN;
 
                         // "Tandai Menunggu Pelunasan" tidak menjelaskan apa-apa ke
@@ -329,7 +330,13 @@
                                     @endforeach
                                 </div>
 
-                                @if ($menungguPelanggan)
+                                @if ($menungguBayar)
+                                    {{-- Gerbang tanpa tombol juga: barang belum boleh diproses
+                                         sebelum uangnya tercatat masuk. --}}
+                                    <span class="ml-auto text-sm text-muted">
+                                        Naik ke {{ $lanjut?->label() }} begitu pembayaran tercatat
+                                    </span>
+                                @elseif ($menungguPelanggan)
                                     <span class="ml-auto text-sm text-muted">
                                         Hanya pelanggan yang bisa menyetujui desain
                                     </span>

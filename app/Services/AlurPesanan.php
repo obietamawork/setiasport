@@ -100,6 +100,17 @@ class AlurPesanan
         );
 
         /*
+         * Gerbang pembayaran awal juga tidak punya tombol. Tanpa penjagaan ini
+         * staf bisa mengetuk "maju" berkali-kali dan menerbitkan kode ambil
+         * untuk barang yang uangnya belum pernah diverifikasi sama sekali.
+         */
+        abort_if(
+            $item->status_item === OrderItemStatus::MENUNGGU_PEMBAYARAN,
+            422,
+            'Item ini menunggu pembayaran. Ia baru bisa diproses begitu pembayarannya dicatat atau diverifikasi.'
+        );
+
+        /*
          * Gerbang persetujuan tidak boleh dilewati dari sisi toko. Kalau staf
          * bisa memajukannya sendiri, catatan siapa yang menyetujui dan versi
          * mockup mana akan kosong, dan justru itulah yang menyelesaikan sengketa

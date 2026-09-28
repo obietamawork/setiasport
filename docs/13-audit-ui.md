@@ -196,6 +196,50 @@ Diperbaiki dengan menjadikannya tumpukan biasa di bawah `lg`.
 Kartu dan tabel di seluruh panel kini memakai kelas yang sama, dan setiap
 halaman punya kop dengan judul serta satu kalimat yang menjelaskan isinya.
 
+## Putaran keempat: setelah rombak beranda dan alur desain (KEP-062 s/d 065)
+
+Audit pemolesan menyeluruh setelah beranda dirombak mengikuti mockup klien dan
+alur unggah desain diperketat. Kali ini ikut memeriksa alur status pesanan di
+panel, bukan cuma tampilan.
+
+### Gerbang pembayaran awal bisa dilewati (kritis)
+
+Ditemukan saat menelusuri tombol "Tandai [tahap]" di detail pesanan: gerbang
+persetujuan desain dan gerbang pelunasan sudah dijaga tanpa tombol (docs/02,
+KEP-028), tapi **gerbang pembayaran awal justru terlewat**. Staf bisa
+mengetuk tombol itu berkali-kali pada item yang `MENUNGGU_PEMBAYARAN` —
+uangnya belum pernah diverifikasi sama sekali — dan sistem tetap menaikkannya
+sampai `SIAP_DIAMBIL`, kode ambil terbit, seolah barang boleh dibawa pulang.
+
+Ditemukan lewat kombinasi tak sengaja: pesanan demo lama yang tersangkut di
+status Siap Diambil padahal `sisa_tagihan`-nya masih penuh, dan halaman
+lacaknya menampilkan pesan yang bertentangan (transfer sekarang sekaligus
+bayar saat ambil).
+
+**Diperbaiki:** ditolak di `AlurPesanan::majukanItem`, sejajar dengan dua
+gerbang lain, bukan sekadar disembunyikan di tampilan. Tombolnya di panel
+kini berganti keterangan "Naik ke [tahap] begitu pembayaran tercatat" saat
+item masih `MENUNGGU_PEMBAYARAN`. Ditutup test.
+
+### Bintang testimoni tidak terlihat penuh
+
+Ikon garis (`fill="none"`, gaya ikon panel keseluruhan) dipakai apa adanya
+untuk bintang rating testimoni di beranda, sehingga di layar kecil terbaca
+sebagai bentuk kosong, bukan bintang emas penuh seperti kebiasaan rating pada
+umumnya.
+
+**Diperbaiki:** komponen ikon menerima `fill="currentColor"` lewat
+`$attributes` (atribut pertama menang saat HTML diparse), tanpa mengubah
+default ikon di tempat lain.
+
+### Yang diperiksa dan aman
+
+Sapuan otorisasi atas seluruh route panel (`izin:` middleware terpusat di
+`routes/panel.php`, bukan tercecer per-controller), entropi token pelacakan
+(64 karakter acak) dan pembatasan laju pencarian kode+email (10x/5 menit),
+serta kecocokan `order_id` di setiap route bertoken/berparameter item —
+semuanya konsisten dan tidak ditemukan celah baru.
+
 ## Aturan yang dipegang selanjutnya
 
 1. **Ukur, jangan kira.** Setiap layar baru diperiksa `scrollWidth`-nya di 375px.

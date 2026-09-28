@@ -105,6 +105,22 @@ class PesananFlowTest extends TestCase
         $this->assertSame(0, $this->bola()->fresh()->stok_dipesan);
     }
 
+    public function test_toko_tidak_bisa_memajukan_item_yang_belum_dibayar(): void
+    {
+        $order = $this->buatPesanan();
+        $item = $order->items()->first();
+        $kasir = User::where('email', 'admin@setiasport.test')->firstOrFail();
+
+        // Tanpa gerbang ini staf bisa mengetuk "maju" berkali-kali dan
+        // menerbitkan kode ambil untuk barang yang uangnya belum pernah
+        // diverifikasi sama sekali.
+        $this->actingAs($kasir)
+            ->post(route('panel.pesanan.item.maju', [$order, $item]))
+            ->assertStatus(422);
+
+        $this->assertSame(OrderItemStatus::MENUNGGU_PEMBAYARAN, $item->fresh()->status_item);
+    }
+
     public function test_verifikasi_pembayaran_memulai_pengerjaan(): void
     {
         $order = $this->buatPesanan();

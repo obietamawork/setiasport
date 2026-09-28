@@ -291,7 +291,11 @@
                     @if ($t->bintang)
                         <div class="flex gap-0.5 text-kuning" aria-label="{{ $t->bintang }} dari 5 bintang">
                             @for ($i = 0; $i < $t->bintang; $i++)
-                                <x-ikon nama="testimoni" ukuran="size-4" />
+                                {{-- fill="currentColor" menang atas default fill="none" ikon
+                                     (atribut pertama yang menang saat HTML di-parse), supaya
+                                     bintang terlihat penuh, bukan garis tipis yang di layar
+                                     kecil gampang terbaca sebagai kosong. --}}
+                                <x-ikon nama="testimoni" ukuran="size-4" fill="currentColor" />
                             @endfor
                         </div>
                     @endif
