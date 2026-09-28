@@ -143,6 +143,19 @@
                         <label for="tautan-{{ $item->id }}" class="label-form">Tautan Google Drive (opsional)</label>
                         <input type="url" id="tautan-{{ $item->id }}" name="tautan" class="kotak-input"
                                placeholder="https://drive.google.com/...">
+
+                        {{-- Tidak semua orang tahu cara membuat tautan berbagi (KEP-065).
+                             Ini jalan pintas: formulir milik toko sendiri yang sudah minta
+                             kode pesanan, jadi begitu terkirim tidak perlu balik ke sini
+                             menempelkan apa pun. --}}
+                        @if (setting('desain_link_unggah'))
+                            <p class="mt-1.5 text-xs leading-relaxed text-muted">
+                                Belum punya link? <a href="{{ setting('desain_link_unggah') }}" target="_blank"
+                                rel="noopener" class="tautan font-medium">Unggah file besar di sini</a> —
+                                tulis kode pesanan <strong class="tabular">{{ $order->kode }}</strong> di
+                                formulirnya supaya kami tahu ini punya siapa. Tidak perlu ditempel di sini lagi.
+                            </p>
+                        @endif
                     </div>
                     <div>
                         <label for="catdes-{{ $item->id }}" class="label-form">Catatan untuk desainer</label>

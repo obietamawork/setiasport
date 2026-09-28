@@ -9,6 +9,7 @@ use App\Models\OptionValue;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\User;
 use App\Services\AlurPesanan;
 use App\Support\LinimasaItem;
@@ -285,6 +286,50 @@ class KustomFlowTest extends TestCase
 
         $this->assertNull($aset->path);
         $this->assertSame('https://drive.google.com/file/d/contoh', $aset->external_url);
+    }
+
+    /**
+     * Jalan pintas untuk pelanggan yang belum punya tautan siap tempel (KEP-065).
+     * Kosong berarti tombolnya sama sekali tidak digambar, bukan ditampilkan
+     * mati: tautan mati lebih membingungkan daripada tidak ada tautan.
+     */
+    public function test_tautan_unggah_file_besar_tidak_tampil_selama_kosong(): void
+    {
+        $order = $this->buatPesanan(12);
+        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
+        $item = $order->items()->first();
+
+        $this->get(route('lacak.token', $order->access_token))
+            ->assertOk()
+            ->assertDontSee('Unggah file besar di sini');
+    }
+
+    public function test_tautan_unggah_file_besar_tampil_dengan_kode_pesanan(): void
+    {
+        Setting::simpan('desain_link_unggah', 'https://forms.gle/contoh-formulir');
+
+        $order = $this->buatPesanan(12);
+        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
+
+        $halaman = $this->get(route('lacak.token', $order->access_token))->assertOk();
+
+        $halaman->assertSee('Unggah file besar di sini');
+        $halaman->assertSee('https://forms.gle/contoh-formulir', false);
+        // Kode pesanan disebut di teksnya, supaya pelanggan tahu apa yang
+        // harus ditulis di formulir eksternal itu.
+        $halaman->assertSee($order->kode);
+    }
+
+    /** Pemilik toko mengisinya lewat panel, di tab Pesanan → Desain & produksi. */
+    public function test_owner_mengisi_tautan_unggah_file_besar_lewat_pengaturan(): void
+    {
+        $this->actingAs($this->staf('owner@setiasport.test'))->put(route('panel.pengaturan.update'), [
+            'setting' => [
+                'desain_link_unggah' => 'https://forms.gle/contoh-formulir',
+            ],
+        ])->assertRedirect();
+
+        $this->assertSame('https://forms.gle/contoh-formulir', setting('desain_link_unggah'));
     }
 
     /**

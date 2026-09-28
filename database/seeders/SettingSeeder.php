@@ -64,6 +64,16 @@ Minggu 08.00-14.00", 'teks', 'toko', 'Jam Buka Toko',
                 'Maksimal permintaan revisi dari pelanggan. Semuanya gratis, dan setelah habis tidak ada revisi berbayar.'],
             ['upload_maks_mb', '10', 'int', 'produksi', 'Batas Ukuran Upload Preview (MB)',
                 'Berlaku untuk preview desain dan foto. File mentah siap cetak dikirim lewat tautan Drive, bukan diunggah.'],
+            /*
+             * Kosong berarti tombolnya tidak muncul sama sekali (KEP-065).
+             * Bukan link ke sistem kami, tapi ke formulir milik toko sendiri
+             * (Google Form / Dropbox File Request) yang menampung file mentah
+             * tanpa pelanggan perlu tahu cara membuat tautan berbagi sendiri.
+             */
+            ['desain_link_unggah', '', 'string', 'produksi', 'Tautan Unggah File Besar (opsional)',
+                'Untuk pelanggan yang punya file mentah (AI/PSD/CDR) tapi tidak bisa membuat tautan '
+                .'berbagi sendiri. Isi tautan Google Form/Dropbox File Request milik toko. Kosongkan '
+                .'untuk menyembunyikannya. Cara buatnya: docs/14-formulir-unggah-desain.md.'],
 
             ['pengingat_ambil_hari', '3', 'int', 'pengambilan', 'Pengingat Belum Diambil (hari)'],
             ['hangus_hari', '30', 'int', 'pengambilan', 'Barang Hangus Setelah (hari)',

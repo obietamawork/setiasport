@@ -2025,6 +2025,46 @@ mana pun.
 
 ---
 
+## KEP-065 — Tautan unggah file besar, disediakan toko sendiri
+**Status:** TERKUNCI · 2026-09-28
+
+KEP-064 menutup jalur unggah mentah ke server sendiri, dan mengarahkan pelanggan yang
+punya file siap cetak (AI/PSD/CDR) ke kolom "tempel tautan Google Drive". Masalahnya baru
+terlihat setelahnya: kolom itu mengasumsikan pelanggan SUDAH punya tautan siap tempel.
+Kebanyakan orang tidak tahu caranya membuat satu — mereka punya filenya di HP atau
+komputer, bukan tautannya. Titik macet inilah yang selama ini membuat "kirim lewat WA"
+terasa seperti satu-satunya jalan yang masuk akal.
+
+**Keputusan: toko menyediakan tempat unggah sendiri**, lewat layanan gratis pihak ketiga
+yang memang dibuat untuk ini (Google Form dengan pertanyaan Upload File, atau Dropbox File
+Request) — bukan lewat server sendiri. Pelanggan tinggal memilih file dari perangkatnya
+dan menekan kirim, sama seperti mengunggah foto biasa; tidak perlu tahu apa itu "tautan
+berbagi".
+
+**Kenapa bukan fitur di dalam sistem.** Ini sengaja dibuat sebagai satu kolom tautan di
+Pengaturan (`desain_link_unggah`), bukan endpoint unggah baru:
+- File besar tetap **tidak pernah menyentuh hosting kita** — persis semangat KEP-002 dan
+  KEP-064. Google/Dropbox yang menanggung penyimpanan, bandwidth, dan pemindaian
+  malware-nya.
+- **Tanpa biaya dan tanpa akun berbayar.** Kompetitor memakai konfigurator 3D/2D yang
+  butuh anggaran; ini sebaliknya, memakai layanan yang gratis dan kemungkinan besar
+  pemilik toko sudah punya akunnya (Gmail).
+- **Opsional dan bisa dimatikan sendiri.** Kosongkan kolomnya, tombolnya hilang. Tidak
+  ada kode yang perlu diubah pengembang setiap toko mau ganti penyedia atau berhenti
+  memakainya.
+
+**Pencocokan ke pesanan bukan tugas sistem ini.** Google Form yang direkomendasikan sudah
+punya kolom "Kode pesanan" bawaan, dan pelanggan mengisinya sendiri — sama seperti mereka
+mengetik nama dan nomor punggung di roster. Sistem tidak mencoba mendeteksi otomatis file
+mana milik pesanan mana; itu pekerjaan satu baris di spreadsheet Tanggapan yang staf buka
+sesekali, bukan yang layak dibangunkan integrasi API (OAuth, App Script, kredensial) untuk
+skala bisnis ini.
+
+Langkah pembuatannya ditulis untuk pemilik toko sendiri, bukan pengembang:
+[14-formulir-unggah-desain.md](14-formulir-unggah-desain.md).
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2093,3 +2133,4 @@ mana pun.
 | KEP-062 | Halaman depan disusun ulang mengikuti rancangan klien | TERKUNCI |
 | KEP-063 | Media sosial di bilah atas dan kaki halaman | TERKUNCI |
 | KEP-064 | Unggahan desain diperlakukan sama seperti bukti transfer | TERKUNCI |
+| KEP-065 | Tautan unggah file besar, disediakan toko sendiri | TERKUNCI |

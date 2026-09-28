@@ -20,6 +20,7 @@ tracking pesanan sampai **diambil di toko atau sampai di alamat pelanggan** (KEP
 | [11-panduan-visual.md](11-panduan-visual.md) | Token warna, tipografi, dan prinsip desain |
 | [12-deploy.md](12-deploy.md) | Langkah deploy ke shared hosting |
 | [13-audit-ui.md](13-audit-ui.md) | Audit UI/UX dan perbaikan mobile |
+| [14-formulir-unggah-desain.md](14-formulir-unggah-desain.md) | Cara pemilik toko membuat formulir unggah file besar |
 
 ## Status
 
