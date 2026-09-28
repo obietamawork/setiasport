@@ -122,6 +122,19 @@ Pos Indonesia", 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
              */
             ['tentang_lengkap', 'Setia Sport berdiri di Wonogiri sebagai toko perlengkapan olahraga, lalu tumbuh menjadi konveksi jersey karena permintaannya datang terus dari pelanggan sendiri: sekolah yang butuh seragam olahraga, klub futsal yang ingin jersey dengan nama dan nomor punggung, dan komunitas lari yang memesan kaos untuk acara.\n\nJersey dikerjakan di workshop kami sendiri, bukan dilempar ke pihak lain. Itu yang membuat revisi desain bisa cepat, ukuran bisa dicampur dari anak SD sampai dewasa dalam satu pesanan, dan kalau ada yang kurang pas, kami perbaiki tanpa harus menunggu kiriman dari kota lain.\n\nBarang yang ada di rak bisa diambil hari itu juga di toko. Pesanan konveksi punya halaman sendiri di website ini: progres pengerjaan, tagihan, dan nomor resi bisa dilihat kapan saja tanpa perlu menelepon toko.', 'teks', 'profil', 'Tentang Usaha',
                 'Beberapa paragraf tentang toko: sejak kapan berdiri, siapa yang dilayani, apa yang membedakan.'],
+            /*
+             * Media sosial (KEP-063). Disimpan sebagai tautan penuh, bukan nama
+             * pengguna: tiap platform menyusun alamatnya dengan aturan sendiri,
+             * dan menebaknya dari nama pengguna selalu meleset untuk salah satu
+             * di antaranya. Kosong berarti ikonnya tidak muncul sama sekali.
+             */
+            ['sosial_instagram', '', 'string', 'profil', 'Instagram',
+                'Tempel alamat lengkap profilnya, misalnya https://instagram.com/namatoko'],
+            ['sosial_tiktok', '', 'string', 'profil', 'TikTok',
+                'Tempel alamat lengkap profilnya, misalnya https://tiktok.com/@namatoko'],
+            ['sosial_facebook', '', 'string', 'profil', 'Facebook',
+                'Tempel alamat lengkap halamannya.'],
+
             ['maps_embed', '', 'string', 'profil', 'Tautan Peta Google Maps',
                 'Tempel tautan berbagi dari Google Maps. Dipakai sebagai tombol menuju lokasi.'],
         ];

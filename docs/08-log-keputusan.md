@@ -1962,6 +1962,25 @@ Sekalian diperbaiki di batch yang sama:
 
 ---
 
+## KEP-063 — Media sosial di bilah atas dan kaki halaman
+**Status:** TERKUNCI · 2026-09-28
+
+Rancangan tampilan yang dikirim klien menaruh nomor WhatsApp dan ikon media sosial di
+bilah tipis paling atas, di luar bilah navigasi utama. Ditambahkan sebagai satu bilah
+terpisah, hanya di layar sedang ke atas: di layar sempit setiap baris berharga, dan
+nomornya sudah tersedia di kaki halaman.
+
+**Disimpan sebagai tautan penuh, bukan nama pengguna.** Setiap platform menyusun alamat
+profilnya dengan aturan sendiri, dan menebaknya dari nama pengguna selalu meleset untuk
+salah satu di antaranya. Pemilik toko menempel tautan lengkap lewat Panel → Pengaturan →
+Halaman depan.
+
+**Kosong berarti ikonnya tidak digambar sama sekali**, bukan ditampilkan mati atau
+menunjuk ke tautan kosong. Ikon yang menuju halaman kosong lebih buruk daripada tidak ada
+ikon: pengunjung mengiranya akun resmi yang ditinggalkan.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2028,3 +2047,4 @@ Sekalian diperbaiki di batch yang sama:
 | KEP-060 | Layar katalog dibenahi, dan panel punya halaman bantuannya sendiri | TERKUNCI |
 | KEP-061 | Kesiapan tayang dihitung sendiri, dan posisi paket ikut ditampilkan | TERKUNCI |
 | KEP-062 | Halaman depan disusun ulang mengikuti rancangan klien | TERKUNCI |
+| KEP-063 | Media sosial di bilah atas dan kaki halaman | TERKUNCI |

@@ -105,6 +105,46 @@ class ProfilUsahaTest extends TestCase
         $halaman->assertDontSee('Tentang kami');
     }
 
+    /**
+     * Media sosial (KEP-063). Kosong berarti ikonnya tidak digambar sama
+     * sekali: ikon yang menuju halaman kosong lebih buruk daripada tidak
+     * ada ikon, karena pengunjung mengiranya profil resmi yang lupa diisi.
+     */
+    public function test_media_sosial_kosong_tidak_menampilkan_ikon(): void
+    {
+        $halaman = $this->get(route('beranda'))->assertOk();
+
+        $halaman->assertDontSee('instagram.com');
+        $halaman->assertDontSee('tiktok.com');
+    }
+
+    public function test_media_sosial_yang_diisi_tampil_di_beranda(): void
+    {
+        Setting::simpan('sosial_instagram', 'https://instagram.com/setiasportwonogiri');
+        Setting::simpan('sosial_tiktok', 'https://tiktok.com/@setiasportwonogiri');
+
+        $halaman = $this->get(route('beranda'))->assertOk();
+
+        $halaman->assertSee('https://instagram.com/setiasportwonogiri', false);
+        $halaman->assertSee('https://tiktok.com/@setiasportwonogiri', false);
+        // Facebook tidak diisi, jadi tautannya tidak boleh ikut muncul.
+        $halaman->assertDontSee('facebook.com');
+    }
+
+    /** Pemilik toko mengisinya lewat panel, di tab Halaman depan. */
+    public function test_owner_mengisi_media_sosial_lewat_pengaturan(): void
+    {
+        $this->actingAs($this->owner())->put(route('panel.pengaturan.update'), [
+            'setting' => [
+                'sosial_instagram' => 'https://instagram.com/setiasportwonogiri',
+                'sosial_tiktok' => '',
+                'sosial_facebook' => '',
+            ],
+        ])->assertRedirect();
+
+        $this->assertSame('https://instagram.com/setiasportwonogiri', setting('sosial_instagram'));
+    }
+
     public function test_portofolio_dan_testimoni_aktif_tampil_di_beranda(): void
     {
         Portofolio::create([

@@ -56,6 +56,8 @@ class PengaturanController extends Controller
             'catatan' => 'Teks pembuka dan cerita usaha. Portofolio dan testimoni punya menunya sendiri.',
             'bagian' => [
                 ['judul' => 'Teks', 'kunci' => ['tentang_judul', 'tentang_ringkas', 'tentang_lengkap']],
+                ['judul' => 'Media sosial', 'catatan' => 'Tempel alamat lengkapnya. Yang kosong, ikonnya tidak ditampilkan.',
+                    'kunci' => ['sosial_instagram', 'sosial_tiktok', 'sosial_facebook']],
             ],
         ],
         'cs' => [

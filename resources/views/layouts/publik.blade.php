@@ -20,6 +20,18 @@
 <body class="flex min-h-screen flex-col antialiased">
 
 @php
+    /*
+     * Media sosial toko (KEP-063). Yang kosong tidak digambar sama sekali:
+     * ikon yang menuju halaman kosong lebih buruk daripada tidak ada ikon.
+     */
+    $sosial = array_values(array_filter([
+        ['instagram', 'Instagram', setting('sosial_instagram')],
+        ['tiktok', 'TikTok', setting('sosial_tiktok')],
+        ['facebook', 'Facebook', setting('sosial_facebook')],
+    ], fn ($t) => filled($t[2])));
+@endphp
+
+@php
     $isiKeranjang = app(\App\Services\Keranjang::class)->jumlahBaris();
     $pelanggan = auth('pelanggan')->user();
 
@@ -37,6 +49,37 @@
             : ['lacak', 'Lacak pesanan', ['lacak*'], []],
     ]));
 @endphp
+
+{{-- Bilah tipis di puncak halaman, mengikuti rancangan klien: satu kalimat
+     tentang toko, nomor yang bisa dihubungi, dan media sosialnya. Disembunyikan
+     di layar sempit, tempat setiap baris berharga dan nomornya sudah ada di
+     kaki halaman. --}}
+@if (setting('toko_telepon') || $sosial !== [])
+    <div class="hidden bg-navy-900 text-white sm:block">
+        <div class="mx-auto flex max-w-6xl items-center gap-4 px-5 py-1.5 text-xs">
+            <span class="text-white/60">Toko olahraga &amp; konveksi jersey di Wonogiri</span>
+
+            <div class="ml-auto flex items-center gap-3">
+                @if (setting('toko_telepon'))
+                    <a href="{{ tautan_wa('Halo '.setting('toko_nama', 'Setia Sport').', saya mau bertanya.') ?: '#' }}"
+                       target="_blank" rel="noopener"
+                       class="flex items-center gap-1.5 text-white/75 hover:text-white">
+                        <x-ikon nama="whatsapp" ukuran="size-4" />
+                        <span class="tabular">{{ setting('toko_telepon') }}</span>
+                    </a>
+                @endif
+
+                @foreach ($sosial as [$ikon, $nama, $tautan])
+                    <a href="{{ $tautan }}" target="_blank" rel="noopener"
+                       class="text-white/60 hover:text-white" title="{{ $nama }}">
+                        <span class="sr-only">{{ $nama }}</span>
+                        <x-ikon :nama="$ikon" ukuran="size-4" />
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </div>
+@endif
 
 <header class="sticky top-0 z-30 border-b border-line bg-field/95 backdrop-blur"
         x-data="{ menu: false }" @keydown.escape.window="menu = false">
@@ -169,6 +212,18 @@
             <p class="mt-4 text-sm leading-relaxed text-muted">
                 Toko perlengkapan olahraga dan konveksi jersey di Wonogiri.
             </p>
+
+            @if ($sosial !== [])
+                <div class="mt-4 flex gap-2">
+                    @foreach ($sosial as [$ikon, $nama, $tautan])
+                        <a href="{{ $tautan }}" target="_blank" rel="noopener" title="{{ $nama }}"
+                           class="flex size-9 items-center justify-center rounded-[8px] border border-line text-muted transition-colors hover:border-navy-300 hover:text-navy">
+                            <span class="sr-only">{{ $nama }}</span>
+                            <x-ikon :nama="$ikon" ukuran="size-4" />
+                        </a>
+                    @endforeach
+                </div>
+            @endif
         </div>
         <div>
             <p class="text-sm font-semibold">Toko</p>
