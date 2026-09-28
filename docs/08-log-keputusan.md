@@ -1981,6 +1981,50 @@ ikon: pengunjung mengiranya akun resmi yang ditinggalkan.
 
 ---
 
+## KEP-064 — Unggahan desain diperlakukan sama seperti bukti transfer
+**Status:** TERKUNCI · 2026-09-28 (merevisi bagian PDF dari KEP-002)
+
+Klien dan yang mengembangkan sama-sama khawatir dengan opsi "Kirim desain sendiri" di
+langkah pemesanan kustom: berkas dari orang yang belum tentu dikenal, diunggah lewat
+tautan yang bisa beredar ke mana saja tanpa login. Kompetitor memakai konfigurator 3D/2D,
+tapi itu proyek terpisah yang butuh anggaran sendiri (lisensi aset, rendering, pemetaan
+pola per produk) — bukan solusi untuk kekhawatiran keamanan dan beban server yang
+sebenarnya sedang dibahas di sini.
+
+**Sistem ini sudah pernah menyelesaikan persis masalah yang sama, untuk bukti transfer
+(KEP-029), dan penjagaan itu ternyata belum diterapkan ke unggahan desain.** Bukan
+kebetulan: keduanya sama-sama berkas dari pemegang tautan pesanan, tanpa akun. Yang
+diterapkan di sini adalah penjagaan yang sama persis, dipasang di jalur yang terlewat:
+
+1. **Hanya gambar, di-encode ulang oleh GD** (`PengunggahGambar`, sudah dipakai untuk foto
+   produk, portofolio, QRIS, dan bukti transfer). Metadata terbuang, dan berkas yang
+   menyamar sebagai gambar tidak selamat dari proses itu. **PDF ditolak** karena tidak
+   bisa diperlakukan sama — ini merevisi KEP-002, yang dulu mengizinkan PDF di jalur ini.
+2. **Dibatasi enam unggahan per sepuluh menit per alamat IP**, sama seperti bukti
+   transfer. Tanpa batas, siapa pun yang memegang satu tautan pesanan bisa memenuhi disk
+   hosting.
+3. **File mentah siap cetak tetap tidak pernah diunggah ke sistem** (KEP-002 tidak
+   berubah di bagian ini). AI, PSD, CDR — dan sekarang PDF — ditukar lewat tautan Google
+   Drive yang sudah ada di formulir yang sama. Yang masuk sistem betul-betul hanya
+   preview untuk dilihat di layar, bukan file kerja desainer.
+
+**Diterapkan di dua tempat**, karena keduanya sama-sama menyimpan berkas mentah tanpa
+kompresi: unggahan pelanggan (`PesananItemController::unggahDesain`, publik, tanpa akun)
+dan unggahan mockup oleh desainer (`MockupController::store`, staf, sudah login).
+Yang kedua risikonya lebih rendah — hanya staf dengan izin `produksi.desain` yang bisa
+memakainya — tapi kode dan alasannya identik, dan mockup screenshot dari HP sama
+beratnya bagi disk hosting.
+
+**Kenapa tidak dipindah ke WhatsApp.** Migrasi mentah desain memang boleh lewat WA
+(KEP-002 sudah menyebutnya sebagai salah satu jalur, di samping Drive), tapi PREVIEW-nya
+sengaja tetap di sistem: itulah yang membuat riwayat revisi tercatat di satu tempat,
+tertaut ke pesanan yang benar, dan bisa dibuka ulang kapan saja tanpa menggali riwayat
+chat. Memindahkan seluruh alur ke WA berarti mengembalikan masalah yang sistem ini
+dibangun untuk menghapus: catatan berantakan, tersebar, dan tidak tertaut ke pesanan
+mana pun.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2048,3 +2092,4 @@ ikon: pengunjung mengiranya akun resmi yang ditinggalkan.
 | KEP-061 | Kesiapan tayang dihitung sendiri, dan posisi paket ikut ditampilkan | TERKUNCI |
 | KEP-062 | Halaman depan disusun ulang mengikuti rancangan klien | TERKUNCI |
 | KEP-063 | Media sosial di bilah atas dan kaki halaman | TERKUNCI |
+| KEP-064 | Unggahan desain diperlakukan sama seperti bukti transfer | TERKUNCI |

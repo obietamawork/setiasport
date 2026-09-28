@@ -72,7 +72,7 @@ Ini risiko teknis terbesar di project ini, dan sering baru disadari setelah 3 bu
 | Jenis file | Disimpan di mana |
 |---|---|
 | Foto produk, template desain, mockup preview (JPG/PNG/WebP, dikompres, ≤ 1 MB) | Disk hosting, di-cache Cloudflare |
-| Upload desain pelanggan — **hanya preview** (JPG/PNG/PDF, ≤ 10 MB) | Disk hosting |
+| Upload desain pelanggan — **hanya preview** (JPG/PNG/WebP, dikompres otomatis, ≤ 10 MB sebelum dikompres) | Disk hosting |
 | File mentah siap cetak (AI/PSD/CDR, ratusan MB) | **DI LUAR sistem** — Google Drive / WA; sistem cukup menyimpan link-nya |
 
 Ini keputusan yang harus disetujui pemilik toko, bukan keputusan teknis murni.

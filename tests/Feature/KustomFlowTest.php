@@ -200,6 +200,117 @@ class KustomFlowTest extends TestCase
         $this->assertSame(1, $item->designAssets()->where('tipe', 'MOCKUP')->count());
     }
 
+    /**
+     * Mockup diperlakukan sama seperti unggahan pelanggan (KEP-064): tidak
+     * pernah disimpan mentah. Berkas raksasa dari kamera HP tidak boleh
+     * menumpuk apa adanya di disk hosting.
+     */
+    public function test_mockup_dikecilkan_dan_dikonversi_ke_webp(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+        $aset = $item->designAssets()->where('tipe', 'MOCKUP')->firstOrFail();
+
+        // WebP bila GD mendukungnya di server ini, JPEG bila tidak.
+        $ext = function_exists('imagewebp') ? '.webp' : '.jpg';
+        $this->assertStringEndsWith($ext, $aset->path);
+
+        Storage::disk('public')->assertExists($aset->path);
+    }
+
+    /** PDF tidak bisa di-encode ulang lewat GD, jadi ditolak sejak awal (KEP-064). */
+    public function test_mockup_menolak_pdf(): void
+    {
+        $order = $this->buatPesanan(12);
+        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
+        $item = $order->items()->first();
+        $this->isiRoster($order, $item, 12);
+
+        $this->actingAs($this->staf('admin@setiasport.test'))
+            ->post(route('panel.mockup.simpan', $item), [
+                'preview' => UploadedFile::fake()->create('desain-cetak.pdf', 500, 'application/pdf'),
+            ])->assertSessionHasErrors('preview');
+
+        $this->assertSame(0, $item->designAssets()->count());
+    }
+
+    /**
+     * Kekhawatiran keamanan dan beban server dari unggahan pelanggan (KEP-064)
+     * diselesaikan dengan cara yang sama seperti bukti transfer (KEP-029): hanya
+     * gambar, di-encode ulang oleh GD, PDF ditolak. Yang punya file mentah siap
+     * cetak menempel tautan Google Drive-nya, bukan mengunggah berkasnya.
+     */
+    public function test_desain_kiriman_pelanggan_dikecilkan_dan_dikonversi_ke_webp(): void
+    {
+        $order = $this->buatPesanan(12);
+        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
+        $item = $order->items()->first();
+
+        $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
+            'berkas' => UploadedFile::fake()->image('referensi.png', 2200, 1800),
+        ])->assertSessionHas('sukses');
+
+        $aset = $item->designAssets()->where('tipe', 'UPLOAD_PELANGGAN')->firstOrFail();
+
+        $ext = function_exists('imagewebp') ? '.webp' : '.jpg';
+        $this->assertStringEndsWith($ext, $aset->path);
+
+        Storage::disk('public')->assertExists($aset->path);
+    }
+
+    public function test_pelanggan_tidak_bisa_mengunggah_pdf_sebagai_desain(): void
+    {
+        $order = $this->buatPesanan(12);
+        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
+        $item = $order->items()->first();
+
+        $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
+            'berkas' => UploadedFile::fake()->create('logo-tim.pdf', 500, 'application/pdf'),
+        ])->assertSessionHasErrors('berkas');
+
+        $this->assertSame(0, $item->designAssets()->count());
+    }
+
+    /** Tautan Google Drive tetap jalan normal: itulah tempat file mentahnya. */
+    public function test_pelanggan_tetap_bisa_kirim_tautan_drive_tanpa_berkas(): void
+    {
+        $order = $this->buatPesanan(12);
+        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
+        $item = $order->items()->first();
+
+        $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
+            'tautan' => 'https://drive.google.com/file/d/contoh',
+        ])->assertSessionHas('sukses');
+
+        $aset = $item->designAssets()->where('tipe', 'UPLOAD_PELANGGAN')->firstOrFail();
+
+        $this->assertNull($aset->path);
+        $this->assertSame('https://drive.google.com/file/d/contoh', $aset->external_url);
+    }
+
+    /**
+     * Enam unggahan per sepuluh menit per alamat IP (KEP-064), persis seperti
+     * bukti transfer (KEP-029): tanpa batas, siapa pun yang memegang satu
+     * tautan pesanan bisa memenuhi disk hosting.
+     */
+    public function test_unggah_desain_dibatasi_per_sepuluh_menit(): void
+    {
+        $order = $this->buatPesanan(12);
+        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
+        $item = $order->items()->first();
+
+        foreach (range(1, 6) as $i) {
+            $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
+                'tautan' => "https://drive.google.com/file/d/percobaan-{$i}",
+            ])->assertSessionHas('sukses');
+        }
+
+        $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
+            'tautan' => 'https://drive.google.com/file/d/percobaan-7',
+        ])->assertStatus(429);
+
+        $this->assertSame(6, $item->designAssets()->count());
+    }
+
     public function test_persetujuan_menolak_tanpa_nama_dan_pernyataan(): void
     {
         $item = $this->siapkanMenungguPersetujuan();

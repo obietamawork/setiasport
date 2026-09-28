@@ -131,11 +131,12 @@
                     <div>
                         <label for="berkas-{{ $item->id }}" class="label-form">Gambar preview</label>
                         <input type="file" id="berkas-{{ $item->id }}" name="berkas"
-                               accept=".jpg,.jpeg,.png,.pdf" class="kotak-input">
+                               accept=".jpg,.jpeg,.png,.webp" class="kotak-input">
                         <p class="mt-1 text-xs leading-relaxed text-muted">
-                            JPG, PNG, atau PDF, maksimal {{ setting('upload_maks_mb', 10) }} MB.
-                            File mentah seperti AI, PSD, atau CDR terlalu besar untuk sistem
-                            bagikan lewat tautan di bawah.
+                            JPG, PNG, atau WebP, maksimal {{ setting('upload_maks_mb', 10) }} MB.
+                            Ini cuma referensi buat desainer, bukan file cetaknya. File mentah
+                            siap cetak seperti AI, PSD, CDR, atau PDF terlalu besar untuk sistem:
+                            bagikan lewat tautan Google Drive di bawah.
                         </p>
                     </div>
                     <div>

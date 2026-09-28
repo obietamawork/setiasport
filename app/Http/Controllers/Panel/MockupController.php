@@ -7,15 +7,18 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\OrderItem;
 use App\Services\AlurDesain;
+use App\Services\PengunggahGambar;
 use App\Services\RosterPemain;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use RuntimeException;
 
 class MockupController extends Controller
 {
     public function __construct(
         private AlurDesain $desain,
         private RosterPemain $roster,
+        private PengunggahGambar $pengunggah,
     ) {}
 
     public function store(Request $request, OrderItem $item): RedirectResponse
@@ -29,12 +32,17 @@ class MockupController extends Controller
 
         $maks = (int) setting('upload_maks_mb', 10) * 1024;
 
+        // Diperlakukan sama seperti unggahan pelanggan (KEP-064): gambar di-encode
+        // ulang lewat GD, bukan disimpan mentah. Preview ini cuma dilihat lewat
+        // layar, bukan dicetak, jadi dikecilkan tidak kehilangan gunanya, dan
+        // berkas raksasa dari kamera HP tidak menumpuk di disk hosting.
         $request->validate([
-            'preview' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', "max:{$maks}"],
+            'preview' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', "max:{$maks}"],
             'tautan' => ['nullable', 'url', 'max:500'],
             'catatan' => ['nullable', 'string', 'max:500'],
         ], [
-            'preview.mimes' => 'Preview harus JPG, PNG, atau PDF. File siap cetak dibagikan lewat tautan.',
+            'preview.image' => 'Preview harus gambar (JPG, PNG, atau WebP). File siap cetak dibagikan lewat tautan.',
+            'preview.mimes' => 'Preview harus JPG, PNG, atau WebP. File siap cetak dibagikan lewat tautan.',
             'preview.max' => "Ukuran preview maksimal {$maks} KB.",
         ], ['preview' => 'preview mockup', 'tautan' => 'tautan file siap cetak']);
 
@@ -51,9 +59,19 @@ class MockupController extends Controller
             );
         }
 
+        $path = null;
+
+        if ($request->hasFile('preview')) {
+            try {
+                $path = $this->pengunggah->simpan($request->file('preview'), 'mockup', 'public', denganThumb: false)['path'];
+            } catch (RuntimeException $e) {
+                return back()->withErrors($e->getMessage());
+            }
+        }
+
         $aset = $this->desain->unggahMockup(
             $item,
-            $request->file('preview')?->store('mockup', 'public'),
+            $path,
             $request->input('tautan'),
             $request->input('catatan'),
             auth('web')->id(),

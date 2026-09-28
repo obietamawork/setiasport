@@ -118,7 +118,10 @@ Route::post('/lacak/{token}/pembatalan', [PembatalanController::class, 'ajukan']
 
 Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->group(function () {
     Route::post('roster', [PesananItemController::class, 'simpanRoster'])->name('roster');
-    Route::post('desain', [PesananItemController::class, 'unggahDesain'])->name('desain');
+    // Berkas gambar, sama seperti bukti transfer (KEP-029): tanpa batas, siapa
+    // pun yang memegang satu tautan pesanan bisa memenuhi disk hosting.
+    Route::post('desain', [PesananItemController::class, 'unggahDesain'])
+        ->middleware('throttle:6,10')->name('desain');
     Route::post('setujui', [PesananItemController::class, 'setujuiDesain'])->name('setujui');
     Route::post('revisi', [PesananItemController::class, 'mintaRevisi'])->name('revisi');
 });

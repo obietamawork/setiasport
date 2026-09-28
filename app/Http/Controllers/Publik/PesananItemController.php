@@ -8,9 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\AlurDesain;
+use App\Services\PengunggahGambar;
 use App\Services\RosterPemain;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use RuntimeException;
 
 /**
  * Tindakan pelanggan atas satu baris pesanannya, diakses lewat tautan bertoken
@@ -21,6 +23,7 @@ class PesananItemController extends Controller
     public function __construct(
         private RosterPemain $roster,
         private AlurDesain $desain,
+        private PengunggahGambar $pengunggah,
     ) {}
 
     private function item(string $token, OrderItem $item): OrderItem
@@ -90,7 +93,20 @@ class PesananItemController extends Controller
         return back()->with('sukses', 'Permintaan revisi terkirim ke desainer.');
     }
 
-    /** Pelanggan mengirim desainnya sendiri: hanya preview yang masuk sistem (KEP-002). */
+    /**
+     * Pelanggan mengirim desainnya sendiri: hanya preview yang masuk sistem (KEP-002).
+     *
+     * Diperlakukan sama seperti bukti transfer (KEP-029), karena bahayanya sama persis:
+     * berkas dari orang tak dikenal, lewat tautan yang bisa beredar di luar kendali
+     * toko, tanpa login. Tiga penjagaan yang sama dipasang di sini:
+     * 1. Hanya gambar, dan gambarnya di-ENCODE ULANG oleh GD (lihat PengunggahGambar).
+     *    Metadata terbuang, dan berkas yang menyamar sebagai gambar tidak selamat dari
+     *    proses itu. PDF ditolak karena tidak bisa diperlakukan sama.
+     * 2. Dibatasi enam unggahan per sepuluh menit per alamat IP (lihat routes/web.php).
+     * 3. File mentah siap cetak (AI/PSD/CDR) tidak pernah diunggah ke sini sama sekali;
+     *    pelanggan menempelkan tautan Google Drive-nya, dan sistem hanya menyimpan
+     *    tautan itu (KEP-002, KEP-064).
+     */
     public function unggahDesain(Request $request, string $token, OrderItem $item): RedirectResponse
     {
         $item = $this->item($token, $item);
@@ -100,18 +116,32 @@ class PesananItemController extends Controller
         $maks = (int) setting('upload_maks_mb', 10) * 1024;
 
         $request->validate([
-            'berkas' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', "max:{$maks}"],
+            'berkas' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', "max:{$maks}"],
             'tautan' => ['nullable', 'url', 'max:500'],
             'catatan' => ['nullable', 'string', 'max:500'],
         ], [
-            'berkas.mimes' => 'Kirim gambar (JPG/PNG) atau PDF. File mentah seperti AI, PSD, '
-                .'atau CDR terlalu besar untuk sistem: bagikan lewat tautan Google Drive.',
-            'berkas.max' => "Ukuran berkas maksimal {$maks} KB.",
+            'berkas.image' => 'Kirim gambar preview-nya (JPG, PNG, atau WebP), bukan berkas lain.',
+            'berkas.mimes' => 'Kirim gambar preview-nya (JPG, PNG, atau WebP). File mentah siap cetak '
+                .'seperti AI, PSD, CDR, atau PDF terlalu besar untuk sistem ini: bagikan lewat tautan '
+                .'Google Drive di bawah.',
+            'berkas.max' => "Ukuran gambar maksimal {$maks} KB.",
             'tautan.url' => 'Tautan harus lengkap, diawali https://',
         ], ['berkas' => 'berkas desain', 'tautan' => 'tautan Google Drive']);
 
         if (! $request->hasFile('berkas') && ! $request->filled('tautan')) {
             return back()->withErrors('Unggah gambar preview atau tempelkan tautan Google Drive-nya.');
+        }
+
+        $path = null;
+
+        if ($request->hasFile('berkas')) {
+            try {
+                // Tanpa thumbnail: ini preview kerja desainer, bukan kartu katalog
+                // yang butuh dua ukuran.
+                $path = $this->pengunggah->simpan($request->file('berkas'), 'desain', 'public', denganThumb: false)['path'];
+            } catch (RuntimeException $e) {
+                return back()->withErrors($e->getMessage());
+            }
         }
 
         $versi = (int) $item->designAssets()
@@ -121,7 +151,7 @@ class PesananItemController extends Controller
         $item->designAssets()->create([
             'tipe' => DesignAssetType::UPLOAD_PELANGGAN,
             'versi' => $versi,
-            'path' => $request->file('berkas')?->store('desain', 'public'),
+            'path' => $path,
             'external_url' => $request->input('tautan'),
             'catatan' => $request->input('catatan'),
         ]);
