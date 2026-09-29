@@ -21,22 +21,27 @@ class GambarProdukController extends Controller
     {
         $maks = (int) setting('upload_maks_mb', 10) * 1024;
 
-        // Daftar warna yang boleh ditandai dibatasi ke warna varian yang
-        // benar-benar ada (KEP-066), supaya staf memilih dari kotak, bukan
-        // mengetik, dan salah ketik tidak diam-diam membuat gambar tidak
-        // pernah cocok dengan tombol warna di halaman produk.
+        // Daftar warna dan pilihan kustom yang boleh ditandai dibatasi ke yang
+        // benar-benar ada pada produk ini (KEP-066): warna dari varian ready
+        // stock, nilai pilihan dari opsi kustom (bahan, kerah, dst). Staf
+        // memilih dari kotak, tidak mengetik, supaya salah ketik tidak
+        // diam-diam membuat gambar tidak pernah cocok dengan pilihan di
+        // halaman produk.
         $warnaTersedia = $produk->variants->pluck('warna')->filter()->unique()->values();
+        $nilaiOpsiTersedia = $produk->options->flatMap(fn ($o) => $o->values->pluck('id'));
 
         $request->validate([
             'berkas' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', "max:{$maks}"],
             'external_url' => ['nullable', 'url', 'max:500'],
             'alt' => ['nullable', 'string', 'max:150'],
             'warna' => ['nullable', 'string', Rule::in($warnaTersedia)],
+            'option_value_id' => ['nullable', 'integer', Rule::in($nilaiOpsiTersedia)],
         ], [
             'berkas.mimes' => 'Gambar harus JPG, PNG, atau WebP.',
             'berkas.max' => "Ukuran gambar maksimal {$maks} KB.",
             'external_url.url' => 'Tautan gambar harus lengkap, diawali https://',
             'warna.in' => 'Warna itu bukan salah satu varian produk ini.',
+            'option_value_id.in' => 'Pilihan itu bukan salah satu opsi kustom produk ini.',
         ], ['berkas' => 'berkas gambar', 'external_url' => 'tautan gambar', 'alt' => 'keterangan gambar']);
 
         if (! $request->hasFile('berkas') && ! $request->filled('external_url')) {
@@ -49,6 +54,7 @@ class GambarProdukController extends Controller
             'alt' => $request->input('alt') ?: $produk->nama,
             'urutan' => (int) $produk->images()->max('urutan') + 1,
             'warna' => $request->input('warna') ?: null,
+            'option_value_id' => $request->input('option_value_id') ?: null,
         ];
 
         if ($request->hasFile('berkas')) {

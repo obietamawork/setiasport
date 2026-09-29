@@ -168,6 +168,62 @@ class GambarProdukTest extends TestCase
             ->assertSee($kutip.'Merah'.$kutip.':1', false);
     }
 
+    private function jersey(): Product
+    {
+        return Product::where('sku', 'JRS-FUTSAL-FP')->with('options.values')->firstOrFail();
+    }
+
+    private function nilaiOpsi(Product $produk, string $opsi, string $label): int
+    {
+        return $produk->options->firstWhere('nama', $opsi)->values->firstWhere('label', $label)->id;
+    }
+
+    public function test_gambar_bisa_ditandai_mewakili_satu_pilihan_kustom(): void
+    {
+        $jersey = $this->jersey();
+        $vneck = $this->nilaiOpsi($jersey, 'Kerah', 'V-neck');
+
+        $this->post(route('panel.produk.gambar.simpan', $jersey), [
+            'external_url' => 'https://cdn.contoh.com/kerah-vneck.webp',
+            'option_value_id' => $vneck,
+        ])->assertSessionHas('sukses');
+
+        $this->assertSame($vneck, $jersey->images()->firstOrFail()->option_value_id);
+    }
+
+    public function test_pilihan_yang_bukan_opsi_produk_ditolak(): void
+    {
+        $jersey = $this->jersey();
+
+        // Bukan ID nilai opsi yang benar-benar dimiliki produk ini —
+        // penjagaannya per produk, bukan sekadar per keberadaan baris.
+        $this->post(route('panel.produk.gambar.simpan', $jersey), [
+            'external_url' => 'https://cdn.contoh.com/asal.webp',
+            'option_value_id' => 999999,
+        ])->assertSessionHasErrors('option_value_id');
+
+        $this->assertSame(0, $jersey->images()->count());
+    }
+
+    public function test_halaman_produk_mengirim_peta_pilihan_kustom_ke_galeri(): void
+    {
+        $jersey = $this->jersey();
+        $vneck = $this->nilaiOpsi($jersey, 'Kerah', 'V-neck');
+
+        $this->post(route('panel.produk.gambar.simpan', $jersey), [
+            'external_url' => 'https://cdn.contoh.com/oneck.webp',
+        ]);
+        $this->post(route('panel.produk.gambar.simpan', $jersey), [
+            'external_url' => 'https://cdn.contoh.com/vneck.webp',
+            'option_value_id' => $vneck,
+        ]);
+
+        $kutip = '\\u0022';
+        $this->get(route('produk', $jersey))
+            ->assertOk()
+            ->assertSee($kutip.$vneck.$kutip.':1', false);
+    }
+
     public function test_menghapus_gambar_ikut_membuang_berkasnya(): void
     {
         $produk = $this->produk();

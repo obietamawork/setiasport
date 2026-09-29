@@ -44,8 +44,12 @@
                     <span class="font-normal text-muted">(opsional)</span>
                 @endunless
             </label>
+            {{-- @change men-dispatch nilai yang baru dipilih (KEP-066): galeri
+                 gambar adalah komponen Alpine terpisah, event window satu-satunya
+                 jalan memberitahunya nilai opsi baru dipilih. --}}
             <select id="opsi-{{ $opsi->id }}" name="opsi[{{ $opsi->id }}]"
-                    x-model.number="pilihan[{{ $opsi->id }}]" class="kotak-input">
+                    x-model.number="pilihan[{{ $opsi->id }}]" class="kotak-input"
+                    @change="$dispatch('opsi-dipilih', pilihan[{{ $opsi->id }}])">
                 @unless ($opsi->wajib)
                     <option value="">Tidak dipakai</option>
                 @endunless
@@ -126,6 +130,16 @@
                 pilihan: Object.fromEntries(
                     opsi.map(o => [o.id, o.wajib ? (o.values[0]?.id ?? '') : ''])
                 ),
+
+                init() {
+                    // Opsi wajib sudah terisi nilai pertamanya sejak halaman
+                    // dibuka; galeri gambar perlu tahu supaya foto yang tampil
+                    // sudah sesuai sejak awal, bukan baru setelah pelanggan
+                    // mengubah pilihan.
+                    Object.values(this.pilihan).forEach(id => {
+                        if (id) this.$dispatch('opsi-dipilih', id);
+                    });
+                },
 
                 rp(n) {
                     return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n || 0));

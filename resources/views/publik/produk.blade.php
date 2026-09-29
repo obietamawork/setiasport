@@ -23,13 +23,19 @@
         'stok' => $v->stok_tersedia,
     ])->values();
 
-    // Warna -> indeks gambar (KEP-066), dipakai galeri untuk ikut berganti
-    // begitu pelanggan memilih warna, seperti kebiasaan marketplace. Gambar
-    // pertama yang menandai warna itu yang dipakai kalau lebih dari satu.
+    // Warna -> indeks gambar, dan nilai opsi kustom -> indeks gambar (KEP-066).
+    // Dua peta terpisah karena dua sistem varian yang berbeda: warna dari
+    // varian ready stock, nilai opsi dari konfigurator kustom (bahan, kerah,
+    // dst). Gambar pertama yang menandai suatu warna/pilihan yang dipakai
+    // kalau lebih dari satu ditandai sama.
     $gambarPerWarna = [];
+    $gambarPerOpsi = [];
     foreach ($produk->images as $i => $g) {
         if ($g->warna && ! isset($gambarPerWarna[$g->warna])) {
             $gambarPerWarna[$g->warna] = $i;
+        }
+        if ($g->option_value_id && ! isset($gambarPerOpsi[$g->option_value_id])) {
+            $gambarPerOpsi[$g->option_value_id] = $i;
         }
     }
 @endphp
@@ -63,11 +69,12 @@
         <div class="contents lg:flex lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-8">
         <div class="min-w-0">
             @if ($produk->images->isNotEmpty())
-                {{-- gambarPerWarna dikirim dari server (KEP-066); event
-                     'warna-dipilih' datang dari kotak pilihan warna di kotak
+                {{-- gambarPerWarna/gambarPerOpsi dikirim dari server (KEP-066);
+                     event 'warna-dipilih' dan 'opsi-dipilih' datang dari kotak
                      beli, komponen Alpine yang berbeda di bagian lain halaman. --}}
-                <div x-data="{ aktif: 0, gambarPerWarna: @js($gambarPerWarna) }"
-                     @warna-dipilih.window="if ($event.detail in gambarPerWarna) aktif = gambarPerWarna[$event.detail]">
+                <div x-data="{ aktif: 0, gambarPerWarna: @js($gambarPerWarna), gambarPerOpsi: @js($gambarPerOpsi) }"
+                     @warna-dipilih.window="if ($event.detail in gambarPerWarna) aktif = gambarPerWarna[$event.detail]"
+                     @opsi-dipilih.window="if ($event.detail in gambarPerOpsi) aktif = gambarPerOpsi[$event.detail]">
                     <div class="kartu relative aspect-4/3 overflow-hidden bg-navy-50">
                         @foreach ($produk->images as $g)
                             <img x-show="aktif === {{ $loop->index }}" src="{{ $g->url }}"

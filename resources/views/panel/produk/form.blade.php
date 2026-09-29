@@ -241,6 +241,11 @@
                             @if ($g->warna)
                                 <span class="chip chip-netral">Warna: {{ $g->warna }}</span>
                             @endif
+                            @if ($g->optionValue)
+                                <span class="chip chip-netral">
+                                    {{ $g->optionValue->option->nama }}: {{ $g->optionValue->label }}
+                                </span>
+                            @endif
                             @if ($g->lebar)
                                 <span class="tabular text-xs text-muted">{{ $g->lebar }}px</span>
                             @endif
@@ -320,6 +325,26 @@
                     <p class="bantuan-form">
                         Kalau diisi, gambar ini otomatis tampil begitu pelanggan memilih warna
                         itu di halaman produk &mdash; seperti toko online pada umumnya.
+                    </p>
+                </div>
+            @endif
+
+            @if ($produk->options->isNotEmpty())
+                <div>
+                    <label for="option_value_id" class="label-form">Mewakili pilihan kustom (opsional)</label>
+                    <select id="option_value_id" name="option_value_id" class="kotak-input">
+                        <option value="">Semua pilihan / bukan foto pilihan tertentu</option>
+                        @foreach ($produk->options as $opsi)
+                            <optgroup label="{{ $opsi->nama }}">
+                                @foreach ($opsi->values as $v)
+                                    <option value="{{ $v->id }}">{{ $v->label }}</option>
+                                @endforeach
+                            </optgroup>
+                        @endforeach
+                    </select>
+                    <p class="bantuan-form">
+                        Untuk produk kustom: misalnya foto contoh kerah V-neck, atau warna bahan
+                        Hyget. Otomatis tampil begitu pelanggan memilih pilihan itu.
                     </p>
                 </div>
             @endif

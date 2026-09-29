@@ -279,11 +279,14 @@ sebelahnya.
   (`md:` ke atas), memakai `max-w-0` yang membesar lewat `group-hover`. HP
   tidak berubah karena tidak punya konsep hover.
 
-### Gambar produk mengikuti warna yang dipilih (KEP-066)
+### Gambar produk mengikuti varian yang dipilih (KEP-066)
 
 Fitur baru, bukan bug: klien membandingkan dengan marketplace yang mengganti
-foto begitu pembeli memilih warna. Rincian keputusan dan alasan teknisnya ada
-di [08-log-keputusan.md](08-log-keputusan.md#kep-066--gambar-produk-bisa-ditandai-mewakili-satu-warna).
+foto begitu pembeli memilih warna — lalu menegaskan itu bukan cuma soal warna,
+produk kustom juga punya pilihan (kerah, bahan) yang tampilannya beda-beda.
+Berlaku untuk keduanya: warna varian ready stock, dan nilai opsi kustom.
+Rincian keputusan dan alasan teknisnya ada di
+[08-log-keputusan.md](08-log-keputusan.md#kep-066--gambar-produk-bisa-ditandai-mewakili-satu-varian).
 
 ## Aturan yang dipegang selanjutnya
 

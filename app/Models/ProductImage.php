@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Storage;
 class ProductImage extends Model
 {
     protected $fillable = [
-        'product_id', 'path', 'external_url', 'thumb_path', 'lebar', 'tinggi', 'alt', 'urutan', 'warna',
+        'product_id', 'path', 'external_url', 'thumb_path', 'lebar', 'tinggi', 'alt', 'urutan',
+        'warna', 'option_value_id',
     ];
 
     protected function casts(): array
@@ -20,6 +21,11 @@ class ProductImage extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function optionValue(): BelongsTo
+    {
+        return $this->belongsTo(OptionValue::class);
     }
 
     /**

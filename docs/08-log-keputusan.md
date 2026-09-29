@@ -2065,32 +2065,43 @@ Langkah pembuatannya ditulis untuk pemilik toko sendiri, bukan pengembang:
 
 ---
 
-## KEP-066 — Gambar produk bisa ditandai mewakili satu warna
+## KEP-066 — Gambar produk bisa ditandai mewakili satu varian
 **Status:** TERKUNCI · 2026-09-29
 
 Produk ready stock dengan varian warna (sepatu, jersey polos, dll) selama ini hanya
 menampilkan satu galeri gambar yang sama berapa pun warna yang dipilih pelanggan —
 berbeda dari kebiasaan marketplace, di mana memilih warna langsung mengganti fotonya.
+Klien menegaskan ini bukan cuma soal warna: produk kustom juga punya pilihan yang
+tampilannya beda-beda (potongan kerah, jenis bahan), dan foto contohnya sama
+berharganya di sana.
 
-**Keputusan:** kolom `warna` ditambahkan ke `product_images`, diisi opsional saat staf
-menambah gambar. Di halaman produk, memilih warna men-dispatch event Alpine
-(`warna-dipilih`) yang didengarkan galeri gambar untuk berpindah ke gambar yang
-ditandai warna itu, kalau ada. Tanpa gambar yang ditandai, galeri tidak berubah —
-bukan galeri terpisah per warna, jadi produk tanpa foto per-warna tidak terpengaruh
-sama sekali.
+**Keputusan:** dua kolom nullable ditambahkan ke `product_images` — `warna` (string)
+dan `option_value_id` (foreign key ke `option_values`) — karena sistem ini memang
+punya dua mekanisme varian yang terpisah:
 
-**Kenapa dropdown, bukan kotak teks.** Pilihan warna di formulir unggah gambar dibatasi
-ke warna varian yang benar-benar ada pada produk itu (`Rule::in`), diambil langsung dari
-tabel varian. Staf memilih dari kotak, tidak mengetik — salah ketik ("Merah " dengan
-spasi, atau "merah" huruf kecil) akan diam-diam membuat gambar itu tidak pernah cocok
-dengan tombol warna manapun, dan gejalanya (galeri tidak berganti) tidak jelas
-penyebabnya dari sisi staf. Produk tanpa varian warna sama sekali tidak menampilkan
-kolom ini — tidak ada gunanya, dan tidak membingungkan.
+- **`warna`**, untuk produk ready stock, bersumber dari `product_variants.warna`
+  (kotak pilihan warna di halaman produk, KEP-045).
+- **`option_value_id`**, untuk produk kustom, bersumber dari `ProductOption` /
+  `OptionValue` (dropdown Bahan/Lengan/Kerah/Celana/Nameset di konfigurator).
 
-**Alur staf:** unggah gambar seperti biasa, pilih warna dari dropdown "Mewakili warna"
-kalau foto itu memang mewakili warna tertentu, kosongkan kalau tidak (foto umum, atau
-produk tanpa varian warna). Tidak ada langkah tambahan di luar formulir unggah yang
-sudah ada.
+Keduanya independen dan boleh dipakai sekaligus pada produk hybrid — gambar hanya
+butuh salah satu yang cocok untuk ikut tampil. Di halaman produk, memilih warna atau
+mengubah dropdown opsi sama-sama men-dispatch event Alpine (`warna-dipilih` /
+`opsi-dipilih`) yang didengarkan galeri gambar untuk berpindah ke gambar yang
+ditandai, kalau ada. Tanpa gambar yang ditandai, galeri tidak berubah — bukan galeri
+terpisah per varian, jadi produk tanpa foto per-varian tidak terpengaruh sama sekali.
+
+**Kenapa dropdown, bukan kotak teks.** Pilihan warna dan pilihan opsi di formulir
+unggah gambar dibatasi ke yang benar-benar ada pada produk itu (`Rule::in`), diambil
+langsung dari varian/opsi produk. Staf memilih dari kotak, tidak mengetik — salah
+ketik ("Merah " dengan spasi, atau "merah" huruf kecil) akan diam-diam membuat
+gambar itu tidak pernah cocok dengan pilihan manapun, dan gejalanya (galeri tidak
+berganti) tidak jelas penyebabnya dari sisi staf. Kolom yang tidak relevan (produk
+tanpa varian warna, atau tanpa opsi kustom) tidak ditampilkan sama sekali.
+
+**Alur staf:** unggah gambar seperti biasa, pilih warna dan/atau pilihan kustom yang
+diwakilinya kalau foto itu memang spesifik, kosongkan kalau tidak (foto umum). Tidak
+ada langkah tambahan di luar formulir unggah yang sudah ada.
 
 ---
 
@@ -2163,4 +2174,4 @@ sudah ada.
 | KEP-063 | Media sosial di bilah atas dan kaki halaman | TERKUNCI |
 | KEP-064 | Unggahan desain diperlakukan sama seperti bukti transfer | TERKUNCI |
 | KEP-065 | Tautan unggah file besar, disediakan toko sendiri | TERKUNCI |
-| KEP-066 | Gambar produk bisa ditandai mewakili satu warna | TERKUNCI |
+| KEP-066 | Gambar produk bisa ditandai mewakili satu varian (warna/opsi) | TERKUNCI |
