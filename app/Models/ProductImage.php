@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 class ProductImage extends Model
 {
     protected $fillable = [
-        'product_id', 'path', 'external_url', 'thumb_path', 'lebar', 'tinggi', 'alt', 'urutan',
+        'product_id', 'path', 'external_url', 'thumb_path', 'lebar', 'tinggi', 'alt', 'urutan', 'warna',
     ];
 
     protected function casts(): array

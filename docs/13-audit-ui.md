@@ -240,6 +240,51 @@ Sapuan otorisasi atas seluruh route panel (`izin:` middleware terpusat di
 serta kecocokan `order_id` di setiap route bertoken/berparameter item —
 semuanya konsisten dan tidak ditemukan celah baru.
 
+## Putaran kelima: revisi klien atas halaman depan dan produk
+
+### Area kosong raksasa di halaman produk (kritis)
+
+Dilaporkan klien lewat tangkapan layar: ada jarak kosong besar di bawah foto
+produk, sebelum tabel "Pilihan untuk pesanan kustom". Penyebabnya tata letak
+grid dua kolom lama — kotak beli (kanan) memakai `row-span-2` melintasi baris
+gambar dan baris spesifikasi (kiri) supaya bisa disisipkan di antara keduanya
+saat tampilan HP menyusun ulang jadi gambar → kotak beli → spesifikasi.
+
+Masalahnya: spesifikasi CSS Grid membesarkan track baris `auto` yang dilintasi
+supaya cukup menampung elemen yang melintang, dan kotak beli produk kustom ini
+jauh lebih tinggi daripada gambar produknya sendiri (banyak kolom pilihan:
+bahan, lengan, kerah, celana, nameset, setup desain). Selisihnya tampil sebagai
+ruang kosong di bawah gambar. `grid-auto-rows: min-content` **tidak menutup**
+celah ini di Chrome — diverifikasi lewat percobaan langsung, bukan diasumsikan
+dari dokumentasi spesifikasi.
+
+**Diperbaiki:** ditata ulang jadi flexbox. Gambar dan spesifikasi dibungkus
+satu elemen (`display: contents` di bawah `lg`, `flex flex-col` di atasnya)
+supaya keduanya ikut tersusun sebagai satu kolom flex di layar lebar, sementara
+di HP pembungkusnya "tembus" dan urutan `order-1/2/3` tetap menyisipkan kotak
+beli di antara gambar dan spesifikasi. Flexbox tidak punya konsep "track"
+yang dipaksa menyamai tinggi elemen lain, jadi kolom yang lebih pendek
+berhenti begitu isinya habis, tidak dipaksa mengisi ruang setinggi kolom
+sebelahnya.
+
+### Kategori, ikon sosial, dan keranjang dipoles
+
+- **Grid kategori dikecilkan**: 2/3/6 kolom (HP/tablet/desktop) menjadi
+  3/4/6, kartunya lebih rapat mengikuti masukan klien.
+- **Ikon Instagram/TikTok nyaris tak terlihat** di kaki halaman (garis tipis
+  abu di atas kartu terang). Diganti kotak navy solid — tetap satu warna
+  bermerek toko, bukan warna resmi Instagram/TikTok yang akan pecah dari
+  palet situs.
+- **Teks "Keranjang" muncul meluncur saat ikon di-hover** di layar besar
+  (`md:` ke atas), memakai `max-w-0` yang membesar lewat `group-hover`. HP
+  tidak berubah karena tidak punya konsep hover.
+
+### Gambar produk mengikuti warna yang dipilih (KEP-066)
+
+Fitur baru, bukan bug: klien membandingkan dengan marketplace yang mengganti
+foto begitu pembeli memilih warna. Rincian keputusan dan alasan teknisnya ada
+di [08-log-keputusan.md](08-log-keputusan.md#kep-066--gambar-produk-bisa-ditandai-mewakili-satu-warna).
+
 ## Aturan yang dipegang selanjutnya
 
 1. **Ukur, jangan kira.** Setiap layar baru diperiksa `scrollWidth`-nya di 375px.
@@ -258,3 +303,9 @@ semuanya konsisten dan tidak ditemukan celah baru.
    dipakai berjam-jam tiap hari tidak boleh menuntut penyesuaian ulang.
 10. **Formulir yang jarang dipakai dilipat**, dan tindakan berisiko diletakkan
     di zona tersendiri yang diredam.
+11. **Kolom bertinggi tidak sama tidak pernah dipaksa lewat `row-span` grid.**
+    Baris `auto` yang dilintangi membesar mengikuti elemen tertinggi meski
+    `grid-auto-rows: min-content` dicoba, menyisakan ruang kosong di elemen
+    yang lebih pendek. Pakai flexbox (`display: contents` di breakpoint
+    sempit kalau urutan harus tetap bisa disisipkan) untuk kolom yang
+    tingginya wajar berbeda.

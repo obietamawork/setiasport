@@ -238,6 +238,9 @@
                             <span class="chip {{ $g->dariCdn() ? 'chip-kuning' : 'chip-netral' }}">
                                 {{ $g->dariCdn() ? 'CDN' : 'Diunggah' }}
                             </span>
+                            @if ($g->warna)
+                                <span class="chip chip-netral">Warna: {{ $g->warna }}</span>
+                            @endif
                             @if ($g->lebar)
                                 <span class="tabular text-xs text-muted">{{ $g->lebar }}px</span>
                             @endif
@@ -303,6 +306,23 @@
                        placeholder="{{ $produk->nama }}">
                 <p class="bantuan-form">Dibaca pembaca layar dan mesin pencari. Boleh dikosongkan.</p>
             </div>
+
+            @php $warnaVarian = $produk->variants->pluck('warna')->filter()->unique()->sort()->values(); @endphp
+            @if ($warnaVarian->isNotEmpty())
+                <div>
+                    <label for="warna" class="label-form">Mewakili warna (opsional)</label>
+                    <select id="warna" name="warna" class="kotak-input">
+                        <option value="">Semua warna / bukan foto warna tertentu</option>
+                        @foreach ($warnaVarian as $w)
+                            <option value="{{ $w }}">{{ $w }}</option>
+                        @endforeach
+                    </select>
+                    <p class="bantuan-form">
+                        Kalau diisi, gambar ini otomatis tampil begitu pelanggan memilih warna
+                        itu di halaman produk &mdash; seperti toko online pada umumnya.
+                    </p>
+                </div>
+            @endif
 
             <div class="sm:col-span-2">
                 <button type="submit" class="tombol tombol-navy">Tambah gambar</button>

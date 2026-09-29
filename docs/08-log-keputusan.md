@@ -2065,6 +2065,35 @@ Langkah pembuatannya ditulis untuk pemilik toko sendiri, bukan pengembang:
 
 ---
 
+## KEP-066 — Gambar produk bisa ditandai mewakili satu warna
+**Status:** TERKUNCI · 2026-09-29
+
+Produk ready stock dengan varian warna (sepatu, jersey polos, dll) selama ini hanya
+menampilkan satu galeri gambar yang sama berapa pun warna yang dipilih pelanggan —
+berbeda dari kebiasaan marketplace, di mana memilih warna langsung mengganti fotonya.
+
+**Keputusan:** kolom `warna` ditambahkan ke `product_images`, diisi opsional saat staf
+menambah gambar. Di halaman produk, memilih warna men-dispatch event Alpine
+(`warna-dipilih`) yang didengarkan galeri gambar untuk berpindah ke gambar yang
+ditandai warna itu, kalau ada. Tanpa gambar yang ditandai, galeri tidak berubah —
+bukan galeri terpisah per warna, jadi produk tanpa foto per-warna tidak terpengaruh
+sama sekali.
+
+**Kenapa dropdown, bukan kotak teks.** Pilihan warna di formulir unggah gambar dibatasi
+ke warna varian yang benar-benar ada pada produk itu (`Rule::in`), diambil langsung dari
+tabel varian. Staf memilih dari kotak, tidak mengetik — salah ketik ("Merah " dengan
+spasi, atau "merah" huruf kecil) akan diam-diam membuat gambar itu tidak pernah cocok
+dengan tombol warna manapun, dan gejalanya (galeri tidak berganti) tidak jelas
+penyebabnya dari sisi staf. Produk tanpa varian warna sama sekali tidak menampilkan
+kolom ini — tidak ada gunanya, dan tidak membingungkan.
+
+**Alur staf:** unggah gambar seperti biasa, pilih warna dari dropdown "Mewakili warna"
+kalau foto itu memang mewakili warna tertentu, kosongkan kalau tidak (foto umum, atau
+produk tanpa varian warna). Tidak ada langkah tambahan di luar formulir unggah yang
+sudah ada.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2134,3 +2163,4 @@ Langkah pembuatannya ditulis untuk pemilik toko sendiri, bukan pengembang:
 | KEP-063 | Media sosial di bilah atas dan kaki halaman | TERKUNCI |
 | KEP-064 | Unggahan desain diperlakukan sama seperti bukti transfer | TERKUNCI |
 | KEP-065 | Tautan unggah file besar, disediakan toko sendiri | TERKUNCI |
+| KEP-066 | Gambar produk bisa ditandai mewakili satu warna | TERKUNCI |

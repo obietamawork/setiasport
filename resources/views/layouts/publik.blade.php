@@ -71,7 +71,7 @@
 
                 @foreach ($sosial as [$ikon, $nama, $tautan])
                     <a href="{{ $tautan }}" target="_blank" rel="noopener"
-                       class="text-white/60 hover:text-white" title="{{ $nama }}">
+                       class="text-white/80 hover:text-white" title="{{ $nama }}">
                         <span class="sr-only">{{ $nama }}</span>
                         <x-ikon :nama="$ikon" ukuran="size-4" />
                     </a>
@@ -112,14 +112,20 @@
              Berupa ikon supaya muat berdampingan dengan tombol masuk di layar
              HP; namanya tetap terbaca pembaca layar dan muncul sebagai tooltip. --}}
         <a href="{{ route('keranjang') }}" title="Keranjang"
-           class="relative ml-auto rounded-[7px] p-2 text-muted transition-colors hover:bg-navy-50 hover:text-ink md:ml-2">
+           class="group relative ml-auto flex items-center rounded-[7px] p-2 text-muted transition-colors hover:bg-navy-50 hover:text-ink md:ml-2">
             <span class="sr-only">Keranjang</span>
-            <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            <svg class="size-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L20 7H6" />
                 <circle cx="10" cy="19.5" r="1.3" />
                 <circle cx="17" cy="19.5" r="1.3" />
             </svg>
+            {{-- Teks muncul meluncur hanya di layar yang punya hover sungguhan;
+                 di HP ikon saja sudah cukup jelas dan tidak ada gunanya hover. --}}
+            <span aria-hidden="true"
+                  class="hidden max-w-0 overflow-hidden text-sm font-semibold whitespace-nowrap transition-all duration-200 md:inline-block md:group-hover:ml-1.5 md:group-hover:max-w-24">
+                Keranjang
+            </span>
             @if ($isiKeranjang)
                 <span class="tabular absolute -top-0.5 -right-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-merah px-1 text-xs font-semibold text-white">
                     {{ $isiKeranjang }}
@@ -215,9 +221,12 @@
 
             @if ($sosial !== [])
                 <div class="mt-4 flex gap-2">
+                    {{-- Ikon bergaris tipis nyaris tak terlihat di kartu terang; latar
+                         navy membuatnya jelas tanpa memakai warna merek pihak lain,
+                         yang justru akan pecah dari palet situs. --}}
                     @foreach ($sosial as [$ikon, $nama, $tautan])
                         <a href="{{ $tautan }}" target="_blank" rel="noopener" title="{{ $nama }}"
-                           class="flex size-9 items-center justify-center rounded-[8px] border border-line text-muted transition-colors hover:border-navy-300 hover:text-navy">
+                           class="flex size-9 items-center justify-center rounded-[8px] bg-navy text-white transition-colors hover:bg-navy-800">
                             <span class="sr-only">{{ $nama }}</span>
                             <x-ikon :nama="$ikon" ukuran="size-4" />
                         </a>

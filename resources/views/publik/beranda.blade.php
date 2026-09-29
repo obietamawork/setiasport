@@ -103,7 +103,7 @@
         <a href="{{ route('katalog') }}" class="tautan text-sm font-medium">Lihat semua &rarr;</a>
     </div>
 
-    <div class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div class="mt-7 grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 lg:grid-cols-6">
         @foreach ($kategori as $k)
             <a href="{{ route('katalog', ['kategori' => $k->slug]) }}"
                class="kartu kartu-tautan group overflow-hidden text-center">
@@ -112,12 +112,12 @@
                         <img src="{{ $k->gambar->thumb_url }}" alt="{{ $k->nama }}" loading="lazy" decoding="async"
                              class="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-105">
                     @else
-                        <span class="absolute inset-0 flex items-center justify-center text-xl font-extrabold text-navy-300">
+                        <span class="absolute inset-0 flex items-center justify-center text-lg font-extrabold text-navy-300">
                             {{ Str::upper(Str::substr($k->nama, 0, 2)) }}
                         </span>
                     @endif
                 </div>
-                <p class="px-2 py-3 text-sm font-semibold">{{ $k->nama }}</p>
+                <p class="px-1.5 py-2 text-xs font-semibold sm:text-sm">{{ $k->nama }}</p>
             </a>
         @endforeach
     </div>

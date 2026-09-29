@@ -118,6 +118,56 @@ class GambarProdukTest extends TestCase
         $this->assertSame($kedua->id, $produk->fresh()->images->first()->id);
     }
 
+    public function test_gambar_bisa_ditandai_mewakili_satu_warna(): void
+    {
+        $sepatu = Product::where('sku', 'SEPATU-ORT-CTL')->firstOrFail();
+
+        $this->post(route('panel.produk.gambar.simpan', $sepatu), [
+            'external_url' => 'https://cdn.contoh.com/sepatu-merah.webp',
+            'warna' => 'Merah',
+        ])->assertSessionHas('sukses');
+
+        $this->assertSame('Merah', $sepatu->images()->firstOrFail()->warna);
+    }
+
+    public function test_warna_yang_bukan_varian_produk_ditolak(): void
+    {
+        $sepatu = Product::where('sku', 'SEPATU-ORT-CTL')->firstOrFail();
+
+        // "Kuning" bukan salah satu varian sepatu ini (hanya Hitam dan Merah).
+        // Tanpa penjagaan ini, salah ketik di kotak warna membuat gambar diam-diam
+        // tidak pernah cocok dengan tombol warna di halaman produk.
+        $this->post(route('panel.produk.gambar.simpan', $sepatu), [
+            'external_url' => 'https://cdn.contoh.com/sepatu-kuning.webp',
+            'warna' => 'Kuning',
+        ])->assertSessionHasErrors('warna');
+
+        $this->assertSame(0, $sepatu->images()->count());
+    }
+
+    public function test_halaman_produk_mengirim_peta_warna_ke_galeri(): void
+    {
+        $sepatu = Product::where('sku', 'SEPATU-ORT-CTL')->firstOrFail();
+
+        $this->post(route('panel.produk.gambar.simpan', $sepatu), [
+            'external_url' => 'https://cdn.contoh.com/sepatu-hitam.webp',
+        ]);
+        $this->post(route('panel.produk.gambar.simpan', $sepatu), [
+            'external_url' => 'https://cdn.contoh.com/sepatu-merah.webp',
+            'warna' => 'Merah',
+        ]);
+
+        // Gambar kedua (indeks 1) yang ditandai Merah; JS galeri membaca
+        // peta ini untuk tahu gambar mana yang harus tampil saat warna itu
+        // dipilih (KEP-066).
+        // @js() menyandikan lewat JSON.parse('...') dengan kutip di-escape
+        // jadi urutan enam karakter backslash-u-0-0-2-2, bukan JSON mentah.
+        $kutip = '\\u0022';
+        $this->get(route('produk', $sepatu))
+            ->assertOk()
+            ->assertSee($kutip.'Merah'.$kutip.':1', false);
+    }
+
     public function test_menghapus_gambar_ikut_membuang_berkasnya(): void
     {
         $produk = $this->produk();
