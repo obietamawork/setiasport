@@ -26,6 +26,19 @@ class OngkirController extends Controller
 
     public function area(Request $request): JsonResponse
     {
+        /*
+         * Tetap diam selama ongkir otomatis belum benar-benar menyala
+         * (KEP-067): mencari area tujuan tidak ada gunanya kalau area asal
+         * toko belum diisi, sebab hitung tarifnya tetap akan kosong. Tanpa
+         * penjagaan ini, jeda "kunci API sudah ada tapi area asal belum"
+         * membuat kotak pencarian publik ini diam-diam memanggil Biteship
+         * berbayar — throttle:30,1 di routes/web.php membatasi lajunya,
+         * tapi tidak mencegahnya terjadi sama sekali.
+         */
+        if (! $this->pengiriman->otomatis()) {
+            return response()->json(['area' => []]);
+        }
+
         $kata = trim((string) $request->query('q', ''));
 
         return response()->json(['area' => $this->pengiriman->cariArea($kata)]);

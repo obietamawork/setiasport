@@ -260,6 +260,30 @@ class CheckoutOngkirTest extends TestCase
         Http::assertNothingSent();
     }
 
+    /**
+     * Kotak pencarian tujuan ini publik dan tidak perlu login (KEP-058),
+     * dibatasi throttle:30,1 di routes/web.php karena tiap panggilan ke
+     * Biteship berbiaya. Selama area asal toko belum diisi (jeda wajar
+     * antara kunci API dipasang dan staf sempat mencarinya di Pengaturan,
+     * KEP-067), kotak ini harus tetap diam sama sekali, bukan ikut
+     * memanggil Biteship hanya karena kuncinya sudah ada.
+     */
+    public function test_pencarian_area_diam_selama_area_asal_toko_belum_diisi(): void
+    {
+        $this->app->instance(PenyediaOngkir::class, new Biteship(
+            kunci: 'kunci-uji',
+            url: 'https://api.biteship.test',
+            areaAsal: null,
+            kurir: ['jne', 'jnt'],
+        ));
+        cache()->flush();
+        Http::fake();
+
+        $this->get('/pengiriman/area?q=wonogiri')->assertOk()->assertJsonPath('area', []);
+
+        Http::assertNothingSent();
+    }
+
     /** Uang muka adalah tanda jadi atas barangnya, bukan atas ongkos kirimnya. */
     public function test_dp_tidak_menghitung_ongkir(): void
     {
