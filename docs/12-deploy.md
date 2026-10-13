@@ -69,10 +69,11 @@ RESEND_WEBHOOK_SECRET=whsec_…
 
 # Chat CS sedang dimatikan klien (KEP-034): biarkan blok Pusher ini KOSONG.
 # Ongkir dan pelacakan paket (KEP-057). Biarkan "mati" sampai akun Biteship
-# dibuat; selama itu ongkir dihitung admin seperti sebelumnya.
+# dibuat; selama itu ongkir dihitung admin seperti sebelumnya. Area asal toko
+# BUKAN di sini (KEP-067): diisi staf lewat Pengaturan > Pengiriman di panel,
+# dicari lewat kotak pencarian karena kodenya tidak bisa ditebak.
 ONGKIR_PENYEDIA=mati          # mati | biteship
 BITESHIP_KUNCI=
-BITESHIP_AREA_ASAL=           # kode area toko, dicari lewat pencarian area
 ONGKIR_KURIR=jne,jnt
 
 FITUR_CS=false                # true hanya kalau chat CS dinyalakan kembali

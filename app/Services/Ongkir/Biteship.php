@@ -101,9 +101,15 @@ class Biteship implements PenyediaOngkir
         );
     }
 
+    /**
+     * Mencari area butuh kunci saja, BUKAN `aktif()` penuh: `aktif()` juga
+     * mensyaratkan area asal sudah terisi, padahal pencarian ini justru yang
+     * dipakai mengisi area asal itu sendiri pertama kali (dari Pengaturan)
+     * maupun area tujuan pelanggan saat checkout.
+     */
     public function cariArea(string $kata): array
     {
-        if (! $this->aktif() || mb_strlen(trim($kata)) < 3) {
+        if (blank($this->kunci) || mb_strlen(trim($kata)) < 3) {
             return [];
         }
 

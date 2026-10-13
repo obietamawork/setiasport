@@ -2105,6 +2105,42 @@ ada langkah tambahan di luar formulir unggah yang sudah ada.
 
 ---
 
+## KEP-067 — Area asal Biteship dicari dan diatur lewat panel, bukan `.env`
+**Status:** TERKUNCI · 2026-10-14
+
+Kunci API Biteship diberikan pemilik toko untuk diuji. `.env.example` sejak KEP-057
+sudah menulis "`BITESHIP_AREA_ASAL` diisi kode area toko, yang dicari lewat menu
+Pengaturan setelah kuncinya terisi" — tapi menu itu **tidak pernah benar-benar
+dibuat**. Kodenya sendiri (contoh: `IDNP10IDNC484IDND6274IDZ57612`) tidak bisa
+ditebak atau diketik dengan aman; satu-satunya cara mendapatkannya adalah memanggil
+endpoint pencarian area Biteship.
+
+Saat dicoba, ditemukan juga **bug yang menutup jalan keluarnya sendiri**:
+`Biteship::cariArea()` mensyaratkan `aktif()`, dan `aktif()` mensyaratkan area asal
+SUDAH terisi — padahal pencarian area itulah satu-satunya cara mengisinya pertama
+kali. Tanpa perbaikan, pencarian area tujuan pelanggan saat checkout pun ikut
+gagal diam-diam kalau kondisinya sama (kunci ada, area asal belum).
+
+**Keputusan, dua bagian:**
+
+1. **`cariArea()` hanya mensyaratkan kunci terisi**, bukan `aktif()` penuh. Mencari
+   area tidak butuh tahu area asal lebih dulu — baik dipakai staf mencari area
+   toko, maupun pelanggan mencari kota tujuan.
+2. **Area asal pindah dari `.env` ke `Setting`** (`biteship_area_asal`, plus
+   `biteship_area_nama` untuk ditampilkan). Kotak pencarian ditambahkan di tab
+   Pengaturan &rarr; Pengiriman: staf mengetik nama kota, memilih dari hasil, dan
+   kode+nama tersimpan lewat alur simpan pengaturan yang sudah ada — tidak ada
+   endpoint simpan baru. `BITESHIP_KUNCI` tetap di `.env`: itu kredensial, bukan
+   data operasional, konsisten dengan `RESEND_API_KEY`.
+
+**Kenapa bukan tetap di `.env`.** Mengubah `.env` berarti masuk ke server dan
+restart proses — sesuatu yang pemilik toko tidak punya akses atau alasan
+melakukannya sendiri untuk nilai yang sifatnya operasional (bisa berubah kalau
+toko pindah alamat). Kode area, berbeda dari kunci API, bukan rahasia; aman
+disimpan sebagai Setting biasa yang bisa diubah dari panel kapan saja.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2175,3 +2211,4 @@ ada langkah tambahan di luar formulir unggah yang sudah ada.
 | KEP-064 | Unggahan desain diperlakukan sama seperti bukti transfer | TERKUNCI |
 | KEP-065 | Tautan unggah file besar, disediakan toko sendiri | TERKUNCI |
 | KEP-066 | Gambar produk bisa ditandai mewakili satu varian (warna/opsi) | TERKUNCI |
+| KEP-067 | Area asal Biteship dicari dan diatur lewat panel, bukan `.env` | TERKUNCI |

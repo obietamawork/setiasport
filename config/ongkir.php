@@ -15,8 +15,9 @@ return [
         'kunci' => env('BITESHIP_KUNCI'),
         'url' => env('BITESHIP_URL', 'https://api.biteship.com'),
 
-        // Area asal pengiriman, didapat dari pencarian area penyedia.
-        'area_asal' => env('BITESHIP_AREA_ASAL'),
+        // Area asal BUKAN di sini (KEP-067): diatur staf lewat Pengaturan >
+        // Pengiriman, tersimpan sebagai Setting biteship_area_asal, dicari
+        // lewat kotak pencarian karena kodenya tidak bisa ditebak.
     ],
 
     /*

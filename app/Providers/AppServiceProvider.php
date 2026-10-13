@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Listeners\CatatIdPesanEmail;
 use App\Mail\Transport\ResendTransport;
+use App\Models\Setting;
 use Illuminate\Mail\Events\MessageSent;
 use App\Services\Ongkir\Biteship;
 use App\Services\Ongkir\OngkirMati;
@@ -29,7 +30,10 @@ class AppServiceProvider extends ServiceProvider
             return new Biteship(
                 kunci: config('ongkir.biteship.kunci'),
                 url: (string) config('ongkir.biteship.url'),
-                areaAsal: config('ongkir.biteship.area_asal'),
+                // Area asal diatur staf lewat Pengaturan > Pengiriman (KEP-067),
+                // bukan .env: kodenya tidak bisa ditebak, jadi harus dicari
+                // lewat kotak pencarian, bukan diketik ke berkas server.
+                areaAsal: Setting::ambil('biteship_area_asal') ?: null,
                 kurir: (array) config('ongkir.kurir', []),
             );
         });

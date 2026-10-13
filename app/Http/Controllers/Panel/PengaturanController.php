@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Setting;
+use App\Services\Ongkir\PenyediaOngkir;
 use App\Services\PengunggahGambar;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -47,6 +49,7 @@ class PengaturanController extends Controller
                 ['judul' => 'Pengambilan', 'kunci' => ['pengingat_ambil_hari', 'ambil_peringatan_hari', 'hangus_hari']],
                 ['judul' => 'Pengiriman', 'kunci' => [
                     'jasa_kirim_daftar', 'panduan_resi', 'berat_bawaan_gram', 'gratis_ongkir_minimal',
+                    'biteship_area_asal', 'biteship_area_nama',
                 ]],
                 ['judul' => 'Email', 'kunci' => ['email_tindak_lanjut_hari']],
             ],
@@ -198,5 +201,16 @@ class PengaturanController extends Controller
         ActivityLog::catat('pengaturan.qris', null, ['dari' => $lama, 'ke' => '']);
 
         return back()->with('sukses', 'Gambar QRIS dihapus. Pelanggan kini hanya melihat rekening bank.');
+    }
+
+    /**
+     * Pencarian area Biteship (KEP-057/066), dipakai kotak pencarian area asal
+     * di tab Pengiriman. Hanya butuh kunci API tersimpan di .env, bukan area
+     * asal yang sudah terisi — kalau tidak, tidak ada cara mengisinya pertama
+     * kali.
+     */
+    public function cariAreaBiteship(Request $request, PenyediaOngkir $penyedia): JsonResponse
+    {
+        return response()->json($penyedia->cariArea((string) $request->query('q', '')));
     }
 }

@@ -236,6 +236,8 @@ Route::prefix('panel')->name('panel.')->group(function () {
         Route::middleware('izin:pengaturan.kelola')->group(function () {
             Route::get('pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index');
             Route::put('pengaturan', [PengaturanController::class, 'update'])->name('pengaturan.update');
+            Route::get('pengaturan/biteship/area', [PengaturanController::class, 'cariAreaBiteship'])
+                ->name('pengaturan.biteship-area');
             Route::post('pengaturan/qris', [PengaturanController::class, 'unggahQris'])->name('pengaturan.qris');
             Route::delete('pengaturan/qris', [PengaturanController::class, 'hapusQris'])->name('pengaturan.qris.hapus');
         });

@@ -180,4 +180,37 @@ class OngkirTest extends TestCase
 
         Http::assertNothingSent();
     }
+
+    /**
+     * Pencarian area hanya butuh kunci, BUKAN `aktif()` penuh (KEP-067).
+     * Tanpa ini, satu-satunya cara mengisi area asal pertama kali — mencari
+     * areanya sendiri lewat API — tidak pernah bisa dipakai, sebab `aktif()`
+     * juga mensyaratkan area asal yang justru belum ada.
+     */
+    public function test_pencarian_area_tetap_jalan_walau_area_asal_belum_terisi(): void
+    {
+        Http::fake(['*/v1/maps/areas*' => Http::response([
+            'areas' => [['id' => 'IDNP6IDNC148IDND874', 'name' => 'Wonogiri, Wonogiri, Jawa Tengah']],
+        ])]);
+
+        $penyedia = new Biteship('kunci-uji', 'https://api.biteship.test', null, ['jne']);
+
+        $this->assertFalse($penyedia->aktif());
+
+        $area = $penyedia->cariArea('wonogiri');
+
+        $this->assertSame('IDNP6IDNC148IDND874', $area[0]['kode']);
+        Http::assertSentCount(1);
+    }
+
+    /** Tanpa kunci sama sekali, pencarian area juga tidak memanggil apa pun. */
+    public function test_pencarian_area_tanpa_kunci_tidak_memanggil_apa_pun(): void
+    {
+        Http::fake();
+
+        $penyedia = new Biteship(null, 'https://api.biteship.test', null, ['jne']);
+
+        $this->assertSame([], $penyedia->cariArea('wonogiri'));
+        Http::assertNothingSent();
+    }
 }

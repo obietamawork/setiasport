@@ -107,6 +107,18 @@ Pos Indonesia", 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
             ['panduan_resi', 'Nomor resi bisa dilacak di cekresi.com, atau di situs resmi jasa kirimnya. Nomor baru terbaca beberapa jam setelah paket diserahkan ke kurir.', 'teks', 'pengiriman', 'Panduan Melacak Resi',
                 'Muncul di halaman pesanan pelanggan, tepat di bawah nomor resinya.'],
 
+            /*
+             * Area asal Biteship (KEP-057), dicari lewat kotak pencarian di
+             * bawah medan ini, bukan diketik manual: kodenya tidak bisa
+             * ditebak dan salah satu karakter saja membuat hitung ongkir
+             * diam-diam tidak pernah menjawab. biteship_area_nama murni
+             * kosmetik, supaya layar ini terbaca manusia.
+             */
+            ['biteship_area_asal', '', 'string', 'pengiriman', 'Area Asal Pengiriman (Biteship)',
+                'Kode area toko di Biteship. Kosongkan untuk mematikan hitung ongkir otomatis; isi lewat kotak pencarian di bawah ini.'],
+            ['biteship_area_nama', '', 'string', 'pengiriman', 'Area Asal (nama)',
+                'Terisi otomatis dari hasil pencarian. Hanya untuk ditampilkan, tidak dipakai sistem.'],
+
             // Chat CS di website (KEP-030).
             // Klien membatalkan CS untuk sementara (KEP-034): mati sebagai bawaan,
             // kodenya tetap ada dan teruji supaya bisa dinyalakan kapan saja.

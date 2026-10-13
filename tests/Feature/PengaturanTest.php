@@ -4,10 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\Ongkir\PenyediaOngkir;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SettingSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /** Halaman pengaturan yang ditata per tab. */
@@ -116,5 +118,46 @@ class PengaturanTest extends TestCase
         $this->actingAs($this->owner())->get(route('panel.pengaturan.index'))
             ->assertSee('Lainnya')
             ->assertSee('Pengaturan uji baru');
+    }
+
+    /**
+     * Kotak pencarian area Biteship (KEP-067) dipakai mengisi area asal toko
+     * tanpa staf mengetik kode yang tidak bisa ditebak.
+     */
+    public function test_pencarian_area_biteship_mengembalikan_hasil(): void
+    {
+        config(['ongkir.penyedia' => 'biteship', 'ongkir.biteship.kunci' => 'kunci-uji']);
+
+        Http::fake(['*/v1/maps/areas*' => Http::response([
+            'areas' => [['id' => 'IDNP10IDNC484IDND6274IDZ57612', 'name' => 'Wonogiri, Wonogiri, Jawa Tengah. 57612']],
+        ])]);
+
+        $this->actingAs($this->owner())
+            ->getJson(route('panel.pengaturan.biteship-area', ['q' => 'wonogiri']))
+            ->assertOk()
+            ->assertJson([['kode' => 'IDNP10IDNC484IDND6274IDZ57612', 'nama' => 'Wonogiri, Wonogiri, Jawa Tengah. 57612']]);
+    }
+
+    /**
+     * Area asal diatur lewat Setting (panel), bukan .env (KEP-067): mengisi
+     * nilainya lewat alur simpan pengaturan biasa harus benar-benar dipakai
+     * saat penyedia ongkir menghitung tarif.
+     */
+    public function test_area_asal_tersimpan_dipakai_penyedia_ongkir(): void
+    {
+        config(['ongkir.penyedia' => 'biteship', 'ongkir.biteship.kunci' => 'kunci-uji']);
+
+        $this->actingAs($this->owner())->put(route('panel.pengaturan.update'), [
+            'setting' => [
+                'biteship_area_asal' => 'IDNP10IDNC484IDND6274IDZ57612',
+                'biteship_area_nama' => 'Wonogiri, Wonogiri, Jawa Tengah. 57612',
+            ],
+        ])->assertSessionHas('sukses');
+
+        Http::fake(['*/v1/rates/couriers' => Http::response(['pricing' => []])]);
+
+        app(PenyediaOngkir::class)->tarif('IDNP6', 1_000);
+
+        Http::assertSent(fn ($req) => $req['origin_area_id'] === 'IDNP10IDNC484IDND6274IDZ57612');
     }
 }
