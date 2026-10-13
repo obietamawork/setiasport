@@ -131,7 +131,11 @@ class PesananManualController extends Controller
 
             $jumlah = min((int) $data['dibayar'], $order->total);
 
-            $tagihan->update([
+            // jumlah/metode/dicatat_oleh lewat $tambahan, BUKAN $tagihan->update()
+            // terpisah di sini: kalau pemeriksaan sisa tagihan di dalam
+            // terimaPembayaran() menolak, perubahan field ini ikut batal,
+            // bukan tersimpan duluan padahal pesanan belum benar-benar lunas.
+            $this->alur->terimaPembayaran($tagihan, auth('web')->id(), [
                 'jumlah' => $jumlah,
                 'metode' => ($data['metode_bayar'] ?? 'TUNAI') === 'TRANSFER'
                     ? PaymentMethod::TRANSFER
@@ -139,8 +143,6 @@ class PesananManualController extends Controller
                 'dicatat_oleh' => auth('web')->id(),
                 'dibayar_pada' => now(),
             ]);
-
-            $this->alur->terimaPembayaran($tagihan, auth('web')->id());
 
             $pesan .= ' Pembayaran '.rupiah($jumlah).' tercatat.';
         }

@@ -26,10 +26,22 @@ class AlurPesanan
         private ReservasiStok $reservasi,
     ) {}
 
-    /** Kasir memverifikasi pembayaran masuk. Pekerjaan baru dimulai di sini. */
-    public function terimaPembayaran(Payment $payment, ?int $olehUserId = null): void
+    /**
+     * Kasir memverifikasi pembayaran masuk. Pekerjaan baru dimulai di sini.
+     *
+     * $tambahan diisi field Payment lain yang pemanggil perlu ubah bersamaan
+     * (metode, bukti_path, atau jumlah kalau baru ditetapkan saat ini, seperti
+     * di pembayaran manual kasir) — SELALU lewat sini, tidak pernah lewat
+     * `$payment->update()` terpisah sebelum memanggil method ini. Kalau
+     * diubah terpisah, perubahan itu sudah tersimpan duluan (bukan di dalam
+     * transaksi terkunci di bawah) dan tidak ikut batal ketika pemeriksaan
+     * sisa tagihan menolak permintaannya — bukti lama bisa sudah terbuang,
+     * atau baris pembayaran baru (dari kasir) tertinggal dengan field yang
+     * sudah berubah padahal status tetap Menunggu.
+     */
+    public function terimaPembayaran(Payment $payment, ?int $olehUserId = null, array $tambahan = []): void
     {
-        DB::transaction(function () use ($payment, $olehUserId) {
+        DB::transaction(function () use ($payment, $olehUserId, $tambahan) {
             /*
              * Baris pesanan dikunci SEBELUM sisa tagihan dibaca. Tanpa ini,
              * dua pembayaran untuk pesanan yang sama diverifikasi hampir
@@ -43,16 +55,23 @@ class AlurPesanan
             $order = Order::whereKey($payment->order_id)->lockForUpdate()->firstOrFail()
                 ->load(['items.options', 'payments', 'adjustments']);
 
-            abort_if($payment->jumlah > $order->sisa_tagihan, 422,
-                'Nominal tagihan ini ('.rupiah($payment->jumlah).') melebihi sisa tagihan pesanan saat ini '
+            // Kalau $tambahan menetapkan jumlah baru (pembayaran manual
+            // kasir), itulah yang diperiksa -- bukan jumlah lama di memori.
+            $jumlah = $tambahan['jumlah'] ?? $payment->jumlah;
+
+            abort_if($jumlah > $order->sisa_tagihan, 422,
+                'Nominal tagihan ini ('.rupiah($jumlah).') melebihi sisa tagihan pesanan saat ini '
                 .'('.rupiah($order->sisa_tagihan).'). Pesanan ini sepertinya sudah dibayar atau berkurang '
                 .'lewat jalur lain sejak tagihan ini dibuat. Periksa riwayat pembayaran dan penyesuaian '
                 .'sebelum melanjutkan.');
 
+            // $tambahan ditulis LEBIH DULU, status/diverifikasi_oleh SESUDAH:
+            // pemanggil tidak boleh menimpa keduanya lewat $tambahan.
             $payment->update([
+                ...$tambahan,
                 'status' => PaymentStatus::LUNAS,
-                'dibayar_pada' => $payment->dibayar_pada ?? now(),
                 'diverifikasi_oleh' => $olehUserId,
+                'dibayar_pada' => $tambahan['dibayar_pada'] ?? $payment->dibayar_pada ?? now(),
             ]);
 
             foreach ($order->items as $item) {

@@ -13,6 +13,7 @@ use App\Services\AlurPesanan;
 use App\Services\PengunggahGambar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class PembayaranController extends Controller
@@ -33,11 +34,21 @@ class PembayaranController extends Controller
         abort_unless($pembayaran->order_id === $pesanan->id, 404);
         abort_if($pembayaran->status === PaymentStatus::LUNAS, 422, 'Pembayaran ini sudah diverifikasi.');
 
-        // Nominal yang sudah melebihi sisa tagihan saat ini ditolak di dalam
-        // AlurPesanan::terimaPembayaran(), dengan baris pesanan terkunci
-        // (aman dari dua verifikasi hampir bersamaan). Tidak diperiksa dua
-        // kali di sini supaya tidak ada dua sumber kebenaran yang bisa
-        // berselisih.
+        /*
+         * Pemeriksaan cepat dulu, SEBELUM menyentuh berkas atau basis data
+         * sama sekali: kalau nominal ini sudah tidak sesuai sisa tagihan
+         * (pesanan lunas atau berkurang lewat jalur lain), tidak ada gunanya
+         * mengunggah bukti atau membuang bukti lama. Pemeriksaan yang
+         * benar-benar menentukan — aman dari dua verifikasi hampir
+         * bersamaan lewat baris pesanan terkunci — tetap di
+         * AlurPesanan::terimaPembayaran(); ini cuma jalan keluar cepat
+         * untuk kasus biasa yang jauh lebih sering terjadi.
+         */
+        abort_if($pembayaran->jumlah > $pesanan->sisa_tagihan, 422,
+            'Nominal tagihan ini ('.rupiah($pembayaran->jumlah).') melebihi sisa tagihan pesanan saat ini '
+            .'('.rupiah($pesanan->sisa_tagihan).'). Pesanan ini sepertinya sudah dibayar atau berkurang '
+            .'lewat jalur lain sejak tagihan ini dibuat. Muat ulang halaman ini sebelum mencoba lagi.');
+
         $data = $request->validate([
             'metode' => ['required', Rule::in(['TUNAI', 'TRANSFER', 'QRIS'])],
             'bukti' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(setting('upload_maks_mb', 10) * 1024)],
@@ -53,19 +64,27 @@ class PembayaranController extends Controller
             'cek_mutasi.accepted' => 'Pastikan dulu uangnya benar-benar masuk di mutasi rekening atau riwayat QRIS, lalu centang pernyataannya.',
         ], ['metode' => 'metode pembayaran', 'bukti' => 'bukti pembayaran']);
 
-        $bukti = $pembayaran->bukti_path;
+        $buktiLama = $pembayaran->bukti_path;
+        $bukti = $buktiLama;
 
         if ($request->hasFile('bukti')) {
             $bukti = $pengunggah->simpan($request->file('bukti'), 'bukti', 'local', denganThumb: false)['path'];
-            $pengunggah->hapusDari('local', $pembayaran->bukti_path);
         }
 
-        $pembayaran->update([
+        // metode dan bukti_path lewat $tambahan, BUKAN $pembayaran->update()
+        // terpisah di sini: kalau pemeriksaan sisa tagihan di dalam menolak
+        // (race condition jarang yang lolos dari pemeriksaan cepat di atas),
+        // perubahan field ini harus ikut batal, bukan tersimpan duluan
+        // padahal verifikasinya sendiri gagal.
+        $this->alur->terimaPembayaran($pembayaran, auth('web')->id(), [
             'metode' => PaymentMethod::from($data['metode']),
             'bukti_path' => $bukti,
         ]);
 
-        $this->alur->terimaPembayaran($pembayaran, auth('web')->id());
+        // Bukti lama dibuang HANYA setelah seluruhnya berhasil tersimpan.
+        if ($bukti !== $buktiLama) {
+            $pengunggah->hapusDari('local', $buktiLama);
+        }
 
         ActivityLog::catat('pembayaran.diverifikasi', $pesanan, [
             'payment_id' => $pembayaran->id,
@@ -97,17 +116,27 @@ class PembayaranController extends Controller
             'jumlah.max' => 'Nominal melebihi sisa tagihan '.rupiah($pesanan->sisa_tagihan).'.',
         ], ['jumlah' => 'nominal', 'metode' => 'metode pembayaran']);
 
-        $pembayaran = $pesanan->payments()->create([
-            'jenis' => PaymentType::from($data['jenis']),
-            'metode' => PaymentMethod::from($data['metode']),
-            'status' => PaymentStatus::MENUNGGU,
-            'jumlah' => $data['jumlah'],
-            // Titik rawan uang kas: siapa yang menerima selalu tercatat.
-            'dicatat_oleh' => auth('web')->id(),
-            'dibayar_pada' => now(),
-        ]);
+        /*
+         * Dibuat dan diverifikasi dalam SATU transaksi: terimaPembayaran()
+         * membuka transaksinya sendiri (nested, lewat savepoint), jadi kalau
+         * pemeriksaan sisa tagihan di dalamnya menolak -- race condition
+         * langka, dua pencatatan kasir untuk pesanan yang sama hampir
+         * bersamaan -- baris pembayaran yang baru dibuat ini ikut batal,
+         * bukan tertinggal sebagai baris Menunggu yang yatim.
+         */
+        DB::transaction(function () use ($pesanan, $data) {
+            $pembayaran = $pesanan->payments()->create([
+                'jenis' => PaymentType::from($data['jenis']),
+                'metode' => PaymentMethod::from($data['metode']),
+                'status' => PaymentStatus::MENUNGGU,
+                'jumlah' => $data['jumlah'],
+                // Titik rawan uang kas: siapa yang menerima selalu tercatat.
+                'dicatat_oleh' => auth('web')->id(),
+                'dibayar_pada' => now(),
+            ]);
 
-        $this->alur->terimaPembayaran($pembayaran, auth('web')->id());
+            $this->alur->terimaPembayaran($pembayaran, auth('web')->id());
+        });
 
         ActivityLog::catat('pembayaran.dicatat', $pesanan, [
             'jumlah' => $data['jumlah'],
