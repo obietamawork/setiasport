@@ -30,13 +30,30 @@ class AlurPesanan
     public function terimaPembayaran(Payment $payment, ?int $olehUserId = null): void
     {
         DB::transaction(function () use ($payment, $olehUserId) {
+            /*
+             * Baris pesanan dikunci SEBELUM sisa tagihan dibaca. Tanpa ini,
+             * dua pembayaran untuk pesanan yang sama diverifikasi hampir
+             * bersamaan bisa sama-sama membaca sisa tagihan yang belum
+             * diperbarui satu sama lain, dan keduanya lolos pemeriksaan
+             * padahal digabung melebihi total pesanan (race condition /
+             * TOCTOU). lockForUpdate membuat permintaan kedua menunggu
+             * sampai transaksi pertama selesai, baru membaca angka yang
+             * sudah diperbarui.
+             */
+            $order = Order::whereKey($payment->order_id)->lockForUpdate()->firstOrFail()
+                ->load(['items.options', 'payments', 'adjustments']);
+
+            abort_if($payment->jumlah > $order->sisa_tagihan, 422,
+                'Nominal tagihan ini ('.rupiah($payment->jumlah).') melebihi sisa tagihan pesanan saat ini '
+                .'('.rupiah($order->sisa_tagihan).'). Pesanan ini sepertinya sudah dibayar atau berkurang '
+                .'lewat jalur lain sejak tagihan ini dibuat. Periksa riwayat pembayaran dan penyesuaian '
+                .'sebelum melanjutkan.');
+
             $payment->update([
                 'status' => PaymentStatus::LUNAS,
                 'dibayar_pada' => $payment->dibayar_pada ?? now(),
                 'diverifikasi_oleh' => $olehUserId,
             ]);
-
-            $order = $payment->order->load('items');
 
             foreach ($order->items as $item) {
                 if ($item->status_item !== OrderItemStatus::MENUNGGU_PEMBAYARAN) {
@@ -77,10 +94,11 @@ class AlurPesanan
      * Tagihan yang masih Menunggu padahal pesanan sudah tidak punya sisa
      * tagihan lagi (KEP-067 lanjutan) — tercapai lewat pembayaran dari jalur
      * lain, ATAU lewat penyesuaian harga yang menurunkan total. Dibiarkan
-     * menggantung, baris itu tetap bisa diklik "verifikasi" dan membuat
-     * pesanan tercatat lunas dua kali di laporan keuangan. `verifikasi()` di
-     * panel juga menolak nominal yang sudah melebihi sisa tagihan, jadi ini
-     * lapis kerapian tampilan, bukan satu-satunya penjaga.
+     * menggantung, baris itu tetap bisa diklik "verifikasi" dan terlihat
+     * seolah masih butuh tindakan. `terimaPembayaran()` sendiri sudah
+     * menolak nominal yang melebihi sisa tagihan (dengan baris pesanan
+     * terkunci, jadi aman dari dua verifikasi hampir bersamaan); fungsi ini
+     * murni kerapian tampilan, bukan penjaga keuangannya.
      */
     public function kadaluarsakanTagihanBerlebih(Order $order, ?int $kecuali = null): void
     {
