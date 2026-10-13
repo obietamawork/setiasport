@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
+use App\Models\OrderAdjustment;
 use App\Models\ProductVariant;
 use App\Models\Setting;
 use App\Models\User;
@@ -291,6 +292,63 @@ class PembayaranManualTest extends TestCase
 
         $this->assertSame(PaymentStatus::MENUNGGU, $tagihanLama->status);
         $this->assertGreaterThan(0, $order->fresh()->sisa_tagihan);
+    }
+
+    /**
+     * Lapis kedua (review keamanan menemukan celah ini): pengadaluarsaan
+     * otomatis di atas hanya berjalan lewat jalur yang sudah dikenali
+     * (pembayaran lain, penyesuaian harga). verifikasi() sendiri harus
+     * menolak kalau nominal tagihan sudah tidak sesuai sisa tagihan saat
+     * ini, APAPUN jalur yang membuatnya begitu — supaya tidak ada satu pun
+     * cara menciptakan pembayaran ganda lewat tombol ini.
+     */
+    public function test_verifikasi_menolak_tagihan_yang_melebihi_sisa_tagihan_saat_ini(): void
+    {
+        $order = $this->buatPesanan();
+        $tagihanLama = $order->payments->first();
+        $admin = User::where('email', 'admin@setiasport.test')->firstOrFail();
+
+        // Penyesuaian dibuat langsung lewat model, BUKAN lewat controller,
+        // supaya pengadaluarsaan otomatis di PenyesuaianController sengaja
+        // tidak ikut berjalan di sini -- murni menguji penjaga di
+        // verifikasi() sendiri, bukan jaring pengamannya.
+        OrderAdjustment::create([
+            'order_id' => $order->id,
+            'deskripsi' => 'Potongan penuh (uji)',
+            'jumlah' => -$tagihanLama->jumlah,
+            'dibuat_oleh' => $admin->id,
+        ]);
+
+        $this->assertSame(0, $order->fresh()->sisa_tagihan);
+        $this->assertSame(PaymentStatus::MENUNGGU, $tagihanLama->fresh()->status);
+
+        $this->actingAs($admin)
+            ->post(route('panel.pesanan.pembayaran.verifikasi', [$order, $tagihanLama]), [
+                'metode' => 'TRANSFER',
+                'cek_mutasi' => '1',
+            ])
+            ->assertStatus(422);
+
+        $this->assertSame(PaymentStatus::MENUNGGU, $tagihanLama->fresh()->status,
+            'Status tidak boleh berubah jadi Lunas -- itu berarti pembayaran ganda.');
+    }
+
+    /** Potongan harga penuh mengadaluarsakan tagihan lama tanpa perlu pembayaran apa pun. */
+    public function test_penyesuaian_yang_melunasi_mengadaluarsakan_tagihan_lama(): void
+    {
+        $order = $this->buatPesanan();
+        $tagihanLama = $order->payments->first();
+        $admin = User::where('email', 'admin@setiasport.test')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->post(route('panel.pesanan.penyesuaian.simpan', $order), [
+                'deskripsi' => 'Potongan penuh',
+                'jumlah' => -$tagihanLama->jumlah,
+            ])
+            ->assertSessionHas('sukses');
+
+        $this->assertSame(PaymentStatus::KADALUARSA, $tagihanLama->fresh()->status);
+        $this->assertSame(0, $order->fresh()->sisa_tagihan);
     }
 
     /**

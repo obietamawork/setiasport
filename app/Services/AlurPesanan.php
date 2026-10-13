@@ -58,19 +58,7 @@ class AlurPesanan
 
             $order = $order->fresh(['items.options', 'payments', 'adjustments']);
 
-            if ($order->sisa_tagihan <= 0) {
-                /*
-                 * Pelunasan yang masuk lewat jalur lain (tunai di kasir, misalnya)
-                 * tidak otomatis membatalkan permintaan pembayaran lama yang masih
-                 * menunggu (transfer bank saat checkout, misalnya). Tanpa ini,
-                 * staf bisa memverifikasi keduanya satu per satu di panel, dan
-                 * pesanan yang sama tercatat lunas dua kali di laporan keuangan.
-                 */
-                $order->payments()
-                    ->where('id', '!=', $payment->id)
-                    ->where('status', PaymentStatus::MENUNGGU->value)
-                    ->update(['status' => PaymentStatus::KADALUARSA->value]);
-            }
+            $this->kadaluarsakanTagihanBerlebih($order, $payment->id);
 
             $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']));
         });
@@ -83,6 +71,27 @@ class AlurPesanan
         if ($order->status !== OrderStatus::SIAP_DIAMBIL) {
             $this->email->kirim($order, 'pembayaran-diterima');
         }
+    }
+
+    /**
+     * Tagihan yang masih Menunggu padahal pesanan sudah tidak punya sisa
+     * tagihan lagi (KEP-067 lanjutan) — tercapai lewat pembayaran dari jalur
+     * lain, ATAU lewat penyesuaian harga yang menurunkan total. Dibiarkan
+     * menggantung, baris itu tetap bisa diklik "verifikasi" dan membuat
+     * pesanan tercatat lunas dua kali di laporan keuangan. `verifikasi()` di
+     * panel juga menolak nominal yang sudah melebihi sisa tagihan, jadi ini
+     * lapis kerapian tampilan, bukan satu-satunya penjaga.
+     */
+    public function kadaluarsakanTagihanBerlebih(Order $order, ?int $kecuali = null): void
+    {
+        if ($order->sisa_tagihan > 0) {
+            return;
+        }
+
+        $order->payments()
+            ->when($kecuali, fn ($q) => $q->where('id', '!=', $kecuali))
+            ->where('status', PaymentStatus::MENUNGGU->value)
+            ->update(['status' => PaymentStatus::KADALUARSA->value]);
     }
 
     /**

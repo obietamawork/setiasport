@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\OrderAdjustment;
+use App\Services\AlurPesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -18,6 +19,8 @@ use Illuminate\Http\Request;
  */
 class PenyesuaianController extends Controller
 {
+    public function __construct(private AlurPesanan $alur) {}
+
     public function store(Request $request, Order $pesanan): RedirectResponse
     {
         abort_if($pesanan->status->final(), 422, 'Pesanan ini sudah selesai atau dibatalkan.');
@@ -31,6 +34,11 @@ class PenyesuaianController extends Controller
         ], ['deskripsi' => 'deskripsi', 'jumlah' => 'nominal']);
 
         $penyesuaian = $pesanan->adjustments()->create($data + ['dibuat_oleh' => auth('web')->id()]);
+
+        // Potongan harga bisa menurunkan sisa tagihan sampai 0 tanpa lewat
+        // pembayaran sama sekali (KEP-067 lanjutan) — tagihan lama yang masih
+        // menunggu harus ikut dikadaluarsakan, bukan dibiarkan menggantung.
+        $this->alur->kadaluarsakanTagihanBerlebih($pesanan->fresh(['items.options', 'payments', 'adjustments']));
 
         ActivityLog::catat('penyesuaian.dibuat', $pesanan, $data);
 

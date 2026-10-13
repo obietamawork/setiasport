@@ -33,6 +33,21 @@ class PembayaranController extends Controller
         abort_unless($pembayaran->order_id === $pesanan->id, 404);
         abort_if($pembayaran->status === PaymentStatus::LUNAS, 422, 'Pembayaran ini sudah diverifikasi.');
 
+        /*
+         * Nominal tagihan ini ditetapkan saat DIBUAT (saat checkout, atau saat
+         * pelunasan diminta) — bukan saat ini. Kalau sejak itu pesanannya sudah
+         * lunas lewat jalur lain (tunai di kasir) atau totalnya turun lewat
+         * penyesuaian harga, memverifikasi tagihan lama ini apa adanya membuat
+         * uang yang sama tercatat masuk dua kali. sisa_tagihan dibatasi minimal
+         * 0 (tidak pernah negatif), jadi kelebihan bayar ini tidak akan terlihat
+         * di mana pun setelahnya kecuali dicegah di sini.
+         */
+        abort_if($pembayaran->jumlah > $pesanan->sisa_tagihan, 422,
+            'Nominal tagihan ini ('.rupiah($pembayaran->jumlah).') melebihi sisa tagihan pesanan saat ini '
+            .'('.rupiah($pesanan->sisa_tagihan).'). Pesanan ini sepertinya sudah dibayar atau berkurang lewat '
+            .'jalur lain sejak tagihan ini dibuat. Periksa riwayat pembayaran dan penyesuaian sebelum '
+            .'melanjutkan.');
+
         $data = $request->validate([
             'metode' => ['required', Rule::in(['TUNAI', 'TRANSFER', 'QRIS'])],
             'bukti' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(setting('upload_maks_mb', 10) * 1024)],
