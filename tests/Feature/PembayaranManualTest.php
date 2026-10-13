@@ -242,6 +242,58 @@ class PembayaranManualTest extends TestCase
     }
 
     /**
+     * Pelanggan transfer sesuai tagihan checkout, tapi sebelum staf sempat
+     * memverifikasinya, pelanggan keburu datang dan bayar tunai di kasir.
+     * Tagihan transfer yang lama tidak boleh tetap menggantung berstatus
+     * Menunggu Pembayaran: itu mengundang staf memverifikasinya juga di lain
+     * waktu, dan pesanan yang sama tercatat lunas dua kali di laporan.
+     */
+    public function test_pembayaran_tunai_mengadaluarsakan_tagihan_lama_yang_belum_diverifikasi(): void
+    {
+        $order = $this->buatPesanan();
+        $tagihanLama = $order->payments->first();
+        $admin = User::where('email', 'admin@setiasport.test')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->post(route('panel.pesanan.pembayaran.catat', $order), [
+                'jumlah' => $order->sisa_tagihan,
+                'metode' => 'TUNAI',
+                'jenis' => 'FULL',
+            ])
+            ->assertSessionHas('sukses');
+
+        $tagihanLama->refresh();
+        $order->refresh();
+
+        $this->assertSame(PaymentStatus::KADALUARSA, $tagihanLama->status);
+        $this->assertSame(0, $order->sisa_tagihan);
+        $this->assertSame(1, $order->payments()->where('status', PaymentStatus::LUNAS)->count());
+    }
+
+    /** DP yang belum lunas tidak boleh kehilangan tagihan pelunasannya begitu saja. */
+    public function test_dp_tidak_mengadaluarsakan_tagihan_lain_selama_belum_lunas_penuh(): void
+    {
+        $order = $this->buatPesanan();
+        $tagihanLama = $order->payments->first();
+        $admin = User::where('email', 'admin@setiasport.test')->firstOrFail();
+
+        $sebagian = intdiv($order->sisa_tagihan, 2);
+
+        $this->actingAs($admin)
+            ->post(route('panel.pesanan.pembayaran.catat', $order), [
+                'jumlah' => $sebagian,
+                'metode' => 'TUNAI',
+                'jenis' => 'DP',
+            ])
+            ->assertSessionHas('sukses');
+
+        $tagihanLama->refresh();
+
+        $this->assertSame(PaymentStatus::MENUNGGU, $tagihanLama->status);
+        $this->assertGreaterThan(0, $order->fresh()->sisa_tagihan);
+    }
+
+    /**
      * Tangkapan layar transfer bisa diedit dalam semenit. Yang membuktikan uang
      * masuk hanyalah mutasi rekening toko, jadi admin wajib menyatakan sudah
      * melihatnya, dan pernyataan itu tercatat atas namanya.

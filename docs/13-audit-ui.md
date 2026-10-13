@@ -288,6 +288,84 @@ Berlaku untuk keduanya: warna varian ready stock, dan nilai opsi kustom.
 Rincian keputusan dan alasan teknisnya ada di
 [08-log-keputusan.md](08-log-keputusan.md#kep-066--gambar-produk-bisa-ditandai-mewakili-satu-varian).
 
+## Putaran keenam: audit menyeluruh pelanggan dan internal, fokus HP
+
+Diminta klien secara eksplisit: audit ulang seluruh website dan panel, HP
+paling diutamakan, plus sederhanakan sisi internal kalau memang ribet.
+
+### Sapuan lebar layar di ~28 halaman
+
+Dicek `scrollWidth` di 375px untuk seluruh halaman publik (beranda, katalog,
+produk, keranjang, checkout, lacak, masuk, daftar) dan seluruh halaman panel
+(dashboard, pesanan, antrian, kategori, produk, stok, portofolio, testimoni,
+pekerja, laporan, pengaturan, serah terima, kesiapan, bantuan, worksheet,
+invoice). **Nol halaman meluber.** Putaran audit sebelumnya (satu sampai
+lima) sudah menutup celah-celah itu; tidak ada regresi baru.
+
+### Ringkasan tagihan terkubur di bawah tombol checkout (kritis)
+
+Di halaman "Data pemesan" (checkout), kartu Ringkasan — total yang harus
+dibayar — berada di kolom kanan yang di layar lebar memang selalu terlihat.
+Di HP, grid dua kolom itu runtuh jadi satu kolom mengikuti urutan markup:
+formulir dulu, **Ringkasan paling akhir, setelah tombol "Buat pesanan"**.
+Pelanggan mengisi nama, email, nomor HP, dan alamat tanpa pernah melihat
+angka yang disepakati sampai mereka menggulir melewati tombol konfirmasinya
+sendiri — bertentangan dengan prinsip *visibility of system status*, dan
+dengan aturan #3 dokumen ini sendiri ("urutan mobile mengikuti urutan
+pertanyaan pelanggan, bukan urutan markup").
+
+**Diperbaiki:** `order-1`/`order-2` Tailwind pada `<form>` dan `<aside>`
+Ringkasan, dibalik hanya di bawah `lg`. Ringkasan sekarang tampil tepat di
+bawah judul halaman, sebelum formulir dimulai. Layar lebar tidak berubah
+sama sekali karena keduanya memang sudah berdampingan di sana.
+
+### Pembayaran bisa tercatat lunas dua kali (kritis, ditemukan tak sengaja)
+
+Sambil memeriksa halaman detail pesanan di panel, satu pesanan demo
+menampilkan DUA baris pembayaran untuk nominal yang identik: satu berstatus
+**Lunas** (dibayar tunai di kasir), satu lagi masih **Menunggu Pembayaran**
+(tagihan transfer dari saat checkout, tidak pernah dibatalkan). Pesanannya
+sendiri sudah lunas (`sisa_tagihan` 0), tapi tombol "Verifikasi pembayaran
+ini" pada baris lama **masih aktif dan bisa diklik**.
+
+Akar masalahnya: `AlurPesanan::terimaPembayaran()` hanya memproses SATU
+baris pembayaran yang sedang diterima; baris pembayaran lama dari jalur lain
+(mis. permintaan transfer saat checkout) dibiarkan menggantung kalau
+pelanggan ternyata bayar lewat jalur berbeda (tunai di kasir). Kalau staf
+tidak sadar dan mengklik verifikasi pada baris lama itu juga, pesanan yang
+sama tercatat lunas **dua kali** di laporan keuangan — uang yang sebenarnya
+diterima sekali terlihat seperti diterima dua kali.
+
+**Diperbaiki:** begitu `terimaPembayaran()` membuat `sisa_tagihan` turun ke
+0, seluruh baris pembayaran LAIN yang masih Menunggu otomatis ditandai
+Kadaluarsa — meniru persis pola yang sudah ada di `AlurPesanan::batalkan()`
+untuk pesanan yang dibatalkan. Chip status pembayaran juga dirapikan supaya
+Kadaluarsa dan Gagal tidak lagi memakai warna kuning yang sama dengan
+Menunggu (yang masih butuh tindakan) — jadi sekilas pun sudah jelas mana
+yang masih perlu dikerjakan dan mana yang sekadar riwayat.
+
+### Target sentuh di bawah 40px
+
+Disisir seluruh tombol dan tautan ikon-saja di halaman publik lewat
+`getBoundingClientRect()`. Tombol menu hamburger dan ikon sosial di kaki
+halaman keduanya 36&times;36px, di bawah rekomendasi umum 44&times;44px
+(Apple HIG, Material Design) untuk target yang sering disentuh berulang.
+Dibesarkan ke 44px. Tautan teks mengalir (misalnya "Lihat semua") sengaja
+tidak diubah: ukurannya mengikuti teks, dan memaksa tinggi baris 44px
+untuk tautan inline justru merusak kerapatan teks di sekitarnya.
+
+### Navigasi internal: tidak disederhanakan, karena sudah tidak ribet
+
+Diperiksa ulang dengan heuristik kompleksitas (Hick's Law: makin banyak
+pilihan sejajar, makin lama memutuskan). Menu sampingnya sudah terbagi
+empat kelompok (Operasional, Katalog, Profil usaha, Toko) hasil putaran
+audit ketiga, dan bilah bawah HP hanya menonjolkan 4 tujuan tersering
+(Dashboard, Pesanan, Antrian, Serah terima) plus satu "Menu" untuk
+sisanya — bukan sepuluh ikon berjajar. Target sentuhnya sendiri sudah
+72&times;56px, jauh di atas batas minimum. Tidak ditemukan alasan kuat
+untuk merombaknya lebih jauh; menyederhanakan sesuatu yang sudah
+sederhana hanya memindahkan kerumitan ke tempat lain.
+
 ## Aturan yang dipegang selanjutnya
 
 1. **Ukur, jangan kira.** Setiap layar baru diperiksa `scrollWidth`-nya di 375px.

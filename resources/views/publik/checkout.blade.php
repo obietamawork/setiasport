@@ -19,7 +19,13 @@
              urlArea: '{{ route('pengiriman.area') }}',
              urlTarif: '{{ route('pengiriman.tarif') }}',
          })">
-        <form method="POST" action="{{ route('checkout.proses') }}" class="space-y-4 border border-line bg-field p-6">
+        {{-- Ringkasan tampil lebih dulu di HP (order-1) supaya pelanggan tahu
+             persis angka yang disepakati sebelum mengisi formulir, bukan
+             menemukannya terkubur di bawah tombol "Buat pesanan" setelah
+             menggulir panjang. Di layar lebar urutan baliknya tidak masalah
+             karena ringkasan sudah terlihat di kolom kanan sepanjang waktu. --}}
+        <form method="POST" action="{{ route('checkout.proses') }}"
+              class="order-2 space-y-4 border border-line bg-field p-6 lg:order-1">
             @csrf
 
             <div>
@@ -246,7 +252,7 @@
             @endif
         </form>
 
-        <aside class="lg:sticky lg:top-6 lg:self-start">
+        <aside class="order-1 lg:order-2 lg:sticky lg:top-6 lg:self-start">
             <div class="border border-line bg-field">
                 <h2 class="border-b border-line px-5 py-3 font-semibold">Ringkasan</h2>
                 <ul class="divide-y divide-line text-sm">

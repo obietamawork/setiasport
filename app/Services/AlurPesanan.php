@@ -56,6 +56,22 @@ class AlurPesanan
             // Batas waktu bayar tidak lagi berlaku begitu uangnya masuk.
             $order->update(['kadaluarsa_pada' => null]);
 
+            $order = $order->fresh(['items.options', 'payments', 'adjustments']);
+
+            if ($order->sisa_tagihan <= 0) {
+                /*
+                 * Pelunasan yang masuk lewat jalur lain (tunai di kasir, misalnya)
+                 * tidak otomatis membatalkan permintaan pembayaran lama yang masih
+                 * menunggu (transfer bank saat checkout, misalnya). Tanpa ini,
+                 * staf bisa memverifikasi keduanya satu per satu di panel, dan
+                 * pesanan yang sama tercatat lunas dua kali di laporan keuangan.
+                 */
+                $order->payments()
+                    ->where('id', '!=', $payment->id)
+                    ->where('status', PaymentStatus::MENUNGGU->value)
+                    ->update(['status' => PaymentStatus::KADALUARSA->value]);
+            }
+
             $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']));
         });
 

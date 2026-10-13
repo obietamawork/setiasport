@@ -387,7 +387,11 @@
                             </p>
                         </div>
 
-                        <span class="chip {{ $bayar->status === PaymentStatus::LUNAS ? 'chip-ok' : 'chip-kuning' }}">
+                        <span class="chip {{ match ($bayar->status) {
+                            PaymentStatus::LUNAS => 'chip-ok',
+                            PaymentStatus::MENUNGGU => 'chip-kuning',
+                            PaymentStatus::GAGAL, PaymentStatus::KADALUARSA => 'chip-netral',
+                        } }}">
                             {{ $bayar->status->label() }}
                         </span>
 

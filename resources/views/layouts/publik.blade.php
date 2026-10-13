@@ -141,7 +141,7 @@
         @endunless
 
         <button type="button" @click="menu = !menu"
-                class="-mr-1 rounded-[7px] p-2 text-muted transition-colors hover:bg-navy-50 hover:text-ink md:hidden"
+                class="-mr-2 rounded-[7px] p-3 text-muted transition-colors hover:bg-navy-50 hover:text-ink md:hidden"
                 :aria-expanded="menu" aria-controls="menu-mobil" aria-label="Buka menu">
             <svg class="size-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
                  stroke-linecap="round" aria-hidden="true">
@@ -226,7 +226,7 @@
                          yang justru akan pecah dari palet situs. --}}
                     @foreach ($sosial as [$ikon, $nama, $tautan])
                         <a href="{{ $tautan }}" target="_blank" rel="noopener" title="{{ $nama }}"
-                           class="flex size-9 items-center justify-center rounded-[8px] bg-navy text-white transition-colors hover:bg-navy-800">
+                           class="flex size-11 items-center justify-center rounded-[8px] bg-navy text-white transition-colors hover:bg-navy-800">
                             <span class="sr-only">{{ $nama }}</span>
                             <x-ikon :nama="$ikon" ukuran="size-4" />
                         </a>
