@@ -611,6 +611,12 @@
             },
 
             kategoriDari(kata) {
+                // Produk tanpa kategori umur hanya punya satu pilihan ukuran
+                // generik (value kosong); kata apa pun yang tertulis di depan
+                // ukuran tidak relevan buat produk seperti ini.
+                const nilaiTersedia = this.kategori.map(k => k.value);
+                if (nilaiTersedia.length === 1) return nilaiTersedia[0];
+
                 const k = (kata || '').toLowerCase();
                 if (k === 'sd') return 'SD';
                 if (k === 'smp') return 'SMP';
