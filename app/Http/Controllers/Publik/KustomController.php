@@ -69,6 +69,7 @@ class KustomController extends Controller
                 $data['baris'],
                 $opsi,
                 $this->catatan($data),
+                $data['desain_sumber'],
             );
         } catch (InvalidArgumentException $e) {
             // Harga dan MOQ dihitung ulang di server; pesan aslinya yang paling

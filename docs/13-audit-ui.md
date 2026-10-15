@@ -428,6 +428,51 @@ Daftar pesanan sudah punya penanda jalur ("Campuran", "Kustom",
 "Dikirim") dan segmen filter yang relevan ("Perlu tindakan", "Masuk
 berjalan", dst). Tidak ada perubahan yang diperlukan di sini.
 
+## Putaran kedelapan: titik pertama pelanggan diminta mengunggah desain
+
+Diminta klien: kenapa kesempatan pelanggan mengunggah desain sendiri baru
+muncul di ujung alur (halaman pesanan, setelah dibuat), padahal langkah 2
+konfigurator sudah menanyakan "mau kirim desain sendiri atau tidak" sejak
+awal? Diperiksa dua file yang relevan sebelum menyimpulkan apa pun:
+`publik/kustom.blade.php` (langkah 2) dan `komponen/desain.blade.php`
+(halaman pesanan).
+
+Jawabannya: pilihan itu SUDAH diminta sejak awal, tapi dibuang ke teks bebas
+(`KustomController::catatan()`) yang tidak bisa dibaca balik sebagai data.
+Akibatnya halaman pesanan tidak tahu pelanggan mana yang sudah bilang mau
+kirim sendiri, jadi kotak unggahnya identik untuk semua orang: terlipat di
+balik `<details>` tertutup, sama seperti pelanggan yang justru memilih
+katalog atau minta dibantu admin (lihat KEP-068).
+
+**Diperbaiki:** ditambahkan kolom `order_items.desain_sumber`, diteruskan
+dari keranjang sampai item pesanan tanpa mengganti catatan bebas yang sudah
+ada. Begitu kolom ini `'sendiri'` dan belum ada unggahan, halaman pesanan
+menampilkan kotak pengingat kuning dan kotak unggahnya terbuka otomatis —
+tidak perlu diklik dulu untuk ditemukan.
+
+### Bug lepas yang ikut ketemu: "Tempel dari Excel" buta untuk produk tanpa kategori umur
+
+Diuji ujung ke ujung lewat browser sungguhan (bukan cuma test otomatis):
+memesan "Jersey Futsal Full Printing" lewat konfigurator, pilih "Kirim
+desain sendiri", lalu tempel 12 baris lewat "Tempel dari Excel" di langkah 3.
+Hasilnya **selalu** "Tidak ada baris yang terbaca", walau datanya sudah
+benar formatnya. Produk ini tidak memakai kategori umur (SD/SMP/Dewasa) —
+tapi `kategoriDari()` di sisi klien selalu menebak `'DEWASA'` begitu kata di
+depan ukuran bukan "sd"/"smp", padahal satu-satunya kategori yang benar-benar
+ada untuk produk seperti ini adalah kosong (`''`). Tempel massal jadi mustahil
+dipakai untuk SETIAP produk tanpa kategori umur, bukan cuma satu produk ini
+— bug yang ditemukan kebetulan saat menguji perbaikan di atas, dicatat dan
+diperbaiki sekalian (KEP-069) karena langsung menghalangi pengujian ujung ke
+ujung yang sedang dikerjakan.
+
+**Catatan lepas, belum diperbaiki:** saat menguji ini juga ketahuan "Jersey
+Futsal Full Printing" di database lokal tidak punya satu pun baris harga
+per-ukuran (`product_prices`), jadi konfiguratornya gagal dengan pesan
+"Harga ... belum diisi" untuk produk ini secara spesifik. Ini data katalog
+yang belum lengkap (sudah tercatat sebagai pekerjaan tersisa sebelum
+peluncuran), bukan bug kode — pengujian dipindah ke produk lain yang harganya
+lengkap ("Custom Jersey Atasan") setelah ketahuan.
+
 ## Aturan yang dipegang selanjutnya
 
 1. **Ukur, jangan kira.** Setiap layar baru diperiksa `scrollWidth`-nya di 375px.

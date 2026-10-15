@@ -6,6 +6,13 @@
     $mockup = $item->designAssets->where('tipe', DesignAssetType::MOCKUP)->sortByDesc('versi');
     $kiriman = $item->designAssets->where('tipe', DesignAssetType::UPLOAD_PELANGGAN)->sortByDesc('versi');
     $perluSetuju = $item->status_item === OrderItemStatus::MENUNGGU_PERSETUJUAN;
+
+    // Pelanggan sudah bilang "Kirim desain sendiri" saat memesan (KEP-040)
+    // tapi belum benar-benar mengunggah apa pun. Kotak unggahnya dibuka
+    // otomatis dan ditonjolkan, bukan menunggu ditemukan di balik tautan
+    // "Kirim desain sendiri" yang tertutup -- itulah celah yang bikin
+    // pelanggan baru sadar harus mengunggah justru di langkah terakhir.
+    $menungguUnggahanSendiri = $item->desain_sumber === 'sendiri' && $kiriman->isEmpty();
 @endphp
 
 <div class="border-t border-line px-5 py-4">
@@ -123,7 +130,18 @@
                 </ul>
             @endif
 
-            <details class="mt-3">
+            @if ($menungguUnggahanSendiri)
+                <div class="mt-3 border border-kuning bg-kuning-50 p-4">
+                    <p class="font-semibold">Anda memilih mengirim desain sendiri</p>
+                    <p class="mt-1 text-sm leading-relaxed">
+                        Belum ada yang diunggah. Kirim gambar previewnya di bawah ini supaya
+                        desainer kami bisa mulai &mdash; tim produksi baru mulai mengerjakan
+                        setelah ini diterima.
+                    </p>
+                </div>
+            @endif
+
+            <details class="mt-3" @if ($menungguUnggahanSendiri) open @endif>
                 <summary class="cursor-pointer text-sm font-medium">Kirim desain sendiri</summary>
                 <form method="POST" action="{{ route('lacak.item.desain', [$order->access_token, $item]) }}"
                       enctype="multipart/form-data" class="mt-3 space-y-3">

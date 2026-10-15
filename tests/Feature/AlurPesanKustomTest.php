@@ -131,4 +131,77 @@ class AlurPesanKustomTest extends TestCase
         $this->assertStringContainsString('Tanya lewat WhatsApp', $html);
         $this->assertStringContainsString('Masukkan ke keranjang', $html);
     }
+
+    private function pesanDenganDesainSumber(string $sumber): Order
+    {
+        $this->post(route('kustom.simpan', $this->produk()), [
+            'opsi' => $this->opsi('Serena', 'Oblong', 'Pendek', 'Tanpa Saku'),
+            'baris' => [['kategori' => 'SD', 'ukuran' => 'L', 'jumlah' => 6]],
+            'desain_sumber' => $sumber,
+        ])->assertRedirect(route('keranjang'));
+
+        $this->post('/checkout', [
+            'nama' => 'Budi Santoso',
+            'email' => 'budi@contoh.test',
+            'no_hp' => '081234567890',
+            'tipe_pembayaran' => 'DP',
+            'setuju' => '1',
+        ])->assertRedirect();
+
+        return Order::latest('id')->firstOrFail();
+    }
+
+    /**
+     * Pilihan "sumber desain" di langkah 2 (KEP-040) sempat hanya terlipat ke
+     * teks bebas lewat KustomController::catatan() dan tidak bisa dibaca balik
+     * sebagai data (KEP-068). Kalau kolomnya tidak terisi, halaman pesanan
+     * tidak tahu harus mengingatkan pelanggan mengunggah apa pun.
+     */
+    public function test_desain_sumber_tersimpan_sebagai_kolom_terstruktur(): void
+    {
+        $order = $this->pesanDenganDesainSumber('sendiri');
+
+        $this->assertSame('sendiri', $order->items->first()->desain_sumber);
+    }
+
+    /**
+     * Pelanggan yang sudah bilang mau kirim desain sendiri saat memesan tidak
+     * perlu lagi menemukan sendiri tautan "Kirim desain sendiri" yang
+     * terlipat di ujung halaman (KEP-068): kotaknya langsung terbuka dan
+     * diberi pengingat menonjol begitu halaman pesanan dibuka.
+     */
+    public function test_kotak_unggah_desain_sendiri_terbuka_otomatis(): void
+    {
+        $order = $this->pesanDenganDesainSumber('sendiri');
+
+        $this->get(route('lacak.token', $order->access_token))
+            ->assertOk()
+            ->assertSee('Anda memilih mengirim desain sendiri')
+            ->assertSeeInOrder(['Anda memilih mengirim desain sendiri', 'Kirim desain sendiri'], false);
+    }
+
+    /** Begitu ada yang diunggah, pengingatnya tidak perlu tampil lagi. */
+    public function test_pengingat_desain_sendiri_hilang_setelah_pelanggan_mengunggah(): void
+    {
+        $order = $this->pesanDenganDesainSumber('sendiri');
+        $item = $order->items->first();
+
+        $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
+            'tautan' => 'https://drive.google.com/file/d/contoh',
+        ])->assertSessionHas('sukses');
+
+        $this->get(route('lacak.token', $order->access_token))
+            ->assertOk()
+            ->assertDontSee('Anda memilih mengirim desain sendiri');
+    }
+
+    /** Pelanggan yang memilih katalog atau minta dibantu admin tidak perlu diingatkan mengunggah. */
+    public function test_pengingat_desain_sendiri_tidak_tampil_untuk_sumber_lain(): void
+    {
+        $order = $this->pesanDenganDesainSumber('katalog');
+
+        $this->get(route('lacak.token', $order->access_token))
+            ->assertOk()
+            ->assertDontSee('Anda memilih mengirim desain sendiri');
+    }
 }

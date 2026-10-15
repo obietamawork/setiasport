@@ -122,6 +122,7 @@ class Checkout
                         : $baris['rincian']->hargaSatuan,
                     'status_item' => OrderItemStatus::MENUNGGU_PEMBAYARAN,
                     'catatan' => $baris['catatan'] ?? null,
+                    'desain_sumber' => $baris['desain_sumber'] ?? null,
                 ]);
 
                 $this->simpanDaftarUkuran($item, $baris);

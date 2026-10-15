@@ -20,7 +20,7 @@ class OrderItem extends Model
         'order_id', 'product_id', 'product_variant_id', 'nama_produk',
         'fulfillment_type', 'qty', 'harga_satuan', 'status_item', 'kerja_token',
         'approved_design_asset_id', 'approved_at', 'approved_by_name', 'approved_ip',
-        'jumlah_revisi', 'catatan',
+        'jumlah_revisi', 'catatan', 'desain_sumber',
     ];
 
     protected function casts(): array

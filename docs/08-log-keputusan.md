@@ -2141,6 +2141,58 @@ disimpan sebagai Setting biasa yang bisa diubah dari panel kapan saja.
 
 ---
 
+## KEP-068 — Pilihan "kirim desain sendiri" mengingatkan sejak halaman pesanan dibuka
+**Status:** TERKUNCI · 2026-10-16
+
+Langkah 2 konfigurator (KEP-040) sudah menanyakan sumber desain — katalog, kirim
+sendiri, atau dibantu admin — tapi jawabannya hanya dilipat jadi kalimat bebas
+lewat `KustomController::catatan()` dan tidak pernah tersimpan sebagai data yang
+bisa dibaca balik. Akibatnya kotak unggah "Kirim desain sendiri" di halaman
+pesanan (`komponen/desain.blade.php`) selalu tampil tertutup di balik
+`<details>`, identik untuk ketiga pilihan — padahal pelanggan yang sudah bilang
+mau kirim sendiri semestinya langsung diarahkan ke sana, bukan menyadarinya
+belakangan di ujung alur.
+
+**Keputusan:** sumber desain disimpan sebagai kolom terstruktur
+`order_items.desain_sumber` (`katalog` / `sendiri` / `admin`), diteruskan dari
+`Keranjang::tambahKustomPerUkuran()` sampai `Checkout::buat()`, bukan menggantikan
+catatan bebas yang sudah ada — dua-duanya jalan berdampingan. Begitu
+`desain_sumber === 'sendiri'` dan belum ada `DesignAsset` tipe
+`UPLOAD_PELANGGAN`, halaman pesanan menampilkan kotak pengingat kuning dan
+kotak unggahnya (`<details open>`) terbuka otomatis, bukan menunggu ditemukan.
+Pengingat ini hilang sendiri begitu ada yang diunggah, dan tidak pernah tampil
+untuk pilihan katalog atau dibantu admin.
+
+**Kenapa bukan memindah kotak unggah ke langkah konfigurator.** File desain
+yang sebenarnya tetap diunggah SETELAH pesanan dibuat (KEP-040): pesanan belum
+punya token halaman, dan mengunggah file besar di tengah proses checkout
+menambah titik gagal sebelum pembayaran. Yang diperbaiki bukan *kapan* boleh
+unggah, tapi *seberapa jelas* langkah itu terlihat begitu halaman pesanan
+pertama kali dibuka — pengingat, bukan pemindahan tahap.
+
+---
+
+## KEP-069 — "Tempel dari Excel" memeriksa kategori yang benar-benar tersedia
+**Status:** TERKUNCI · 2026-10-16
+
+Ditemukan saat menguji KEP-068: fitur tempel massal di langkah 3 konfigurator
+(`prosesTempel()`) menolak SEMUA baris pada produk yang tidak memakai kategori
+umur (SD/SMP/Dewasa) — misalnya produk yang harganya sama rata tanpa kategori.
+`kategoriDari()` selalu mengembalikan `'DEWASA'` begitu kata di depan ukuran
+bukan "sd"/"smp", padahal satu-satunya kategori yang benar-benar tersedia untuk
+produk seperti itu adalah nilai kosong (`''`). Hasilnya: `ukuranKategori('DEWASA')`
+tidak pernah menemukan kecocokan, dan pelanggan melihat "Tidak ada baris yang
+terbaca" walau datanya sudah benar.
+
+**Keputusan:** `kategoriDari()` memeriksa dulu kategori apa yang sebenarnya
+tersedia untuk produk yang sedang dibuka (`this.kategori`, dikirim server dari
+`pakaiKategoriUkuran()`). Kalau cuma ada satu pilihan — berarti produk ini
+tidak memakai kategori — kata apa pun yang tertulis di depan ukuran diabaikan,
+dan baris itu langsung dicocokkan ke satu-satunya kategori yang ada. Produk
+yang memang memakai SD/SMP/Dewasa tidak terpengaruh sama sekali.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2212,3 +2264,5 @@ disimpan sebagai Setting biasa yang bisa diubah dari panel kapan saja.
 | KEP-065 | Tautan unggah file besar, disediakan toko sendiri | TERKUNCI |
 | KEP-066 | Gambar produk bisa ditandai mewakili satu varian (warna/opsi) | TERKUNCI |
 | KEP-067 | Area asal Biteship dicari dan diatur lewat panel, bukan `.env` | TERKUNCI |
+| KEP-068 | Pilihan "kirim desain sendiri" mengingatkan sejak halaman pesanan dibuka | TERKUNCI |
+| KEP-069 | "Tempel dari Excel" memeriksa kategori yang benar-benar tersedia | TERKUNCI |

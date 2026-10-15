@@ -104,6 +104,7 @@ class Keranjang
         array $daftarUkuran,
         array $optionValueIds,
         ?string $catatan = null,
+        ?string $desainSumber = null,
     ): void {
         $rincian = $this->kalkulator->kustomPerUkuran($produk, $daftarUkuran, $optionValueIds);
 
@@ -116,6 +117,7 @@ class Keranjang
             'jalur' => FulfillmentType::PREORDER->value,
             'opsi' => array_values($optionValueIds),
             'catatan' => $catatan,
+            'desain_sumber' => $desainSumber,
             'ukuran' => array_map(fn (array $b) => [
                 'kategori' => (string) ($b['kategori'] ?? ''),
                 'ukuran' => (string) $b['ukuran'],
@@ -214,6 +216,7 @@ class Keranjang
                     'qty' => $rincian?->qty ?? $b['qty'],
                     'opsi' => $b['opsi'],
                     'catatan' => $b['catatan'] ?? null,
+                    'desain_sumber' => $b['desain_sumber'] ?? null,
                     'ukuran' => $b['ukuran'] ?? null,
                 ];
         })->filter()->values();
