@@ -9,6 +9,7 @@ use App\Models\OptionValue;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\AlurPesanan;
@@ -750,5 +751,42 @@ class KustomFlowTest extends TestCase
             ->assertOk()
             ->assertSee('PEMAIN 1')
             ->assertSee($item->order->kode);
+    }
+
+    /**
+     * Keranjang campuran (stok + kustom): teks DP yang bilang "setelah barang
+     * selesai dikerjakan" membingungkan kalau sebagiannya cuma barang stok
+     * yang sebenarnya tidak "dikerjakan" apa-apa -- padahal barang stok itu
+     * TETAP menunggu sampai pesanan seluruhnya siap (Order::bolehDiserahkan()
+     * mensyaratkan SEMUA item Siap, satu kali serah terima).
+     */
+    public function test_checkout_campuran_menjelaskan_barang_stok_ikut_menunggu(): void
+    {
+        $bola = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();
+        $this->post('/keranjang', ['variant_id' => $bola->id, 'qty' => 1]);
+
+        $this->post(route('keranjang.kustom', $this->jersey()), [
+            'qty' => 12,
+            'opsi' => $this->opsi('Dryfit Serena', 'Pendek', 'O-neck', 'Tanpa Celana', 'Tanpa Nameset'),
+        ])->assertRedirect(route('keranjang'));
+
+        $this->get('/checkout')
+            ->assertOk()
+            ->assertSee('sisanya dilunasi setelah seluruh pesanan siap')
+            ->assertSee('termasuk barang stok di dalamnya');
+    }
+
+    /** Keranjang kustom murni (tanpa barang stok) tetap memakai teks aslinya. */
+    public function test_checkout_kustom_murni_memakai_teks_dikerjakan(): void
+    {
+        $this->post(route('keranjang.kustom', $this->jersey()), [
+            'qty' => 12,
+            'opsi' => $this->opsi('Dryfit Serena', 'Pendek', 'O-neck', 'Tanpa Celana', 'Tanpa Nameset'),
+        ])->assertRedirect(route('keranjang'));
+
+        $this->get('/checkout')
+            ->assertOk()
+            ->assertSee('sisanya dilunasi setelah barang selesai dikerjakan')
+            ->assertDontSee('termasuk barang stok di dalamnya');
     }
 }

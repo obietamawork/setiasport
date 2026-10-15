@@ -39,6 +39,14 @@ class CheckoutController extends Controller
             // DP hanya masuk akal untuk pesanan kustom: barang stok diambil
             // besok, jadi tidak ada gunanya menunda pembayarannya (KEP-005).
             'bolehDp' => $isi->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::PREORDER),
+            // Keranjang campuran (stok + kustom): barang stok ikut menunggu
+            // sampai pesanan SELURUHNYA siap dan lunas (satu nomor pesanan,
+            // satu kali serah terima -- Order::bolehDiserahkan() mensyaratkan
+            // SEMUA item Siap). Teks DP yang bilang "setelah barang selesai
+            // dikerjakan" membingungkan kalau sebagian isinya cuma barang
+            // stok yang sebenarnya tidak "dikerjakan" apa-apa.
+            'campuran' => $isi->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::PREORDER)
+                && $isi->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::READY_STOCK),
             'persenDp' => (int) setting('dp_minimum_persen', 50),
             'biayaLayanan' => (int) setting('biaya_layanan', 0),
             /*

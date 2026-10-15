@@ -366,6 +366,68 @@ sisanya — bukan sepuluh ikon berjajar. Target sentuhnya sendiri sudah
 untuk merombaknya lebih jauh; menyederhanakan sesuatu yang sudah
 sederhana hanya memindahkan kerumitan ke tempat lain.
 
+## Putaran ketujuh: keranjang campuran, ujung ke ujung
+
+Diminta klien: audit ulang alur "Data pemesan" untuk SEGALA jenis barang,
+bukan cuma satu per satu — plus alur pemesanan dan alur kerja internal
+sekali lagi. Yang paling belum pernah diuji penuh sampai putaran ini:
+**keranjang campuran** (barang stok + barang kustom dalam satu pesanan,
+KEP-001), diikuti sungguhan dari keranjang sampai antrian desain di panel,
+bukan cuma dibaca kodenya.
+
+### Teks DP membingungkan untuk keranjang campuran
+
+Memilih "Uang muka 50%" menampilkan: *"sisanya dilunasi setelah barang
+selesai **dikerjakan**..."* — tepat untuk pesanan kustom murni, tapi
+aneh kalau sebagian isi keranjangnya barang stok yang sebenarnya tidak
+"dikerjakan" apa-apa (sepatu yang sudah ada di rak, misalnya). Diperiksa
+dulu apakah ini sekadar salah kata atau benar-benar longgar secara bisnis:
+`Order::bolehDiserahkan()` mensyaratkan SELURUH item berstatus Siap, jadi
+barang stok itu tetap tidak bisa diambil sendirian lebih awal — satu
+pesanan, satu kali serah terima. Jadi mekanismenya sudah benar; cuma
+kalimatnya yang tidak mengikuti kenyataan itu.
+
+**Diperbaiki:** `CheckoutController` mengirim flag `campuran` (ada barang
+PREORDER *dan* READY_STOCK sekaligus), dan teksnya berganti jadi
+*"...sisanya dilunasi setelah seluruh pesanan siap, termasuk barang stok
+di dalamnya, karena diserahkan bersamaan dalam satu kali pengambilan..."*
+— sekarang menjelaskan KENAPA barang stok ikut menunggu, bukan membiarkan
+pelanggan menyimpulkan sendiri (atau bertanya ke WhatsApp admin).
+
+### Diuji ujung ke ujung dengan keranjang campuran sungguhan
+
+Sepatu (stok) + jersey kustom 12 pcs dimasukkan satu keranjang, checkout
+dengan DP 50%, dibayar, diverifikasi dari panel memakai alur `verifikasi()`
+yang baru saja diperbaiki dari tiga putaran review keamanan sebelumnya
+(penguncian baris, atomisitas field, pemeriksaan sisa tagihan). Hasilnya
+benar di setiap titik:
+
+- Item stok naik ke **Diproses**, item kustom naik ke **Antrian Desain** —
+  serentak, sesuai jalur masing-masing
+- `sisa_tagihan` pesanan tepat separuh sisanya, pembayaran DP tercatat
+  Lunas, tidak ada baris ganda
+- Item kustom benar-benar muncul di meja Antrian Desain di panel, siap
+  dikerjakan staf
+- Halaman pelanggan menampilkan DUA jalur progres terpisah (satu untuk
+  barang stok, satu untuk barang kustom) dalam satu halaman pesanan yang
+  sama, tanpa halaman meluber di 375px
+
+Tidak ditemukan bug baru di jalur ini — hanya teks yang diperbaiki di atas.
+Ini konfirmasi langsung bahwa perbaikan dari tiga review keamanan
+sebelumnya (commit c391ea6, d1cafaa) tidak mematahkan jalur pembayaran
+normal; diuji di pesanan sungguhan, bukan cuma lewat test otomatis.
+
+### Dashboard dan daftar pesanan: tidak disentuh, sudah di atas rata-rata
+
+Dashboard panel menjawab pertanyaan operasional ("apa yang perlu
+ditangani hari ini"), bukan sekadar angka — persis yang disarankan
+riset Nielsen Norman Group untuk alat kerja internal: peringatan data
+contoh yang belum dihapus, bukti transfer menunggu, barang siap tapi
+belum diambil 7 hari, harga katalog yang belum lengkap, stok menipis.
+Daftar pesanan sudah punya penanda jalur ("Campuran", "Kustom",
+"Dikirim") dan segmen filter yang relevan ("Perlu tindakan", "Masuk
+berjalan", dst). Tidak ada perubahan yang diperlukan di sini.
+
 ## Aturan yang dipegang selanjutnya
 
 1. **Ukur, jangan kira.** Setiap layar baru diperiksa `scrollWidth`-nya di 375px.

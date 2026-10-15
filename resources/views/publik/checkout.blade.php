@@ -168,7 +168,11 @@
                             <span>
                                 <strong>Uang muka {{ $persenDp }}%</strong>
                                 <span class="tabular">{{ rupiah($dpMinimum) }}</span> sekarang,
-                                sisanya dilunasi setelah barang selesai dikerjakan, lewat transfer atau di kasir.
+                                @if ($campuran)
+                                    sisanya dilunasi setelah seluruh pesanan siap, termasuk barang stok di dalamnya, karena diserahkan bersamaan dalam satu kali pengambilan, lewat transfer atau di kasir.
+                                @else
+                                    sisanya dilunasi setelah barang selesai dikerjakan, lewat transfer atau di kasir.
+                                @endif
                                 <span x-show="metode === 'KIRIM'" x-cloak class="block text-muted">
                                     Ongkos kirim ikut dilunasi di akhir, bukan sekarang.
                                 </span>
