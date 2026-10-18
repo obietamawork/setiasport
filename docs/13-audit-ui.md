@@ -473,6 +473,69 @@ yang belum lengkap (sudah tercatat sebagai pekerjaan tersisa sebelum
 peluncuran), bukan bug kode — pengujian dipindah ke produk lain yang harganya
 lengkap ("Custom Jersey Atasan") setelah ketahuan.
 
+## Putaran kesembilan: ujung ke ujung sebelum deploy, ketat ke standar enterprise
+
+Diminta klien sebelum menyentuh server produksi: audit ulang SELURUH alur
+pelanggan langsung di browser (bukan cuma baca kode) — dari membuka
+beranda, memilih barang, keranjang, memilih opsi produk custom, checkout,
+sampai ongkos kirim benar-benar keluar, plus halaman masuk. Diuji nyata
+di 375px lewat Playwright, termasuk mengisi form dan mengklik tombol
+sungguhan, bukan cuma ditinjau dari tangkapan layar.
+
+### Yang diuji dan lolos tanpa perbaikan
+
+- **Beranda, katalog, halaman produk, keranjang** — hierarki visual,
+  status sistem (badge keranjang, pesan sukses), dan label aksesibilitas
+  pada form keranjang semuanya rapi.
+- **Checkout → ongkos kirim**, jalur yang paling diminta diperiksa: pencarian
+  area Biteship hidup (`Sukoharjo` → sembilan hasil nyata), memilih area
+  memunculkan tiga tarif kurir sungguhan (JNE Trucking/Reguler, J&T EZ), dan
+  memilih kurir memperbarui subtotal di ringkasan secara langsung
+  (Rp 285.500 → Rp 293.500). Jalur yang sebelumnya cuma dibaca dari kode
+  kini dikonfirmasi benar-benar menyala.
+- **Keranjang campuran** (barang stok + custom sekaligus) di checkout:
+  teks DP "...termasuk barang stok di dalamnya..." dari Putaran ketujuh
+  tetap tampil benar pada kombinasi baru.
+- **Halaman Masuk, Buat akun, dan Masuk staf** — pesan galat login generik
+  ("Email atau kata sandi tidak cocok", tidak membocorkan email mana yang
+  terdaftar), email dipertahankan setelah galat tapi kata sandi dikosongkan,
+  dan jalur "Tidak punya akun? Tidak masalah" tetap mengarahkan ke pelacakan
+  tanpa akun (KEP-020) dengan jelas.
+- Dua kejadian yang SEMPAT terlihat seperti bug tapi ternyata fitur yang
+  disengaja, diperiksa sebelum dilaporkan: strip lencana kepercayaan di
+  beranda dan penanda langkah konfigurator sama-sama memakai pola
+  "geser-x" (`overflow-x-auto` + `snap-x`) yang memang sengaja dibuat
+  bisa digeser di layar sempit, bukan overflow yang salah.
+- Tombol-tombol konfigurator yang awalnya terukur di bawah 44px lewat
+  Playwright ternyata hanya mengukur mode non-sentuh (`pointer: coarse`
+  bernilai `false` di jendela browser yang sekadar diperkecil, bukan
+  emulasi perangkat sentuh sungguhan); aturan CSS `@media (pointer: coarse)
+  { .tombol { min-height: 2.75rem } }` sudah menangani ini dengan benar
+  untuk HP sungguhan.
+
+### Bug nyata yang ditemukan dan diperbaiki: penanda langkah tidak ikut bergeser
+
+Di layar 375px, begitu pelanggan menekan Lanjut sampai langkah 3 ("Data
+Pemain") atau 4 ("Cek Pesanan"), penanda langkah di atas (yang memang
+sengaja bisa digeser ke samping sejak awal) **tidak ikut menggulir ke
+langkah yang aktif** — yang terlihat tetap "Pilih Produk / Desain & Detail"
+dengan highlight di langkah lama, padahal isi di bawahnya sudah pindah.
+Pelanggan kehilangan jejak sedang di langkah mana. Diperbaiki dengan
+menggulirkan penanda otomatis setiap kali langkah berganti; detail akar
+masalah dan kenapa dua percobaan pertama gagal ada di KEP-071 — ringkasnya,
+magic `$el` Alpine ternyata terikat ke elemen pemicu (tombol Lanjut), bukan
+akar komponen, dan baru ketahuan lewat pengujian berulang karena percobaan
+pertama tampak berhasil sesekali lalu gagal lagi.
+
+### Catatan lepas, bukan kode: data katalog belum lengkap
+
+Produk "Jersey Futsal Full Printing" di database lokal tidak punya satu pun
+baris harga per-ukuran (ketahuan juga di Putaran kedelapan) — pengujian
+checkout dipindah ke produk lain yang datanya lengkap. Beberapa produk juga
+masih menampilkan inisial sebagai pengganti foto asli (CU, KA, SE) dan
+deskripsi produk kosong pada beberapa barang. Ini pekerjaan pengisian data
+sebelum peluncuran yang sudah tercatat sebelumnya, bukan temuan baru.
+
 ## Aturan yang dipegang selanjutnya
 
 1. **Ukur, jangan kira.** Setiap layar baru diperiksa `scrollWidth`-nya di 375px.

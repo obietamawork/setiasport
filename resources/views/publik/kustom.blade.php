@@ -76,10 +76,10 @@
 
     {{-- Penanda langkah. Langkah yang sudah dilewati bisa diklik untuk mundur:
          memperbaiki bahan tidak boleh berarti mengetik ulang daftar pemain. --}}
-    <ol class="mt-5 flex items-center gap-2 overflow-x-auto pb-1 text-sm">
+    <ol x-ref="penanda" class="mt-5 flex items-center gap-2 overflow-x-auto pb-1 text-sm">
         @foreach ($langkah as $i => $nama)
             <li class="flex shrink-0 items-center gap-2">
-                <button type="button" @click="ke({{ $i + 1 }})" :disabled="{{ $i + 1 }} > tertinggi"
+                <button type="button" data-langkah="{{ $i + 1 }}" @click="ke({{ $i + 1 }})" :disabled="{{ $i + 1 }} > tertinggi"
                         class="flex items-center gap-2 rounded-full py-1 pr-3 pl-1 transition-colors disabled:cursor-not-allowed"
                         :class="langkah === {{ $i + 1 }} ? 'bg-navy text-white' : ({{ $i + 1 }} <= tertinggi ? 'text-ink hover:bg-navy-50' : 'text-muted')">
                     <span class="flex size-6 items-center justify-center rounded-full text-xs font-bold"
@@ -509,6 +509,7 @@
 
             ke(n) {
                 if (n <= this.tertinggi) this.langkah = n;
+                this.gulirPenanda();
             },
 
             maju() {
@@ -516,11 +517,32 @@
                 this.langkah = Math.min(4, this.langkah + 1);
                 this.tertinggi = Math.max(this.tertinggi, this.langkah);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                this.gulirPenanda();
             },
 
             mundur() {
                 this.langkah = Math.max(1, this.langkah - 1);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                this.gulirPenanda();
+            },
+
+            /*
+             * Penanda langkah bisa digeser (overflow-x-auto, KEP-071): di HP
+             * sempit, langkah 3 dan 4 mulai tersembunyi di luar layar. Tanpa
+             * ini, label yang tersisa terlihat masih di langkah lama padahal
+             * isinya sudah pindah -- pelanggan kehilangan jejak sedang di
+             * langkah mana.
+             */
+            gulirPenanda() {
+                // $refs, bukan $el: dipanggil dari dalam maju()/mundur() yang
+                // dipicu @click tombol Lanjut/Kembali, $el di sini adalah
+                // tombolnya sendiri (ikut konteks direktif yang memanggilnya),
+                // bukan akar komponen -- querySelector dari situ tidak akan
+                // pernah menemukan <ol> yang posisinya di luar tombol.
+                this.$nextTick(() => {
+                    this.$refs.penanda.querySelector(`button[data-langkah="${this.langkah}"]`)
+                        ?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' });
+                });
             },
 
             get bisaLanjut() {

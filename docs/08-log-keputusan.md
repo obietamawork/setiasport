@@ -2232,14 +2232,59 @@ sama persis dibutuhkan pada arah mana pun.
   bukan pengganti, karena kurir tetap membaca alamat tulisan sebagai sumber
   utama; tautannya cuma memastikan titiknya.
 - Diteruskan lewat `PilihanKirim->tautanLokasi` dari checkout pelanggan
-  (opsional, divalidasi sebagai URL longgar — bisa tautan Google Maps, Apple
-  Maps, atau lokasi WhatsApp yang diteruskan, tidak dibatasi ke satu domain).
+  (opsional, tidak dibatasi ke satu domain — bisa tautan Google Maps, Apple
+  Maps, atau lokasi WhatsApp yang diteruskan). Skemanya dibatasi `https` saja
+  (`url:https`, bukan sekadar `url`) di ketiga jalur penyimpanannya: tautan
+  ini dirender sebagai href dan diklik admin langsung dari halaman pesanan,
+  jadi skema liar seperti `javascript:` tidak boleh pernah tersimpan. Pagar
+  kedua ada di sisi render (`Order::tautanLokasiAman()`), supaya baris lama
+  yang entah bagaimana lolos validasi tetap tidak pernah dirender jadi href.
 - Admin bisa mengisi atau mengubahnya sendiri dari halaman pesanan (formulir
   "atur pengiriman") dan dari formulir pesanan manual (KEP-054) — berguna
   kalau pelanggan membagikan lokasinya lewat WhatsApp, bukan saat checkout.
 - Ditampilkan sebagai tautan "Buka di peta" di halaman pesanan panel,
   tepat di sebelah alamat tulisan, baik sebelum maupun sesudah paket
   dikirim — satu klik untuk staf yang menyiapkan serah terima ke kurir.
+
+---
+
+## KEP-071 — Penanda langkah konfigurator ikut bergeser ke langkah aktif
+**Status:** TERKUNCI · 2026-10-19
+
+Ditemukan saat audit UI/UX menyeluruh alur pelanggan (dari membuka katalog
+sampai ongkos kirim keluar, fokus pada barang custom). Penanda empat langkah
+di `/pesan/{produk}` bisa digeser ke samping (`overflow-x-auto`) di HP
+sempit — keputusan yang sudah benar sejak awal, karena label "Data Pemain"
+dan "Cek Pesanan" tidak muat berdampingan dengan "Pilih Produk" dan
+"Desain & Detail" di layar 375px. Masalahnya: begitu pelanggan menekan
+Lanjut sampai ke langkah 3, penandanya **tidak ikut bergeser**. Yang
+terlihat di layar tetap "Pilih Produk" dan "Desain & Detail" dengan
+"Desain & Detail" ter-highlight seolah masih di langkah itu, padahal isi
+di bawahnya sudah pindah ke "Data pemain" — pelanggan kehilangan jejak
+sedang di langkah mana, padahal seluruh gunanya penanda langkah adalah
+menjawab pertanyaan itu (Nielsen: *visibility of system status*).
+
+**Akar masalahnya bukan di mana scroll-nya dipanggil, tapi target `this.$el`
+yang dipakai mencarinya.** Perbaikan pertama mencoba `this.$el.querySelector(...)`
+dari dalam `maju()`/`mundur()`, dan gagal konsisten: magic `$el` Alpine terikat
+ke elemen yang memicu evaluasi ekspresi saat itu — karena `maju()` dipanggil
+dari `@click` tombol Lanjut, `$el` di situ adalah TOMBOLNYA, bukan akar
+komponen, dan `<ol>` penanda langkah bukan keturunan tombol itu. Percobaan
+kedua (men-"smooth"-kan scroll-nya) malah menambah race baru: animasi smooth
+pada sumbu horizontal (penanda) dan `window.scrollTo` smooth pada sumbu
+vertikal (naik ke atas layar) kadang saling membatalkan di Chromium, membuat
+baru 1 dari beberapa kali percobaan benar-benar berhasil — ditangkap lewat
+pengujian berulang (6× percobaan identik), bukan sekali coba lalu dianggap
+beres.
+
+**Keputusan:** `<ol>` penanda diberi `x-ref="penanda"`, dan `gulirPenanda()`
+memakai `this.$refs.penanda` (yang selalu merujuk akar komponen, tidak
+terikat konteks direktif pemanggilnya) alih-alih `this.$el`. Animasinya
+dibuat instan (`behavior: 'instant'`), bukan smooth, karena sudah ada animasi
+smooth lain yang berjalan bersamaan dan koreksi penanda ini sendiri cukup
+kecil untuk tidak butuh animasi. Diverifikasi 6× percobaan berturut-turut,
+termasuk lewat klik sungguhan (bukan cuma memanggil method Alpine-nya
+langsung), seluruhnya konsisten berhasil.
 
 ---
 
@@ -2317,3 +2362,4 @@ sama persis dibutuhkan pada arah mana pun.
 | KEP-068 | Pilihan "kirim desain sendiri" mengingatkan sejak halaman pesanan dibuka | TERKUNCI |
 | KEP-069 | "Tempel dari Excel" memeriksa kategori yang benar-benar tersedia | TERKUNCI |
 | KEP-070 | Tautan lokasi Google Maps, pelengkap alamat kirim | TERKUNCI |
+| KEP-071 | Penanda langkah konfigurator ikut bergeser ke langkah aktif | TERKUNCI |
