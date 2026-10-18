@@ -208,6 +208,12 @@
             <textarea id="alamat_kirim" name="alamat_kirim" rows="3" class="kotak-input">{{ old('alamat_kirim') }}</textarea>
         </div>
 
+        <div class="mt-4" x-show="metodeAmbil === 'KIRIM'" x-cloak>
+            <label for="tautan_lokasi" class="label-form">Tautan lokasi Google Maps (opsional)</label>
+            <input type="url" id="tautan_lokasi" name="tautan_lokasi" class="kotak-input"
+                   placeholder="https://maps.app.goo.gl/..." value="{{ old('tautan_lokasi') }}">
+        </div>
+
         {{-- Uang yang sudah diterima di kasir dicatat sekalian, supaya pesanan
              langsung masuk antrian tanpa perlu dibuka lagi. --}}
         <div class="mt-4 grid gap-4 border-t border-line pt-4 sm:grid-cols-2">

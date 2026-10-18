@@ -126,6 +126,73 @@ class CheckoutOngkirTest extends TestCase
             ->assertSee('setelah paket ditimbang');
     }
 
+    /**
+     * Tautan "Bagikan lokasi" dari Maps pelanggan sendiri (KEP-070), pelengkap
+     * alamat_kirim, bukan penggantinya: kurir tetap membaca alamat, tautannya
+     * cuma memastikan titiknya benar.
+     */
+    public function test_tautan_lokasi_opsional_tersimpan_bersama_alamat(): void
+    {
+        Http::fake();
+        $this->keranjang();
+
+        $this->kirimCheckout([
+            'metode_ambil' => 'KIRIM',
+            'alamat_kirim' => 'Jl. Melati 5, Wonogiri',
+            'tautan_lokasi' => 'https://maps.app.goo.gl/contoh123',
+        ])->assertRedirect();
+
+        $order = Order::latest('id')->firstOrFail();
+
+        $this->assertSame('https://maps.app.goo.gl/contoh123', $order->tautan_lokasi);
+    }
+
+    public function test_checkout_tetap_jalan_tanpa_tautan_lokasi(): void
+    {
+        Http::fake();
+        $this->keranjang();
+
+        $this->kirimCheckout([
+            'metode_ambil' => 'KIRIM',
+            'alamat_kirim' => 'Jl. Melati 5, Wonogiri',
+        ])->assertRedirect();
+
+        $this->assertNull(Order::latest('id')->firstOrFail()->tautan_lokasi);
+    }
+
+    public function test_tautan_lokasi_yang_bukan_url_ditolak(): void
+    {
+        $this->keranjang();
+
+        $this->kirimCheckout([
+            'metode_ambil' => 'KIRIM',
+            'alamat_kirim' => 'Jl. Melati 5, Wonogiri',
+            'tautan_lokasi' => 'bukan tautan sama sekali',
+        ])->assertSessionHasErrors('tautan_lokasi');
+    }
+
+    /**
+     * Tautan ini dirender langsung sebagai href dan diklik admin dari halaman
+     * pesanan (KEP-070); skema selain https (javascript:, data:, dst) ditolak
+     * saat disimpan supaya tidak ada tautan liar yang berakhir di situ.
+     */
+    public function test_tautan_lokasi_skema_selain_https_ditolak(): void
+    {
+        $this->keranjang();
+
+        $this->kirimCheckout([
+            'metode_ambil' => 'KIRIM',
+            'alamat_kirim' => 'Jl. Melati 5, Wonogiri',
+            'tautan_lokasi' => 'javascript:alert(1)',
+        ])->assertSessionHasErrors('tautan_lokasi');
+
+        $this->kirimCheckout([
+            'metode_ambil' => 'KIRIM',
+            'alamat_kirim' => 'Jl. Melati 5, Wonogiri',
+            'tautan_lokasi' => 'http://maps.google.com/?q=contoh',
+        ])->assertSessionHasErrors('tautan_lokasi');
+    }
+
     public function test_minta_dikirim_tanpa_alamat_ditolak(): void
     {
         $this->keranjang();

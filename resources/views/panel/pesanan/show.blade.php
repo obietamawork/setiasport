@@ -548,7 +548,13 @@
                         </div>
                         <div>
                             <dt class="text-muted">Alamat</dt>
-                            <dd class="leading-relaxed">{{ $pesanan->alamat_kirim }}</dd>
+                            <dd class="leading-relaxed">
+                                {{ $pesanan->alamat_kirim }}
+                                @if ($pesanan->tautanLokasiAman())
+                                    <a href="{{ $pesanan->tautan_lokasi }}" target="_blank" rel="noopener noreferrer"
+                                       class="tautan ml-1 whitespace-nowrap">Buka di peta</a>
+                                @endif
+                            </dd>
                         </div>
                     </dl>
 
@@ -601,6 +607,10 @@
                             <p class="text-sm leading-relaxed">
                                 Dikirim ke:<br>
                                 <span class="font-medium">{{ $pesanan->alamat_kirim }}</span>
+                                @if ($pesanan->tautanLokasiAman())
+                                    <a href="{{ $pesanan->tautan_lokasi }}" target="_blank" rel="noopener noreferrer"
+                                       class="tautan ml-1 whitespace-nowrap">Buka di peta</a>
+                                @endif
                             </p>
 
                             @if ($pesanan->bolehDikirim())
@@ -657,6 +667,15 @@
                                           maxlength="500" placeholder="Nama penerima, alamat, kecamatan, kota, kode pos, nomor HP">{{ old('alamat_kirim', $pesanan->alamat_kirim) }}</textarea>
                                 <p class="mt-1 text-xs leading-relaxed text-muted">
                                     Salin apa adanya dari WhatsApp pelanggan. Hanya dipakai kalau pesanan dikirim.
+                                </p>
+                            </div>
+                            <div>
+                                <label for="tautan_lokasi" class="label-form">Tautan lokasi Google Maps (opsional)</label>
+                                <input type="url" id="tautan_lokasi" name="tautan_lokasi" class="kotak-input"
+                                       placeholder="https://maps.app.goo.gl/..."
+                                       value="{{ old('tautan_lokasi', $pesanan->tautan_lokasi) }}">
+                                <p class="mt-1 text-xs leading-relaxed text-muted">
+                                    Kalau pelanggan membagikan titik lokasi lewat WhatsApp, tempel tautannya di sini.
                                 </p>
                             </div>
                             <div>

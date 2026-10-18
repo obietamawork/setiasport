@@ -144,6 +144,67 @@ class PengirimanTest extends TestCase
         $this->assertSame(MetodeAmbil::KIRIM, $order->fresh()->metode_ambil);
     }
 
+    /** Tautan lokasi dari WhatsApp pelanggan bisa ditempel admin sendiri (KEP-070). */
+    public function test_tautan_lokasi_bisa_diisi_admin_dan_tampil_sebagai_tautan_buka_peta(): void
+    {
+        $order = $this->pesananSiap();
+
+        $this->actingAs($this->admin())
+            ->post(route('panel.pesanan.pengiriman.atur', $order), [
+                'metode_ambil' => 'KIRIM',
+                'alamat_kirim' => 'Jalan Mawar 5, Baturetno, Wonogiri',
+                'tautan_lokasi' => 'https://maps.app.goo.gl/contoh123',
+            ])
+            ->assertSessionHas('sukses');
+
+        $this->assertSame('https://maps.app.goo.gl/contoh123', $order->fresh()->tautan_lokasi);
+
+        $this->actingAs($this->admin())
+            ->get(route('panel.pesanan.show', $order))
+            ->assertOk()
+            ->assertSee('https://maps.app.goo.gl/contoh123', false)
+            ->assertSee('Buka di peta');
+    }
+
+    /**
+     * Pagar kedua di sisi tampilan (KEP-070): kalau baris lama di database
+     * entah bagaimana memuat skema bukan https, halaman pesanan tidak boleh
+     * ikut merender itu sebagai tautan yang bisa diklik.
+     */
+    public function test_tautan_lokasi_skema_bukan_https_tidak_dirender_jadi_tautan(): void
+    {
+        $order = $this->pesananSiap();
+        $order->update([
+            'metode_ambil' => MetodeAmbil::KIRIM,
+            'alamat_kirim' => 'Jalan Mawar 5, Wonogiri',
+            'tautan_lokasi' => 'javascript:alert(1)',
+        ]);
+
+        // Boleh tetap muncul sebagai NILAI di formulir edit (supaya admin bisa
+        // melihat dan memperbaikinya) -- yang tidak boleh adalah dipakai
+        // sebagai href, karena itulah konteks yang benar-benar bisa dieksekusi.
+        $this->actingAs($this->admin())
+            ->get(route('panel.pesanan.show', $order))
+            ->assertOk()
+            ->assertDontSee('href="javascript:alert(1)"', false)
+            ->assertDontSee('Buka di peta');
+    }
+
+    public function test_tautan_lokasi_yang_bukan_url_ditolak_di_panel(): void
+    {
+        $order = $this->pesananSiap();
+
+        $this->actingAs($this->admin())
+            ->post(route('panel.pesanan.pengiriman.atur', $order), [
+                'metode_ambil' => 'KIRIM',
+                'alamat_kirim' => 'Jalan Mawar 5',
+                'tautan_lokasi' => 'bukan tautan',
+            ])
+            ->assertSessionHasErrors('tautan_lokasi');
+
+        $this->assertNull($order->fresh()->tautan_lokasi);
+    }
+
     public function test_alamat_wajib_diisi_saat_memilih_kirim(): void
     {
         $order = $this->pesananSiap();

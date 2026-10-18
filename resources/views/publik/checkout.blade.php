@@ -85,6 +85,17 @@
                         <p class="bantuan-form">Tulis selengkap mungkin; kurir membaca alamat ini apa adanya.</p>
                     </div>
 
+                    <div>
+                        <label for="tautan_lokasi" class="label-form">Tautan lokasi Google Maps (opsional)</label>
+                        <input type="url" id="tautan_lokasi" name="tautan_lokasi" class="kotak-input"
+                               placeholder="https://maps.app.goo.gl/..." value="{{ old('tautan_lokasi') }}">
+                        <p class="bantuan-form">
+                            Supaya kurir langsung menuju titik rumah Anda, bukan menebak dari tulisan
+                            alamat saja. Buka Google Maps &rarr; cari lokasi Anda &rarr; <strong>Bagikan</strong>
+                            &rarr; <strong>Salin tautan</strong>, lalu tempel di sini.
+                        </p>
+                    </div>
+
                     @if ($ongkirOtomatis)
                         <div>
                             <label for="cari_area" class="label-form">Kota atau kecamatan tujuan</label>

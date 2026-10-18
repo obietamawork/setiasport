@@ -122,12 +122,13 @@ class CheckoutController extends Controller
         $alamat = trim((string) ($data['alamat_kirim'] ?? ''));
         $area = trim((string) ($data['area_tujuan'] ?? ''));
         $kode = trim((string) ($data['tarif'] ?? ''));
+        $tautanLokasi = trim((string) ($data['tautan_lokasi'] ?? '')) ?: null;
 
         // Penyedia ongkirnya mati, atau tujuannya belum ketemu di daftar area.
         // Pesanannya tetap dibuat: alamatnya tercatat dan ongkirnya menyusul
         // dari admin, persis cara kerja toko sebelum ada hitungan otomatis.
         if (! $this->pengiriman->otomatis() || $area === '' || $kode === '') {
-            return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area !== '' ? $area : null);
+            return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area !== '' ? $area : null, tautanLokasi: $tautanLokasi);
         }
 
         $pilihan = $this->pengiriman->pilihan(
@@ -138,7 +139,7 @@ class CheckoutController extends Controller
         // pesanan tetap jadi, ongkirnya menyusul. Menggagalkan checkout karena
         // API pihak ketiga sedang bermasalah berarti kehilangan pesanan.
         if ($pilihan === []) {
-            return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area);
+            return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area, tautanLokasi: $tautanLokasi);
         }
 
         $tarif = collect($pilihan)->first(fn ($t) => $t->kode() === $kode);
@@ -149,7 +150,7 @@ class CheckoutController extends Controller
             ]);
         }
 
-        return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area, $tarif);
+        return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area, $tarif, $tautanLokasi);
     }
 
     public function proses(Request $request): RedirectResponse
@@ -177,6 +178,11 @@ class CheckoutController extends Controller
             // hanya wajib kalau memang ada daftar tarif untuk dipilih.
             'metode_ambil' => ['nullable', 'in:AMBIL_TOKO,KIRIM'],
             'alamat_kirim' => ['nullable', 'string', 'max:500', 'required_if:metode_ambil,KIRIM'],
+            // Opsional: tautan "Bagikan lokasi" dari aplikasi Maps pelanggan
+            // sendiri (KEP-070), bukan koordinat yang diketik tangan. https
+            // saja: tautan ini diklik admin langsung dari halaman pesanan,
+            // jadi skema liar seperti javascript: tidak boleh pernah tersimpan.
+            'tautan_lokasi' => ['nullable', 'url:https', 'max:500'],
             'area_tujuan' => ['nullable', 'string', 'max:60'],
             'tarif' => ['nullable', 'string', 'max:60'],
             // Longgar dengan sengaja: keranjang berisi barang stok saja tidak
@@ -195,9 +201,10 @@ class CheckoutController extends Controller
             'no_hp.regex' => 'Nomor HP hanya boleh berisi angka, spasi, tanda plus, dan strip.',
             'setuju.accepted' => 'Centang persetujuannya dulu untuk melanjutkan.',
             'alamat_kirim.required_if' => 'Tulis alamat lengkapnya. Tanpa itu paket tidak bisa dibuatkan resi.',
+            'tautan_lokasi.url' => 'Tautan lokasinya sepertinya tidak valid. Tempel tautan dari tombol Bagikan di Google Maps.',
         ], [
             'nama' => 'nama', 'email' => 'email', 'no_hp' => 'nomor HP',
-            'alamat_kirim' => 'alamat pengiriman',
+            'alamat_kirim' => 'alamat pengiriman', 'tautan_lokasi' => 'tautan lokasi',
         ]);
 
         $kirim = $this->pilihanKirim($data);

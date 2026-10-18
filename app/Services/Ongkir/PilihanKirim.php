@@ -21,6 +21,7 @@ final readonly class PilihanKirim
         public ?string $alamat = null,
         public ?string $areaTujuan = null,
         public ?TarifKirim $tarif = null,
+        public ?string $tautanLokasi = null,
     ) {}
 
     public static function ambilDiToko(): self
@@ -44,6 +45,7 @@ final readonly class PilihanKirim
         return [
             'metode_ambil' => $this->metode,
             'alamat_kirim' => $this->dikirim() ? $this->alamat : null,
+            'tautan_lokasi' => $this->dikirim() ? $this->tautanLokasi : null,
             'area_tujuan' => $this->dikirim() ? $this->areaTujuan : null,
             'jasa_kirim' => $this->dikirim() ? $this->tarif?->kurir : null,
             'layanan_kirim' => $this->dikirim() ? $this->tarif?->layanan : null,

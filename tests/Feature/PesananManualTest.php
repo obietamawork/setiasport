@@ -231,6 +231,30 @@ class PesananManualTest extends TestCase
             ->assertSessionHasErrors('alamat_kirim');
     }
 
+    /** Admin boleh menempel tautan lokasi sendiri saat mengetik pesanan (KEP-070). */
+    public function test_tautan_lokasi_opsional_tersimpan_saat_dikirim(): void
+    {
+        $produk = $this->produk();
+
+        $this->actingAs($this->owner())
+            ->post(route('panel.pesanan.baru.simpan'), [
+                'nama' => 'Alim Sport',
+                'no_hp' => '081234567890',
+                'product_id' => $produk->id,
+                'opsi' => $this->opsi($produk, ['Serena', 'Oblong', 'Pendek', 'Tanpa Saku']),
+                'baris' => [['kategori' => 'SD', 'ukuran' => 'L', 'jumlah' => 6]],
+                'tipe_pembayaran' => 'DP',
+                'metode_ambil' => 'KIRIM',
+                'alamat_kirim' => 'Jalan Mawar 5, Wonogiri',
+                'tautan_lokasi' => 'https://maps.app.goo.gl/contoh123',
+            ])
+            ->assertSessionDoesntHaveErrors();
+
+        $order = \App\Models\Order::latest('id')->firstOrFail();
+
+        $this->assertSame('https://maps.app.goo.gl/contoh123', $order->tautan_lokasi);
+    }
+
     public function test_pelanggan_lama_dipakai_ulang_bukan_digandakan(): void
     {
         $produk = $this->produk();

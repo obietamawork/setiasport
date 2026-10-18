@@ -24,7 +24,7 @@ class Order extends Model
         'ongkir', 'area_tujuan', 'layanan_kirim',
         'target_siap_pada', 'kadaluarsa_pada', 'siap_pada', 'diambil_pada',
         'kode_ambil', 'diambil_oleh', 'diserahkan_oleh', 'catatan',
-        'metode_ambil', 'alamat_kirim', 'jasa_kirim', 'no_resi',
+        'metode_ambil', 'alamat_kirim', 'tautan_lokasi', 'jasa_kirim', 'no_resi',
         'lacak_status', 'lacak_catatan', 'lacak_riwayat', 'lacak_pada',
         'dikirim_pada', 'diterima_pada',
     ];
@@ -204,6 +204,16 @@ class Order extends Model
                 .'. Paket hanya berangkat setelah lunas.',
             default => null,
         };
+    }
+
+    /**
+     * Validasi `url:https` (KEP-070) sudah menolak skema liar saat disimpan,
+     * tapi tautan ini dirender langsung sebagai href dan diklik admin --
+     * pagar kedua di sisi tampilan, bukan cuma percaya pada validasi input.
+     */
+    public function tautanLokasiAman(): bool
+    {
+        return $this->tautan_lokasi !== null && str_starts_with($this->tautan_lokasi, 'https://');
     }
 
     public static function kodeBaru(): string

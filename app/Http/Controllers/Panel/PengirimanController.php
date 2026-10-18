@@ -40,10 +40,14 @@ class PengirimanController extends Controller
         $data = $request->validate([
             'metode_ambil' => ['required', Rule::enum(MetodeAmbil::class)],
             'alamat_kirim' => ['nullable', 'string', 'max:500'],
+            // https saja (bukan javascript:/data:) -- tautannya diklik admin
+            // langsung dari halaman pesanan, jadi skema liar tidak boleh lolos.
+            'tautan_lokasi' => ['nullable', 'url:https', 'max:500'],
             'ongkir' => ['nullable', 'integer', 'min:0', 'max:10000000'],
         ], [], [
             'metode_ambil' => 'cara pengambilan',
             'alamat_kirim' => 'alamat pengiriman',
+            'tautan_lokasi' => 'tautan lokasi',
             'ongkir' => 'ongkos kirim',
         ]);
 
@@ -66,6 +70,7 @@ class PengirimanController extends Controller
         $pesanan->update([
             'metode_ambil' => $metode,
             'alamat_kirim' => $metode === MetodeAmbil::KIRIM ? $data['alamat_kirim'] : null,
+            'tautan_lokasi' => $metode === MetodeAmbil::KIRIM ? ($data['tautan_lokasi'] ?? null) : null,
             // Pesanan yang batal dikirim tidak boleh menyisakan ongkir di
             // tagihannya. Dikosongkan di sini, bukan dipercayakan kepada orang
             // yang menyetelnya, karena yang tertinggal adalah uang pelanggan.

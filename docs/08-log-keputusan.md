@@ -2193,6 +2193,56 @@ yang memang memakai SD/SMP/Dewasa tidak terpengaruh sama sekali.
 
 ---
 
+## KEP-070 — Tautan lokasi Google Maps, pelengkap alamat kirim
+**Status:** TERKUNCI · 2026-10-16
+
+Diminta klien: alamat kirim selama ini cuma kotak teks bebas (`alamat_kirim`),
+dan kurir membacanya apa adanya — tidak ada cara memastikan titiknya benar
+selain menebak dari tulisan. Klien mengusulkan peta tertanam (embed) tempat
+pelanggan menggeser pin lokasinya langsung di halaman checkout.
+
+**Dipertimbangkan dua arah:**
+
+1. **Peta interaktif tertanam** (Google Maps JavaScript API + Places
+   Autocomplete, atau Leaflet + OpenStreetMap/Nominatim). Pengalaman paling
+   mulus, tapi opsi Google butuh akun Google Cloud dengan kartu billing
+   terpasang (ada kuota gratis bulanan, biasanya cukup untuk toko kecil,
+   tapi tetap kredensial baru yang harus disiapkan sebelum jalan — beban
+   setup yang sama seperti kasus saldo Biteship). Opsi OpenStreetMap gratis
+   tanpa kunci API, tapi kualitas data jalan/alamatnya untuk wilayah seperti
+   Wonogiri biasanya kalah lengkap dibanding Google Maps.
+2. **Tautan "Bagikan lokasi"**, disediakan Maps yang sudah dipakai pelanggan
+   sendiri. Pelanggan membuka Google Maps (atau Apple Maps/WhatsApp) di
+   HP-nya, cari titik lokasinya, tekan Bagikan, salin tautannya, tempel di
+   formulir.
+
+**Keputusan: arah kedua.** Ini pola yang sama dengan tautan unggah file besar
+(KEP-065) — alih-alih membangun ulang alat yang sudah dipercaya dan dikuasai
+pelanggan, toko cukup menampung tautan hasilnya. Tanpa kunci API, tanpa
+akun Google Cloud, tanpa kartu billing, dan tanpa bergantung pada kualitas
+data peta pihak ketiga untuk wilayah yang sering tidak terlalu detail
+petanya. Peta interaktif tertanam tetap bisa disusulkan sebagai peningkatan
+nanti kalau toko sudah siap mengurus akun Google Cloud-nya; keduanya tidak
+saling meniadakan karena kolom `tautan_lokasi` yang disimpan sekarang tetap
+sama persis dibutuhkan pada arah mana pun.
+
+**Yang dibangun:**
+
+- Kolom baru `orders.tautan_lokasi`, nullable, pelengkap `alamat_kirim` —
+  bukan pengganti, karena kurir tetap membaca alamat tulisan sebagai sumber
+  utama; tautannya cuma memastikan titiknya.
+- Diteruskan lewat `PilihanKirim->tautanLokasi` dari checkout pelanggan
+  (opsional, divalidasi sebagai URL longgar — bisa tautan Google Maps, Apple
+  Maps, atau lokasi WhatsApp yang diteruskan, tidak dibatasi ke satu domain).
+- Admin bisa mengisi atau mengubahnya sendiri dari halaman pesanan (formulir
+  "atur pengiriman") dan dari formulir pesanan manual (KEP-054) — berguna
+  kalau pelanggan membagikan lokasinya lewat WhatsApp, bukan saat checkout.
+- Ditampilkan sebagai tautan "Buka di peta" di halaman pesanan panel,
+  tepat di sebelah alamat tulisan, baik sebelum maupun sesudah paket
+  dikirim — satu klik untuk staf yang menyiapkan serah terima ke kurir.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2266,3 +2316,4 @@ yang memang memakai SD/SMP/Dewasa tidak terpengaruh sama sekali.
 | KEP-067 | Area asal Biteship dicari dan diatur lewat panel, bukan `.env` | TERKUNCI |
 | KEP-068 | Pilihan "kirim desain sendiri" mengingatkan sejak halaman pesanan dibuka | TERKUNCI |
 | KEP-069 | "Tempel dari Excel" memeriksa kategori yang benar-benar tersedia | TERKUNCI |
+| KEP-070 | Tautan lokasi Google Maps, pelengkap alamat kirim | TERKUNCI |

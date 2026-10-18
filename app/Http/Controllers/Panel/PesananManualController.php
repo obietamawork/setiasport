@@ -77,6 +77,9 @@ class PesananManualController extends Controller
             'tipe_pembayaran' => ['required', 'in:DP,LUNAS'],
             'metode_ambil' => ['required', 'in:AMBIL,KIRIM'],
             'alamat_kirim' => ['nullable', 'string', 'max:500', 'required_if:metode_ambil,KIRIM'],
+            // https saja (bukan javascript:/data:) -- tautannya diklik admin
+            // langsung dari halaman pesanan, jadi skema liar tidak boleh lolos.
+            'tautan_lokasi' => ['nullable', 'url:https', 'max:500'],
 
             // Uang yang sudah diterima di kasir, kalau ada.
             'dibayar' => ['nullable', 'integer', 'min:0', 'max:999999999'],
@@ -116,6 +119,7 @@ class PesananManualController extends Controller
         $order->update([
             'metode_ambil' => $data['metode_ambil'] === 'KIRIM' ? MetodeAmbil::KIRIM : MetodeAmbil::AMBIL_TOKO,
             'alamat_kirim' => $data['metode_ambil'] === 'KIRIM' ? $data['alamat_kirim'] : null,
+            'tautan_lokasi' => $data['metode_ambil'] === 'KIRIM' ? ($data['tautan_lokasi'] ?? null) : null,
         ]);
 
         $pesan = 'Pesanan '.$order->kode.' dibuat.';
