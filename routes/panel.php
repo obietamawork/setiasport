@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BuktiBayarController;
+use App\Http\Controllers\Panel\AktivitasController;
 use App\Http\Controllers\Panel\AuthController;
 use App\Http\Controllers\Panel\BahanController;
 use App\Http\Controllers\Panel\BantuanController;
@@ -246,6 +247,7 @@ Route::prefix('panel')->name('panel.')->group(function () {
                 ->name('pengaturan.biteship-area');
             Route::post('pengaturan/qris', [PengaturanController::class, 'unggahQris'])->name('pengaturan.qris');
             Route::delete('pengaturan/qris', [PengaturanController::class, 'hapusQris'])->name('pengaturan.qris.hapus');
+            Route::get('aktivitas', AktivitasController::class)->name('aktivitas');
         });
     });
 });

@@ -76,6 +76,7 @@
             ['panel.laporan', 'Laporan', 'laporan.lihat', 'panel.laporan', null, 'laporan'],
             ['panel.pengaturan.index', 'Pengaturan', 'pengaturan.kelola', 'panel.pengaturan.*', null, 'pengaturan'],
             ['panel.kesiapan', 'Kesiapan tayang', 'pengaturan.kelola', 'panel.kesiapan', null, 'centang'],
+            ['panel.aktivitas', 'Riwayat aktivitas', 'pengaturan.kelola', 'panel.aktivitas', null, 'jam'],
         ],
     ];
 

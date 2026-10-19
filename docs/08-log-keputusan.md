@@ -2613,6 +2613,45 @@ dan `__('pagination.previous')` sekarang mengembalikan kalimat Indonesia.
 
 ---
 
+## KEP-079 — Halaman Riwayat aktivitas: `ActivityLog` yang selama ini tidak pernah bisa dibaca
+**Status:** TERKUNCI · 2026-10-20
+
+Ditemukan saat audit mendalam ke halaman Stok: `ActivityLog::catat()`
+sudah dipanggil di lebih dari 50 tempat di seluruh panel (pengaturan, stok,
+QRIS, produk, kategori, portofolio, testimoni, pekerja, pembayaran,
+pengiriman, dan banyak lagi) -- tapi diperiksa ke seluruh kode, TIDAK ADA
+satu pun controller atau Blade view yang pernah MEMBACA tabel
+`activity_logs`. Komentar di migrasinya sendiri menyebut tabel ini "Alat
+penyelesaian perselisihan internal (docs/04): siapa mengubah apa, kapan" --
+tapi satu-satunya cara melihat isinya selama ini adalah membuka database
+langsung lewat Adminer, sesuatu yang tidak akan dilakukan pemilik toko di
+tengah perselisihan sungguhan.
+
+**Keputusan:** ditambahkan halaman baru `/panel/aktivitas`
+(`AktivitasController`, `panel/aktivitas.blade.php`), di bawah izin
+`pengaturan.kelola` yang sama dengan Laporan dan Kesiapan tayang --
+cakupannya lintas seluruh panel (termasuk aktivitas finansial dan harga),
+jadi setingkat dengan menu lain yang sudah Pemilik-saja. Halamannya sengaja
+sederhana: tabel terurut terbaru dulu, disaring lewat kata kunci jenis
+aktivitas dan/atau pengguna, menampilkan waktu/siapa/aktivitas/subjek/rincian
+apa adanya tanpa mencoba menerjemahkan setiap jenis `data_json` ke tampilan
+khusus -- 50+ jenis aktivitas yang berbeda bentuk datanya tidak sepadan
+dibuatkan tampilan khusus masing-masing untuk versi pertama ini.
+
+Kolom "Rincian" bisa panjang (daftar perubahan per varian, JSON bersarang),
+jadi tabelnya dibungkus `overflow-x-auto` -- dicoba langsung di layar 390px
+dan dikonfirmasi lewat `document.documentElement.scrollWidth` bahwa yang
+bisa digeser ke samping cuma tabelnya sendiri, bukan seluruh halaman.
+
+Diuji lewat `tests/Feature/AktivitasTest.php` (file baru): aktivitas yang
+tercatat tampil dengan siapa/apa/rinciannya, pencarian menyaring menurut
+jenis aktivitas, dan peran tanpa izin `pengaturan.kelola` tetap ditolak
+(403). Diverifikasi langsung lewat browser dengan data riwayat sungguhan
+dari sesi kerja ini sendiri (unggah QRIS, penyesuaian stok, perubahan
+pengaturan, penyelesaian roll) -- bukan cuma data buatan tes.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2695,3 +2734,4 @@ dan `__('pagination.previous')` sekarang mengembalikan kalimat Indonesia.
 | KEP-076 | Dashboard menuduh produk "belum berharga" walau sudah dihargai lewat matriks | TERKUNCI |
 | KEP-077 | Opname stok: angka yang sudah diketik hilang kalau "alasan" ditolak validasi | TERKUNCI |
 | KEP-078 | Pesan validasi dan navigasi halaman berbahasa Inggris, bukan Indonesia | TERKUNCI |
+| KEP-079 | Halaman Riwayat aktivitas: ActivityLog yang selama ini tidak pernah bisa dibaca | TERKUNCI |
