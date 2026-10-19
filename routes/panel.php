@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BuktiBayarController;
 use App\Http\Controllers\Panel\AuthController;
+use App\Http\Controllers\Panel\BahanController;
 use App\Http\Controllers\Panel\BantuanController;
 use App\Http\Controllers\Panel\ContohProfilController;
 use App\Http\Controllers\Panel\CsController;
@@ -159,6 +160,11 @@ Route::prefix('panel')->name('panel.')->group(function () {
             // mengetik angka di formulir dan menebak hasilnya.
             Route::post('kategori/{kategori}/pindah', [KategoriController::class, 'pindah'])
                 ->name('kategori.pindah');
+
+            // Kamus bahan lintas produk (KEP-072).
+            Route::resource('bahan', BahanController::class)
+                ->except('show')
+                ->parameters(['bahan' => 'bahan']);
 
             Route::resource('produk', ProdukController::class)
                 ->except('show')

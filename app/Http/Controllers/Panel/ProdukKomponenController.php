@@ -137,9 +137,12 @@ class ProdukKomponenController extends Controller
 
         $data = $request->validate([
             'label' => ['required', 'string', 'max:80'],
+            // Opsional: menautkan ke kamus bahan (KEP-072) supaya pelanggan
+            // awam melihat penjelasan bahan ini, bukan cuma namanya.
+            'material_id' => ['nullable', 'exists:materials,id'],
             'tambahan_harga' => ['required', 'integer', 'min:-999999999', 'max:999999999'],
             'basis' => ['required', Rule::enum(PriceBasis::class)],
-        ], [], ['tambahan_harga' => 'selisih harga', 'basis' => 'cara hitung']);
+        ], [], ['tambahan_harga' => 'selisih harga', 'basis' => 'cara hitung', 'material_id' => 'bahan terkait']);
 
         $opsi->values()->create($data + [
             'urutan' => $opsi->values()->count(),

@@ -16,6 +16,9 @@
             'label' => $v->label,
             'harga' => $v->tambahan_harga,
             'basis' => $v->basis->value,
+            // Kamus bahan (KEP-072): penjelasan ditampilkan begitu nilai ini
+            // dipilih, supaya pelanggan awam tahu "Milano" itu bahan seperti apa.
+            'deskripsi' => $v->material?->deskripsi,
         ])->values(),
     ])->values();
 
@@ -165,6 +168,14 @@
                                 </button>
                             @endforeach
                         </div>
+
+                        {{-- Kamus bahan (KEP-072): penjelasannya baru muncul begitu
+                             nilainya dipilih, bukan dijejalkan di tiap tombol --
+                             pelanggan baca sambil memutuskan, tanpa pindah halaman. --}}
+                        <p x-show="deskripsiTerpilih({{ $opsi->id }})" x-cloak
+                           x-text="deskripsiTerpilih({{ $opsi->id }})"
+                           class="mt-3 border-l-2 border-navy-200 bg-navy-50 p-3 text-sm leading-relaxed text-ink"></p>
+
                         <input type="hidden" name="opsi[{{ $opsi->id }}]" :value="pilihan[{{ $opsi->id }}] ?? ''">
                     </div>
                 @endforeach
@@ -505,6 +516,15 @@
 
             rp(n) {
                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n || 0));
+            },
+
+            /** Kamus bahan (KEP-072): deskripsi nilai yang sedang dipilih untuk satu opsi, kalau ada. */
+            deskripsiTerpilih(opsiId) {
+                const dipilih = this.pilihan[opsiId];
+                if (!dipilih) return '';
+
+                const opsi = this.opsi.find(o => o.id === opsiId);
+                return opsi?.values.find(v => v.id === dipilih)?.deskripsi ?? '';
             },
 
             ke(n) {

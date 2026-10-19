@@ -6,6 +6,7 @@ use App\Enums\FulfillmentType;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Category;
+use App\Models\Material;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -66,6 +67,7 @@ class ProdukController extends Controller
                 'berat_gram' => 0, 'diskon_min_qty' => 0, 'diskon_per_pcs' => 0,
             ]),
             'kategori' => $this->pilihanKategori(),
+            'semuaBahan' => Material::orderBy('nama')->get(),
         ]);
     }
 
@@ -82,13 +84,14 @@ class ProdukController extends Controller
     public function edit(Product $produk)
     {
         $produk->load([
-            'variants', 'priceTiers', 'options.values', 'prices', 'sizeCharts', 'sizeSurcharges',
+            'variants', 'priceTiers', 'options.values.material', 'prices', 'sizeCharts', 'sizeSurcharges',
             'images.optionValue.option',
         ]);
 
         return view('panel.produk.form', [
             'produk' => $produk,
             'kategori' => $this->pilihanKategori(),
+            'semuaBahan' => Material::orderBy('nama')->get(),
         ]);
     }
 

@@ -2288,6 +2288,63 @@ langsung), seluruhnya konsisten berhasil.
 
 ---
 
+## KEP-072 — Kamus bahan terpusat, dengan deskripsi untuk pelanggan awam
+**Status:** TERKUNCI · 2026-10-19
+
+Diminta klien: nama bahan seperti "Milano" atau "Hyget" adalah istilah
+dagang konveksi, bukan sesuatu yang dipahami pelanggan awam. Ia ingin ada
+penjelasan apa bedanya, dan menanyakan apakah penjelasan itu sebaiknya
+punya halaman tersendiri.
+
+**Dua keputusan, diambil lewat diskusi sebelum membangun apa pun:**
+
+1. **Tampil langsung di tempat memilih, bukan halaman terpisah.** Pelanggan
+   membaca penjelasannya sambil mengambil keputusan, tanpa pindah tab lalu
+   kembali lagi — pola yang sama dipakai sudah terbukti efektif di banyak
+   tempat lain pada produk ini (pengingat desain KEP-068, ringkasan
+   checkout). Halaman referensi terpisah tetap bisa disusulkan nanti kalau
+   ternyata dibutuhkan; tidak saling meniadakan dengan keputusan kedua
+   di bawah.
+2. **Satu kamus terpusat, bukan deskripsi per produk.** Nama bahan yang
+   sama terpakai berulang di banyak produk (Milano dipakai 3 produk
+   berbeda, Lotto dan Diadora malah lebih sering) — sebelum ini
+   `option_values` hanya menyimpan `label` sebagai teks bebas per produk,
+   jadi deskripsi yang sama harus diketik ulang di tiap produk dan gampang
+   tidak konsisten begitu salah satu diperbarui tapi yang lain tidak.
+
+**Yang dibangun:**
+
+- Tabel `materials` baru (`nama` unik, `deskripsi` teks, boleh kosong),
+  dikelola lewat halaman panel tersendiri (`/panel/bahan`, menu Katalog)
+  dengan pola CRUD yang sama seperti Kategori.
+- `option_values.material_id`, FK nullable ke `materials` dengan
+  `nullOnDelete()` — menautkan SATU nilai opsi ke SATU bahan di kamus.
+  Opsional dan berlaku untuk opsi jenis apa pun (bukan cuma yang bernama
+  "Bahan"): opsi seperti "Lengan" atau "Kerah" sudah jelas sendiri tanpa
+  penjelasan tambahan, jadi admin yang menentukan mana yang perlu
+  ditautkan, bukan sistem yang memaksakannya.
+- Formulir "Tambah pilihan" di halaman produk (panel) mendapat dropdown
+  "Bahan terkait (opsional)" mengambil dari kamus; nilai yang sudah
+  ditautkan ditandai dengan chip di daftar opsinya.
+- Di konfigurator pelanggan (`/pesan/{produk}`), deskripsi muncul begitu
+  nilai bahan yang bersangkutan dipilih (`Alpine: deskripsiTerpilih()`),
+  hilang otomatis kalau nilai lain yang tidak punya deskripsi dipilih. Di
+  halaman produk biasa (yang sifatnya referensi, tanpa pemilihan aktif),
+  deskripsinya tampil langsung untuk tiap nilai yang punya tautan.
+- `CatalogSeeder` menautkan opsi "Bahan" secara otomatis kalau labelnya
+  cocok dengan nama di kamus (dicocokkan lewat `MaterialSeeder`, berjalan
+  sebelum `CatalogSeeder`) — produk contoh langsung tertaut sejak
+  pemasangan pertama, pemilik toko tinggal mengisi deskripsinya, bukan
+  menautkan satu-satu dari nol.
+
+**Kenapa opsional, bukan wajib diisi.** Toko sudah berjalan dengan 26 nama
+bahan berbeda di katalog contoh; mewajibkan deskripsi terisi sebelum produk
+bisa disimpan berarti memblokir alur kerja yang sudah ada demi kelengkapan
+data yang sebenarnya boleh menyusul. Kamusnya diisi dari nama yang sudah
+dipakai (tanpa deskripsi), bukan dipaksa lengkap dari awal.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2363,3 +2420,4 @@ langsung), seluruhnya konsisten berhasil.
 | KEP-069 | "Tempel dari Excel" memeriksa kategori yang benar-benar tersedia | TERKUNCI |
 | KEP-070 | Tautan lokasi Google Maps, pelengkap alamat kirim | TERKUNCI |
 | KEP-071 | Penanda langkah konfigurator ikut bergeser ke langkah aktif | TERKUNCI |
+| KEP-072 | Kamus bahan terpusat, dengan deskripsi untuk pelanggan awam | TERKUNCI |

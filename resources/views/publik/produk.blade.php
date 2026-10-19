@@ -162,22 +162,39 @@
                         @foreach ($produk->options as $opsi)
                             <div class="grid gap-2 p-4 sm:grid-cols-[160px_1fr]">
                                 <dt class="font-semibold">{{ $opsi->nama }}</dt>
-                                <dd class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-                                    @foreach ($opsi->values as $v)
-                                        <span>
-                                            {{ $v->label }}
-                                            @if ($v->tambahan_harga !== 0)
-                                                <span class="tabular text-muted">
-                                                    {{ $v->tambahan_harga > 0 ? '+' : '−' }}{{ rupiah(abs($v->tambahan_harga)) }}
-                                                    @if ($v->basis === \App\Enums\PriceBasis::PER_ITEM)
-                                                        <span class="text-merah">sekali</span>
-                                                    @else
-                                                        / pcs
-                                                    @endif
-                                                </span>
-                                            @endif
-                                        </span>
-                                    @endforeach
+                                <dd class="text-sm">
+                                    <div class="flex flex-wrap gap-x-5 gap-y-1.5">
+                                        @foreach ($opsi->values as $v)
+                                            <span>
+                                                {{ $v->label }}
+                                                @if ($v->tambahan_harga !== 0)
+                                                    <span class="tabular text-muted">
+                                                        {{ $v->tambahan_harga > 0 ? '+' : '−' }}{{ rupiah(abs($v->tambahan_harga)) }}
+                                                        @if ($v->basis === \App\Enums\PriceBasis::PER_ITEM)
+                                                            <span class="text-merah">sekali</span>
+                                                        @else
+                                                            / pcs
+                                                        @endif
+                                                    </span>
+                                                @endif
+                                            </span>
+                                        @endforeach
+                                    </div>
+
+                                    {{-- Kamus bahan (KEP-072): penjelasan untuk pelanggan awam,
+                                         cuma ditampilkan untuk nilai yang memang ditautkan. --}}
+                                    @if ($opsi->values->contains(fn ($v) => $v->material?->deskripsi))
+                                        <dl class="mt-2 space-y-1 border-t border-line pt-2 text-xs leading-relaxed text-muted">
+                                            @foreach ($opsi->values as $v)
+                                                @if ($v->material?->deskripsi)
+                                                    <div>
+                                                        <dt class="inline font-medium text-ink">{{ $v->label }}:</dt>
+                                                        <dd class="inline">{{ $v->material->deskripsi }}</dd>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </dl>
+                                    @endif
                                 </dd>
                             </div>
                         @endforeach

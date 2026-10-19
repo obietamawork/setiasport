@@ -64,6 +64,7 @@
         'Katalog' => [
             ['panel.produk.index', 'Produk', 'katalog.kelola', 'panel.produk.*', null, 'produk'],
             ['panel.kategori.index', 'Kategori', 'katalog.kelola', 'panel.kategori.*', null, 'kategori'],
+            ['panel.bahan.index', 'Bahan', 'katalog.kelola', 'panel.bahan.*', null, 'bahan'],
             ['panel.stok.index', 'Stok', 'stok.kelola', 'panel.stok.*', null, 'stok'],
         ],
         'Profil usaha' => [

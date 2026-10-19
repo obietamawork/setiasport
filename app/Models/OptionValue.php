@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OptionValue extends Model
 {
-    protected $fillable = ['product_option_id', 'label', 'tambahan_harga', 'basis', 'urutan', 'aktif'];
+    protected $fillable = ['product_option_id', 'label', 'material_id', 'tambahan_harga', 'basis', 'urutan', 'aktif'];
 
     protected function casts(): array
     {
@@ -22,5 +22,10 @@ class OptionValue extends Model
     public function option(): BelongsTo
     {
         return $this->belongsTo(ProductOption::class, 'product_option_id');
+    }
+
+    public function material(): BelongsTo
+    {
+        return $this->belongsTo(Material::class);
     }
 }

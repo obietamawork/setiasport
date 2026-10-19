@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\FulfillmentType;
 use App\Enums\PriceBasis;
 use App\Models\Category;
+use App\Models\Material;
 use App\Models\OptionValue;
 use App\Models\Product;
 use App\Models\ProductOption;
@@ -35,6 +36,9 @@ class CatalogSeeder extends Seeder
         'CUST-JRS-ATASAN', 'CUST-SETELAN', 'CUST-CELANA-PENDEK', 'CUST-JAKET', 'CUST-TRAINING',
         'CUST-SERAGAM', 'CUST-KAOS-KERAH', 'CUST-KAOS-OBLONG', 'CUST-KAOS-KATUN',
     ];
+
+    /** Dimuat sekali, bukan query baru tiap nilai opsi "Bahan" dibuat. */
+    private ?\Illuminate\Support\Collection $materialByName = null;
 
     public function run(): void
     {
@@ -683,6 +687,10 @@ class CatalogSeeder extends Seeder
             ['wajib' => $wajib, 'urutan' => $urutan]
         );
 
+        // Hanya opsi "Bahan" yang ditautkan ke kamus (KEP-072): nama opsi lain
+        // seperti "Lengan" atau "Kerah" sudah jelas tanpa penjelasan tambahan.
+        $this->materialByName ??= Material::pluck('id', 'nama');
+
         foreach ($values as $i => $v) {
             OptionValue::updateOrCreate(
                 ['product_option_id' => $opsi->id, 'label' => $v[0]],
@@ -691,6 +699,7 @@ class CatalogSeeder extends Seeder
                     'basis' => $v[2] ?? PriceBasis::PER_PCS,
                     'urutan' => $i,
                     'aktif' => true,
+                    'material_id' => $nama === 'Bahan' ? $this->materialByName->get($v[0]) : null,
                 ]
             );
         }

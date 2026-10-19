@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             RolePermissionSeeder::class,
             UserSeeder::class,
+            // Sebelum katalog: CatalogSeeder menautkan opsi "Bahan" ke kamus ini.
+            MaterialSeeder::class,
             CatalogSeeder::class,
             // Dipanggil setelah katalog: ia mengisi angka panduan ukuran dan
             // berat pada produk yang baru saja dibuat CatalogSeeder.

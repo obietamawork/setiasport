@@ -76,7 +76,7 @@ class KatalogController extends Controller
     {
         abort_unless($produk->aktif, 404);
 
-        $produk->load(['category.parent', 'images', 'variants', 'priceTiers', 'options.values', 'prices']);
+        $produk->load(['category.parent', 'images', 'variants', 'priceTiers', 'options.values.material', 'prices']);
 
         return view('publik.produk', compact('produk'));
     }

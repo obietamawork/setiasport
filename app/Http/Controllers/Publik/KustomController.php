@@ -25,7 +25,7 @@ class KustomController extends Controller
     {
         abort_unless($produk->aktif && $produk->punyaJalurKustom(), 404);
 
-        $produk->load(['options.values', 'prices', 'sizeSurcharges', 'sizeCharts', 'images']);
+        $produk->load(['options.values.material', 'prices', 'sizeSurcharges', 'sizeCharts', 'images']);
 
         return view('publik.kustom', [
             'produk' => $produk,

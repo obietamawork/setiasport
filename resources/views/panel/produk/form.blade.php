@@ -510,6 +510,12 @@
                     @forelse ($opsi->values as $nilai)
                         <li class="flex flex-wrap items-center gap-3 px-4 py-2">
                             <span>{{ $nilai->label }}</span>
+                            @if ($nilai->material)
+                                <span class="chip chip-netral" title="{{ $nilai->material->deskripsi }}">
+                                    <x-ikon nama="bahan" ukuran="size-3.5" />
+                                    {{ $nilai->material->nama }}
+                                </span>
+                            @endif
                             <span class="tabular text-muted">
                                 {{ $nilai->tambahan_harga === 0 ? 'tanpa tambahan biaya'
                                     : ($nilai->tambahan_harga > 0 ? '+' : '−').rupiah(abs($nilai->tambahan_harga)) }}
@@ -532,6 +538,15 @@
                     @csrf
                     <div class="w-48"><label class="label-form">Nama pilihan</label>
                         <input type="text" name="label" class="kotak-input" required placeholder="Milano"></div>
+                    <div class="w-48">
+                        <label class="label-form">Bahan terkait (opsional)</label>
+                        <select name="material_id" class="kotak-input">
+                            <option value="">Tanpa deskripsi</option>
+                            @foreach ($semuaBahan as $b)
+                                <option value="{{ $b->id }}">{{ $b->nama }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="w-36"><label class="label-form">Selisih harga</label>
                         <input type="number" name="tambahan_harga" class="kotak-input tabular" value="0" required></div>
                     <div class="w-44"><label class="label-form">Cara hitung</label>
@@ -541,6 +556,9 @@
                         </select></div>
                     <button type="submit" class="tombol tombol-garis">Tambah pilihan</button>
                 </form>
+                <p class="border-t border-line bg-paper px-4 pb-3 text-xs leading-relaxed text-muted">
+                    Belum ada bahan yang cocok di daftar? <a href="{{ route('panel.bahan.create') }}" class="tautan" target="_blank">Tambah di kamus bahan</a> dulu, lalu muat ulang halaman ini.
+                </p>
             </div>
         @endforeach
 
