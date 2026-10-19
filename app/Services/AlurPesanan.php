@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\DesignAssetType;
 use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
@@ -195,6 +196,22 @@ class AlurPesanan
             422,
             'Item ini menunggu pelunasan. Ia naik ke Siap dengan sendirinya begitu '
             .'pembayarannya dicatat atau diverifikasi.'
+        );
+
+        /*
+         * Tahap Desain tidak boleh "selesai" lewat tombol generik (QR/PIN atau
+         * tombol Antrian) tanpa mockup yang benar-benar terunggah. Tanpa
+         * penjagaan ini, item lompat ke Menunggu Persetujuan Pelanggan dengan
+         * kotak persetujuan yang kosong -- pelanggan diminta menyetujui desain
+         * yang belum pernah mereka lihat sama sekali. Mengirim mockup (lewat
+         * MockupController) adalah SATU-SATUNYA jalan sah memajukan tahap ini.
+         */
+        abort_if(
+            $item->status_item === OrderItemStatus::PROSES_DESAIN
+                && $item->designAssets()->where('tipe', DesignAssetType::MOCKUP)->doesntExist(),
+            422,
+            'Belum ada mockup yang diunggah. Kirim mockupnya dulu lewat formulir "Kirim untuk disetujui" '
+            .'di Antrian Desain -- tombol ini tidak memajukan tahap Desain.'
         );
 
         // Pesanan yang sudah lunas di muka tidak perlu berhenti di gerbang.

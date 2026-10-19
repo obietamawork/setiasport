@@ -136,12 +136,20 @@ class OrderItem extends Model
         return $this->sudahDisetujui();
     }
 
-    /** Ringkasan "S:3, M:8, L:5" untuk pelanggan sekaligus untuk gudang. */
+    /**
+     * Ringkasan "S:3, M:8, L:5" untuk pelanggan sekaligus untuk gudang.
+     *
+     * Dijumlah dari `jumlah` tiap baris, BUKAN dihitung jumlah barisnya --
+     * satu baris roster boleh mewakili banyak potong sekaligus (tempel dari
+     * Excel, atau jumlah diketik langsung di formulir pesanan manual), dan
+     * menghitung baris akan melaporkan potongan jauh lebih sedikit dari yang
+     * sebenarnya dikerjakan.
+     */
     public function ringkasanUkuran(): string
     {
         return $this->rosters
             ->groupBy('ukuran')
-            ->map(fn ($grup, $ukuran) => $ukuran.':'.$grup->count())
+            ->map(fn ($grup, $ukuran) => $ukuran.':'.$grup->sum('jumlah'))
             ->implode(', ');
     }
 }

@@ -133,6 +133,23 @@ class PesananPerUkuranTest extends TestCase
     }
 
     /**
+     * Satu baris roster boleh mewakili banyak potong sekaligus (tempel dari
+     * Excel, atau pesanan manual admin) -- ringkasannya harus menjumlahkan
+     * `jumlah` tiap baris, bukan menghitung berapa barisnya. Dua baris
+     * ukuran sama dengan jumlah berbeda sengaja dipakai di sini supaya
+     * perbedaannya kentara: "hitung baris" akan salah melaporkan "L:2".
+     */
+    public function test_ringkasan_ukuran_menjumlahkan_potongan_bukan_menghitung_baris(): void
+    {
+        $order = $this->pesan([
+            ['kategori' => 'SD', 'ukuran' => 'L', 'jumlah' => 6, 'nama_punggung' => null, 'nomor' => null],
+            ['kategori' => 'DEWASA', 'ukuran' => 'L', 'jumlah' => 3, 'nama_punggung' => null, 'nomor' => null],
+        ]);
+
+        $this->assertSame('L:9', $order->items->first()->ringkasanUkuran());
+    }
+
+    /**
      * Rata-rata harga tidak pernah dipakai menghitung tagihan: pada jumlah yang
      * tidak habis dibagi, pembulatannya meleset ribuan rupiah.
      */

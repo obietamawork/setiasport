@@ -2345,6 +2345,98 @@ dipakai (tanpa deskripsi), bukan dipaksa lengkap dari awal.
 
 ---
 
+## KEP-073 — Ringkasan ukuran menjumlahkan potongan, bukan menghitung baris roster
+**Status:** TERKUNCI · 2026-10-20
+
+Ditemukan saat audit menyeluruh alur internal (dari pesanan masuk sampai
+serah terima, termasuk QR produksi). `OrderItem::ringkasanUkuran()` (dipakai
+di enam tempat: halaman pesanan pelanggan, halaman pesanan panel, lembar
+kerja cetak, lembar roll printing, dan antrian kerja) menghitung **jumlah
+baris roster**, bukan menjumlahkan kolom `jumlah` tiap baris.
+
+Ini benar selama satu baris selalu mewakili satu potong -- kebiasaan
+checkout pelanggan biasa. Tapi satu baris roster boleh mewakili BANYAK
+potong sekaligus (tempel dari Excel dengan baris tanpa nama, atau admin
+mengetik langsung angka "Jumlah" di formulir pesanan manual). Pesanan uji
+7 pcs (1 baris jumlah 6 + 1 baris jumlah 1, keduanya ukuran M) melaporkan
+dirinya sendiri sebagai **"M:2"** di semua enam tempat itu, bukan "M:7" --
+nyaris tiga setengah kali lebih kecil dari yang sebenarnya.
+
+Dampak paling serius ada di **lembar kerja cetak** (`panel/worksheet.blade.php`):
+tabelnya menampilkan satu baris per entri roster dengan satu kotak "Cek",
+TANPA kolom jumlah sama sekali. Operator di meja potong/jahit yang
+mengerjakan baris berjumlah 6 potong tanpa nama tidak melihat petunjuk
+apa pun bahwa barisnya bukan 1 potong -- berisiko memotong satu lembar,
+mencentang, lalu pindah ke pesanan berikutnya, menyisakan 5 potong yang
+tidak pernah dibuat.
+
+**Keputusan:**
+
+1. `ringkasanUkuran()` diperbaiki menjumlahkan `jumlah`, bukan menghitung
+   baris (`$grup->sum('jumlah')`, bukan `$grup->count()`). Perbaikan ini
+   otomatis berlaku di keenam tempat pemakainya sekaligus, karena semuanya
+   memanggil method yang sama.
+2. Lembar kerja cetak mendapat kolom "Jumlah" baru, ditebalkan, di antara
+   kolom Ukuran dan Cek -- operator melihat angkanya langsung di kertas,
+   bukan harus menghitung sendiri dari ringkasan di atas tabel.
+
+Halaman kerja pekerja (`/kerja/{token}`) sudah benar sejak awal (sudah
+menampilkan "{{ $r->jumlah }} pcs" per baris) -- bug ini murni di lembar
+cetak dan di titik-titik yang memanggil `ringkasanUkuran()`.
+
+---
+
+## KEP-074 — Tahap Desain tidak bisa "selesai" tanpa mockup yang benar-benar terunggah
+**Status:** TERKUNCI · 2026-10-20
+
+Ditemukan saat menjalankan alur QR produksi ujung ke ujung (KEP-047) sebagai
+bagian dari audit internal menyeluruh. Antrian Desain di panel sudah punya
+peringatan sendiri ("Mengirim mockup memindahkan item ke Menunggu
+Persetujuan Pelanggan. Jangan pakai tombol Selesai untuk itu") -- tapi
+peringatan itu HANYA ada di panel. Halaman `/kerja/{token}` yang dibuka
+pekerja lewat pindai QR sama sekali tidak tahu bedanya: tombol "Tandai
+Desain selesai" terlihat identik dengan tombol di tahap lain.
+
+Dicoba langsung: menandai tahap Desain selesai lewat QR/PIN **tanpa mockup
+apa pun** memindahkan item ke Menunggu Persetujuan Pelanggan dengan mulus --
+tidak ada penjagaan sama sekali di `AlurPesanan::majukanItem()`. Akibatnya
+di halaman pelanggan: kotak merah "Mockup menunggu persetujuan Anda" dengan
+tombol "Setujui desain" tampil TANPA satu pun mockup di atasnya -- pelanggan
+diminta menyetujui desain yang belum pernah mereka lihat sama sekali. Kalau
+mereka klik setujui begitu saja (mempercayai sistem), produksi mulai atas
+desain yang sebenarnya tidak pernah dibuat.
+
+Mencoba memperbaikinya juga membongkar masalah kedua: `KerjaController::selesai()`
+tidak pernah menangkap exception dari `majukanItem()`. `abort_if(..., 422, ...)`
+yang sudah ada di method itu (gerbang pembayaran, gerbang persetujuan, gerbang
+pelunasan) selama ini hanya "aman" karena secara praktis tidak pernah
+tercapai lewat QR -- begitu benar-benar tercapai (oleh penjagaan baru di
+bawah), yang muncul adalah halaman galat debug Laravel lengkap dengan jejak
+tumpukan dan daftar query SQL, dilihat pekerja yang sedang berdiri di meja
+kerja dengan HP-nya.
+
+**Keputusan, dua bagian:**
+
+1. **Penjagaan di `AlurPesanan::majukanItem()`:** memajukan item dari Proses
+   Desain ditolak kalau belum ada `DesignAsset` bertipe MOCKUP. Diletakkan di
+   lapisan servis (bukan cuma di tampilan QR) supaya berlaku untuk jalur mana
+   pun yang memanggil method ini, bukan cuma QR. Jalur pengunggahan mockup
+   yang sah (`AlurDesain::unggahMockup()`) tidak lewat `majukanItem()` sama
+   sekali (ia punya method `pindah()` sendiri), jadi penjagaan ini tidak
+   mengganggu alur normal.
+2. **`KerjaController::selesai()` menangkap `HttpExceptionInterface`** dan
+   mengubahnya jadi `ValidationException` biasa (muncul di sebelah kotak PIN,
+   pola yang sama dengan galat PIN salah/bukan miliknya) -- bukan dibiarkan
+   lolos jadi halaman debug. Perbaikan ini otomatis melindungi SEMUA gerbang
+   di `majukanItem()`, bukan cuma yang baru ditambahkan.
+
+Diverifikasi langsung: menandai Desain selesai tanpa mockup sekarang
+ditolak dengan pesan jelas di halaman QR, status item tidak berubah;
+mengirim mockup lewat formulir yang benar tetap berjalan normal dan
+pelanggan melihat mockup yang sebenarnya sebelum diminta menyetujui.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2421,3 +2513,5 @@ dipakai (tanpa deskripsi), bukan dipaksa lengkap dari awal.
 | KEP-070 | Tautan lokasi Google Maps, pelengkap alamat kirim | TERKUNCI |
 | KEP-071 | Penanda langkah konfigurator ikut bergeser ke langkah aktif | TERKUNCI |
 | KEP-072 | Kamus bahan terpusat, dengan deskripsi untuk pelanggan awam | TERKUNCI |
+| KEP-073 | Ringkasan ukuran menjumlahkan potongan, bukan menghitung baris roster | TERKUNCI |
+| KEP-074 | Tahap Desain tidak bisa "selesai" tanpa mockup yang benar-benar terunggah | TERKUNCI |

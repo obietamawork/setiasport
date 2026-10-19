@@ -142,6 +142,7 @@
                         <th>Nama punggung</th>
                         <th class="nomor">No</th>
                         <th class="ukuran">Ukuran</th>
+                        <th class="nomor">Jumlah</th>
                         <th style="width:90px">Cek</th>
                     </tr>
                 </thead>
@@ -152,6 +153,10 @@
                             <td>{{ $r->nama_punggung ?: '-' }}</td>
                             <td class="nomor">{{ $r->nomor ?: '-' }}</td>
                             <td class="ukuran">{{ $r->ukuran }}</td>
+                            {{-- Satu baris boleh mewakili banyak potong sekaligus (tempel dari
+                                 Excel, atau pesanan manual): jumlahnya WAJIB terlihat, atau
+                                 potongan tanpa nama bisa kepotong cuma satu lalu dianggap selesai. --}}
+                            <td class="nomor"><strong>{{ $r->jumlah }}</strong></td>
                             <td></td>
                         </tr>
                     @endforeach

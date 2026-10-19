@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 /**
  * Halaman kerja yang dibuka pekerja konveksi lewat pindai QR (KEP-047).
@@ -67,7 +68,19 @@ class KerjaController extends Controller
             ]);
         }
 
-        $this->alur->majukanItem($item, null, $pekerja->id);
+        /*
+         * AlurPesanan::majukanItem() menjaga beberapa gerbang lewat abort_if
+         * (mis. tahap Desain tanpa mockup). Di panel, abort semacam itu
+         * berakhir di halaman galat Laravel yang hanya dilihat staf yang
+         * tahu cara membacanya -- di sini yang membuka cuma pekerja dengan
+         * HP sambil berdiri di meja kerja, jadi pesannya diubah dulu jadi
+         * galat inline biasa di sebelah kotak PIN, bukan halaman debug.
+         */
+        try {
+            $this->alur->majukanItem($item, null, $pekerja->id);
+        } catch (HttpExceptionInterface $e) {
+            throw ValidationException::withMessages(['pin' => $e->getMessage()]);
+        }
 
         return back()->with('sukses', $tahap->label().' ditandai selesai oleh '.$pekerja->nama.'.');
     }

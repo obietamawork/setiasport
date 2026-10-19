@@ -96,6 +96,31 @@ class KerjaQrTest extends TestCase
         $this->assertStringContainsString(route('kerja', $item->fresh()->kerja_token), $html);
     }
 
+    /**
+     * Baris roster tanpa nama (tempel dari Excel, atau pesanan manual) boleh
+     * mewakili banyak potong sekaligus -- lembar cetaknya WAJIB menunjukkan
+     * jumlahnya, atau operator di meja potong/jahit bisa mengerjakan satu
+     * potong lalu menganggap barisnya selesai, menyisakan sisanya tak terbuat.
+     */
+    public function test_worksheet_menunjukkan_jumlah_per_baris_roster(): void
+    {
+        $item = $this->itemProduksi();
+        $item->rosters()->create([
+            'urutan' => 99, 'kategori' => 'SD', 'nama_punggung' => null, 'nomor' => null,
+            'ukuran' => 'L', 'jumlah' => 5, 'harga_satuan' => 45_000,
+        ]);
+
+        $html = $this->actingAs($this->owner())
+            ->get(route('panel.pesanan.worksheet', $item->order))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('Jumlah', $html);
+        // Baris "ANDI" dari itemProduksi() berjumlah 6, baris tambahan di atas 5.
+        $this->assertMatchesRegularExpression('/<td class="nomor"><strong>6<\/strong><\/td>/', $html);
+        $this->assertMatchesRegularExpression('/<td class="nomor"><strong>5<\/strong><\/td>/', $html);
+    }
+
     /** Pratinjau tautan di grup WhatsApp membuka halaman ini sendiri. */
     public function test_membuka_halaman_tidak_mengubah_tahap(): void
     {
@@ -124,6 +149,42 @@ class KerjaQrTest extends TestCase
             $pekerja->id,
             $item->productionJobs()->where('tahap', ProductionStage::PRINT->value)->first()->pekerja_id
         );
+    }
+
+    /**
+     * Tandai Desain selesai lewat QR tidak boleh memindahkan item ke Menunggu
+     * Persetujuan Pelanggan tanpa mockup -- pelanggan akan diminta menyetujui
+     * desain yang belum pernah mereka lihat sama sekali.
+     */
+    public function test_tandai_desain_selesai_tanpa_mockup_ditolak(): void
+    {
+        $item = $this->itemProduksi();
+        $item->update(['status_item' => OrderItemStatus::PROSES_DESAIN]);
+        $this->pekerja('Budi', '1234', [ProductionStage::DESAIN->value]);
+
+        // Bukan halaman galat Laravel: pesannya muncul inline di sebelah kotak PIN,
+        // karena yang membuka cuma pekerja dengan HP, bukan staf yang tahu cara
+        // membaca halaman debug.
+        $this->post(route('kerja.selesai', $item->tokenKerja()), ['pin' => '1234'])
+            ->assertSessionHasErrors('pin');
+
+        $this->assertSame(OrderItemStatus::PROSES_DESAIN, $item->fresh()->status_item);
+    }
+
+    /** Begitu mockup-nya ada, menandai selesai tetap berjalan normal. */
+    public function test_tandai_desain_selesai_dengan_mockup_berhasil(): void
+    {
+        $item = $this->itemProduksi();
+        $item->update(['status_item' => OrderItemStatus::PROSES_DESAIN]);
+        $item->designAssets()->create([
+            'tipe' => \App\Enums\DesignAssetType::MOCKUP, 'versi' => 1, 'external_url' => 'https://drive.google.com/x',
+        ]);
+        $this->pekerja('Budi', '1234', [ProductionStage::DESAIN->value]);
+
+        $this->post(route('kerja.selesai', $item->tokenKerja()), ['pin' => '1234'])
+            ->assertSessionHas('sukses');
+
+        $this->assertSame(OrderItemStatus::MENUNGGU_PERSETUJUAN, $item->fresh()->status_item);
     }
 
     /** Satu PIN tidak boleh bisa menyelesaikan seluruh meja sekaligus. */
