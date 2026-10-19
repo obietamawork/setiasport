@@ -33,11 +33,29 @@
 </div>
 
 @if ($varian->isEmpty())
+    {{-- "Habis" yang kosong berarti kabar BAIK (tidak ada yang kehabisan),
+         bukan "belum ada varian apa pun" -- dua keadaan yang beda jauh, jadi
+         pesannya tidak boleh sama. --}}
     <div class="kartu mt-6 p-8 text-center">
-        <x-ikon nama="stok" ukuran="size-9" class="mx-auto text-navy-300" />
-        <p class="mt-3 text-lg font-bold">Tidak ada varian yang cocok</p>
+        <x-ikon nama="{{ request('saring') === 'habis' ? 'centang' : 'stok' }}" ukuran="size-9"
+                class="mx-auto {{ request('saring') === 'habis' ? 'text-ok' : 'text-navy-300' }}" />
+        <p class="mt-3 text-lg font-bold">
+            @if (request('saring') === 'habis')
+                Tidak ada yang kehabisan stok
+            @elseif (request('q'))
+                Tidak ada produk atau SKU yang cocok
+            @else
+                Tidak ada varian yang cocok
+            @endif
+        </p>
         <p class="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
-            Varian ditambahkan dari halaman ubah produk, di bagian Varian &amp; stok.
+            @if (request('saring') === 'habis')
+                Semua varian masih punya stok yang bisa dijual.
+            @elseif (request('q'))
+                Coba kata lain, atau hapus pencarian untuk melihat semua varian.
+            @else
+                Varian ditambahkan dari halaman ubah produk, di bagian Varian &amp; stok.
+            @endif
         </p>
     </div>
 @else
@@ -98,11 +116,12 @@
                                 {{-- Tombol kurang dan tambah: menghitung sambil memegang
                                      barang jauh lebih mudah dengan menekan daripada
                                      mengetik ulang angkanya di papan ketik HP. --}}
+                                @php $nAwal = (int) old('stok.'.$v->id, $v->stok); @endphp
                                 <div class="flex items-center gap-1"
-                                     x-data="{ n: {{ (int) $v->stok }}, awal: {{ (int) $v->stok }} }"
+                                     x-data="{ n: {{ $nAwal }}, awal: {{ (int) $v->stok }} }"
                                      x-init="$watch('n', () => $dispatch('stok-berubah', {
                                          id: {{ $v->id }}, berubah: n !== awal,
-                                     }))">
+                                     })); if (n !== awal) $dispatch('stok-berubah', { id: {{ $v->id }}, berubah: true })">
                                     <button type="button" class="tombol tombol-garis tombol-sm px-2.5"
                                             @click="n = Math.max(0, n - 1)">
                                         <span class="sr-only">Kurangi stok {{ $v->label ?: $produk->nama }}</span>
@@ -114,9 +133,14 @@
                                     </label>
                                     {{-- value tetap ditulis walau ada x-model: kalau
                                          JavaScript gagal dimuat, kotaknya harus tetap
-                                         berisi angka stok yang sekarang, bukan kosong. --}}
+                                         berisi angka stok yang sekarang, bukan kosong.
+                                         Dibaca dari old() dulu: tanpa ini, angka yang
+                                         sudah diketik hilang diam-diam begitu "alasan"
+                                         ditolak validasi karena sebab LAIN selain kosong
+                                         (misalnya kepanjangan), dan opname harus diulang
+                                         dari rak pertama. --}}
                                     <input type="number" id="stok-{{ $v->id }}" name="stok[{{ $v->id }}]"
-                                           value="{{ (int) $v->stok }}" x-model.number="n"
+                                           value="{{ $nAwal }}" x-model.number="n"
                                            :class="n !== awal ? 'border-navy bg-navy-50 font-semibold' : ''"
                                            class="kotak-input tabular w-20 text-center" min="0" inputmode="numeric">
 
@@ -144,6 +168,7 @@
                     </span>
                 </label>
                 <input type="text" id="alasan" name="alasan" class="kotak-input" required
+                       value="{{ old('alasan') }}"
                        placeholder="Opname 7 September / barang rusak / retur supplier">
             </div>
             <button type="submit" class="tombol tombol-navy">

@@ -2437,6 +2437,182 @@ pelanggan melihat mockup yang sebenarnya sebelum diminta menyetujui.
 
 ---
 
+## KEP-075 — Dua kesalahan hitung di Laporan: produk terlaris dan periode "Bulan lalu"
+**Status:** TERKUNCI · 2026-10-20
+
+Ditemukan saat audit menyeluruh lanjutan ke Laporan, Pengaturan, Kesiapan
+tayang, dan Stok.
+
+**1. Produk terlaris terpecah kalau produknya pernah diganti nama.**
+`LaporanController::terlaris()` mengelompokkan dari `order_items.nama_produk`
+-- kolom ini adalah SNAPSHOT nama produk pada tanggal pesanan dibuat (lihat
+komentar di `OrderItem`, ditulis begitu supaya invoice lama tidak berubah
+kalau produknya diganti nama belakangan). Mengelompokkan laporan "produk
+terlaris" dari kolom yang sama berarti satu produk yang pernah diganti nama
+terhitung sebagai DUA produk berbeda: penjualan sebelum dan sesudah
+penggantian nama tidak pernah dijumlahkan jadi satu, dan produk yang
+sebenarnya nomor satu bisa hilang dari Top 10 karena jumlahnya terbelah dua
+baris yang masing-masing kalah dari pesaingnya.
+
+**Keputusan:** dikelompokkan dari `order_items.product_id` (tidak pernah
+berubah, dan tidak bisa dihapus selama masih dirujuk order_items --
+`restrictOnDelete`) lewat join ke tabel `products`, menampilkan nama produk
+yang SEKARANG, bukan snapshot lama.
+
+**2. "Bulan lalu" kadang melaporkan bulan ini lagi.** `periode()` menghitung
+awal/akhir bulan lalu lewat `$kini->subMonth()->startOfMonth()`. Carbon
+membulatkan MAJU tanggal yang tidak ada di bulan tujuan: mundur sebulan dari
+tanggal 31 ke bulan yang cuma punya 28-30 hari tidak mendarat di bulan itu,
+melainkan menggelinding beberapa hari ke bulan BERIKUTNYA -- yaitu bulan ini
+lagi. Dicoba langsung lewat tinker: tanggal 31 Maret dikurangi sebulan
+menghasilkan 3 Maret (bukan Februari), karena Februari cuma punya 28 hari di
+2026. Bug ini bukan kasus langka -- menyentuh lima dari dua belas bulan tiap
+tahun (semua bulan 31 hari KECUALI Januari dan Agustus, yang bulan
+sebelumnya sama-sama 31 hari): setiap 31 Maret/Mei/Juli/Oktober/Desember,
+pemilik toko yang membuka "Bulan lalu" untuk mencocokkan uang masuk akan
+melihat bulan INI lagi, bukan bulan sebelumnya, tanpa tanda apa pun bahwa
+datanya salah.
+
+**Keputusan:** dihitung dari `$kini->startOfMonth()->subMonth()`, bukan
+`$kini->subMonth()->startOfMonth()` -- mundur sebulan dari tanggal 1 (yang
+selalu ada di semua bulan) tidak pernah bisa menggelinding ke bulan lain.
+
+Keduanya diuji lewat `tests/Feature/LaporanTest.php`: satu memastikan
+produk yang diganti nama tetap menyatu di Top 10, satu lagi membekukan
+waktu ke 31 Maret 2026 (lewat `CarbonImmutable::setTestNow()`) dan
+memastikan rentang "Bulan lalu" benar-benar 1-28 Februari. Dikonfirmasi
+kedua tes ini gagal kalau perbaikannya sengaja dibatalkan, baru lolos
+setelah perbaikan dipasang -- bukan cuma lolos karena kebetulan tidak
+menguji apa-apa.
+
+---
+
+## KEP-076 — Dashboard menuduh produk "belum berharga" walau sudah dihargai lewat matriks
+**Status:** TERKUNCI · 2026-10-20
+
+Temuan paling mendesak dari audit lanjutan ini. Produk kustom punya DUA cara
+sah mengisi harga: tier per qty (`priceTiers`, cocok untuk barang stok satuan
+seperti bola) atau matriks per kategori/bahan (`prices`, KEP-039, cocok untuk
+seragam/jersey yang harganya beda per ukuran anak/dewasa dan per bahan).
+Produk kustom cuma butuh SALAH SATU, tidak keduanya -- `KesiapanTayang` dan
+`ProdukController::index()` (penyaring "belum lengkap") sudah benar
+memeriksa KEDUANYA sebelum menganggap sebuah produk belum berharga.
+
+`DashboardController` tertinggal: kartu "Harga belum lengkap" di dashboard
+hanya memeriksa `whereDoesntHave('priceTiers')`, tidak ikut memeriksa
+`prices`. Diperiksa langsung ke `database/seeders/CatalogSeeder.php`: dari
+12 produk kustom di katalog contoh, 9 di antaranya (mayoritas seragam dan
+jersey, termasuk yang dipakai di `PesananPerUkuranTest`) dihargai lewat
+matriks `prices`, bukan `priceTiers`. Kesembilan produk itu sudah bisa
+dihitung harganya sendiri oleh pelanggan di halaman kustom (dikonfirmasi
+`KatalogKustomTest`: "katalog kustom menampilkan harga matriks bukan nol")
+-- tapi dashboard tetap menuduhnya "belum punya tier harga, pelanggan akan
+bertanya ke admin" setiap kali halaman dibuka.
+
+Dashboard secara sengaja dirancang sebagai DAFTAR TINDAKAN yang dibuka tiap
+pagi (docs/04), bukan grafik yang boleh diabaikan. Peringatan yang salah di
+situ bukan cuma mengganggu satu kali: itu adalah "menangisi serigala" yang
+terjadi setiap pagi, untuk mayoritas katalog, selamanya -- sampai pemilik
+toko belajar mengabaikan kartu itu, dan begitu dipelajari, peringatan yang
+sungguh-sungguh (produk yang benar-benar belum berharga) ikut terlewat.
+
+**Keputusan:** `tanpaTier` ditambah `whereDoesntHave('prices')`, menyamakan
+logikanya dengan `KesiapanTayang` dan `ProdukController::index()`. Diuji
+lewat `tests/Feature/DashboardTest.php` (file baru, dashboard belum punya
+tes sebelumnya): produk berharga-matriks dan produk berharga-tier keduanya
+dipastikan TIDAK ditagih, produk tanpa harga sama sekali dipastikan TETAP
+ditagih. Dikonfirmasi tes "berharga-matriks" gagal tanpa perbaikan ini.
+
+---
+
+## KEP-077 — Opname stok: angka yang sudah diketik hilang kalau "alasan" ditolak validasi
+**Status:** TERKUNCI · 2026-10-20
+
+Ditemukan lewat pengujian langsung (bukan cuma baca kode) di halaman Stok,
+yang secara sengaja dirancang dipakai sambil berdiri di depan rak, satu
+formulir untuk banyak varian sekaligus, lihat komentar di
+`resources/views/panel/stok/index.blade.php`.
+
+Direproduksi: ubah angka dua varian atau lebih, isi "alasan" dengan teks
+lebih dari 120 karakter (lolos `required` tapi ditolak `max:120`), simpan.
+Server benar menolak permintaannya -- tapi SEMUA angka yang sudah diketik
+kembali ke nilai database semula, dan penanda "N varian diubah" menghilang,
+seolah belum ada apa pun yang disentuh. Akar masalahnya: kotak angka stok
+(`<input type="number" value="{{ (int) $v->stok }}">`) dan kotak alasan
+selalu dibaca dari database/kosong, tidak pernah dari `old()` -- padahal
+Laravel sudah mengirim input yang gagal validasi balik lewat sesi
+(`withInput()`, bawaan `back()`), halamannya saja yang tidak membacanya.
+
+Karena halaman ini dipakai untuk opname (menghitung ulang SELURUH rak),
+kehilangan input berarti mengulang dari rak pertama -- bukan cuma
+ketidaknyamanan kecil, tapi bisa membuat staf menyerah mencatat opname sama
+sekali kalau sering terjadi.
+
+**Keputusan:** kotak angka tiap varian dan kotak alasan membaca
+`old('stok.'.$v->id, $v->stok)` / `old('alasan')` dulu sebelum jatuh ke
+nilai database. `x-data` Alpine (yang mengatur tampilan angka dan penanda
+"berubah") ikut dibaca dari nilai yang sama, bukan cuma atribut HTML
+`value` -- tanpa ini Alpine tetap menimpa tampilannya balik ke angka
+database begitu halaman dimuat, membuat perbaikan di HTML saja sia-sia.
+
+Sekalian diperbaiki: pesan keadaan kosong saat penyaring "Hanya yang habis"
+tidak menemukan apa pun dulu selalu berbunyi "Tidak ada varian yang cocok"
+-- padahal itu kabar BAIK (tidak ada yang kehabisan stok), bukan "belum ada
+varian apa pun". Pesannya sekarang berbeda untuk tiga keadaan: habis-kosong
+(kabar baik, ikon centang hijau), pencarian tidak ketemu, dan katalog
+benar-benar belum punya varian.
+
+Diuji lewat `tests/Feature/StokTest.php` (file baru, Stok belum punya tes
+sebelumnya): satu memastikan penyesuaian valid tersimpan dan tercatat di
+`activity_logs`, satu lagi mereproduksi tepat skenario di atas dan
+memastikan angka yang diketik (bukan angka database) tampil lagi di
+kotaknya setelah redirect kembali. Dikonfirmasi tes kedua gagal kalau
+perbaikannya sengaja dibatalkan.
+
+---
+
+## KEP-078 — Pesan validasi dan navigasi halaman berbahasa Inggris, bukan Indonesia
+**Status:** TERKUNCI · 2026-10-20
+
+Ditemukan lewat pengujian langsung: mengetik huruf di isian angka-saja
+("Biaya Layanan per Pesanan") menampilkan "The Biaya Layanan per Pesanan
+(Rp) field must be an integer." -- nama isiannya sudah Indonesia (diisi
+manual lewat parameter `$nama` ke `$request->validate()` di tiap
+controller), tapi kalimat aturannya sendiri berbahasa Inggris.
+
+Diperiksa akarnya: proyek ini TIDAK PERNAH punya folder `lang/` sama
+sekali. `APP_LOCALE=id` sudah diset di `.env`, tapi tanpa
+`lang/id/validation.php`, setiap aturan validasi yang tidak diberi pesan
+khusus per formulir otomatis jatuh ke `APP_FALLBACK_LOCALE=en` --
+memakai bahasa Inggris bawaan dari framework itu sendiri. Ini bukan masalah
+satu formulir, tapi bawaan di SETIAP formulir di seluruh aplikasi yang tidak
+secara eksplisit menulis pesannya sendiri.
+
+Pola yang sama juga ditemukan di navigasi halaman berganda: `->links()`
+(dipakai di `publik/katalog.blade.php`, `publik/pesanan-saya.blade.php`, dan
+dua halaman panel) menampilkan "&laquo; Previous" / "Next &raquo;" dengan
+alasan akar yang sama persis -- `lang/id/pagination.php` juga tidak pernah
+ada. Ini terlihat langsung oleh PELANGGAN di katalog dan di halaman
+"pesanan saya", bukan cuma staf di panel.
+
+**Keputusan:** ditambahkan `lang/id/validation.php` (menerjemahkan seluruh
+kunci bawaan Laravel) dan `lang/id/pagination.php`. Keduanya murni berkas
+baru, tidak menyentuh kode satu baris pun -- begitu Laravel menemukan
+berkas ini di bawah locale `id`, dipakai otomatis untuk semua aturan yang
+belum punya pesan khusus, tanpa perlu menyentuh satu pun controller.
+`lang/id/auth.php` dan `lang/id/passwords.php` SENGAJA tidak dibuat: alur
+login dan reset kata sandi aplikasi ini sudah 100% memakai pesan Indonesia
+buatan sendiri (lihat `AuthController::masuk()`), tidak pernah memanggil
+baris bawaan `auth.*`/`passwords.*` Laravel, jadi berkas itu tidak akan
+pernah terpakai -- menambahkannya hanya akan jadi berkas mati.
+
+Diperiksa tidak ada satu pun tes yang menegaskan teks Inggris lama
+(`must be an integer`, `Previous`, dll), sehingga aman ditambahkan tanpa
+merusak tes yang sudah ada. Dikonfirmasi lewat tinker: `__('validation.integer', ...)`
+dan `__('pagination.previous')` sekarang mengembalikan kalimat Indonesia.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2515,3 +2691,7 @@ pelanggan melihat mockup yang sebenarnya sebelum diminta menyetujui.
 | KEP-072 | Kamus bahan terpusat, dengan deskripsi untuk pelanggan awam | TERKUNCI |
 | KEP-073 | Ringkasan ukuran menjumlahkan potongan, bukan menghitung baris roster | TERKUNCI |
 | KEP-074 | Tahap Desain tidak bisa "selesai" tanpa mockup yang benar-benar terunggah | TERKUNCI |
+| KEP-075 | Laporan: produk terlaris terpecah, dan "Bulan lalu" kadang meleset ke bulan ini | TERKUNCI |
+| KEP-076 | Dashboard menuduh produk "belum berharga" walau sudah dihargai lewat matriks | TERKUNCI |
+| KEP-077 | Opname stok: angka yang sudah diketik hilang kalau "alasan" ditolak validasi | TERKUNCI |
+| KEP-078 | Pesan validasi dan navigasi halaman berbahasa Inggris, bukan Indonesia | TERKUNCI |

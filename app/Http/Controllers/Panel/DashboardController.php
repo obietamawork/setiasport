@@ -93,12 +93,23 @@ class DashboardController extends Controller
                 ->limit(10)
                 ->get(),
 
-            // Produk kustom tanpa tier tidak bisa dihitung harganya, jadi
-            // tidak boleh tayang (KEP-010). Ini temuan paling mendesak.
+            /*
+             * Produk kustom tanpa harga tidak bisa dihitung sendiri oleh
+             * pelanggan (KEP-010). Ini temuan paling mendesak.
+             *
+             * Ada DUA cara sah mengisi harganya: tier per qty (priceTiers)
+             * atau matriks per kategori/bahan (prices, KEP-039) -- produk
+             * kustom cuma butuh SALAH SATU. Dulu di sini hanya diperiksa
+             * priceTiers; produk yang dihargai lewat matriks (mayoritas
+             * seragam/jersey di katalog) ikut tertuduh "belum berharga"
+             * setiap hari walau pelanggan sudah bisa menghitungnya sendiri
+             * di halaman kustom.
+             */
             'tanpaTier' => Product::query()
                 ->where('aktif', true)
                 ->whereIn('fulfillment_type', $jalurKustom)
                 ->whereDoesntHave('priceTiers')
+                ->whereDoesntHave('prices')
                 ->get(),
 
             'tanpaFoto' => Product::query()

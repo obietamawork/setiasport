@@ -75,8 +75,15 @@ class LaporanController extends Controller
         return match ($request->string('periode')->toString()) {
             'bulan-ini' => [$kini->startOfMonth(), $kini->endOfDay(), 'Bulan ini'],
             'bulan-lalu' => [
-                $kini->subMonth()->startOfMonth(),
-                $kini->subMonth()->endOfMonth(),
+                // $kini->subMonth() langsung (tanggal 29-31) meleset ke bulan
+                // INI lagi pada bulan berumur 31 hari yang bulan sebelumnya
+                // lebih pendek (Maret, Mei, Juli, Oktober, Desember): mundur
+                // sebulan dari tanggal 31 dibulatkan maju ke tanggal 1-3 bulan
+                // ini, bukan mendarat di bulan lalu. Mundur dari tanggal 1
+                // (yang selalu ada di semua bulan) baru menghitung isi
+                // bulannya supaya tidak pernah meleset.
+                $kini->startOfMonth()->subMonth(),
+                $kini->startOfMonth()->subMonth()->endOfMonth(),
                 'Bulan lalu',
             ],
             'tahun-ini' => [$kini->startOfYear(), $kini->endOfDay(), 'Tahun ini'],
@@ -84,19 +91,28 @@ class LaporanController extends Controller
         };
     }
 
+    /**
+     * `order_items.nama_produk` adalah SNAPSHOT nama saat pesanan dibuat (lihat
+     * komentar di `OrderItem`) -- dikelompokkan dari itu, produk yang pernah
+     * diganti namanya akan terpecah jadi dua baris "produk berbeda" di sini,
+     * dan terlaris sungguhan bisa tidak muncul di Top 10 sama sekali karena
+     * jumlahnya terbelah dua. Dikelompokkan dari `product_id` (tidak pernah
+     * berubah) supaya sejarah penjualannya tetap menyatu.
+     */
     private function terlaris(CarbonImmutable $dari, CarbonImmutable $sampai)
     {
         return DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->join('products', 'products.id', '=', 'order_items.product_id')
             ->whereBetween('orders.created_at', [$dari, $sampai])
             ->whereNotIn('orders.status', [
                 OrderStatus::DIBATALKAN->value, OrderStatus::KADALUARSA->value,
             ])
-            ->groupBy('order_items.nama_produk')
+            ->groupBy('products.id')
             ->orderByDesc(DB::raw('SUM(order_items.qty)'))
             ->limit(10)
             ->get([
-                'order_items.nama_produk',
+                'products.nama as nama_produk',
                 DB::raw('SUM(order_items.qty) as total_qty'),
                 DB::raw('COUNT(DISTINCT orders.id) as total_pesanan'),
             ]);
