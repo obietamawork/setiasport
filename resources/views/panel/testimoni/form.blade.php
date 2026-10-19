@@ -67,7 +67,7 @@
 
 @if ($testimoni->exists)
     <form method="POST" action="{{ route('panel.testimoni.destroy', $testimoni) }}"
-          class="mt-6 max-w-xl" onsubmit="return confirm('Hapus testimoni dari {{ $testimoni->nama }}?')">
+          class="mt-6 max-w-xl" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Hapus testimoni dari '.$testimoni->nama.'?') }})">
         @csrf @method('DELETE')
         <button type="submit" class="tautan text-sm text-muted">Hapus testimoni ini</button>
     </form>

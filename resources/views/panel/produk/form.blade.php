@@ -500,7 +500,7 @@
                         <span class="chip chip-netral">Opsional</span>
                     @endunless
                     <form method="POST" action="{{ route('panel.produk.opsi.hapus', [$produk, $opsi]) }}"
-                          class="ml-auto" onsubmit="return confirm('Hapus opsi {{ $opsi->nama }}?')">
+                          class="ml-auto" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Hapus opsi '.$opsi->nama.'?') }})">
                         @csrf @method('DELETE')
                         <button type="submit" class="tautan text-sm text-muted">Hapus opsi</button>
                     </form>
@@ -791,7 +791,7 @@
 
 <form method="POST" action="{{ route('panel.produk.destroy', $produk) }}"
       class="zona-bahaya max-w-4xl"
-      onsubmit="return confirm('Hapus produk {{ $produk->nama }}?')">
+      onsubmit="return confirm({{ \Illuminate\Support\Js::from('Hapus produk '.$produk->nama.'?') }})">
     @csrf @method('DELETE')
     <button type="submit" class="tautan text-sm text-muted">Hapus produk ini</button>
     <p class="mt-1 text-xs text-muted">

@@ -37,7 +37,7 @@
 
 @if ($bahan->exists)
     <form method="POST" action="{{ route('panel.bahan.destroy', $bahan) }}"
-          class="mt-6 max-w-xl" onsubmit="return confirm('Hapus bahan {{ $bahan->nama }}?')">
+          class="mt-6 max-w-xl" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Hapus bahan '.$bahan->nama.'?') }})">
         @csrf @method('DELETE')
         <button type="submit" class="tautan text-sm text-muted">Hapus bahan ini</button>
     </form>

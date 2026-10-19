@@ -64,7 +64,7 @@
 
 @if ($kategori->exists)
     <form method="POST" action="{{ route('panel.kategori.destroy', $kategori) }}"
-          class="mt-6 max-w-xl" onsubmit="return confirm('Hapus kategori {{ $kategori->nama }}?')">
+          class="mt-6 max-w-xl" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Hapus kategori '.$kategori->nama.'?') }})">
         @csrf @method('DELETE')
         <button type="submit" class="tautan text-sm text-muted">Hapus kategori ini</button>
     </form>
