@@ -2569,6 +2569,14 @@ memastikan angka yang diketik (bukan angka database) tampil lagi di
 kotaknya setelah redirect kembali. Dikonfirmasi tes kedua gagal kalau
 perbaikannya sengaja dibatalkan.
 
+**Tambahan setelah diverifikasi lewat emulasi sentuh sungguhan** (`hasTouch`/
+`isMobile` lewat Playwright, bukan sekadar resize browser desktop): tombol
++/- sudah setinggi 36px di perangkat sentuh (aturan `pointer: coarse` yang
+ada sejak awal memang bekerja), tapi lebarnya cuma ~30px karena memakai
+padding horizontal tetap (`px-2.5`), bukan kotak persegi. Diganti jadi
+`aspect-square px-0` supaya lebar mengikuti tinggi -- diverifikasi ulang
+lewat emulasi sentuh yang sama, sekarang 36x36px persis.
+
 ---
 
 ## KEP-078 — Pesan validasi dan navigasi halaman berbahasa Inggris, bukan Indonesia
