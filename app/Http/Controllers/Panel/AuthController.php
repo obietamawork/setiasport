@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -24,11 +26,30 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ], [], ['email' => 'email', 'password' => 'kata sandi']);
 
+        /*
+         * Login pelanggan sudah dibatasi sejak awal, login staf justru belum --
+         * padahal akun staf membuka seluruh data pelanggan, pembayaran, dan
+         * pengaturan. Kuncinya email + IP: satu orang yang salah ketik tidak
+         * mengunci rekan kerjanya di jaringan toko yang sama.
+         */
+        $kunci = 'masuk-staf:'.Str::lower($kredensial['email']).'|'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($kunci, 5)) {
+            throw ValidationException::withMessages([
+                'email' => 'Terlalu banyak percobaan masuk. Coba lagi dalam '
+                    .ceil(RateLimiter::availableIn($kunci) / 60).' menit.',
+            ]);
+        }
+
         if (! Auth::attempt($kredensial, $request->boolean('ingat'))) {
+            RateLimiter::hit($kunci, 300);
+
             throw ValidationException::withMessages([
                 'email' => 'Email atau kata sandi tidak cocok.',
             ]);
         }
+
+        RateLimiter::clear($kunci);
 
         if (! $request->user()->aktif) {
             Auth::logout();

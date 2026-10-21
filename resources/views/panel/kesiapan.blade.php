@@ -21,7 +21,7 @@
 @endphp
 
 <div class="langkah-berikut {{ $tuntas ? 'langkah-berikut-selesai' : '' }}">
-    <div class="min-w-0 flex-1">
+    <div class="min-w-0 grow basis-64">
         <p class="font-bold">
             @if ($tuntas)
                 Semua yang wajib sudah siap

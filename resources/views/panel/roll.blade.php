@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>{{ $roll->kode }}</title>
+    <title>Lembar roll {{ $roll->kode }} - {{ setting('toko_nama', 'Setia Sport') }}</title>
     <style>
         /* Ditempel di roll kertasnya, jadi dicetak besar dan ringkas. */
         * { box-sizing: border-box; }

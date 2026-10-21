@@ -48,6 +48,7 @@ class KatalogController extends Controller
         return view('publik.katalog', [
             'produk' => $produk,
             'judul' => $judul,
+            'judulTab' => $this->judulTab($request, $kategoriTerpilih, $jalur, $produk->currentPage()),
             'subjudul' => $subjudul,
             // Jumlah awal diambil dari MOQ terkecil, jadi angkanya masuk akal
             // sejak halaman dibuka dan tidak menampilkan peringatan minimum.
@@ -79,6 +80,29 @@ class KatalogController extends Controller
         $produk->load(['category.parent', 'images', 'variants', 'priceTiers', 'options.values.material', 'prices']);
 
         return view('publik.produk', compact('produk'));
+    }
+
+    /**
+     * Judul tab dan hasil penelusuran, terpisah dari judul besar di halaman.
+     *
+     * Nama kategori anak tidak unik ("Futsal" ada di bawah Bola dan di bawah
+     * Jersey), hasil pencarian tidak boleh berjudul "Katalog" yang sama dengan
+     * katalog tanpa pencarian, dan halaman 2 tidak boleh kembar dengan
+     * halaman 1. "Custom jersey" mengikuti label menu yang diklik pelanggan.
+     */
+    private function judulTab(Request $request, ?Category $kategori, string $jalur, int $halaman): string
+    {
+        $judul = match (true) {
+            $request->filled('q') => 'Hasil pencarian "'.$request->string('q')->squish()->limit(40).'"',
+            $kategori !== null => $kategori->parent
+                ? $kategori->parent->nama.' › '.$kategori->nama
+                : $kategori->nama,
+            $jalur === 'kustom' => 'Custom jersey',
+            $jalur === 'stok' => 'Stok toko',
+            default => 'Katalog produk',
+        };
+
+        return $halaman > 1 ? $judul.' (halaman '.$halaman.')' : $judul;
     }
 
     /** @return array{0: string, 1: ?string} */

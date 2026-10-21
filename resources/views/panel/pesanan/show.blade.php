@@ -1,5 +1,5 @@
 @extends('layouts.panel')
-@section('judul', 'Pesanan '.$pesanan->kode)
+@section('judul', 'Pesanan '.$pesanan->kode.($pesanan->customer ? ' · '.$pesanan->customer->nama : ''))
 
 @section('isi')
 @php
@@ -33,7 +33,7 @@
     <a href="{{ route('panel.pesanan.worksheet', $pesanan) }}" target="_blank" rel="noopener"
        class="tombol tombol-garis tombol-sm">
         <x-ikon nama="cetak" ukuran="size-4" />
-        Worksheet
+        Lembar kerja
     </a>
     <a href="{{ route('panel.pesanan.invoice', $pesanan) }}" target="_blank" rel="noopener"
        class="tombol tombol-garis tombol-sm">
@@ -43,7 +43,7 @@
     <a href="{{ route('lacak.token', $pesanan->access_token) }}" target="_blank" rel="noopener"
        class="tombol tombol-halus tombol-sm">
         <x-ikon nama="buka-luar" ukuran="size-4" />
-        <span class="hidden sm:inline">Lihat seperti pelanggan</span>
+        <span class="sr-only sm:not-sr-only">Lihat seperti pelanggan</span>
     </a>
 </x-kop>
 
@@ -52,7 +52,10 @@
 <div class="langkah-berikut mt-1 mb-6
             {{ $langkah['nada'] === 'mendesak' ? 'langkah-berikut-mendesak' : '' }}
             {{ $langkah['nada'] === 'selesai' ? 'langkah-berikut-selesai' : '' }}">
-    <div class="min-w-0 flex-1">
+    {{-- basis-64, bukan flex-1: dengan basis 0 teksnya selalu "muat" sehingga
+         tombol di sebelahnya tidak pernah turun, dan di HP 320px teksnya
+         terjepit jadi satu-dua kata per baris. --}}
+    <div class="min-w-0 grow basis-64">
         <p class="font-bold">{{ $langkah['judul'] }}</p>
         <p class="kolom-baca mt-0.5 text-sm leading-relaxed text-muted">{{ $langkah['isi'] }}</p>
     </div>
@@ -317,7 +320,8 @@
                                 {{-- Tahapan berlabel, bukan deretan titik. Titik tanpa nama hanya
                                      terbaca oleh orang yang sudah hafal urutannya, dan yang paling
                                      sering bertanya "sekarang sampai mana" justru yang belum hafal. --}}
-                                <div class="tangga w-full" aria-label="Tahap: {{ $item->status_item->labelStaf() }}">
+                                <div class="tangga w-full" role="group" tabindex="0"
+                                     aria-label="Tahap: {{ $item->status_item->labelStaf() }}">
                                     @foreach ($alur as $i => $tahap)
                                         <span class="tangga-langkah
                                             {{ $posisi !== false && $i < $posisi ? 'tangga-lewat' : '' }}
@@ -898,6 +902,7 @@
             </p>
 
             <p class="mt-3 max-h-24 overflow-y-auto rounded-[7px] bg-navy-50 p-3 text-xs leading-relaxed"
+               tabindex="0" role="region" aria-label="Isi pesan WhatsApp"
                x-ref="pesan">{{ $pesanWa['teks'] }}</p>
 
             <div class="mt-3 grid grid-cols-2 gap-2">

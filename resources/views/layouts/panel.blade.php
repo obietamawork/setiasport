@@ -4,7 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('judul', 'Panel') | {{ setting('toko_nama', 'Setia Sport') }}</title>
+    {{-- "Panel" ikut di akhiran: tanpa itu tab "Pesanan SS-..." di panel sama
+         persis dengan tab halaman pelacakan pelanggan, dan tab ubah produk sama
+         dengan halaman produknya di etalase. Staf sering membuka keduanya. --}}
+    <title>@yield('judul', 'Dashboard') | Panel {{ setting('toko_nama', 'Setia Sport') }}</title>
     <meta name="theme-color" content="#0d1733">
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
@@ -128,7 +131,7 @@
 
         <a href="{{ route('panel.dashboard') }}" class="flex items-center gap-3">
             <x-logo :terang="true" />
-            <span class="hidden text-xs font-medium text-white/45 sm:inline">Panel internal</span>
+            <span class="hidden text-xs font-medium text-white/60 sm:inline">Panel internal</span>
         </a>
 
         <div class="ml-auto flex items-center gap-1 text-sm">
@@ -136,7 +139,7 @@
                 <a href="{{ route('panel.cs.index') }}" x-show="jumlah > 0" x-cloak
                    class="flex items-center gap-1.5 rounded-[7px] bg-merah px-2.5 py-1.5 font-semibold text-white hover:bg-merah/90">
                     <x-ikon nama="chat" ukuran="size-4" />
-                    <span class="hidden sm:inline">Chat baru</span>
+                    <span class="sr-only sm:not-sr-only">Chat baru</span>
                     <span class="tabular" x-text="jumlah"></span>
                 </a>
             @endif
@@ -148,7 +151,7 @@
                class="flex items-center gap-1.5 rounded-[7px] px-2.5 py-1.5 text-white/70 hover:bg-white/10 hover:text-white
                       {{ request()->routeIs('panel.bantuan') ? 'bg-white/10 text-white' : '' }}">
                 <x-ikon nama="bantuan" ukuran="size-5" />
-                <span class="hidden sm:inline">Bantuan</span>
+                <span class="sr-only sm:not-sr-only">Bantuan</span>
             </a>
 
             {{-- Identitas, "lihat toko", dan keluar dirangkum ke satu menu.

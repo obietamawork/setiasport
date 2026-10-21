@@ -49,7 +49,7 @@
             </ul>
         </div>
 
-        <p class="text-xs leading-relaxed text-white/40">
+        <p class="text-xs leading-relaxed text-white/60">
             Pelanggan tidak memakai halaman ini. Mereka membuka pesanannya lewat tautan
             yang dikirim ke email, tanpa perlu akun.
         </p>
@@ -104,7 +104,9 @@
 
             <p class="mt-5 text-center text-xs leading-relaxed text-white/50 lg:text-muted">
                 Bukan staf?
-                <a href="{{ route('lacak') }}" class="tautan">Lacak pesanan Anda di sini</a>
+                {{-- Di HP tautan ini berada di atas latar navy-900: warna bawaan
+                     .tautan (navy-700) di sana kontrasnya cuma 1,5:1, nyaris tak terlihat. --}}
+                <a href="{{ route('lacak') }}" class="tautan text-white lg:text-navy-700">Lacak pesanan Anda di sini</a>
             </p>
         </div>
     </div>

@@ -6,6 +6,29 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('judul', 'Perlengkapan tim, siap hari ini atau dibuat dari nol') | {{ setting('toko_nama', 'Setia Sport') }}</title>
     <meta name="description" content="@yield('deskripsi', 'Toko alat olahraga dan workshop jersey kustom di Wonogiri. Pesanan diambil di toko atau dikirim.')">
+
+    {{-- Halaman yang memuat data pribadi pelanggan (pelacakan pesanan lewat
+         tautan bertoken, pesanan saya) atau tidak berguna di hasil pencarian
+         tidak boleh diindeks, walau tautannya sempat tersebar di tempat umum. --}}
+    @if (request()->routeIs('lacak.*', 'pesanan-saya', 'keranjang', 'checkout', 'masuk', 'daftar*'))
+        <meta name="robots" content="noindex">
+    @endif
+
+    {{-- Pratinjau tautan di WhatsApp, Facebook, dan Instagram. Tanpa ini tautan
+         produk yang dibagikan ke grup hanya tampil sebagai alamat polos. --}}
+    <meta property="og:type" content="@yield('og_tipe', 'website')">
+    <meta property="og:site_name" content="{{ setting('toko_nama', 'Setia Sport') }}">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:title" content="@yield('judul', 'Perlengkapan tim, siap hari ini atau dibuat dari nol')">
+    <meta property="og:description" content="@yield('deskripsi', 'Toko alat olahraga dan workshop jersey kustom di Wonogiri. Pesanan diambil di toko atau dikirim.')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="@yield('og_gambar', asset('logo.png'))">
+    @hasSection('og_gambar')
+        <meta name="twitter:card" content="summary_large_image">
+    @else
+        <meta name="twitter:card" content="summary">
+    @endif
+
     <meta name="theme-color" content="#16255b">
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
@@ -83,9 +106,15 @@
 
 <header class="sticky top-0 z-30 border-b border-line bg-field/95 backdrop-blur"
         x-data="{ menu: false }" @keydown.escape.window="menu = false">
-    <div class="mx-auto flex h-16 max-w-6xl items-center gap-4 px-5">
+    {{-- Di HP baris ini cuma punya ruang 280px (layar 320) sampai 320px (layar
+         360), dan tidak ada isinya yang boleh menyusut. Dengan celah gap-4 dan
+         logo h-9 isinya butuh ±351px: tombol menu terdorong keluar layar dan
+         seluruh halaman bisa digeser ke samping. Celah dan logo dikecilkan
+         khusus di HP, dan tombol "Masuk" baru muncul mulai layar 360px
+         (di bawah itu ia tetap ada di dalam menu). --}}
+    <div class="mx-auto flex h-16 max-w-6xl items-center gap-2 px-5 sm:gap-4">
         <a href="{{ route('beranda') }}" class="shrink-0" aria-label="Beranda Setia Sport">
-            <x-logo tinggi="h-9 sm:h-10" />
+            <x-logo tinggi="h-8 sm:h-10" />
         </a>
 
         {{-- Navigasi penuh hanya muat mulai layar sedang. Di bawah itu ia
@@ -135,7 +164,7 @@
 
         @unless ($pelanggan)
             <a href="{{ route('masuk') }}"
-               class="rounded-[7px] border border-line-strong px-3 py-2 text-sm font-semibold transition-colors hover:border-navy-300 hover:bg-navy-50">
+               class="hidden rounded-[7px] border border-line-strong px-3 py-2 text-sm font-semibold transition-colors hover:border-navy-300 hover:bg-navy-50 min-[360px]:block">
                 Masuk
             </a>
         @endunless
@@ -262,7 +291,7 @@
     <div class="border-t border-line">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-4 text-xs text-muted">
             <span>&copy; {{ date('Y') }} {{ setting('toko_nama', 'Setia Sport') }}</span>
-            <a href="{{ route('panel.login') }}" class="tautan">Masuk staf</a>
+            <a href="{{ route('panel.login') }}" class="tautan inline-block py-1.5">Masuk staf</a>
         </div>
     </div>
 </footer>

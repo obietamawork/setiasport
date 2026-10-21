@@ -2,7 +2,10 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Invoice {{ $pesanan->kode }}</title>
+    {{-- Judul ini jadi nama berkas saat disimpan sebagai PDF, jadi memuat nama
+         pelanggan dan toko. Pemisahnya " - ", bukan "|": browser mengganti "|"
+         dengan "_" di nama berkas. --}}
+    <title>Invoice {{ $pesanan->kode }}{{ $pesanan->customer ? ' - '.$pesanan->customer->nama : '' }} - {{ setting('toko_nama', 'Setia Sport') }}</title>
     <style>
         /*
          * Gaya ditulis di sini, bukan lewat Tailwind, supaya lembar ini tetap

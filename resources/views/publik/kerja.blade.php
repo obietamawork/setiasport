@@ -1,5 +1,8 @@
 @extends('layouts.kerja')
-@section('judul', 'Lembar kerja '.$item->order->kode)
+{{-- Satu pesanan bisa punya beberapa barang, masing-masing dengan QR-nya
+     sendiri: tanpa tahap dan nama barang, semua tabnya berjudul sama persis. --}}
+@php $tahapJudul = $item->status_item->tahapProduksi(); @endphp
+@section('judul', ($tahapJudul ? $tahapJudul->label().': ' : '').$item->nama_produk.' · '.$item->order->kode)
 @section('kop', $item->order->kode)
 
 @section('isi')

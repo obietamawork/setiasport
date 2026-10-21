@@ -100,6 +100,7 @@
 
                 <div class="relative mt-2">
                     <input type="text" x-model="cari" @input.debounce.400ms="cariArea()" autocomplete="off"
+                           aria-label="Cari area asal pengiriman"
                            placeholder="Ketik nama kota/kecamatan toko, mis. Wonogiri"
                            class="kotak-input">
                     <p class="mt-1 text-xs text-muted" x-show="mencari" x-cloak>Mencari&hellip;</p>

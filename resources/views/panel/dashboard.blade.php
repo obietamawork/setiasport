@@ -11,30 +11,34 @@
      Kartu yang bisa ditindaklanjuti dibuat menjadi tautan, yang sekadar kabar
      tidak. Kartu yang terlihat bisa diklik tetapi diam adalah janji yang
      tidak ditepati. --}}
-<dl class="grid grid-cols-2 gap-3 lg:grid-cols-5">
+{{-- Bukan <dl>: <dt>/<dd> tidak boleh dibungkus <a>, dan pembaca layar
+     membaca daftar yang rusak itu sebagai potongan-potongan lepas. Dengan
+     <span> biasa, tiap kartu tautan terbaca utuh, misalnya "Sedang
+     dikerjakan 3". --}}
+<div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
     <div class="kartu kartu-metrik">
-        <dt><x-ikon nama="pesanan" ukuran="size-4" class="text-navy-400" /> Pesanan masuk hari ini</dt>
-        <dd>{{ $pesananHariIni }}</dd>
+        <span class="metrik-label"><x-ikon nama="pesanan" ukuran="size-4" class="text-navy-400" /> Pesanan masuk hari ini</span>
+        <span class="metrik-angka">{{ $pesananHariIni }}</span>
     </div>
     <div class="kartu kartu-metrik">
-        <dt><x-ikon nama="uang" ukuran="size-4" class="text-navy-400" /> Uang diterima hari ini</dt>
-        <dd>{{ rupiah_ringkas($uangHariIni) }}</dd>
+        <span class="metrik-label"><x-ikon nama="uang" ukuran="size-4" class="text-navy-400" /> Uang diterima hari ini</span>
+        <span class="metrik-angka">{{ rupiah_ringkas($uangHariIni) }}</span>
     </div>
     <a href="{{ route('panel.pesanan.index', ['status' => 'DIPROSES']) }}" class="kartu kartu-tautan kartu-metrik">
-        <dt><x-ikon nama="antrian" ukuran="size-4" class="text-navy-400" /> Sedang dikerjakan</dt>
-        <dd>{{ $sedangDikerjakan }}</dd>
+        <span class="metrik-label"><x-ikon nama="antrian" ukuran="size-4" class="text-navy-400" /> Sedang dikerjakan</span>
+        <span class="metrik-angka">{{ $sedangDikerjakan }}</span>
     </a>
     {{-- Barang sudah jadi tapi uangnya belum (KEP-028). Ditaruh di antara
          "dikerjakan" dan "siap" karena memang di situlah ia berada. --}}
     <a href="{{ route('panel.pesanan.index', ['status' => 'MENUNGGU_PELUNASAN']) }}" class="kartu kartu-tautan kartu-metrik">
-        <dt><x-ikon nama="jam" ukuran="size-4" class="text-navy-400" /> Menunggu pelunasan</dt>
-        <dd class="{{ $menungguPelunasan > 0 ? 'text-warn' : '' }}">{{ $menungguPelunasan }}</dd>
+        <span class="metrik-label"><x-ikon nama="jam" ukuran="size-4" class="text-navy-400" /> Menunggu pelunasan</span>
+        <span class="metrik-angka {{ $menungguPelunasan > 0 ? 'text-warn' : '' }}">{{ $menungguPelunasan }}</span>
     </a>
     <a href="{{ route('panel.serah-terima') }}" class="kartu kartu-tautan kartu-metrik col-span-2 lg:col-span-1">
-        <dt><x-ikon nama="toko" ukuran="size-4" class="text-navy-400" /> Siap diambil</dt>
-        <dd class="{{ $siapDiambil > 0 ? 'text-merah' : '' }}">{{ $siapDiambil }}</dd>
+        <span class="metrik-label"><x-ikon nama="toko" ukuran="size-4" class="text-navy-400" /> Siap diambil</span>
+        <span class="metrik-angka {{ $siapDiambil > 0 ? 'text-merah' : '' }}">{{ $siapDiambil }}</span>
     </a>
-</dl>
+</div>
 
 <div class="mt-8 flex flex-wrap items-center justify-between gap-3">
     <h2 class="text-lg font-extrabold">Yang perlu ditangani</h2>

@@ -1,5 +1,5 @@
 @extends('layouts.publik')
-@section('judul', $judul)
+@section('judul', $judulTab)
 @section('subjudul', 'Katalog')
 @section('subcatatan', 'Pilih produk, lihat harganya, lalu pesan dari halaman produknya.')
 

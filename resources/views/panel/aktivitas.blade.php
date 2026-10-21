@@ -44,7 +44,7 @@
          dibungkus overflow-x-auto supaya yang melebar cuma tabelnya sendiri,
          bukan membuat seluruh halaman bisa digeser ke samping di HP. --}}
     <section class="kartu mt-6 overflow-hidden">
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Daftar riwayat aktivitas">
         <table class="tabel">
             <thead>
                 <tr>

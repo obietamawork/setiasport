@@ -69,7 +69,9 @@
          HP ia menggeser ke samping, bukan menumpuk jadi empat baris yang
          mendorong isi halaman turun satu layar penuh. --}}
     <div class="relative border-t border-white/10">
-        <div class="geser-x mx-auto flex max-w-6xl snap-x gap-px px-5 text-sm sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-4">
+        {{-- tabindex supaya bisa digeser dengan papan ketik juga, bukan cuma jari. --}}
+        <div class="geser-x mx-auto flex max-w-6xl snap-x gap-px px-5 text-sm sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-4"
+             tabindex="0" role="region" aria-label="Keunggulan toko">
             @foreach ([
                 ['produk', 'Produk original', 'Dari merek yang bisa dipertanggungjawabkan'],
                 ['uang', 'Harga bersaing', 'Ecer maupun grosir, harganya terbuka di web'],
@@ -112,7 +114,7 @@
                         <img src="{{ $k->gambar->thumb_url }}" alt="{{ $k->nama }}" loading="lazy" decoding="async"
                              class="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-105">
                     @else
-                        <span class="absolute inset-0 flex items-center justify-center text-lg font-extrabold text-navy-300">
+                        <span aria-hidden="true" class="absolute inset-0 flex items-center justify-center text-xl font-extrabold text-navy-400">
                             {{ Str::upper(Str::substr($k->nama, 0, 2)) }}
                         </span>
                     @endif
@@ -261,7 +263,7 @@
                              alt="{{ $p->judul }}" loading="lazy" decoding="async"
                              class="absolute inset-0 size-full object-cover">
                     @else
-                        <span class="absolute inset-0 flex items-center justify-center px-2 text-center text-xs font-semibold text-navy-300">
+                        <span aria-hidden="true" class="absolute inset-0 flex items-center justify-center px-2 text-center text-xs font-semibold text-muted">
                             {{ $p->judul }}
                         </span>
                     @endif

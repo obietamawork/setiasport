@@ -42,7 +42,7 @@
 
         <div class="min-w-0 space-y-6">
             <div class="langkah-berikut" x-show="kunci === ''">
-                <div class="min-w-0 flex-1">
+                <div class="min-w-0 grow basis-64">
                     <p class="font-bold">Kalau sedang buru-buru dan bingung di satu pesanan</p>
                     <p class="kolom-baca mt-0.5 text-sm leading-relaxed text-muted">
                         Buka pesanannya. Kotak paling atas di halaman itu selalu menyebut siapa yang sedang

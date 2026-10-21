@@ -84,7 +84,7 @@
                             <label class="sr-only" for="qty-{{ $b['kunci'] }}">Jumlah {{ $b['produk']->nama }}</label>
                             <input type="number" id="qty-{{ $b['kunci'] }}" name="qty" value="{{ $b['qty'] }}"
                                    min="1" class="kotak-input w-20 tabular text-right">
-                            <button type="submit" class="tautan text-sm">Perbarui</button>
+                            <button type="submit" class="tautan py-2 text-sm">Perbarui</button>
                         </form>
                     @endif
 
@@ -95,10 +95,13 @@
                         @if ($b['rincian'] && ! ($b['ukuran'] ?? null))
                             <p class="text-xs text-muted tabular">{{ rupiah($b['rincian']->hargaSatuan) }} / pcs</p>
                         @endif
-                        <form method="POST" action="{{ route('keranjang.hapus') }}" class="mt-1">
+                        {{-- Tulisannya tetap kecil (aksi sampingan), tapi kotak sentuhnya
+                             dibuat setinggi 28px: dulu cuma 16px, dan yang salah tekan di
+                             sini kehilangan barang dari keranjangnya. --}}
+                        <form method="POST" action="{{ route('keranjang.hapus') }}">
                             @csrf @method('DELETE')
                             <input type="hidden" name="kunci" value="{{ $b['kunci'] }}">
-                            <button type="submit" class="tautan text-xs text-muted">Keluarkan</button>
+                            <button type="submit" class="tautan inline-block py-1.5 text-xs text-muted">Keluarkan</button>
                         </form>
                     </div>
                 </div>

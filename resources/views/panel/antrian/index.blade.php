@@ -18,7 +18,7 @@
          ada kerjaan tidak hari ini. Sebelumnya ia harus membaca tujuh kotak
          berisi angka nol untuk menyimpulkan hal yang sama. --}}
     <div class="langkah-berikut mt-1 {{ $totalKerjaan > 0 ? 'langkah-berikut-mendesak' : 'langkah-berikut-selesai' }}">
-        <div class="min-w-0 flex-1">
+        <div class="min-w-0 grow basis-64">
             @if ($totalKerjaan > 0)
                 <p class="font-bold">{{ $totalKerjaan }} pekerjaan menunggu di meja Anda</p>
                 <p class="mt-0.5 text-sm text-muted">
@@ -46,14 +46,16 @@
             @endphp
 
             <a href="{{ route('panel.antrian.tahap', strtolower($t->value)) }}"
-               class="kartu kartu-tautan flex flex-col gap-3 p-5 {{ $ada ? '' : 'opacity-70' }}">
+               class="kartu kartu-tautan flex flex-col gap-3 p-5">
+                {{-- Divisi kosong dibuat tenang lewat warna, bukan opacity: opacity
+                     ikut menurunkan kontras tulisannya di bawah batas WCAG. --}}
                 <div class="flex items-center gap-3">
                     <span class="flex size-10 shrink-0 items-center justify-center rounded-[10px]
                                  {{ $ada ? 'bg-merah-50 text-merah-tua' : 'bg-navy-50 text-navy-400' }}">
                         <x-ikon :nama="$t->ikon()" />
                     </span>
                     <span class="min-w-0 flex-1 font-bold">{{ $t->label() }}</span>
-                    <span class="numeral text-3xl {{ $ada ? 'text-merah' : 'text-line-strong' }}">
+                    <span class="numeral text-3xl {{ $ada ? 'text-merah' : 'text-navy-400' }}">
                         {{ $r['jumlah'] }}
                     </span>
                 </div>

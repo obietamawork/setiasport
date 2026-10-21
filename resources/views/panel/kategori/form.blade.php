@@ -1,5 +1,5 @@
 @extends('layouts.panel')
-@section('judul', $kategori->exists ? 'Ubah kategori' : 'Tambah kategori')
+@section('judul', $kategori->exists ? 'Ubah kategori: '.$kategori->nama : 'Tambah kategori')
 
 @section('isi')
 <x-kop :judul="$kategori->exists ? 'Ubah kategori' : 'Tambah kategori'" :kembali="route('panel.kategori.index')" kembali-label="Daftar kategori" />

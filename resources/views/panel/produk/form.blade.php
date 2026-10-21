@@ -1,5 +1,5 @@
 @extends('layouts.panel')
-@section('judul', $produk->exists ? $produk->nama : 'Tambah produk')
+@section('judul', $produk->exists ? 'Ubah produk: '.$produk->nama : 'Tambah produk')
 
 @section('isi')
 <x-kop :judul="$produk->exists ? $produk->nama : 'Tambah produk'"
@@ -415,16 +415,19 @@
         <form method="POST" action="{{ route('panel.produk.varian.simpan', $produk) }}"
               class="flex flex-wrap items-end gap-3 border-t border-line bg-paper p-4">
             @csrf
-            <div class="w-40"><label class="label-form">SKU varian</label>
-                <input type="text" name="sku" class="kotak-input tabular" required></div>
-            <div class="w-24"><label class="label-form">Ukuran</label>
-                <input type="text" name="ukuran" class="kotak-input" placeholder="M"></div>
-            <div class="w-28"><label class="label-form">Warna</label>
-                <input type="text" name="warna" class="kotak-input" placeholder="Hitam"></div>
-            <div class="w-32"><label class="label-form">Selisih harga</label>
-                <input type="number" name="tambahan_harga" class="kotak-input tabular" value="0"></div>
-            <div class="w-24"><label class="label-form">Stok</label>
-                <input type="number" name="stok" class="kotak-input tabular" value="0" min="0" required></div>
+            {{-- Isian dibungkus <label> supaya labelnya benar-benar tertaut: tanpa
+                 itu pembaca layar hanya menyebut "kotak isian", dan mengetuk tulisan
+                 labelnya di HP tidak memindahkan kursor ke kotaknya. --}}
+            <label class="block w-40"><span class="label-form">SKU varian</span>
+                <input type="text" name="sku" class="kotak-input tabular" required></label>
+            <label class="block w-24"><span class="label-form">Ukuran</span>
+                <input type="text" name="ukuran" class="kotak-input" placeholder="M"></label>
+            <label class="block w-28"><span class="label-form">Warna</span>
+                <input type="text" name="warna" class="kotak-input" placeholder="Hitam"></label>
+            <label class="block w-32"><span class="label-form">Selisih harga</span>
+                <input type="number" name="tambahan_harga" class="kotak-input tabular" value="0"></label>
+            <label class="block w-24"><span class="label-form">Stok</span>
+                <input type="number" name="stok" class="kotak-input tabular" value="0" min="0" required></label>
             <button type="submit" class="tombol tombol-garis">Tambah varian</button>
         </form>
     </div>
@@ -536,24 +539,24 @@
                 <form method="POST" action="{{ route('panel.produk.nilai.simpan', [$produk, $opsi]) }}"
                       class="flex flex-wrap items-end gap-3 border-t border-line bg-paper p-4">
                     @csrf
-                    <div class="w-48"><label class="label-form">Nama pilihan</label>
-                        <input type="text" name="label" class="kotak-input" required placeholder="Milano"></div>
-                    <div class="w-48">
-                        <label class="label-form">Bahan terkait (opsional)</label>
+                    <label class="block w-48"><span class="label-form">Nama pilihan</span>
+                        <input type="text" name="label" class="kotak-input" required placeholder="Milano"></label>
+                    <label class="block w-48">
+                        <span class="label-form">Bahan terkait (opsional)</span>
                         <select name="material_id" class="kotak-input">
                             <option value="">Tanpa deskripsi</option>
                             @foreach ($semuaBahan as $b)
                                 <option value="{{ $b->id }}">{{ $b->nama }}</option>
                             @endforeach
                         </select>
-                    </div>
-                    <div class="w-36"><label class="label-form">Selisih harga</label>
-                        <input type="number" name="tambahan_harga" class="kotak-input tabular" value="0" required></div>
-                    <div class="w-44"><label class="label-form">Cara hitung</label>
+                    </label>
+                    <label class="block w-36"><span class="label-form">Selisih harga</span>
+                        <input type="number" name="tambahan_harga" class="kotak-input tabular" value="0" required></label>
+                    <label class="block w-44"><span class="label-form">Cara hitung</span>
                         <select name="basis" class="kotak-input">
                             <option value="PER_PCS">Dikali jumlah pcs</option>
                             <option value="PER_ITEM">Sekali per pesanan</option>
-                        </select></div>
+                        </select></label>
                     <button type="submit" class="tombol tombol-garis">Tambah pilihan</button>
                 </form>
                 <p class="border-t border-line bg-paper px-4 pb-3 text-xs leading-relaxed text-muted">

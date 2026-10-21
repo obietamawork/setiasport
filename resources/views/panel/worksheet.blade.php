@@ -2,7 +2,10 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Worksheet {{ $pesanan->kode }}</title>
+    {{-- Jadi nama berkas saat disimpan sebagai PDF. Nama pelanggan memang sudah
+         dicetak besar di kop lembar ini; yang sengaja disembunyikan hanya nomor
+         HP-nya (KEP-056). --}}
+    <title>Lembar kerja {{ $pesanan->kode }} - {{ $pesanan->customer->nama }} - {{ setting('toko_nama', 'Setia Sport') }}</title>
     <style>
         /*
          * Selembar kertas yang menempel di kain saat dikerjakan. Gaya ditulis
@@ -49,7 +52,7 @@
 <body>
 
 <div class="cetak">
-    <button type="button" onclick="window.print()">Cetak worksheet</button>
+    <button type="button" onclick="window.print()">Cetak lembar kerja</button>
 </div>
 
 {{-- Nomor HP pelanggan sengaja TIDAK dicetak (KEP-056). Lembar ini difoto dan

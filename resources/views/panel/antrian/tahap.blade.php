@@ -120,7 +120,7 @@
                         <a href="{{ route('panel.pesanan.worksheet', $item->order) }}" target="_blank"
                            rel="noopener" class="tombol tombol-garis text-sm">
                             <x-ikon nama="cetak" ukuran="size-4" />
-                            Worksheet
+                            Lembar kerja
                         </a>
 
                         @unless ($dikerjakan)

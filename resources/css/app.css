@@ -406,7 +406,9 @@
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: var(--color-navy-300);
+        /* muted, bukan navy-300: tulisan 11px di latar terang dengan navy-300
+           kontrasnya cuma 2,3:1 (WCAG minta 4,5:1 untuk teks kecil). */
+        color: var(--color-muted);
     }
 
     .grup-menu:first-child {
@@ -804,10 +806,11 @@
         color: #fff;
     }
 
+    /* Dibedakan lewat tebal huruf saja. Opacity 0,65 dulu membuat angkanya
+       di tab yang tidak aktif turun di bawah kontras 4,5:1. */
     .segmen-jumlah {
         font-variant-numeric: tabular-nums;
         font-weight: 700;
-        opacity: 0.65;
     }
 
     @media (pointer: coarse) {
@@ -949,7 +952,7 @@
         padding: 0.9rem 1rem;
     }
 
-    .kartu-metrik dt {
+    .kartu-metrik .metrik-label {
         display: flex;
         align-items: center;
         gap: 0.4rem;
@@ -958,7 +961,7 @@
         color: var(--color-muted);
     }
 
-    .kartu-metrik dd {
+    .kartu-metrik .metrik-angka {
         font-size: 1.5rem;
         font-weight: 700;
         font-variant-numeric: tabular-nums;

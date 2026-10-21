@@ -15,7 +15,7 @@
 
     <a href="{{ route('panel.produk.create') }}" class="tombol tombol-navy tombol-sm">
         <x-ikon nama="tambah" ukuran="size-4" />
-        <span class="hidden sm:inline">Tambah produk</span>
+        <span class="sr-only sm:not-sr-only">Tambah produk</span>
     </a>
 </x-kop>
 

@@ -2660,6 +2660,158 @@ pengaturan, penyelesaian roll) -- bukan cuma data buatan tes.
 
 ---
 
+## KEP-080 — Judul halaman: bisa dibedakan, jadi nama berkas PDF, dan punya pratinjau tautan
+**Status:** TERKUNCI · 2026-10-21
+
+Diaudit dengan membuka 42 halaman sungguhan dan membaca `document.title`
+masing-masing, bukan dari kode saja. Masalah yang ditemukan:
+
+- **Tab panel kembar dengan tab etalase.** Panel dan etalase sama-sama
+  berakhiran `| Setia Sport`, sehingga tab "Pesanan SS-..." di panel sama
+  persis dengan halaman pelacakan pelanggan, dan tab ubah produk sama persis
+  dengan halaman produknya di etalase -- padahal staf sering membuka
+  keduanya berdampingan. Panel (dan Ruang CS) kini berakhiran
+  `| Panel Setia Sport`; halaman pesanan menyebut nama pelanggan; formulir
+  ubah kategori/bahan/portofolio/testimoni/produk menyebut nama itemnya
+  ("Ubah kategori: Futsal"), bukan "Ubah kategori" yang sama untuk semua.
+- **Judul katalog tidak unik.** Kategori anak "Futsal" ada di bawah Bola dan
+  di bawah Jersey -- dua halaman berbeda sama-sama berjudul "Futsal".
+  Hasil pencarian berjudul "Katalog" sama dengan katalog tanpa pencarian,
+  dan halaman 2 kembar dengan halaman 1. Judul tab kini "Bola › Futsal",
+  `Hasil pencarian "jersey"`, "Katalog produk (halaman 2)". Judul untuk
+  jalur kustom mengikuti label menu yang diklik pelanggan ("Custom jersey").
+  Judul besar (h1) di halaman tidak diubah.
+- **Halaman cetak.** Browser memakai judul sebagai nama berkas saat
+  "Simpan sebagai PDF": "Invoice SS-2610-0002" menghasilkan berkas tanpa
+  nama pelanggan dan toko, dan lembar roll hanya berjudul kodenya. Kini
+  "Invoice SS-2610-0002 - SSB Garuda - Setia Sport" (pemisah " - ", karena
+  "|" diganti "_" oleh browser di nama berkas). Label "Worksheet" diganti
+  "Lembar kerja", istilah yang juga dilihat pekerja di halaman QR.
+- **Halaman QR pekerja.** Satu pesanan bisa punya beberapa barang, masing-
+  masing dengan QR sendiri, tapi semuanya berjudul "Lembar kerja SS-...".
+  Kini "Press / Sublime: Custom Jersey Atasan · SS-2610-0002". Nama
+  pelanggan sengaja TIDAK ikut (halaman ini dibuka lewat tautan di grup
+  WhatsApp, KerjaQrTest menjaga data pelanggan tidak pernah tampil).
+
+**Tambahan di `<head>` etalase:**
+
+1. **Open Graph** (`og:title`, `og:description`, `og:image`, `og:type`,
+   `og:locale`, `twitter:card`). Sebelumnya tidak ada satu pun -- tautan
+   produk yang dibagikan ke grup WhatsApp hanya tampil sebagai alamat polos.
+   Halaman produk dan halaman pesan kustom memakai foto produknya; yang
+   belum berfoto jatuh ke logo. Catatan: foto unggahan disimpan sebagai
+   WebP; pratinjau WhatsApp perlu dicek sekali setelah tayang (crawler
+   WhatsApp tidak bisa membuka localhost).
+2. **`noindex` untuk halaman berisi data pribadi**: pelacakan pesanan lewat
+   tautan bertoken (memuat nama, alamat, isi pesanan), pesanan saya,
+   keranjang, checkout, masuk/daftar. Panel, Ruang CS, halaman QR, dan
+   halaman galat sudah `noindex` sejak awal; etalase belum.
+
+Diuji lewat `tests/Feature/JudulHalamanTest.php` (5 tes).
+
+---
+
+## KEP-081 — Header etalase meluap di layar ≤370px: tombol menu keluar layar
+**Status:** TERKUNCI · 2026-10-21
+
+Ditemukan lewat uji otomatis 42 halaman × 9 ukuran layar (280 Galaxy Fold,
+320, 360, 390, HP mendatar 844×390, tablet 768 dan 1024 bersentuhan,
+laptop 1366, desktop 1920) -- 378 pemuatan halaman, masing-masing diukur
+`scrollWidth` terhadap lebar layar. Panel, halaman QR, dan lembar cetak
+bersih bahkan di 280px. Satu-satunya luapan ada di header etalase, dan
+hanya di bawah ±370px -- itulah kenapa audit-audit sebelumnya yang memakai
+layar 390px tidak pernah menangkapnya.
+
+Baris header (logo h-9 + keranjang + "Masuk" + tombol menu + tiga celah
+gap-4) butuh ±351px berapa pun lebar layarnya, karena tidak ada isinya
+yang boleh menyusut. Di layar 360px (lebar Android paling umum) halaman
+bisa digeser 3px ke samping; di 320px luapannya 43px dan **tombol menu --
+satu-satunya navigasi di HP -- praktis seluruhnya keluar layar**; di 280px
+luapannya 83px.
+
+**Keputusan:** khusus di HP celah dikecilkan (`gap-2`), logo `h-8` (sama
+dengan logo panel), dan tombol "Masuk" di header baru muncul mulai 360px
+(di bawah itu ia tetap tersedia di dalam menu). Hitungannya: 296,8px dari
+ruang 320px di layar 360; 218,8px dari ruang 240px di layar 280.
+Diverifikasi ulang di 8 lebar (280-768) × 4 halaman: luapan 0, tombol menu
+selalu utuh di dalam layar.
+
+**Ikut ditemukan:** `public/build` ikut di-commit (hosting tidak punya
+Node), tapi beberapa kelas Tailwind dari commit sebelumnya di sesi yang
+sama (`sm:w-60`, `space-y-0.5`, `px-0`) belum pernah dibangun ulang --
+diam-diam tidak berlaku di produksi. Aset dibangun ulang di sini. Ke depan:
+setiap perubahan kelas di Blade wajib diikuti `npm run build` sebelum
+commit.
+
+---
+
+## KEP-082 — Aksesibilitas WCAG 2.2 AA: 0 pelanggaran axe-core di 35 halaman
+**Status:** TERKUNCI · 2026-10-21
+
+Diuji dengan axe-core 4.10 (mesin audit aksesibilitas standar industri)
+di 35 halaman, di layar sentuh 360px dan desktop 1366px. Pelanggaran yang
+ditemukan dan diperbaiki:
+
+- **Kontras.** Tautan "Lacak pesanan Anda" di login staf versi HP: navy di
+  atas latar navy, rasio 1,51:1 (minimal 4,5:1) -- praktis tak terlihat.
+  Monogram produk/kategori tanpa foto (navy-300, 2,3:1) jadi navy-400
+  (4,2:1, teks besar) dan ditandai `aria-hidden` (hiasan; namanya sudah
+  tertulis di bawahnya). Label grup menu samping (navy-300, 2,3:1) jadi
+  muted. "Panel internal" dan catatan login dari putih 40-45% jadi 60%.
+  Kartu divisi kosong di Antrian tidak lagi `opacity-70` (menurunkan
+  kontras semua isinya), diganti warna yang tenang. Angka di tab penyaring
+  tidak lagi `opacity: 0.65`.
+- **Nama yang hilang di HP.** Tombol "Pesanan baru", "Tambah produk",
+  "Lihat seperti pelanggan", "Chat baru", dan "Bantuan" menyembunyikan
+  tulisannya dengan `hidden sm:inline` -- di HP tombolnya ikon saja tanpa
+  nama sama sekali bagi pembaca layar. Diganti `sr-only sm:not-sr-only`.
+- **Label tidak tertaut.** Formulir tambah varian dan tambah pilihan opsi di
+  halaman ubah produk punya tulisan label, tapi tidak tertaut ke kotaknya
+  (tanpa `for`/tanpa membungkus). Kotak cari area Biteship tanpa label.
+- **Area gulir yang tidak bisa dijangkau papan ketik** (`.geser-x` di
+  beranda, tangga tahap dan pratinjau pesan WhatsApp di detail pesanan,
+  tabel Riwayat aktivitas): diberi `tabindex="0"` dan nama. `aria-label`
+  pada tangga tahap selama ini diabaikan karena `div` tanpa `role` tidak
+  boleh diberi nama -- ditambah `role="group"`.
+- **Struktur `<dl>` tidak sah** di kartu angka dashboard (`<a>` membungkus
+  `<dt>/<dd>`): diganti `<span>`, sehingga tiap kartu tautan terbaca utuh
+  ("Sedang dikerjakan 3").
+- **Regresi tombol +/- Stok** (dari perubahan sebelumnya di sesi yang
+  sama): `aspect-square` saja ternyata membuat tombolnya cuma 14px lebar di
+  desktop (tingginya tidak pasti tanpa aturan layar sentuh). Kini `size-9`
+  (36×36) di semua perangkat, diukur ulang di desktop dan layar sentuh.
+- **Target sentuh kecil**: "Keluarkan" di keranjang (16px tinggi, aksi
+  menghapus), "Perbarui", dan "Masuk staf" di kaki halaman diberi padding.
+
+Hasil akhir: 35/35 halaman bersih di 360px, 35/35 di 1366px (1.565
+pemeriksaan lulus). Catatan jujur: pemeriksaan otomatis hanya menangkap
+sebagian masalah aksesibilitas; uji manual dengan pembaca layar (TalkBack,
+VoiceOver) dan papan ketik saja belum dilakukan.
+
+---
+
+## KEP-083 — Login staf dibatasi percobaannya; halaman 429 berbahasa Indonesia
+**Status:** TERKUNCI · 2026-10-21
+
+Login pelanggan (8 percobaan/5 menit), pendaftaran, dan pencarian lacak
+sudah dibatasi sejak awal -- tapi `POST /panel/login` sama sekali tidak.
+Padahal akun staf membuka seluruh data pelanggan, pembayaran, dan
+pengaturan, dan akun bawaan memakai kata sandi yang tertulis di
+dokumentasi. Kini 5 kali salah per email + IP mengunci 5 menit (dikunci
+per email + IP supaya satu orang yang salah ketik tidak mengunci rekan
+kerjanya di jaringan toko yang sama); kata sandi yang benar pun ditolak
+selama terkunci.
+
+Ikut ditemukan: tidak ada `errors/429.blade.php`, sehingga setiap rute
+yang sudah memakai `throttle:` (tombol selesai di halaman QR pekerja,
+unggah bukti bayar, chat CS, ongkir) menampilkan halaman bawaan Laravel
+berbahasa Inggris begitu batasnya tercapai. Ditambahkan versi Indonesia
+dengan kerangka halaman galat yang sama.
+
+Diuji lewat `tests/Feature/BatasPercobaanTest.php` (3 tes).
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2743,3 +2895,7 @@ pengaturan, penyelesaian roll) -- bukan cuma data buatan tes.
 | KEP-077 | Opname stok: angka yang sudah diketik hilang kalau "alasan" ditolak validasi | TERKUNCI |
 | KEP-078 | Pesan validasi dan navigasi halaman berbahasa Inggris, bukan Indonesia | TERKUNCI |
 | KEP-079 | Halaman Riwayat aktivitas: ActivityLog yang selama ini tidak pernah bisa dibaca | TERKUNCI |
+| KEP-080 | Judul halaman bisa dibedakan, jadi nama berkas PDF, dan punya pratinjau tautan | TERKUNCI |
+| KEP-081 | Header etalase meluap di layar ≤370px: tombol menu keluar layar | TERKUNCI |
+| KEP-082 | Aksesibilitas WCAG 2.2 AA: 0 pelanggaran axe-core di 35 halaman | TERKUNCI |
+| KEP-083 | Login staf dibatasi percobaannya; halaman 429 berbahasa Indonesia | TERKUNCI |

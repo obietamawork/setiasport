@@ -115,19 +115,17 @@
 
                                 {{-- Tombol kurang dan tambah: menghitung sambil memegang
                                      barang jauh lebih mudah dengan menekan daripada
-                                     mengetik ulang angkanya di papan ketik HP. aspect-square
-                                     (bukan px-2.5) supaya lebarnya sama dengan tingginya --
-                                     diverifikasi lewat emulasi sentuh sungguhan bahwa tanpa
-                                     ini tombolnya 36px tinggi tapi cuma ~30px lebar, kotak
-                                     sentuh yang sempit padahal dipencet berulang kali sambil
-                                     berdiri di depan rak. --}}
+                                     mengetik ulang angkanya di papan ketik HP. Ukurannya
+                                     dipatok size-9 (36x36) di semua perangkat. aspect-square
+                                     saja tidak cukup: di layar tanpa sentuh tingginya tidak
+                                     pasti, sehingga lebarnya menyusut ke lebar huruf (14px). --}}
                                 @php $nAwal = (int) old('stok.'.$v->id, $v->stok); @endphp
                                 <div class="flex items-center gap-1"
                                      x-data="{ n: {{ $nAwal }}, awal: {{ (int) $v->stok }} }"
                                      x-init="$watch('n', () => $dispatch('stok-berubah', {
                                          id: {{ $v->id }}, berubah: n !== awal,
                                      })); if (n !== awal) $dispatch('stok-berubah', { id: {{ $v->id }}, berubah: true })">
-                                    <button type="button" class="tombol tombol-garis tombol-sm aspect-square px-0"
+                                    <button type="button" class="tombol tombol-garis tombol-sm size-9 px-0"
                                             @click="n = Math.max(0, n - 1)">
                                         <span class="sr-only">Kurangi stok {{ $v->label ?: $produk->nama }}</span>
                                         <span aria-hidden="true">&minus;</span>
@@ -149,7 +147,7 @@
                                            :class="n !== awal ? 'border-navy bg-navy-50 font-semibold' : ''"
                                            class="kotak-input tabular w-20 text-center" min="0" inputmode="numeric">
 
-                                    <button type="button" class="tombol tombol-garis tombol-sm aspect-square px-0"
+                                    <button type="button" class="tombol tombol-garis tombol-sm size-9 px-0"
                                             @click="n = n + 1">
                                         <span class="sr-only">Tambah stok {{ $v->label ?: $produk->nama }}</span>
                                         <span aria-hidden="true">+</span>

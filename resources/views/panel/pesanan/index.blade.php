@@ -21,7 +21,7 @@
     @if (auth('web')->user()->punyaIzin('order.kelola'))
         <a href="{{ route('panel.pesanan.baru') }}" class="tombol tombol-navy tombol-sm">
             <x-ikon nama="tambah" ukuran="size-4" />
-            <span class="hidden sm:inline">Pesanan baru</span>
+            <span class="sr-only sm:not-sr-only">Pesanan baru</span>
         </a>
     @endif
 </x-kop>

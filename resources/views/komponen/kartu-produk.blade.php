@@ -47,7 +47,9 @@
             <img src="{{ $gambar->thumb_url }}" alt="{{ $gambar->alt ?? $produk->nama }}"
                  class="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async">
         @else
-            <span class="absolute inset-0 flex items-center justify-center text-2xl font-extrabold tracking-tight text-navy-300">
+            {{-- Monogram hiasan: namanya sudah tertulis di bawah, jadi disembunyikan
+                 dari pembaca layar. navy-400 (4,2:1), bukan navy-300 (2,3:1). --}}
+            <span aria-hidden="true" class="absolute inset-0 flex items-center justify-center text-2xl font-extrabold tracking-tight text-navy-400">
                 {{ Str::upper(Str::substr($produk->nama, 0, 2)) }}
             </span>
         @endif

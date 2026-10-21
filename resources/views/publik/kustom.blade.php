@@ -1,6 +1,9 @@
 @extends('layouts.publik')
 @section('judul', 'Pesan '.$produk->nama)
 @section('deskripsi', 'Atur bahan, model, ukuran, dan daftar pemain, lalu lihat harganya langsung.')
+@if ($produk->images->first()?->url)
+    @section('og_gambar', url($produk->images->first()->url))
+@endif
 @section('subjudul', 'Pesan '.$produk->nama)
 @section('subcatatan', 'Empat langkah: produk, desain, data pemain, cek pesanan.')
 

@@ -1,6 +1,10 @@
 @extends('layouts.publik')
 @section('judul', $produk->nama)
 @section('deskripsi', Str::limit(strip_tags($produk->deskripsi ?? $produk->nama), 150))
+@section('og_tipe', 'product')
+@if ($produk->images->first()?->url)
+    @section('og_gambar', url($produk->images->first()->url))
+@endif
 @section('subjudul', $produk->nama)
 @section('subcatatan', 'Lihat rincian produk, harga, dan cara memesannya.')
 
@@ -101,7 +105,7 @@
                 </div>
             @else
                 <div class="kartu flex aspect-4/3 items-center justify-center bg-navy-50">
-                    <span class="text-6xl font-extrabold tracking-tight text-navy-300">
+                    <span aria-hidden="true" class="text-6xl font-extrabold tracking-tight text-navy-400">
                         {{ Str::upper(Str::substr($produk->nama, 0, 2)) }}
                     </span>
                 </div>
