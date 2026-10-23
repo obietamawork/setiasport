@@ -23,7 +23,7 @@
                 Pesanan yang Anda buat akan muncul di sini, lengkap dengan progres
                 pengerjaannya.
             </p>
-            <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <div class="kelompok-tombol mt-6 justify-center">
                 <a href="{{ route('katalog', ['jalur' => 'stok']) }}" class="tombol tombol-garis">Lihat stok toko</a>
                 <a href="{{ route('katalog', ['jalur' => 'kustom']) }}" class="tombol tombol-utama">Pesan kustom</a>
             </div>

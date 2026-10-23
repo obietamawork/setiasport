@@ -15,7 +15,9 @@
      membaca daftar yang rusak itu sebagai potongan-potongan lepas. Dengan
      <span> biasa, tiap kartu tautan terbaca utuh, misalnya "Sedang
      dikerjakan 3". --}}
-<div class="grid grid-cols-2 gap-3 lg:grid-cols-5">
+{{-- Lima kartu sejajar mulai tablet. Dulu dua kolom sampai layar lebar, dan
+     kartu kelima merentang selebar layar hanya untuk satu angka. --}}
+<div class="grid grid-cols-2 gap-3 md:grid-cols-5">
     <div class="kartu kartu-metrik">
         <span class="metrik-label"><x-ikon nama="pesanan" ukuran="size-4" class="text-navy-400" /> Pesanan masuk hari ini</span>
         <span class="metrik-angka">{{ $pesananHariIni }}</span>
@@ -34,7 +36,7 @@
         <span class="metrik-label"><x-ikon nama="jam" ukuran="size-4" class="text-navy-400" /> Menunggu pelunasan</span>
         <span class="metrik-angka {{ $menungguPelunasan > 0 ? 'text-warn' : '' }}">{{ $menungguPelunasan }}</span>
     </a>
-    <a href="{{ route('panel.serah-terima') }}" class="kartu kartu-tautan kartu-metrik col-span-2 lg:col-span-1">
+    <a href="{{ route('panel.serah-terima') }}" class="kartu kartu-tautan kartu-metrik col-span-2 md:col-span-1">
         <span class="metrik-label"><x-ikon nama="toko" ukuran="size-4" class="text-navy-400" /> Siap diambil</span>
         <span class="metrik-angka {{ $siapDiambil > 0 ? 'text-merah' : '' }}">{{ $siapDiambil }}</span>
     </a>
@@ -152,9 +154,9 @@
                 @foreach ($lamaBelumDiambil as $o)
                     <li>
                         <a href="{{ route('panel.pesanan.show', $o) }}"
-                           class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-2.5 hover:bg-navy-50">
-                            <span class="tabular font-medium">{{ $o->kode }}</span>
-                            <span class="text-muted">
+                           class="flex items-start justify-between gap-4 px-5 py-2.5 hover:bg-navy-50">
+                            <span class="tabular shrink-0 font-medium">{{ $o->kode }}</span>
+                            <span class="min-w-0 text-right text-muted">
                                 {{ $o->customer->nama }}, siap {{ $o->siap_pada?->diffForHumans(short: true) }}
                             </span>
                         </a>
@@ -193,14 +195,14 @@
             </p>
             <ul class="divide-y divide-line text-sm">
                 @foreach ($emailBermasalah as $log)
-                    <li class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-2.5">
+                    <li class="flex items-start justify-between gap-4 px-5 py-2.5">
                         @if ($log->order)
                             <a href="{{ route('panel.pesanan.show', $log->order) }}"
                                class="tautan tabular font-medium">{{ $log->order->kode }}</a>
                         @else
                             <span class="tabular text-muted">tanpa pesanan</span>
                         @endif
-                        <span class="text-muted">{{ $log->ke }}, {{ $log->status->label() }}</span>
+                        <span class="min-w-0 text-right text-muted wrap-break-word">{{ $log->ke }}, {{ $log->status->label() }}</span>
                     </li>
                 @endforeach
             </ul>
@@ -216,16 +218,18 @@
                 </a>
             </div>
             <ul class="divide-y divide-line text-sm">
+                {{-- Status tetap di kanan: dulu flex-wrap menjatuhkannya ke bawah dan
+                     rata kiri di HP, sehingga satu baris barang pecah jadi tiga. --}}
                 @foreach ($stokHabis->take(6) as $v)
-                    <li class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-2.5">
-                        <span>{{ $v->product->nama }} <span class="text-muted">{{ $v->label }}</span></span>
-                        <span class="chip chip-merah">Habis</span>
+                    <li class="flex items-start justify-between gap-4 px-5 py-2.5">
+                        <span class="min-w-0">{{ $v->product->nama }} <span class="text-muted">{{ $v->label }}</span></span>
+                        <span class="chip chip-merah shrink-0">Habis</span>
                     </li>
                 @endforeach
                 @foreach ($stokMenipis->take(6) as $v)
-                    <li class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-2.5">
-                        <span>{{ $v->product->nama }} <span class="text-muted">{{ $v->label }}</span></span>
-                        <span class="tabular text-muted">sisa {{ $v->stok_tersedia }}</span>
+                    <li class="flex items-start justify-between gap-4 px-5 py-2.5">
+                        <span class="min-w-0">{{ $v->product->nama }} <span class="text-muted">{{ $v->label }}</span></span>
+                        <span class="tabular shrink-0 whitespace-nowrap text-muted">sisa {{ $v->stok_tersedia }}</span>
                     </li>
                 @endforeach
             </ul>

@@ -2812,6 +2812,167 @@ Diuji lewat `tests/Feature/BatasPercobaanTest.php` (3 tes).
 
 ---
 
+## KEP-084 — Akun saya dan pengelolaan akun staf
+**Status:** TERKUNCI · 2026-10-24
+
+Sebelum ini tidak ada satu pun halaman untuk mengganti kata sandi atau
+membuat akun staf. Akun bawaan memakai kata sandi yang tertulis di
+dokumentasi, dan satu-satunya cara menggantinya lewat server. Dua butir
+Kesiapan tayang ("Akun staf sudah dibuat", "Kata sandi bawaan sudah diganti")
+tidak punya tombol Perbaiki karena memang tidak ada halaman tujuannya.
+
+**Keputusan:**
+
+1. **Akun saya** (`/panel/akun`, semua staf): ubah nama, email, nomor HP,
+   dan kata sandi. Mengganti email (nama masuk) butuh kata sandi sekarang.
+   Kata sandi baru minimal 10 karakter berisi huruf dan angka. Begitu
+   diganti, sesi lain milik akun itu dihapus dari tabel `sessions`, jadi
+   perangkat lain yang mungkin tahu sandi lama langsung terputus.
+2. **Pengguna** (`/panel/pengguna`, izin `pengguna.kelola`, Pemilik saja):
+   tambah akun, ubah nama/email/peran, nonaktifkan/aktifkan, atur ulang
+   kata sandi. Akun **tidak pernah dihapus**: riwayat aktivitas dan catatan
+   "siapa memverifikasi apa" harus tetap bernama.
+3. **Sandi dari Pemilik selalu sementara.** Akun baru dan akun yang diatur
+   ulang ditandai `wajib_ganti_sandi`; selama belum diganti sendiri, halaman
+   panel mana pun diarahkan ke Akun saya. Pemilik tidak pernah memegang
+   kata sandi orang lain yang masih berlaku.
+4. **Middleware `akun.layak` di setiap permintaan panel.** Dulu status
+   aktif hanya dicek di formulir masuk: staf yang sudah dinonaktifkan tetap
+   bisa memakai panel sampai sesinya habis sendiri. Kini ia terputus pada
+   permintaan berikutnya, dan sesinya juga dihapus saat dinonaktifkan.
+5. **Pengaman**: Pemilik tidak bisa menonaktifkan dirinya sendiri, dan
+   Pemilik aktif terakhir tidak bisa diturunkan atau dinonaktifkan. Tanpa
+   itu toko bisa terkunci dari Pengaturan, Laporan, dan halaman ini sendiri.
+6. **Kesiapan tayang** kini memeriksa kata sandi bawaan dari hash-nya
+   (`User::masihSandiBawaan()`), bukan dari apakah email akun contoh masih
+   ada. Mengganti emailnya saja tidak menutup apa pun selama sandinya masih
+   yang tertulis di dokumentasi. Daftar Pengguna juga menandai akun mana
+   yang masih memakainya.
+
+Konfirmasi nonaktifkan dibuat di halaman (dua langkah), bukan dengan
+`confirm()` bawaan browser. Diuji lewat `tests/Feature/AkunStafTest.php`
+(12 tes).
+
+---
+
+## KEP-085 — Kebijakan Privasi dan Syarat & Ketentuan
+**Status:** TERKUNCI · 2026-10-24
+
+Sistem menyimpan nama, email, nomor HP, alamat, daftar pemain (termasuk nama
+anak untuk tim sekolah), berkas desain, dan foto bukti bayar, tetapi tidak
+punya satu pun halaman kebijakan. UU No. 27 Tahun 2022 tentang Pelindungan
+Data Pribadi mewajibkan tujuan pemrosesan, pihak penerima, lama penyimpanan,
+dan hak subjek data diberitahukan.
+
+**Keputusan:**
+
+- Halaman publik `/kebijakan-privasi` dan `/syarat-ketentuan`, ditautkan
+  dari kaki halaman, dari checkout (di luar label centang, supaya mengetuk
+  tautannya tidak ikut mencentang; dibuka di tab baru supaya isian checkout
+  tidak hilang), dan dari halaman daftar akun. Keduanya sengaja boleh
+  diindeks mesin pencari: memang untuk dibaca umum.
+- Isinya disimpan di Pengaturan (tab baru "Kebijakan & ketentuan", tipe
+  isian `markdown`, maksimal 20.000 karakter), jadi pemilik toko bisa
+  mengubahnya tanpa developer. Ditampilkan lewat `Str::markdown()` dengan
+  `html_input=strip` dan tautan berbahaya ditolak, sehingga isian ini tidak
+  bisa dipakai menyisipkan skrip.
+- Drafnya (`App\Support\DrafHukum`) disusun dari cara kerja sistem ini:
+  data yang benar-benar dikumpulkan, penerimanya (pengirim email, hitung
+  ongkir dan kurir, hosting), keamanan (tautan bertoken, bukti bayar
+  privat), serta aturan pesanan yang sudah ada di kode. Angka seperti batas
+  bayar, DP minimum, revisi gratis, dan batas hangus ditulis sebagai penanda
+  (`{batas_bayar_jam}` dsb.) yang diganti nilai pengaturan saat tampil, jadi
+  dokumen tidak pernah berbeda dari yang berlaku.
+- Tanggal "Terakhir diperbarui" diambil dari kapan teksnya disimpan, bukan
+  diketik manual.
+- **Kesiapan tayang** menahannya sebagai butir wajib selama teksnya masih
+  sama persis dengan draf: draf disusun developer, tanggung jawab hukumnya
+  ada di pemilik toko. Sebaiknya ditinjau juga oleh penasihat hukum.
+
+Diuji lewat `tests/Feature/HalamanHukumTest.php`.
+
+---
+
+## KEP-086 — Header keamanan HTTP
+**Status:** TERKUNCI · 2026-10-24
+
+Tidak ada satu pun header keamanan di respons aplikasi, dan versi PHP
+diumumkan lewat `X-Powered-By`. Middleware global `HeaderKeamanan` kini
+memasang di setiap respons, termasuk halaman galat:
+
+- `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`,
+  `Referrer-Policy: strict-origin-when-cross-origin`,
+  `Permissions-Policy` (kamera, mikrofon, lokasi, pembayaran, USB dimatikan:
+  aplikasi ini tidak memakai satu pun; clipboard sengaja tidak dibatasi
+  karena dipakai tombol "Salin").
+- `Strict-Transport-Security: max-age=31536000` hanya lewat HTTPS, tanpa
+  `includeSubDomains` karena subdomain bawaan cPanel belum tentu semuanya
+  HTTPS.
+- **Content-Security-Policy** disusun dari inventaris yang benar-benar
+  dimuat aplikasi: tidak ada iframe, skrip luar, atau formulir ke domain
+  lain. Skrip hanya dari domain sendiri (`unsafe-inline` dan `unsafe-eval`
+  tetap perlu: tata letak memakai skrip sebaris dan Alpine mengevaluasi
+  ekspresi), huruf dari Google Fonts, gambar dari HTTPS mana pun (gambar
+  produk boleh tautan CDN), WebSocket untuk chat CS. Yang ditutup:
+  `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
+  `frame-ancestors 'self'`. Saat `npm run dev`, server Vite ikut diizinkan.
+- `X-Powered-By` dihapus.
+
+Diverifikasi tidak merusak apa pun: 44 halaman × 2 ukuran layar di Chromium
+dan 14 halaman × 3 perangkat di WebKit dibuka di bawah CSP baru, 0 galat
+konsol (pelanggaran CSP selalu muncul sebagai galat konsol). Setelah tayang,
+periksa sekali di securityheaders.com atau Mozilla Observatory.
+
+---
+
+## KEP-087 — Grid tidak proporsional di HP dan tablet; teks "Tentang" menampilkan "\n\n"
+**Status:** TERKUNCI · 2026-10-24
+
+Dilihat langsung lewat tangkapan per bagian halaman di HP 360px dan tablet
+768px, bukan hanya diukur luapannya:
+
+- **Halaman produk** baru dua kolom mulai 1024px. Di tablet foto merentang
+  ±730×545px memenuhi layar pertama dan kotak beli terdorong ke bawah;
+  tombolnya merentang ±690px. Kini dua kolom mulai 768px (kotak beli 320px,
+  390px di layar lebar), dan posisi lekatnya `top-20` supaya tidak
+  tertutup kepala halaman.
+- **Kategori beranda** 4 kolom di tablet: 6 kategori jatuh jadi 4 + 2
+  dengan dua petak kosong. Jumlah kolom kini mengikuti jumlah kategori
+  (6 → 3×2 di HP, 6×1 di tablet).
+- **Kelompok tombol CTA** (hero, layanan custom, keranjang, status kosong,
+  halaman galat) bertumpuk dengan lebar berbeda di HP. Komponen baru
+  `.kelompok-tombol`: di bawah 640px tombol ditumpuk selebar kolom.
+- **Strip keunggulan** di bawah hero memotong kartu kedua di tengah kata.
+  Di HP kini kisi 2×2 ringkas (ikon + judul), penjelasan mulai tablet.
+- **Dashboard**: 5 kartu angka jadi 2 + 2 + 1 di tablet dengan kartu
+  kelima merentang selebar layar; kini 5 kolom mulai 768px. Baris daftar
+  (stok, email, belum diambil) tidak lagi `flex-wrap`, jadi status tetap
+  di kanan di HP.
+- **Antrian** dipisah dua kelompok: enam meja konveksi pesanan kustom dan
+  Packing untuk barang stok. Dulu Packing tersisa sendirian di baris
+  terakhir.
+- **Tab daftar pesanan** tidak patah baris lagi ("Kustom" di HP),
+  **pilihan produk lain** di konfigurator jadi kisi 2 kolom sama lebar,
+  **ringkasan dan bantuan** konfigurator berdampingan di tablet, kartu
+  **Toko & konveksi** berdampingan di tablet, dan harga di daftar produk
+  panel tidak lagi terpecah "Rp" / angka.
+
+**Ikut ditemukan:** teks "Tentang" di beranda menampilkan `\n\n` di tengah
+kalimat di semua ukuran layar. Draf `tentang_lengkap` di `SettingSeeder`
+menulis pemisah paragrafnya di dalam kutip tunggal PHP, sehingga tersimpan
+garis miring + "n" apa adanya. Seeder diperbaiki, dan migrasi
+`perbaiki_baris_baru_tentang_lengkap` membetulkan nilai yang sudah tersimpan
+(hanya nilai yang masih memuat urutan itu; teks yang diketik ulang pemilik
+toko tidak tersentuh).
+
+**Diperiksa ulang dengan axe (WCAG 2.2 AA, WebKit, HP 360px dan desktop):**
+17 halaman yang diubah atau baru (termasuk Akun saya, Pengguna, Kebijakan
+Privasi, Syarat & Ketentuan), 34 pemuatan, 0 pelanggaran. Satu-satunya temuan
+ada di halaman galat: kode "404" berwarna navy-300 di latar terang, kontras
+±2,4:1 (teks besar minimal 3:1). Kini navy-400.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -2899,3 +3060,7 @@ Diuji lewat `tests/Feature/BatasPercobaanTest.php` (3 tes).
 | KEP-081 | Header etalase meluap di layar ≤370px: tombol menu keluar layar | TERKUNCI |
 | KEP-082 | Aksesibilitas WCAG 2.2 AA: 0 pelanggaran axe-core di 35 halaman | TERKUNCI |
 | KEP-083 | Login staf dibatasi percobaannya; halaman 429 berbahasa Indonesia | TERKUNCI |
+| KEP-084 | Akun saya dan pengelolaan akun staf | TERKUNCI |
+| KEP-085 | Kebijakan Privasi dan Syarat & Ketentuan | TERKUNCI |
+| KEP-086 | Header keamanan HTTP | TERKUNCI |
+| KEP-087 | Grid tidak proporsional di HP dan tablet; teks "Tentang" menampilkan "\n\n" | TERKUNCI |

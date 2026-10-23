@@ -28,14 +28,16 @@
 
 {{-- Kustom dan stok toko dipisah karena alurnya berbeda (KEP-027). Ini tab,
      bukan sekadar filter, supaya perbedaannya terlihat sebelum dipilih. --}}
+{{-- Label tab tidak boleh patah: di HP "Kustom / konveksi" dulu terpecah dua
+     baris dan deretan tabnya tampak acak. Di layar sempit cukup "Kustom". --}}
 <div class="mt-2 flex gap-1 border-b border-line" role="tablist">
-    @foreach ([['', 'Semua'], ['kustom', 'Kustom / konveksi'], ['stok', 'Stok toko']] as [$nilai, $label])
+    @foreach ([['', 'Semua', 'Semua'], ['kustom', 'Kustom / konveksi', 'Kustom'], ['stok', 'Stok toko', 'Stok toko']] as [$nilai, $label, $labelPendek])
         @php $aktifJalur = $jalur === $nilai; @endphp
         <a href="{{ route('panel.pesanan.index', array_filter(['jalur' => $nilai, 'status' => $status, 'q' => request('q')])) }}"
            role="tab" aria-selected="{{ $aktifJalur ? 'true' : 'false' }}"
-           class="-mb-px px-4 py-2.5 text-sm font-semibold transition-colors
+           class="-mb-px px-3 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors sm:px-4
                   {{ $aktifJalur ? 'garis-aktif text-navy' : 'text-muted hover:text-ink' }}">
-            {{ $label }}
+            <span class="sm:hidden">{{ $labelPendek }}</span><span class="hidden sm:inline">{{ $label }}</span>
             @if (($jumlahJalur[$nilai] ?? 0) > 0)
                 <span class="tabular font-normal text-muted">{{ $jumlahJalur[$nilai] }}</span>
             @endif

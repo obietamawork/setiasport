@@ -38,7 +38,9 @@ class KesiapanTayang
      */
     public function bagian(): array
     {
-        return [
+        // Disimpan per instans: ringkasan() memanggil ini lagi, dan pemeriksaan
+        // sandi bawaan memakai bcrypt per akun, yang sengaja lambat.
+        return $this->bagian ??= [
             $this->toko(),
             $this->pembayaran(),
             $this->katalog(),
@@ -47,6 +49,9 @@ class KesiapanTayang
             $this->orang(),
         ];
     }
+
+    /** @var list<array<string, mixed>>|null */
+    private ?array $bagian = null;
 
     /** Berapa yang wajib sudah beres, dipakai sebagai angka besar di halaman. */
     public function ringkasan(): array
@@ -97,6 +102,21 @@ class KesiapanTayang
                     'Satu-satunya jalan pelanggan bertanya sebelum memesan. Kalau kosong, tombol '
                         .'bantuan di halaman pemesanan tidak muncul sama sekali.',
                     'panel.pengaturan.index',
+                ),
+                $this->periksa(
+                    'Kebijakan Privasi dan Syarat & Ketentuan ditinjau',
+                    collect(\App\Support\DrafHukum::KUNCI)->every(
+                        fn ($k) => filled(Setting::ambil($k)) && ! \App\Support\DrafHukum::masihDraf($k)
+                    ),
+                    'Toko menyimpan nama, nomor HP, alamat, dan bukti bayar pelanggan, jadi UU '
+                        .'Pelindungan Data Pribadi mewajibkan kebijakannya diberitahukan. Drafnya '
+                        .'disusun dari cara kerja sistem, tapi tanggung jawabnya ada di pemilik toko: '
+                        .'baca, sesuaikan, lalu simpan.',
+                    'panel.pengaturan.index',
+                    keadaan: collect(\App\Support\DrafHukum::KUNCI)->contains(fn ($k) => \App\Support\DrafHukum::masihDraf($k))
+                        ? 'masih draf bawaan'
+                        : 'sudah disesuaikan',
+                    tautan: ['tab' => 'hukum'],
                 ),
                 $this->periksa(
                     'Alamat konveksi',
@@ -303,6 +323,15 @@ class KesiapanTayang
         $staf = User::count();
         $pekerja = Pekerja::where('aktif', true)->count();
 
+        /*
+         * Diperiksa dari hash sandinya (KEP-084), bukan dari email akun contoh:
+         * mengganti emailnya saja tidak menutup apa pun selama sandinya masih
+         * yang tertulis di dokumentasi.
+         */
+        $sandiBawaan = User::where('aktif', true)->get()
+            ->filter(fn (User $u) => $u->masihSandiBawaan())
+            ->count();
+
         return [
             'kunci' => 'orang',
             'judul' => 'Orang yang memakai sistem',
@@ -314,7 +343,7 @@ class KesiapanTayang
                     $staf > 1,
                     'Kalau hanya ada satu akun, semua orang memakai akun yang sama dan catatan '
                         .'"siapa memverifikasi apa" jadi tidak berarti.',
-                    null,
+                    'panel.pengguna.index',
                     keadaan: $staf.' akun panel',
                 ),
                 $this->periksa(
@@ -327,13 +356,13 @@ class KesiapanTayang
                 ),
                 $this->periksa(
                     'Kata sandi bawaan sudah diganti',
-                    ! User::where('email', 'owner@setiasport.test')->exists(),
-                    'Akun contoh dari pemasangan awal memakai kata sandi yang tertulis di '
-                        .'dokumentasi. Hapus atau ganti emailnya sebelum website dibuka.',
-                    null,
-                    keadaan: User::where('email', 'owner@setiasport.test')->exists()
-                        ? 'akun contoh masih ada'
-                        : 'sudah diganti',
+                    $sandiBawaan === 0,
+                    'Akun dari pemasangan awal memakai kata sandi yang tertulis di dokumentasi. '
+                        .'Ganti lewat Akun saya, atau atur ulang dari halaman Pengguna.',
+                    'panel.pengguna.index',
+                    keadaan: $sandiBawaan === 0
+                        ? 'sudah diganti'
+                        : $sandiBawaan.' akun masih memakainya',
                 ),
             ],
         ];

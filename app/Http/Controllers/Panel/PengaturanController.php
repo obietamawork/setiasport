@@ -63,6 +63,15 @@ class PengaturanController extends Controller
                     'kunci' => ['sosial_instagram', 'sosial_tiktok', 'sosial_facebook']],
             ],
         ],
+        'hukum' => [
+            'judul' => 'Kebijakan & ketentuan',
+            'catatan' => 'Tampil di halaman Kebijakan Privasi dan Syarat & Ketentuan, yang ditautkan dari checkout dan kaki halaman. '
+                .'Drafnya disusun dari cara kerja sistem; baca dan sesuaikan sebelum website dibuka.',
+            'bagian' => [
+                ['judul' => 'Kebijakan Privasi', 'kunci' => ['kebijakan_privasi']],
+                ['judul' => 'Syarat & Ketentuan', 'kunci' => ['syarat_ketentuan']],
+            ],
+        ],
         'cs' => [
             'judul' => 'Chat CS',
             'catatan' => 'Chat di website untuk pertanyaan dan komplain. Selama dimatikan, pelanggan diarahkan ke WhatsApp toko.',
@@ -128,6 +137,8 @@ class PengaturanController extends Controller
                 'bool' => ['required', 'in:0,1'],
                 // Profil usaha ditulis berparagraf, tidak muat di batas satu baris.
                 'teks' => ['nullable', 'string', 'max:5000'],
+                // Dokumen kebijakan jauh lebih panjang dari teks profil (KEP-085).
+                'markdown' => ['nullable', 'string', 'max:20000'],
                 default => ['nullable', 'string', 'max:500'],
             };
             $nama['setting.'.$b->key] = $b->label;

@@ -6,6 +6,7 @@ use App\Http\Controllers\Publik\BerandaController;
 use App\Http\Controllers\Publik\CheckoutController;
 use App\Http\Controllers\Publik\OngkirController;
 use App\Http\Controllers\Publik\CsController;
+use App\Http\Controllers\Publik\HalamanHukumController;
 use App\Http\Controllers\Publik\KatalogController;
 use App\Http\Controllers\Publik\KerjaController;
 use App\Http\Controllers\Publik\KeranjangController;
@@ -19,6 +20,10 @@ use App\Http\Controllers\Webhook\ResendController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', BerandaController::class)->name('beranda');
+
+// Kebijakan Privasi dan Syarat & Ketentuan (KEP-085). Isinya dikelola di Pengaturan.
+Route::get('/kebijakan-privasi', [HalamanHukumController::class, 'privasi'])->name('kebijakan-privasi');
+Route::get('/syarat-ketentuan', [HalamanHukumController::class, 'syarat'])->name('syarat-ketentuan');
 Route::get('/katalog', [KatalogController::class, 'index'])->name('katalog');
 Route::get('/produk/{produk:slug}', [KatalogController::class, 'show'])->name('produk');
 

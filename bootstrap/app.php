@@ -13,7 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'izin' => \App\Http\Middleware\EnsurePermission::class,
+            'akun.layak' => \App\Http\Middleware\PastikanAkunLayak::class,
         ]);
+
+        // Header keamanan di setiap respons, termasuk halaman galat (KEP-086).
+        $middleware->append(\App\Http\Middleware\HeaderKeamanan::class);
 
         // Staf dan pelanggan punya halaman masuk sendiri; jangan saling melempar.
         $middleware->redirectGuestsTo(

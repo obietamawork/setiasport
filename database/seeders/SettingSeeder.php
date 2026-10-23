@@ -141,8 +141,14 @@ Pos Indonesia", 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
              * seperti toko yang belum jadi, jadi lebih baik ada tulisan yang
              * masuk akal sejak awal dan tinggal dikoreksi pemilik toko dengan
              * bahasanya sendiri.
+             *
+             * Pemisah paragrafnya "\n\n" dalam kutip GANDA. Dulu ditulis di dalam
+             * kutip tunggal, sehingga yang tersimpan garis miring dan huruf n
+             * apa adanya, dan halaman depan menampilkan "\n\n" di tengah kalimat.
              */
-            ['tentang_lengkap', 'Setia Sport berdiri di Wonogiri sebagai toko perlengkapan olahraga, lalu tumbuh menjadi konveksi jersey karena permintaannya datang terus dari pelanggan sendiri: sekolah yang butuh seragam olahraga, klub futsal yang ingin jersey dengan nama dan nomor punggung, dan komunitas lari yang memesan kaos untuk acara.\n\nJersey dikerjakan di workshop kami sendiri, bukan dilempar ke pihak lain. Itu yang membuat revisi desain bisa cepat, ukuran bisa dicampur dari anak SD sampai dewasa dalam satu pesanan, dan kalau ada yang kurang pas, kami perbaiki tanpa harus menunggu kiriman dari kota lain.\n\nBarang yang ada di rak bisa diambil hari itu juga di toko. Pesanan konveksi punya halaman sendiri di website ini: progres pengerjaan, tagihan, dan nomor resi bisa dilihat kapan saja tanpa perlu menelepon toko.', 'teks', 'profil', 'Tentang Usaha',
+            ['tentang_lengkap', 'Setia Sport berdiri di Wonogiri sebagai toko perlengkapan olahraga, lalu tumbuh menjadi konveksi jersey karena permintaannya datang terus dari pelanggan sendiri: sekolah yang butuh seragam olahraga, klub futsal yang ingin jersey dengan nama dan nomor punggung, dan komunitas lari yang memesan kaos untuk acara.'
+                ."\n\n".'Jersey dikerjakan di workshop kami sendiri, bukan dilempar ke pihak lain. Itu yang membuat revisi desain bisa cepat, ukuran bisa dicampur dari anak SD sampai dewasa dalam satu pesanan, dan kalau ada yang kurang pas, kami perbaiki tanpa harus menunggu kiriman dari kota lain.'
+                ."\n\n".'Barang yang ada di rak bisa diambil hari itu juga di toko. Pesanan konveksi punya halaman sendiri di website ini: progres pengerjaan, tagihan, dan nomor resi bisa dilihat kapan saja tanpa perlu menelepon toko.', 'teks', 'profil', 'Tentang Usaha',
                 'Beberapa paragraf tentang toko: sejak kapan berdiri, siapa yang dilayani, apa yang membedakan.'],
             /*
              * Media sosial (KEP-063). Disimpan sebagai tautan penuh, bukan nama
@@ -159,6 +165,16 @@ Pos Indonesia", 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
 
             ['maps_embed', '', 'string', 'profil', 'Tautan Peta Google Maps',
                 'Tempel tautan berbagi dari Google Maps. Dipakai sebagai tombol menuju lokasi.'],
+
+            /*
+             * Kebijakan Privasi dan Syarat & Ketentuan (KEP-085). Draf dari cara
+             * kerja sistem ini; Kesiapan tayang menahannya sebagai butir wajib
+             * selama teksnya belum disesuaikan pemilik toko.
+             */
+            ['kebijakan_privasi', \App\Support\DrafHukum::kebijakanPrivasi(), 'markdown', 'hukum', 'Kebijakan Privasi',
+                'Tampil di halaman /kebijakan-privasi dan ditautkan dari checkout.'],
+            ['syarat_ketentuan', \App\Support\DrafHukum::syaratKetentuan(), 'markdown', 'hukum', 'Syarat & Ketentuan',
+                'Tampil di halaman /syarat-ketentuan dan ditautkan dari checkout.'],
         ];
 
         foreach ($data as $baris) {

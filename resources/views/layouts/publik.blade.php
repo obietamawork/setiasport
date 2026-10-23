@@ -291,7 +291,11 @@
     <div class="border-t border-line">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-4 text-xs text-muted">
             <span>&copy; {{ date('Y') }} {{ setting('toko_nama', 'Setia Sport') }}</span>
-            <a href="{{ route('panel.login') }}" class="tautan inline-block py-1.5">Masuk staf</a>
+            <nav class="flex flex-wrap items-center gap-x-4" aria-label="Tautan kebijakan">
+                <a href="{{ route('kebijakan-privasi') }}" class="tautan inline-block py-1.5">Kebijakan Privasi</a>
+                <a href="{{ route('syarat-ketentuan') }}" class="tautan inline-block py-1.5">Syarat &amp; Ketentuan</a>
+                <a href="{{ route('panel.login') }}" class="tautan inline-block py-1.5">Masuk staf</a>
+            </nav>
         </div>
     </div>
 </footer>

@@ -131,10 +131,13 @@
 
                     @if ($produkLain->isNotEmpty())
                         <p class="mt-5 text-sm font-medium">Mau memesan yang lain?</p>
-                        <div class="mt-2 flex flex-wrap gap-2">
+                        {{-- Di HP kisi dua kolom yang sama lebar: pil selebar namanya
+                             masing-masing dulu patah tak beraturan (satu, satu, satu,
+                             dua, satu) dan terlihat berantakan. --}}
+                        <div class="mt-2 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                             @foreach ($produkLain as $lain)
                                 <a href="{{ route('kustom.buat', $lain) }}"
-                                   class="rounded-[8px] border border-line px-3 py-2 text-sm hover:border-navy hover:bg-navy-50">
+                                   class="flex items-center rounded-[8px] border border-line px-3 py-2 text-sm leading-snug hover:border-navy hover:bg-navy-50">
                                     {{ $lain->nama }}
                                 </a>
                             @endforeach
@@ -427,7 +430,10 @@
         </div>
 
         {{-- Ringkasan: menempel di layar lebar, dan di HP ikut mengalir di bawah. --}}
-        <aside class="mt-6 lg:sticky lg:top-24 lg:mt-0">
+        {{-- Di tablet ringkasan dan kotak bantuan berdampingan; ditumpuk selebar
+             layar keduanya hanya berisi beberapa baris dengan ruang kosong lebar. --}}
+        <aside class="mt-6 md:grid md:grid-cols-2 md:items-start md:gap-4 lg:sticky lg:top-24 lg:mt-0 lg:block">
+
             <div class="kartu p-5">
                 <p class="font-semibold">Ringkasan pesanan</p>
 
@@ -481,7 +487,7 @@
             {{-- WhatsApp di sini BANTUAN, bukan jalur pemesanan (KEP-040).
                  Pesanan tetap dibuat di web supaya punya kode, tagihan, dan
                  halaman lacak; tanpa itu produksi kehilangan sumber datanya. --}}
-            <div class="kartu mt-4 p-5">
+            <div class="kartu mt-4 p-5 md:mt-0 lg:mt-4">
                 <p class="font-semibold">Butuh bantuan?</p>
                 <p class="mt-1 text-sm leading-relaxed text-muted">
                     Bingung memilih bahan atau ukuran? Tanya admin dulu, pesanannya tetap diselesaikan di sini.

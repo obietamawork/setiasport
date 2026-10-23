@@ -40,7 +40,17 @@
             @endif
         </label>
 
-        @if ($s->tipe === 'teks')
+        @if ($s->tipe === 'markdown')
+            <textarea id="{{ $id }}" name="{{ $nama }}" form="form-pengaturan" rows="18"
+                      class="kotak-input font-mono text-[13px] leading-relaxed"
+                      aria-describedby="{{ $id }}-format">{{ $nilai }}</textarea>
+            <p id="{{ $id }}-format" class="mt-1 text-xs leading-relaxed text-muted">
+                Format: baris kosong memisahkan paragraf, <code>## Judul</code> untuk subjudul,
+                <code>- butir</code> untuk daftar, <code>**tebal**</code> untuk huruf tebal.
+                Penanda seperti <code>{batas_bayar_jam}</code>, <code>{dp_minimum}</code>, <code>{whatsapp}</code>,
+                dan <code>{toko}</code> otomatis diganti angka dan data dari pengaturan saat ditampilkan.
+            </p>
+        @elseif ($s->tipe === 'teks')
             <textarea id="{{ $id }}" name="{{ $nama }}" form="form-pengaturan"
                       rows="{{ $s->key === 'tentang_lengkap' ? 8 : (str_contains($s->key, 'jam_buka') ? 3 : 4) }}"
                       class="kotak-input leading-relaxed">{{ $nilai }}</textarea>

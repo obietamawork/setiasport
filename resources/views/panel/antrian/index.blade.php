@@ -37,9 +37,22 @@
 
     {{-- Urutannya mengikuti meja kerja konveksi (KEP-037), bukan diurutkan
          menurut yang paling ramai: orang mencari divisinya di tempat yang
-         sama setiap hari. --}}
-    <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        @foreach ($tahap as $t)
+         sama setiap hari.
+
+         Dipisah dua kelompok menurut jalurnya: enam meja konveksi untuk
+         pesanan kustom, dan Packing yang hanya dilewati barang stok toko.
+         Dulu ketujuhnya satu kisi, dan Packing tersisa sendirian di baris
+         terakhir seolah salah tempat. --}}
+    @php
+        [$tahapKonveksi, $tahapStok] = collect($tahap)
+            ->partition(fn ($t) => $t !== \App\Enums\ProductionStage::PACKING);
+    @endphp
+
+    @foreach ([['Konveksi · pesanan kustom', $tahapKonveksi], ['Barang stok toko', $tahapStok]] as [$namaJalur, $daftarTahap])
+    @continue($daftarTahap->isEmpty())
+    <h2 class="mt-7 text-sm font-semibold text-muted">{{ $namaJalur }}</h2>
+    <div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        @foreach ($daftarTahap as $t)
             @php
                 $r = $ringkas[$t->value] ?? ['jumlah' => 0, 'tertua' => null, 'pesanan' => []];
                 $ada = $r['jumlah'] > 0;
@@ -78,5 +91,6 @@
             </a>
         @endforeach
     </div>
+    @endforeach
 @endif
 @endsection

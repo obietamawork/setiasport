@@ -26,11 +26,11 @@
 
 <main class="flex flex-1 items-center justify-center px-5 py-16">
     <div class="w-full max-w-md text-center">
-        <p class="numeral text-6xl text-navy-300">@yield('kode')</p>
+        <p class="numeral text-6xl text-navy-400">@yield('kode')</p>
         <h1 class="mt-5 text-2xl font-extrabold">@yield('judul')</h1>
         <p class="mt-3 leading-relaxed text-muted">@yield('pesan')</p>
 
-        <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <div class="kelompok-tombol mt-8 justify-center">
             @yield('aksi')
         </div>
     </div>

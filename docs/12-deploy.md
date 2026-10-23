@@ -145,16 +145,21 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-Lalu **ganti kata sandi kedua akun bawaan**, keduanya masih `password`:
+Lalu **ganti kata sandi kedua akun bawaan**, keduanya masih `password`. Cara
+termudah: masuk panel, buka menu akun di kanan atas, pilih **Akun saya**. Akun
+staf lain (kasir, penjahit) dibuat Pemilik di menu **Pengguna** dengan sandi
+sementara yang wajib diganti sendiri saat pertama masuk (KEP-084). Lewat SSH
+juga bisa:
 
 ```bash
 php artisan staf:sandi owner@setiasport.test
 php artisan staf:sandi admin@setiasport.test
 ```
 
-Perintah yang sama dipakai kalau pemilik toko lupa kata sandinya. Pemulihan
-lewat email sengaja tidak dibuat: ia bergantung pada cron dan Resend, dan
-keduanya justru bisa ikut bermasalah saat dibutuhkan.
+Perintah SSH itu yang dipakai kalau pemilik toko lupa kata sandinya dan tidak
+ada Pemilik lain yang bisa mengatur ulang dari menu Pengguna. Pemulihan lewat
+email sengaja tidak dibuat: ia bergantung pada cron dan Resend, dan keduanya
+justru bisa ikut bermasalah saat dibutuhkan.
 
 Izin tulis yang dibutuhkan: `storage/` dan `bootstrap/cache/`.
 
@@ -237,6 +242,14 @@ beban shared hosting. Yang perlu diperhatikan:
    Data contoh portofolio dan testimoni (KEP-035) hanya untuk demo di lokal; jangan
    jalankan `ContohProfilSeeder` di server. Seeder itu menolak berjalan di produksi,
    tapi database lokal yang disalin ke server akan membawa contohnya ikut serta
+8. Pemilik toko membaca dan menyesuaikan tab **Pengaturan → Kebijakan & ketentuan**.
+   Isinya draf dari developer; selama penanda drafnya belum dihapus, halaman
+   **Kesiapan tayang** tetap menahannya (KEP-085)
+9. Periksa header keamanan di [securityheaders.com](https://securityheaders.com) atau
+   [Mozilla Observatory](https://developer.mozilla.org/en-US/observatory). Hasil yang
+   diharapkan minimal A. Kalau ada skrip pihak ketiga baru (misalnya analitik), domainnya
+   perlu ditambahkan ke `HeaderKeamanan` lebih dulu, atau peramban akan memblokirnya (KEP-086)
+10. Tempel alamat situs di WhatsApp dan pastikan pratinjaunya memuat judul dan gambar toko
 
 ---
 

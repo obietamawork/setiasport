@@ -75,6 +75,7 @@
             ['panel.testimoni.index', 'Testimoni', 'profil.kelola', 'panel.testimoni.*', null, 'testimoni'],
         ],
         'Toko' => [
+            ['panel.pengguna.index', 'Pengguna', 'pengguna.kelola', 'panel.pengguna.*', null, 'orang'],
             ['panel.pekerja.index', 'Pekerja konveksi', 'pengguna.kelola', 'panel.pekerja.*', null, 'pekerja'],
             ['panel.laporan', 'Laporan', 'laporan.lihat', 'panel.laporan', null, 'laporan'],
             ['panel.pengaturan.index', 'Pengaturan', 'pengaturan.kelola', 'panel.pengaturan.*', null, 'pengaturan'],
@@ -176,6 +177,11 @@
                         <p class="font-semibold">{{ $u->name }}</p>
                         <p class="text-xs text-muted">{{ $u->roles->pluck('nama')->implode(', ') }}</p>
                     </div>
+                    <a href="{{ route('panel.akun') }}"
+                       class="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-navy-50">
+                        <x-ikon nama="orang" ukuran="size-4" class="text-navy-400" />
+                        Akun saya
+                    </a>
                     <a href="{{ route('beranda') }}" target="_blank" rel="noopener"
                        class="flex items-center gap-2.5 px-4 py-2.5 text-sm hover:bg-navy-50">
                         <x-ikon nama="buka-luar" ukuran="size-4" class="text-navy-400" />
@@ -253,6 +259,10 @@
         <div class="kolom-kerja">
             @if (session('sukses'))
                 <p class="notis notis-ok mb-5">{{ session('sukses') }}</p>
+            @endif
+
+            @if (session('peringatan'))
+                <p class="notis notis-perhatian mb-5">{{ session('peringatan') }}</p>
             @endif
 
             @if ($errors->any())

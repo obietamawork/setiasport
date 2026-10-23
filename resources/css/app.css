@@ -229,6 +229,31 @@
         border-color: transparent;
         color: var(--color-line-strong);
     }
+
+    /*
+     * Kelompok tombol aksi. Di HP tombolnya ditumpuk selebar kolom: dua tombol
+     * selebar tulisannya masing-masing yang jatuh bertumpuk (148px di atas
+     * 170px) terlihat seperti tata letak yang rusak, bukan pilihan.
+     */
+    .kelompok-tombol {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    @media (width < 40rem) {
+        /* width 100% juga untuk kelompoknya sendiri: di dalam baris flex ia
+           kalau tidak hanya selebar tombol terlebarnya. */
+        .kelompok-tombol {
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .kelompok-tombol > .tombol {
+            width: 100%;
+        }
+    }
 }
 
 @layer components {
@@ -347,6 +372,23 @@
     .tabel tbody tr:last-child td { border-bottom: 0; }
 
     .kolom-baca { max-width: 66ch; }
+
+    /*
+     * Isi dokumen panjang dari Markdown (Kebijakan Privasi, Syarat &
+     * Ketentuan). Tanpa plugin typography: cukup jarak antarparagraf, subjudul,
+     * dan daftar berpoin yang terbaca nyaman di HP.
+     */
+    .isi-dokumen { max-width: 68ch; line-height: 1.75; color: var(--color-ink); }
+    .isi-dokumen > * + * { margin-top: 1rem; }
+    .isi-dokumen h2 { margin-top: 2.25rem; font-size: 1.25rem; font-weight: 800; line-height: 1.3; }
+    .isi-dokumen h3 { margin-top: 1.75rem; font-size: 1.05rem; font-weight: 700; }
+    .isi-dokumen ul, .isi-dokumen ol { padding-left: 1.25rem; }
+    .isi-dokumen ul { list-style: disc; }
+    .isi-dokumen ol { list-style: decimal; }
+    .isi-dokumen li + li { margin-top: 0.4rem; }
+    .isi-dokumen li::marker { color: var(--color-navy-400); }
+    .isi-dokumen strong { font-weight: 700; }
+    .isi-dokumen a { color: var(--color-navy-700); text-decoration: underline; text-underline-offset: 3px; }
 
     /* Penanda navigasi aktif, meniru garis di bawah wordmark. */
     .garis-aktif { position: relative; }

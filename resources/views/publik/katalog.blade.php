@@ -124,7 +124,7 @@
                 Coba hapus salah satu filter, atau lihat seluruh katalog. Kalau yang Anda
                 cari memang belum ada di daftar, kami bisa membuatkannya lewat pesanan kustom.
             </p>
-            <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <div class="kelompok-tombol mt-6 justify-center">
                 <a href="{{ route('katalog') }}" class="tombol tombol-garis">Lihat semua produk</a>
                 <a href="{{ route('katalog', ['jalur' => 'kustom']) }}" class="tombol tombol-navy">
                     Lihat pesanan kustom

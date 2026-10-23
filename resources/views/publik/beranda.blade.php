@@ -49,7 +49,7 @@
                         yang dikerjakan sendiri di Wonogiri. Bisa diambil di toko atau dikirim.' }}
             </p>
 
-            <div class="mt-8 flex flex-wrap gap-3">
+            <div class="kelompok-tombol mt-8">
                 <a href="{{ route('katalog') }}" class="tombol tombol-utama">
                     Lihat produk
                     <x-ikon nama="lanjut" ukuran="size-4" />
@@ -65,30 +65,33 @@
              width="1000" height="505" class="hidden w-full max-w-xs justify-self-end opacity-90 lg:block">
     </div>
 
-    {{-- Empat hal yang paling sering ditanyakan sebelum orang mau memulai. Di
-         HP ia menggeser ke samping, bukan menumpuk jadi empat baris yang
-         mendorong isi halaman turun satu layar penuh. --}}
+    {{-- Empat hal yang paling sering ditanyakan sebelum orang mau memulai.
+         Di HP berupa kisi 2×2 ringkas (ikon + judul): dua baris pendek, tidak
+         mendorong isi halaman turun satu layar penuh. Versi geser-ke-samping
+         sebelumnya memotong kartu kedua di tengah kata, dan terlihat seperti
+         tata letak yang salah, bukan carousel yang disengaja. --}}
     <div class="relative border-t border-white/10">
-        {{-- tabindex supaya bisa digeser dengan papan ketik juga, bukan cuma jari. --}}
-        <div class="geser-x mx-auto flex max-w-6xl snap-x gap-px px-5 text-sm sm:grid sm:grid-cols-2 sm:px-0 lg:grid-cols-4"
-             tabindex="0" role="region" aria-label="Keunggulan toko">
+        <ul class="mx-auto grid max-w-6xl grid-cols-2 gap-4 px-5 py-5 text-sm sm:gap-0 sm:px-0 sm:py-0 lg:grid-cols-4">
             @foreach ([
                 ['produk', 'Produk original', 'Dari merek yang bisa dipertanggungjawabkan'],
                 ['uang', 'Harga bersaing', 'Ecer maupun grosir, harganya terbuka di web'],
                 ['kategori', 'Bisa custom', 'Desain, nama, dan nomor sesuai keinginan tim'],
                 ['toko', 'Ambil atau kirim', 'Diambil di toko, atau dikirim ke alamat Anda'],
             ] as $i => [$ikon, $judul, $isi])
-                <div class="min-w-56 flex-1 snap-start px-5 py-5 {{ $i > 0 ? 'sm:border-l sm:border-white/10' : '' }}">
-                    <div class="flex items-start gap-3">
+                <li class="sm:px-5 sm:py-5
+                           {{ $i % 2 === 1 ? 'sm:border-l sm:border-white/10' : '' }}
+                           {{ $i >= 2 ? 'sm:border-t sm:border-white/10 lg:border-t-0' : '' }}
+                           {{ $i === 2 ? 'lg:border-l lg:border-white/10' : '' }}">
+                    <div class="flex items-start gap-2.5 sm:gap-3">
                         <x-ikon :nama="$ikon" class="mt-0.5 shrink-0 text-kuning" />
-                        <div>
-                            <p class="font-semibold">{{ $judul }}</p>
-                            <p class="mt-0.5 leading-relaxed text-white/60">{{ $isi }}</p>
+                        <div class="min-w-0">
+                            <p class="leading-snug font-semibold">{{ $judul }}</p>
+                            <p class="mt-0.5 hidden leading-relaxed text-white/60 sm:block">{{ $isi }}</p>
                         </div>
                     </div>
-                </div>
+                </li>
             @endforeach
-        </div>
+        </ul>
     </div>
 </section>
 
@@ -105,7 +108,20 @@
         <a href="{{ route('katalog') }}" class="tautan text-sm font-medium">Lihat semua &rarr;</a>
     </div>
 
-    <div class="mt-7 grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 lg:grid-cols-6">
+    {{-- Jumlah kolom mengikuti jumlah kategori, supaya setiap baris penuh.
+         Dulu 4 kolom di tablet: enam kategori jatuh jadi 4 + 2 dengan dua
+         petak kosong, dan petaknya membesar jadi kotak 170px yang melompong. --}}
+    @php
+        $kolomKategori = match ($kategori->count()) {
+            1 => 'grid-cols-2 sm:grid-cols-4',
+            2 => 'grid-cols-2',
+            3 => 'grid-cols-3',
+            4 => 'grid-cols-2 sm:grid-cols-4',
+            5 => 'grid-cols-3 sm:grid-cols-5',
+            default => 'grid-cols-3 sm:grid-cols-6',
+        };
+    @endphp
+    <div class="mt-7 grid gap-2.5 sm:gap-3 {{ $kolomKategori }}">
         @foreach ($kategori as $k)
             <a href="{{ route('katalog', ['kategori' => $k->slug]) }}"
                class="kartu kartu-tautan group overflow-hidden text-center">
@@ -197,7 +213,7 @@
                 @endforeach
             </ol>
 
-            <div class="mt-6 flex flex-wrap gap-3">
+            <div class="kelompok-tombol mt-6">
                 <a href="{{ route('katalog', ['jalur' => 'kustom']) }}" class="tombol tombol-utama">
                     Mulai pesan custom
                     <x-ikon nama="lanjut" ukuran="size-4" />
@@ -344,7 +360,7 @@
 <section class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
     <h2 class="text-2xl font-extrabold sm:text-3xl">Toko dan konveksi kami</h2>
 
-    <div class="mt-7 grid gap-4 lg:grid-cols-2">
+    <div class="mt-7 grid gap-4 md:grid-cols-2">
         @foreach ([
             [
                 'judul' => 'Toko',
@@ -403,7 +419,7 @@
             @endif
         </div>
 
-        <div class="flex flex-wrap gap-3">
+        <div class="kelompok-tombol">
             <a href="{{ route('katalog') }}" class="tombol tombol-utama">Lihat produk</a>
             @if ($csAktif)
                 <button type="button" x-data @click="$dispatch('buka-cs', {})"

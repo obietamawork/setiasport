@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * Pengguna INTERNAL saja. Pelanggan tidak punya akun, mereka mengakses
@@ -18,7 +20,13 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'no_hp', 'aktif'];
+    /**
+     * Kata sandi akun contoh dari UserSeeder. Tertulis di dokumentasi, jadi
+     * akun yang masih memakainya sama dengan pintu panel tanpa kunci.
+     */
+    public const SANDI_BAWAAN = 'password';
+
+    protected $fillable = ['name', 'email', 'password', 'no_hp', 'aktif', 'wajib_ganti_sandi'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -28,8 +36,26 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'aktif' => 'boolean',
+            'wajib_ganti_sandi' => 'boolean',
             'login_terakhir_pada' => 'datetime',
         ];
+    }
+
+    public function masihSandiBawaan(): bool
+    {
+        return Hash::check(self::SANDI_BAWAAN, $this->password);
+    }
+
+    /**
+     * Mengeluarkan akun ini dari semua perangkat lain. Sesi disimpan di
+     * database (SESSION_DRIVER=database), jadi cukup menghapus barisnya.
+     */
+    public function keluarkanSesiLain(?string $kecualiSesi = null): void
+    {
+        DB::table('sessions')
+            ->where('user_id', $this->id)
+            ->when($kecualiSesi, fn ($q) => $q->where('id', '!=', $kecualiSesi))
+            ->delete();
     }
 
     /**

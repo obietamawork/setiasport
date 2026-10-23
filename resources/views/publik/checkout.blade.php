@@ -246,6 +246,16 @@
                 </span>
             </label>
 
+            {{-- Di luar <label> centang di atas, supaya mengetuk tautannya tidak ikut
+                 mencentang. Dibuka di tab baru: isian checkout tidak hilang. --}}
+            <p class="text-xs leading-relaxed text-muted">
+                Dengan membuat pesanan, Anda menyetujui
+                <a href="{{ route('syarat-ketentuan') }}" target="_blank" rel="noopener" class="tautan">Syarat &amp; Ketentuan</a>
+                dan
+                <a href="{{ route('kebijakan-privasi') }}" target="_blank" rel="noopener" class="tautan">Kebijakan Privasi</a>
+                kami.
+            </p>
+
             <button type="submit" class="tombol tombol-utama w-full">Buat pesanan</button>
 
             {{-- Bantuan diletakkan tepat di samping tombol terakhir, karena di

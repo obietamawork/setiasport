@@ -44,6 +44,14 @@
                    class="kotak-input" required autocomplete="new-password">
         </div>
 
+        <p class="text-xs leading-relaxed text-muted">
+            Dengan membuat akun, Anda menyetujui
+            <a href="{{ route('syarat-ketentuan') }}" target="_blank" rel="noopener" class="tautan">Syarat &amp; Ketentuan</a>
+            dan
+            <a href="{{ route('kebijakan-privasi') }}" target="_blank" rel="noopener" class="tautan">Kebijakan Privasi</a>
+            kami.
+        </p>
+
         <button type="submit" class="tombol tombol-utama w-full">Kirim tautan konfirmasi</button>
 
         <p class="border-t border-line pt-4 text-sm text-muted">

@@ -13,7 +13,7 @@
                 Barang yang Anda pilih akan muncul di sini. Mulai dari stok toko kalau
                 butuh cepat, atau pesanan kustom kalau ingin desain sendiri.
             </p>
-            <div class="mt-6 flex flex-wrap justify-center gap-3">
+            <div class="kelompok-tombol mt-6 justify-center">
                 <a href="{{ route('katalog', ['jalur' => 'stok']) }}" class="tombol tombol-garis">Lihat stok toko</a>
                 <a href="{{ route('katalog', ['jalur' => 'kustom']) }}" class="tombol tombol-navy">Lihat pesanan kustom</a>
             </div>
@@ -114,7 +114,7 @@
                 <p class="numeral mt-1 text-3xl text-merah">{{ rupiah($total) }}</p>
                 <p class="mt-2 text-sm text-muted">Diambil di toko, tanpa ongkos kirim.</p>
             </div>
-            <div class="flex flex-wrap gap-3">
+            <div class="kelompok-tombol">
                 <a href="{{ route('katalog') }}" class="tombol tombol-garis">Tambah barang lain</a>
                 <a href="{{ route('checkout') }}"
                    class="tombol tombol-utama {{ $adaMasalah ? 'pointer-events-none opacity-50' : '' }}">

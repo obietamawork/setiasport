@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BuktiBayarController;
 use App\Http\Controllers\Panel\AktivitasController;
+use App\Http\Controllers\Panel\AkunSayaController;
 use App\Http\Controllers\Panel\AuthController;
 use App\Http\Controllers\Panel\BahanController;
 use App\Http\Controllers\Panel\BantuanController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Panel\LaporanController;
 use App\Http\Controllers\Panel\MockupController;
 use App\Http\Controllers\Panel\PekerjaController;
 use App\Http\Controllers\Panel\PembatalanController;
+use App\Http\Controllers\Panel\PenggunaController;
 use App\Http\Controllers\Panel\PembayaranController;
 use App\Http\Controllers\Panel\PenyesuaianController;
 use App\Http\Controllers\Panel\PengaturanController;
@@ -45,9 +47,25 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
     // Guard disebut eksplisit. Panel tidak boleh bergantung pada guard mana
     // yang kebetulan menjadi bawaan, karena pelanggan kini punya guard sendiri.
-    Route::middleware('auth:web')->group(function () {
+    // akun.layak: akun nonaktif terputus dan akun bersandi sementara diarahkan
+    // ke Akun saya pada SETIAP permintaan, bukan hanya saat masuk (KEP-084).
+    Route::middleware(['auth:web', 'akun.layak'])->group(function () {
         Route::post('/keluar', [AuthController::class, 'keluar'])->name('keluar');
         Route::get('/', DashboardController::class)->name('dashboard');
+
+        // Akun saya: semua staf, tanpa izin khusus.
+        Route::get('akun', [AkunSayaController::class, 'show'])->name('akun');
+        Route::put('akun', [AkunSayaController::class, 'updateProfil'])->name('akun.profil');
+        Route::put('akun/sandi', [AkunSayaController::class, 'updateSandi'])
+            ->middleware('throttle:10,1')->name('akun.sandi');
+
+        Route::middleware('izin:pengguna.kelola')->prefix('pengguna')->name('pengguna.')->group(function () {
+            Route::get('/', [PenggunaController::class, 'index'])->name('index');
+            Route::post('/', [PenggunaController::class, 'store'])->name('simpan');
+            Route::put('{pengguna}', [PenggunaController::class, 'update'])->name('update');
+            Route::post('{pengguna}/aktif', [PenggunaController::class, 'aktif'])->name('aktif');
+            Route::post('{pengguna}/sandi', [PenggunaController::class, 'aturUlangSandi'])->name('sandi');
+        });
 
         // Bantuan dibuka semua orang yang boleh masuk panel, tanpa izin khusus:
         // yang paling butuh penjelasan justru yang perannya paling sempit.

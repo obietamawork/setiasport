@@ -128,7 +128,7 @@
                         </td>
                         <td data-kolom="Kategori">{{ $p->category->nama }}</td>
                         <td data-kolom="Cara beli">{{ $p->fulfillment_type->label() }}</td>
-                        <td data-kolom="Harga" class="text-right tabular">
+                        <td data-kolom="Harga" class="text-right tabular whitespace-nowrap">
                             {{ $p->punyaJalurReadyStock() ? rupiah($p->harga_dasar) : '-' }}
                         </td>
                         <td data-kolom="Varian" class="text-right tabular">{{ $p->variants_count }}</td>

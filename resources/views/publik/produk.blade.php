@@ -63,14 +63,17 @@
     {{-- Di layar sempit urutannya gambar, kotak beli, lalu spesifikasi. Harga
          dan tombol beli tidak boleh terkubur di bawah tabel rujukan yang
          panjang; itu pertanyaan pertama pelanggan. --}}
-    <div class="mt-6 flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
+    {{-- Dua kolom mulai tablet (md), bukan baru di layar lebar: di tablet
+         tegak gambarnya dulu melebar selebar layar (±730×545px) dan kotak
+         beli terdorong ke bawah lipatan pertama. --}}
+    <div class="mt-6 flex flex-col gap-8 md:flex-row md:items-start md:gap-8 lg:gap-10">
         {{-- Gambar dan spesifikasi dibungkus jadi satu kolom di layar lebar
              (display:contents di bawah lg supaya kotak beli tetap bisa
              disisipkan di antara keduanya secara visual lewat urutan flex).
              Tanpa pembungkus ini, baris grid lama memaksa tinggi kolom kiri
              mengikuti kotak beli yang jauh lebih tinggi, menyisakan area
              kosong raksasa di bawah gambar. --}}
-        <div class="contents lg:flex lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-8">
+        <div class="contents md:flex md:min-w-0 md:flex-1 md:flex-col md:gap-8">
         <div class="min-w-0">
             @if ($produk->images->isNotEmpty())
                 {{-- gambarPerWarna/gambarPerOpsi dikirim dari server (KEP-066);
@@ -212,7 +215,7 @@
         </div>
         </div>
         <aside x-data="{ jalur: '{{ $jalurAwal }}' }"
-               class="order-2 min-w-0 lg:w-[390px] lg:shrink-0 lg:sticky lg:top-6 lg:self-start">
+               class="order-2 min-w-0 md:w-80 md:shrink-0 md:sticky md:top-20 md:self-start lg:w-[390px]">
             <div class="border border-line bg-field">
                 <div class="border-b border-line p-5">
                     <h1 class="text-2xl leading-tight font-extrabold">{{ $produk->nama }}</h1>
