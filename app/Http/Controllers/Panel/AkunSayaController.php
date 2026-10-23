@@ -7,6 +7,7 @@ use App\Models\ActivityLog;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -80,6 +81,13 @@ class AkunSayaController extends Controller
         // Siapa pun yang mungkin tahu sandi lama terputus dari perangkatnya.
         $user->keluarkanSesiLain($request->session()->getId());
         $request->session()->regenerate();
+
+        // Token pengingat baru saja diganti; perangkat ini tetap diingat
+        // kalau sebelumnya masuk dengan "Ingat saya".
+        $guard = Auth::guard('web');
+        if ($request->cookies->has($guard->getRecallerName())) {
+            $guard->login($user, true);
+        }
 
         ActivityLog::catat('akun.sandi-diganti', $user);
 

@@ -8,6 +8,7 @@ use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SettingSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -99,6 +100,77 @@ class AkunStafTest extends TestCase
         ]);
 
         $this->assertDatabaseMissing('sessions', ['id' => 'sesi-hp-lain']);
+    }
+
+    /** Cookie "Ingat saya" di HP lain tidak boleh memulihkan sesi yang baru dihapus. */
+    public function test_cookie_ingat_saya_di_perangkat_lain_ikut_dicabut(): void
+    {
+        $owner = $this->owner();
+        $owner->forceFill(['remember_token' => 'token-hp-lain'])->save();
+        $ingat = Auth::guard('web')->getRecallerName();
+        $cookieHpLain = $owner->id.'|token-hp-lain|'.$owner->password;
+
+        // Sebelum sandi diganti, cookie itu cukup untuk membuka panel.
+        $this->withCookie($ingat, $cookieHpLain)->get(route('panel.dashboard'))->assertOk();
+        $this->defaultCookies = [];
+        $this->app['auth']->forgetGuards();
+        $this->flushSession();
+
+        $this->actingAs($owner->fresh())->put(route('panel.akun.sandi'), [
+            'password_sekarang' => 'password',
+            'password' => 'TokoSetia2026',
+            'password_confirmation' => 'TokoSetia2026',
+        ])->assertSessionHasNoErrors();
+
+        // HP lain tidak membawa sesi apa pun, hanya cookie pengingatnya.
+        $this->app['auth']->forgetGuards();
+        $this->flushSession();
+
+        $this->assertNotSame('token-hp-lain', $owner->fresh()->getRememberToken());
+        $this->withCookie($ingat, $cookieHpLain)
+            ->get(route('panel.dashboard'))
+            ->assertRedirect(route('panel.login'));
+    }
+
+    /** Perangkat yang dipakai mengganti sandi tetap diingat dengan token barunya. */
+    public function test_perangkat_ini_tetap_diingat_setelah_ganti_sandi(): void
+    {
+        $owner = $this->owner();
+        $owner->forceFill(['remember_token' => 'token-laptop'])->save();
+        $ingat = Auth::guard('web')->getRecallerName();
+
+        $res = $this->actingAs($owner)
+            ->withCookie($ingat, $owner->id.'|token-laptop|'.$owner->password)
+            ->put(route('panel.akun.sandi'), [
+                'password_sekarang' => 'password',
+                'password' => 'TokoSetia2026',
+                'password_confirmation' => 'TokoSetia2026',
+            ]);
+
+        $res->assertCookie($ingat);
+        $this->assertStringContainsString($owner->fresh()->getRememberToken(), $res->getCookie($ingat)->getValue());
+    }
+
+    /** Ganti email memeriksa sandi sekarang, jadi ikut dibatasi seperti ganti sandi. */
+    public function test_menebak_sandi_lewat_ganti_email_dibatasi(): void
+    {
+        $owner = $this->owner();
+
+        foreach (range(1, 10) as $i) {
+            $this->actingAs($owner)
+                ->put(route('panel.akun.profil'), [
+                    'name' => 'Pemilik', 'email' => 'baru@setiasport.id', 'password_sekarang' => 'tebakan'.$i,
+                ])
+                ->assertSessionHasErrors('password_sekarang');
+        }
+
+        $this->actingAs($owner)
+            ->put(route('panel.akun.profil'), [
+                'name' => 'Pemilik', 'email' => 'baru@setiasport.id', 'password_sekarang' => 'password',
+            ])
+            ->assertStatus(429);
+
+        $this->assertSame('owner@setiasport.test', $owner->fresh()->email);
     }
 
     public function test_mengganti_email_butuh_kata_sandi_sekarang(): void

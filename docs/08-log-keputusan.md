@@ -2849,9 +2849,20 @@ tidak punya tombol Perbaiki karena memang tidak ada halaman tujuannya.
    yang tertulis di dokumentasi. Daftar Pengguna juga menandai akun mana
    yang masih memakainya.
 
+7. **"Ingat saya" ikut dicabut** (dari review keamanan setelah commit).
+   Menghapus baris sesi saja tidak cukup karena cookie pengingat bisa membuat
+   sesi baru. `keluarkanSesiLain()` kini juga mengganti `remember_token`.
+   Laravel 12 sebenarnya sudah menolak cookie lama begitu hash sandi berubah,
+   tapi jaminan ini sengaja tidak bergantung pada detail itu. Perangkat yang
+   dipakai mengganti sandi diberi cookie baru: tanpa itu, "Ingat saya" di
+   perangkat itu sendiri diam-diam ikut hilang.
+8. **Ganti email dibatasi 10 kali per menit**, sama dengan ganti sandi.
+   Keduanya memeriksa kata sandi sekarang, jadi tanpa batas, sesi yang
+   tertinggal di HP lain bisa dipakai untuk menebaknya.
+
 Konfirmasi nonaktifkan dibuat di halaman (dua langkah), bukan dengan
 `confirm()` bawaan browser. Diuji lewat `tests/Feature/AkunStafTest.php`
-(12 tes).
+(15 tes).
 
 ---
 

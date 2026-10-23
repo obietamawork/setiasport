@@ -55,7 +55,10 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
         // Akun saya: semua staf, tanpa izin khusus.
         Route::get('akun', [AkunSayaController::class, 'show'])->name('akun');
-        Route::put('akun', [AkunSayaController::class, 'updateProfil'])->name('akun.profil');
+        // Mengganti email memeriksa kata sandi sekarang: tanpa batas, sesi
+        // yang tertinggal di HP lain bisa dipakai menebaknya.
+        Route::put('akun', [AkunSayaController::class, 'updateProfil'])
+            ->middleware('throttle:10,1')->name('akun.profil');
         Route::put('akun/sandi', [AkunSayaController::class, 'updateSandi'])
             ->middleware('throttle:10,1')->name('akun.sandi');
 

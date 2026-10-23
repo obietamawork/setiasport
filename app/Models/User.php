@@ -10,6 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
  * Pengguna INTERNAL saja. Pelanggan tidak punya akun, mereka mengakses
@@ -49,6 +50,11 @@ class User extends Authenticatable
     /**
      * Mengeluarkan akun ini dari semua perangkat lain. Sesi disimpan di
      * database (SESSION_DRIVER=database), jadi cukup menghapus barisnya.
+     *
+     * Token "Ingat saya" ikut diganti supaya cookie pengingat di perangkat
+     * lain tidak bisa membuat sesi baru. Laravel memang sudah menolak cookie
+     * itu begitu hash sandi berubah, tapi jaminan ini tidak boleh bergantung
+     * pada detail tersebut, dan menonaktifkan akun tidak mengubah sandi.
      */
     public function keluarkanSesiLain(?string $kecualiSesi = null): void
     {
@@ -56,6 +62,9 @@ class User extends Authenticatable
             ->where('user_id', $this->id)
             ->when($kecualiSesi, fn ($q) => $q->where('id', '!=', $kecualiSesi))
             ->delete();
+
+        $this->setRememberToken(Str::random(60));
+        $this->save();
     }
 
     /**
