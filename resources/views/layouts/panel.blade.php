@@ -71,6 +71,7 @@
             ['panel.stok.index', 'Stok', 'stok.kelola', 'panel.stok.*', null, 'stok'],
         ],
         'Profil usaha' => [
+            ['panel.banner.index', 'Banner beranda', 'profil.kelola', 'panel.banner.*', null, 'gambar'],
             ['panel.portofolio.index', 'Portofolio', 'profil.kelola', 'panel.portofolio.*', null, 'portofolio'],
             ['panel.testimoni.index', 'Testimoni', 'profil.kelola', 'panel.testimoni.*', null, 'testimoni'],
         ],

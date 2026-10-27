@@ -30,7 +30,7 @@ class PengunggahGambar
      *
      * @return array{path: string, thumb_path: ?string, lebar: int, tinggi: int}
      */
-    public function simpan(UploadedFile $berkas, string $folder = 'produk', string $disk = 'public', bool $denganThumb = true): array
+    public function simpan(UploadedFile $berkas, string $folder = 'produk', string $disk = 'public', bool $denganThumb = true, int $lebarMaks = self::LEBAR_MAKS): array
     {
         $sumber = $this->baca($berkas);
         [$lebarAsli, $tinggiAsli] = [imagesx($sumber), imagesy($sumber)];
@@ -38,7 +38,9 @@ class PengunggahGambar
         $nama = Str::random(24);
         $ext = $this->webpTersedia() ? 'webp' : 'jpg';
 
-        $utama = $this->kecilkan($sumber, self::LEBAR_MAKS);
+        // Banner selebar layar butuh lebih dari 1400px supaya tidak buram di
+        // monitor 1920px (KEP-092); foto produk dan portofolio tetap 1400.
+        $utama = $this->kecilkan($sumber, $lebarMaks);
 
         $path = "{$folder}/{$nama}.{$ext}";
         $thumbPath = null;

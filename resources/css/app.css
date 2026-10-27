@@ -463,6 +463,41 @@
         .jumlah-tombol { width: 2.75rem; }
     }
 
+    /* Banner beranda (komponen/banner-beranda, KEP-092). Geser jari memakai
+       scroll-snap bawaan peramban; batang gulirnya disembunyikan. */
+    .banner-jalur {
+        display: flex;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .banner-jalur::-webkit-scrollbar { display: none; }
+
+    .banner-panah {
+        position: absolute;
+        top: 50%;
+        display: none;
+        width: 2.75rem;
+        height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        background: rgb(255 255 255 / 0.88);
+        color: var(--color-navy);
+        box-shadow: 0 6px 16px -6px rgb(13 23 51 / 0.45);
+        transform: translateY(-50%);
+        transition: background-color 120ms;
+    }
+
+    .banner-panah:hover { background: #fff; }
+
+    /* Di HP cukup digeser jari; panah hanya menutupi gambar yang sudah kecil. */
+    @media (width >= 40rem) {
+        .banner-panah { display: flex; }
+    }
+
     /* "Lewati ke konten": tersembunyi sampai difokus lewat papan ketik. */
     .lewati-ke-konten {
         position: absolute;

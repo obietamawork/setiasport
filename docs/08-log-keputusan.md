@@ -3168,6 +3168,49 @@ dijalankan di Chromium dan WebKit, axe 40/40 bersih termasuk keranjang berisi.
 
 ---
 
+## KEP-092 — Logo hero versi terang, dan banner promo beranda yang digeser manual
+**Status:** TERKUNCI · 2026-10-27
+
+- **Logo di hero tenggelam.** Tulisan navy logo lengkap diletakkan di atas
+  hero yang juga navy, ditambah `opacity-90`; yang terbaca hanya ilustrasi
+  atletnya. Kini `logo-lengkap-terang.webp`, dibuat dengan pola yang sama
+  seperti `logo-terang.png` di kepala panel: hanya tulisan, lengkung, dan garis
+  WONOGIRI (bagian bawah gambar) yang diputihkan; atlet dan balok warnanya
+  tidak diubah. Bagian "Tentang" yang berlatar putih tetap memakai logo asli.
+  Kalau desainer klien punya versi terang resminya, cukup timpa berkas ini.
+- **Banner promo** (Panel → Profil usaha → Banner beranda, izin
+  `profil.kelola`): gambar desktop 1920×720 dan opsional gambar HP 900×900,
+  judul, teks pendukung, tombol + tautan, urutan, periode tayang. Pilihan klien
+  dari tiga bentuk yang ditawarkan: **geser manual**.
+  - Satu banner tampil diam; dua atau lebih bisa digeser jari (scroll-snap
+    bawaan peramban), panah (layar lebar), titik, atau tombol panah papan
+    ketik. **Tidak pernah bergeser sendiri**: slide yang berganti saat orang
+    masih membaca mengganggu, sebagian besar klik carousel jatuh ke slide
+    pertama, dan pergantian otomatis mewajibkan tombol jeda (WCAG 2.2.2).
+  - Tanpa banner yang tayang, hero teks yang lama tetap tampil. Saat banner
+    tampil, `<h1>` halaman tetap ada (tersembunyi secara visual) untuk pembaca
+    layar dan mesin pencari.
+  - Periode tayang disimpan, bukan diingat: banner hilang sendiri setelah
+    tanggal selesai lewat (hari terakhir ikut tayang), dan daftar di panel
+    menyebut kenapa sebuah banner tidak tampil (Disembunyikan, Mulai …,
+    Selesai …). Lebih dari tiga banner tayang diingatkan, tidak dilarang.
+  - Saklar "teks di atas gambar" untuk gambar yang tulisannya sudah tercetak
+    (desain Canva): tanpanya judul tampil dobel. Kalau dimatikan, seluruh
+    banner menjadi tautan.
+  - Tautan hanya alamat di situs ini (diawali `/`) atau `https://`;
+    `javascript:`, `//situs-lain`, `http:`, dan `data:` ditolak.
+  - Hanya gambar pertama yang dimuat segera (`fetchpriority="high"`); sisanya
+    `loading="lazy"`. Slide yang tidak tampil `inert`, jadi Tab tidak tersesat
+    ke tombol di slide tersembunyi. `PengunggahGambar` kini menerima lebar
+    maksimum: banner disimpan 1920px, bukan 1400px seperti foto produk, supaya
+    tidak buram di monitor lebar.
+
+Diuji lewat `BannerTest` (10 tes); di Chromium dan WebKit: panah, titik,
+berputar dari slide terakhir ke pertama, geser jari, tanpa luapan, axe bersih
+di beranda dan ketiga halaman panelnya.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3263,3 +3306,4 @@ dijalankan di Chromium dan WebKit, axe 40/40 bersih termasuk keranjang berisi.
 | KEP-089 | Audit UI/UX: klik baris salah sasaran di Safari, dialog konfirmasi, aset, SEO | TERKUNCI |
 | KEP-090 | Audit developer/QA: N+1, galat yang menyamar, CI, analisis statis | TERKUNCI |
 | KEP-091 | Dua jalan pemesanan, tombol − +, hapus di keranjang, estimasi dari data | TERKUNCI |
+| KEP-092 | Logo hero versi terang, dan banner promo beranda yang digeser manual | TERKUNCI |

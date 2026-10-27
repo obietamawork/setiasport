@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Publik;
 
 use App\Http\Controllers\Controller;
+use App\Models\Banner;
 use App\Models\Category;
 use App\Models\OrderItem;
 use App\Models\Portofolio;
@@ -28,6 +29,8 @@ class BerandaController extends Controller
     public function __invoke(): View
     {
         return view('publik.beranda', [
+            // Kosong berarti hero teks seperti biasa (KEP-092).
+            'banner' => Banner::tayang()->get(),
             'kategori' => $this->kategori(),
             'unggulan' => $this->unggulan(),
 

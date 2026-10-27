@@ -42,7 +42,7 @@ class RolePermissionSeeder extends Seeder
             'katalog' => [
                 'katalog.kelola' => 'Kelola Produk & Kategori',
                 'stok.kelola' => 'Kelola Stok',
-                'profil.kelola' => 'Kelola Portofolio & Testimoni',
+                'profil.kelola' => 'Kelola Banner, Portofolio & Testimoni',
             ],
             'cs' => [
                 'cs.balas' => 'Balas Chat CS',

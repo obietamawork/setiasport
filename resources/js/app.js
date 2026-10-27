@@ -11,6 +11,29 @@ Alpine.data('widgetCs', widgetCs);
 Alpine.data('notifikasiCs', notifikasiCs);
 Alpine.data('ruangCs', ruangCs);
 
+/*
+ * Banner beranda yang bisa digeser (KEP-092). Geser jari ditangani scroll-snap
+ * peramban, lalu sinkron() mencatat slide mana yang tampil; panah, titik, dan
+ * tombol panah papan ketik memanggil ke(). Tidak pernah bergeser sendiri.
+ */
+Alpine.data('carouselBanner', (jumlah) => ({
+    aktif: 0,
+
+    ke(i) {
+        const jalur = this.$refs.jalur;
+        this.aktif = (i + jumlah) % jumlah;
+        jalur.scrollTo({
+            left: this.aktif * jalur.clientWidth,
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        });
+    },
+
+    sinkron() {
+        const jalur = this.$refs.jalur;
+        this.aktif = Math.round(jalur.scrollLeft / jalur.clientWidth);
+    },
+}));
+
 Alpine.start();
 
 /*

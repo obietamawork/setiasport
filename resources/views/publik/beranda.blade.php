@@ -39,6 +39,12 @@
          tambahkan satu kelas latar di sini. --}}
     <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_40rem_at_15%_-10%,rgba(214,43,31,0.35),transparent),radial-gradient(45rem_35rem_at_85%_0%,rgba(30,52,116,0.9),transparent)]"></div>
 
+    @if ($banner->isNotEmpty())
+        {{-- Banner promo menggantikan judul dan tombol (KEP-092). Judul halaman
+             tetap ada untuk pembaca layar dan mesin pencari. --}}
+        <h1 class="sr-only">{{ setting('tentang_judul') ?: 'Perlengkapan olahraga lengkap & jersey custom' }}</h1>
+        @include('komponen.banner-beranda', ['banner' => $banner])
+    @else
     <div class="relative mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div>
             <p class="text-xs font-semibold tracking-[0.18em] text-white/55 uppercase">
@@ -76,6 +82,7 @@
              sizes="20rem" alt="{{ setting('toko_nama', 'Setia Sport') }} Wonogiri"
              width="1000" height="505" class="hidden w-full max-w-xs justify-self-end lg:block">
     </div>
+    @endif
 
     {{-- Empat hal yang paling sering ditanyakan sebelum orang mau memulai.
          Di HP berupa kisi 2×2 ringkas (ikon + judul): dua baris pendek, tidak

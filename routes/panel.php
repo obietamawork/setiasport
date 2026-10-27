@@ -5,6 +5,7 @@ use App\Http\Controllers\Panel\AktivitasController;
 use App\Http\Controllers\Panel\AkunSayaController;
 use App\Http\Controllers\Panel\AuthController;
 use App\Http\Controllers\Panel\BahanController;
+use App\Http\Controllers\Panel\BannerController;
 use App\Http\Controllers\Panel\BantuanController;
 use App\Http\Controllers\Panel\ContohProfilController;
 use App\Http\Controllers\Panel\CsController;
@@ -249,6 +250,11 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::resource('testimoni', TestimoniController::class)
                 ->except('show')
                 ->parameters(['testimoni' => 'testimoni']);
+
+            // Banner promo halaman depan (KEP-092).
+            Route::resource('banner', BannerController::class)
+                ->except('show')
+                ->parameters(['banner' => 'banner']);
 
             Route::delete('profil/contoh', [ContohProfilController::class, 'hapus'])->name('profil.contoh.hapus');
         });
