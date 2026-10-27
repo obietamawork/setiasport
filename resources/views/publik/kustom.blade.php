@@ -263,11 +263,10 @@
                                         </template>
                                     </select>
                                 </label>
-                                <label class="block">
-                                    <span class="label-form">Jumlah</span>
-                                    <input type="number" x-model.number="b.jumlah" :name="`baris[${i}][jumlah]`"
-                                           min="1" max="5000" class="kotak-input tabular">
-                                </label>
+                                <div>
+                                    <span class="label-form" aria-hidden="true">Jumlah</span>
+                                    <x-jumlah x-model.number="b.jumlah" ::name="`baris[${i}][jumlah]`" max="5000" />
+                                </div>
                             </div>
 
                             <div class="mt-3 flex items-center justify-between gap-3 border-t border-line pt-3 text-sm">
@@ -421,11 +420,19 @@
                         class="tombol tombol-navy ml-auto" :disabled="!bisaLanjut"
                         data-izinkan-ganda>Lanjut</button>
 
-                <button type="submit" x-show="langkah === 4" x-cloak
-                        class="tombol tombol-navy ml-auto" :disabled="qty < moq"
-                        data-teks-proses="Menyimpan...">
-                    Masukkan ke keranjang
-                </button>
+                {{-- Dua pilihan di langkah terakhir (KEP-091): "Pesan sekarang"
+                     langsung ke data pemesan, atau simpan dulu di keranjang. --}}
+                <div x-show="langkah === 4" x-cloak class="kelompok-tombol ml-auto">
+                    <button type="submit" name="lanjut" value="keranjang" class="tombol tombol-garis"
+                            :disabled="qty < moq" data-teks-proses="Menyimpan...">
+                        <x-ikon nama="tambah" ukuran="size-4" />
+                        Masukkan ke keranjang
+                    </button>
+                    <button type="submit" name="lanjut" value="checkout" class="tombol tombol-utama"
+                            :disabled="qty < moq" data-teks-proses="Menyimpan...">
+                        Pesan sekarang
+                    </button>
+                </div>
             </div>
         </div>
 

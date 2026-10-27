@@ -25,8 +25,10 @@
                     <x-ikon nama="toko" />
                 </span>
                 <span class="min-w-0 flex-1">
-                    <span class="block font-semibold">Stok toko &middot; siap besok</span>
-                    <span class="block text-sm text-muted">Sudah ada di rak, bayar hari ini ambil besok.</span>
+                    <span class="block font-semibold">Stok toko &middot; siap {{ siap_stok() }}</span>
+                    <span class="block text-sm text-muted">
+                        Sudah ada di rak, {{ siap_stok() === 'hari ini' ? 'bayar dan ambil hari itu juga' : 'bayar hari ini, ambil '.siap_stok() }}.
+                    </span>
                 </span>
                 <x-ikon nama="lanjut" ukuran="size-4" class="text-navy-300 group-hover:text-navy" />
             </a>
@@ -37,7 +39,7 @@
                     <x-ikon nama="kategori" />
                 </span>
                 <span class="min-w-0 flex-1">
-                    <span class="block font-semibold">Kustom &middot; {{ $leadTime ?? 7 }} hari kerja</span>
+                    <span class="block font-semibold">Kustom{{ $waktuKustom ? ' · '.$waktuKustom : '' }}</span>
                     <span class="block text-sm text-muted">
                         Dihitung sejak desain Anda setujui, bukan sejak pesanan masuk.
                     </span>
@@ -112,8 +114,7 @@
                     <label for="qty-katalog" class="text-sm font-semibold whitespace-nowrap">
                         Untuk berapa pcs?
                     </label>
-                    <input type="number" id="qty-katalog" x-model.number="qty" min="1" max="100000"
-                           class="kotak-input tabular w-24 text-right">
+                    <x-jumlah id="qty-katalog" x-model.number="qty" max="100000" class="w-20" />
                 </div>
             @endif
         </div>

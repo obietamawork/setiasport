@@ -160,6 +160,52 @@ document.addEventListener('click', (e) => {
     }
 });
 
+/*
+ * Tombol − + di kiri-kanan kotak jumlah (components/jumlah, KEP-091).
+ *
+ * 'input' dikirim seketika supaya x-model Alpine ikut berubah. 'change'
+ * menyusul setelah jeda: formulir yang langsung tersimpan saat berubah
+ * (keranjang) tidak boleh terkirim di ketukan pertama dari tiga ketukan +.
+ */
+function perbaruiTombolJumlah(wadah) {
+    const isian = wadah.querySelector('input');
+    const [kurang, tambah] = wadah.querySelectorAll('[data-langkah-jumlah]');
+    const nilai = Number(isian.value);
+
+    kurang.disabled = isian.disabled || (isian.min !== '' && nilai <= Number(isian.min));
+    tambah.disabled = isian.disabled || (isian.max !== '' && nilai >= Number(isian.max));
+}
+
+document.addEventListener('click', (e) => {
+    const tombol = e.target.closest('[data-langkah-jumlah]');
+    const wadah = tombol?.closest('[data-jumlah]');
+    const isian = wadah?.querySelector('input');
+
+    if (!isian || isian.disabled || isian.readOnly) return;
+
+    const min = isian.min === '' ? -Infinity : Number(isian.min);
+    const max = isian.max === '' ? Infinity : Number(isian.max);
+    const sekarang = Number(isian.value) || 0;
+    const baru = Math.min(max, Math.max(min, sekarang + Number(tombol.dataset.langkahJumlah)));
+
+    if (baru === sekarang) return;
+
+    isian.value = baru;
+    isian.dispatchEvent(new Event('input', { bubbles: true }));
+    perbaruiTombolJumlah(wadah);
+
+    clearTimeout(isian._tundaUbah);
+    isian._tundaUbah = setTimeout(() => isian.dispatchEvent(new Event('change', { bubbles: true })), 600);
+});
+
+document.addEventListener('input', (e) => {
+    const wadah = e.target.closest?.('[data-jumlah]');
+    if (wadah) perbaruiTombolJumlah(wadah);
+});
+
+// Keadaan awal, setelah Alpine selesai mengisi nilai dan menggambar baris.
+setTimeout(() => document.querySelectorAll('[data-jumlah]').forEach(perbaruiTombolJumlah), 0);
+
 // Saringan yang langsung berlaku saat pilihannya diganti (katalog, riwayat
 // aktivitas). Pengganti onchange sebaris, yang tidak dijalankan CSP (KEP-088).
 document.addEventListener('change', (e) => {

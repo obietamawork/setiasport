@@ -40,8 +40,7 @@ class KeranjangController extends Controller
             return back()->withErrors($e->getMessage());
         }
 
-        return redirect()->route('keranjang')
-            ->with('sukses', "{$varian->product->nama} dimasukkan ke keranjang.");
+        return $this->sesudahDitambah($request, "{$varian->product->nama} dimasukkan ke keranjang.");
     }
 
     /**
@@ -76,15 +75,15 @@ class KeranjangController extends Controller
             return back()->withErrors($e->getMessage())->withInput();
         }
 
-        return redirect()->route('keranjang')
-            ->with('sukses', "{$produk->nama} ({$data['qty']} pcs) dimasukkan ke keranjang.");
+        return $this->sesudahDitambah($request, "{$produk->nama} ({$data['qty']} pcs) dimasukkan ke keranjang.");
     }
 
     public function ubah(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'kunci' => ['required', 'string'],
-            'qty' => ['required', 'integer', 'min:0', 'max:999'],
+            // Sama dengan batas saat memesan kustom; barang stok dibatasi sisa stoknya.
+            'qty' => ['required', 'integer', 'min:0', 'max:100000'],
         ], [], ['qty' => 'jumlah']);
 
         try {

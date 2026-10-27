@@ -403,6 +403,66 @@
     /* Baris yang seluruhnya bisa diklik; ditangani app.js, bukan ::before. */
     .tabel tbody tr[data-tautan] { cursor: pointer; }
 
+    /*
+     * Kotak jumlah − + (components/jumlah, app.js). Satu bingkai seperti kotak
+     * isian biasa; tombolnya selebar jempol di layar sentuh.
+     */
+    .jumlah {
+        display: inline-flex;
+        align-items: stretch;
+        border: 1px solid var(--color-line-strong);
+        border-radius: var(--radius-kontrol);
+        background: var(--color-field);
+        overflow: hidden;
+        transition: border-color 120ms, box-shadow 120ms;
+    }
+
+    .jumlah:focus-within {
+        border-color: var(--color-navy);
+        box-shadow: 0 0 0 3px var(--color-navy-100);
+    }
+
+    .jumlah-tombol {
+        display: flex;
+        width: 2.5rem;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--color-navy);
+        transition: background-color 120ms, color 120ms;
+    }
+
+    .jumlah-tombol:hover:not(:disabled) { background: var(--color-navy-50); }
+    .jumlah-tombol:disabled { color: var(--color-line-strong); cursor: not-allowed; }
+
+    .jumlah-isian {
+        width: 3.75rem;
+        min-width: 0;
+        border: 0;
+        border-inline: 1px solid var(--color-line);
+        background: transparent;
+        padding: 0.55rem 0.25rem;
+        font-size: 0.9375rem;
+        line-height: 1.45;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+
+    .jumlah-isian:focus { outline: none; }
+
+    /* Panah naik-turun bawaan peramban tidak perlu: tombolnya sudah ada. */
+    .jumlah-isian::-webkit-outer-spin-button,
+    .jumlah-isian::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    @media (pointer: coarse) {
+        .jumlah { min-height: 2.75rem; }
+        .jumlah-tombol { width: 2.75rem; }
+    }
+
     /* "Lewati ke konten": tersembunyi sampai difokus lewat papan ketik. */
     .lewati-ke-konten {
         position: absolute;

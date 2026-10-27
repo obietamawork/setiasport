@@ -277,11 +277,11 @@
                                                     <input type="text" x-model="b.ukuran" :name="`baris[${i}][ukuran]`"
                                                            maxlength="10" class="kotak-input" required>
                                                 </label>
-                                                <label class="block">
-                                                    <span class="label-form">Jumlah</span>
-                                                    <input type="number" x-model.number="b.jumlah" :name="`baris[${i}][jumlah]`"
-                                                           min="0" max="5000" class="kotak-input tabular" required>
-                                                </label>
+                                                <div>
+                                                    <span class="label-form" aria-hidden="true">Jumlah</span>
+                                                    <x-jumlah x-model.number="b.jumlah" ::name="`baris[${i}][jumlah]`"
+                                                              :min="0" max="5000" required />
+                                                </div>
                                                 <button type="button" @click="baris.splice(i, 1)"
                                                         class="tautan pb-2 text-xs text-merah">Hapus</button>
                                             </div>
@@ -303,11 +303,10 @@
                                     <form method="POST" action="{{ route('panel.pesanan.item.jumlah', [$pesanan, $item]) }}"
                                           class="mt-3 flex flex-wrap items-end gap-3">
                                         @csrf
-                                        <label class="block">
-                                            <span class="label-form">Jumlah (pcs)</span>
-                                            <input type="number" name="qty" value="{{ $item->qty }}" min="1" max="5000"
-                                                   class="kotak-input tabular w-28" required>
-                                        </label>
+                                        <div>
+                                            <label for="qty-item-{{ $item->id }}" class="label-form">Jumlah (pcs)</label>
+                                            <x-jumlah id="qty-item-{{ $item->id }}" name="qty" :value="$item->qty" max="5000" required />
+                                        </div>
                                         <button type="submit" class="tombol tombol-navy tombol-sm">Simpan jumlah</button>
                                         <p class="w-full text-xs leading-relaxed text-muted">
                                             Untuk barang stok, reservasi di gudang ikut menyesuaikan.

@@ -185,6 +185,25 @@ class Product extends Model
         return $q->where('aktif', true);
     }
 
+    /**
+     * Waktu pengerjaan produk kustom yang tayang, untuk beranda dan katalog
+     * (KEP-091). Rentang, bukan angka tercepat saja: kalau jersey 7 hari dan
+     * jaket 14 hari, "7 hari kerja" menjanjikan sesuatu yang tidak berlaku.
+     */
+    public static function rentangWaktuKustom(): ?string
+    {
+        $waktu = static::query()->aktif()
+            ->whereIn('fulfillment_type', [FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value])
+            ->toBase()
+            ->selectRaw('min(lead_time_hari) as tercepat, max(lead_time_hari) as terlama')
+            ->first();
+
+        return rentang_hari_kerja(
+            $waktu?->tercepat === null ? null : (int) $waktu->tercepat,
+            $waktu?->terlama === null ? null : (int) $waktu->terlama,
+        );
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';

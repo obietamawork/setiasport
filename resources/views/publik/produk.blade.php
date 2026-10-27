@@ -250,7 +250,7 @@
                     <div x-show="jalur === 'stok'" class="space-y-4 p-5">
                         <div>
                             <p class="numeral text-4xl text-merah">{{ rupiah($produk->harga_dasar) }}</p>
-                            <p class="mt-2 text-sm text-muted">Siap diambil besok pada jam buka.</p>
+                            <p class="mt-2 text-sm text-muted">Siap diambil {{ siap_stok() }} pada jam buka.</p>
                         </div>
 
                         @php
@@ -318,14 +318,30 @@
 
                                 <div>
                                     <label for="qty" class="label-form">Jumlah</label>
-                                    <input type="number" id="qty" name="qty" value="1" min="1"
-                                           class="kotak-input w-24 tabular text-right" required>
+                                    @if ($tersedia->count() === 1 && ! $matriks)
+                                        <x-jumlah id="qty" name="qty" value="1" :max="$tersedia->first()->stok_tersedia" required />
+                                    @else
+                                        {{-- Batasnya mengikuti sisa stok ukuran yang dipilih. --}}
+                                        <x-jumlah id="qty" name="qty" value="1" ::max="ukuranDipilih ? stokUntuk(ukuranDipilih) : null" required />
+                                    @endif
                                 </div>
 
-                                <button type="submit" class="tombol tombol-utama w-full"
-                                        @if ($tersedia->count() !== 1 || $matriks) x-bind:disabled="!varianId" @endif>
-                                    Masukkan ke keranjang
-                                </button>
+                                {{-- Dua jalan dari satu formulir (KEP-091). "Beli sekarang"
+                                     langsung ke data pemesan; "Masukkan ke keranjang" untuk
+                                     yang masih ingin menambah barang lain. Keduanya memakai
+                                     keranjang yang sama, jadi isi keranjang sebelumnya ikut
+                                     ke checkout dan tetap bisa dikeluarkan di sana. --}}
+                                <div class="grid gap-2">
+                                    <button type="submit" name="lanjut" value="checkout" class="tombol tombol-utama w-full"
+                                            @if ($tersedia->count() !== 1 || $matriks) x-bind:disabled="!varianId" @endif>
+                                        Beli sekarang
+                                    </button>
+                                    <button type="submit" name="lanjut" value="keranjang" class="tombol tombol-garis w-full"
+                                            @if ($tersedia->count() !== 1 || $matriks) x-bind:disabled="!varianId" @endif>
+                                        <x-ikon nama="tambah" ukuran="size-4" />
+                                        Masukkan ke keranjang
+                                    </button>
+                                </div>
                             </form>
                         @endif
                     </div>

@@ -153,6 +153,16 @@ class Keranjang
             return;
         }
 
+        // Tombol − di keranjang berhenti di minimum pesan (KEP-091); ini
+        // penjaganya di server, untuk permintaan yang tidak lewat tombol itu.
+        if ($baris[$kunci]['jalur'] === FulfillmentType::PREORDER->value) {
+            $moq = (int) Product::whereKey($baris[$kunci]['product_id'])->value('moq');
+
+            if ($qty < $moq) {
+                throw new InvalidArgumentException("Minimum pemesanan {$moq} pcs.");
+            }
+        }
+
         if ($baris[$kunci]['variant_id']) {
             $varian = ProductVariant::with('product')->find($baris[$kunci]['variant_id']);
 

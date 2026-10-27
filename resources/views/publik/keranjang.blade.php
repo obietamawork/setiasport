@@ -78,13 +78,22 @@
                             <a href="{{ route('kustom.buat', $b['produk']) }}" class="tautan text-xs">Ubah pesanan</a>
                         </div>
                     @else
-                        <form method="POST" action="{{ route('keranjang.ubah') }}" class="flex items-center gap-2">
+                        {{-- Langsung tersimpan saat jumlahnya berubah (KEP-091): lewat
+                             − + atau diketik lalu keluar dari kotaknya. Batasnya sama dengan
+                             yang dipakai saat memesan: kustom tidak di bawah minimum
+                             pesannya, stok tidak melebihi sisa di rak. --}}
+                        @php
+                            $kustom = $b['jalur'] === \App\Enums\FulfillmentType::PREORDER;
+                        @endphp
+                        <form method="POST" action="{{ route('keranjang.ubah') }}">
                             @csrf @method('PUT')
                             <input type="hidden" name="kunci" value="{{ $b['kunci'] }}">
                             <label class="sr-only" for="qty-{{ $b['kunci'] }}">Jumlah {{ $b['produk']->nama }}</label>
-                            <input type="number" id="qty-{{ $b['kunci'] }}" name="qty" value="{{ $b['qty'] }}"
-                                   min="1" class="kotak-input w-20 tabular text-right">
-                            <button type="submit" class="tautan py-2 text-sm">Perbarui</button>
+                            <x-jumlah id="qty-{{ $b['kunci'] }}" name="qty" :value="$b['qty']"
+                                      :min="$kustom ? $b['produk']->moq : 1"
+                                      :max="$kustom ? 100000 : max($b['qty'], $b['varian']?->stok_tersedia ?? 1)"
+                                      label="jumlah {{ $b['produk']->nama }}" data-kirim-saat-ubah />
+                            <noscript><button type="submit" class="tautan py-2 text-sm">Perbarui</button></noscript>
                         </form>
                     @endif
 
@@ -95,13 +104,18 @@
                         @if ($b['rincian'] && ! ($b['ukuran'] ?? null))
                             <p class="text-xs text-muted tabular">{{ rupiah($b['rincian']->hargaSatuan) }} / pcs</p>
                         @endif
-                        {{-- Tulisannya tetap kecil (aksi sampingan), tapi kotak sentuhnya
-                             dibuat setinggi 28px: dulu cuma 16px, dan yang salah tekan di
-                             sini kehilangan barang dari keranjangnya. --}}
-                        <form method="POST" action="{{ route('keranjang.hapus') }}">
+                        {{-- Dulu tulisan kecil abu-abu "Keluarkan" yang tidak terbaca
+                             sebagai tombol, sehingga pelanggan mengira barang tidak bisa
+                             dihapus (KEP-091). Kini tombol berikon, cukup besar untuk jempol. --}}
+                        <form method="POST" action="{{ route('keranjang.hapus') }}" class="mt-2">
                             @csrf @method('DELETE')
                             <input type="hidden" name="kunci" value="{{ $b['kunci'] }}">
-                            <button type="submit" class="tautan inline-block py-1.5 text-xs text-muted">Keluarkan</button>
+                            <button type="submit" class="tombol tombol-halus tombol-sm text-merah hover:text-merah"
+                                    data-teks-proses="Menghapus...">
+                                <x-ikon nama="hapus" ukuran="size-4" />
+                                Hapus
+                                <span class="sr-only">{{ $b['produk']->nama }} dari keranjang</span>
+                            </button>
                         </form>
                     </div>
                 </div>

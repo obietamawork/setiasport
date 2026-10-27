@@ -28,10 +28,11 @@
 
     // Satu baris pendek saja. Kartu marketplace selebar 160px tidak punya ruang
     // untuk kalimat, dan yang dicari pelanggan cuma "kapan bisa saya ambil".
+    // Barang stok dari Pengaturan > Pesanan, kustom dari produknya (KEP-091).
     $waktu = match (true) {
-        $stok && $kustom => 'Besok / '.$produk->lead_time_hari.' hari',
+        $stok && $kustom => Str::ucfirst(siap_stok()).' / '.$produk->lead_time_hari.' hari',
         $kustom => $produk->lead_time_hari.' hari kerja',
-        default => 'Siap besok',
+        default => 'Siap '.siap_stok(),
     };
 @endphp
 

@@ -210,7 +210,7 @@
                     'Pilih produk dan isi ukurannya',
                     'Bayar uang muka '.setting('dp_minimum_persen', 50).'%',
                     'Desain dikirim, Anda setujui',
-                    'Dikerjakan '.($leadTime ?? 7).' hari kerja, lalu dilunasi',
+                    $waktuKustom ? 'Dikerjakan '.$waktuKustom.', lalu dilunasi' : 'Dikerjakan, lalu dilunasi',
                 ] as $i => $langkah)
                     <li class="flex gap-2">
                         <span class="numeral font-bold text-navy">{{ $i + 1 }}.</span>

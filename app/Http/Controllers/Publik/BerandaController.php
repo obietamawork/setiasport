@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Publik;
 
-use App\Enums\FulfillmentType;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\OrderItem;
@@ -36,12 +35,7 @@ class BerandaController extends Controller
             'portofolio' => Portofolio::tampilan()->take(6)->get(),
             'testimoni' => Testimoni::tampilan()->take(3)->get(),
 
-            'leadTime' => Product::query()
-                ->aktif()
-                ->whereIn('fulfillment_type', [
-                    FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value,
-                ])
-                ->min('lead_time_hari'),
+            'waktuKustom' => Product::rentangWaktuKustom(),
         ]);
     }
 

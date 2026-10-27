@@ -26,9 +26,8 @@
 
     <div>
         <label for="qty" class="label-form">Jumlah pesanan</label>
-        <div class="flex items-center gap-3">
-            <input type="number" id="qty" name="qty" x-model.number="qty" min="{{ $produk->moq }}"
-                   class="kotak-input w-28 tabular text-right" required>
+        <div class="flex flex-wrap items-center gap-3">
+            <x-jumlah id="qty" name="qty" x-model.number="qty" :min="$produk->moq" max="100000" class="w-20" required />
             <span class="text-sm text-muted">pcs &middot; minimum {{ $produk->moq }}</span>
         </div>
         <p x-show="qty < moq" x-cloak class="mt-1 text-sm text-merah">
@@ -110,9 +109,17 @@
         </p>
     </div>
 
-    <button type="submit" class="tombol tombol-utama w-full" :disabled="qty < moq">
-        Masukkan ke keranjang
-    </button>
+    {{-- "Pesan", bukan "beli": barangnya dibuat dulu setelah mockup disetujui,
+         bukan diambil dari rak (KEP-091). --}}
+    <div class="grid gap-2">
+        <button type="submit" name="lanjut" value="checkout" class="tombol tombol-utama w-full" :disabled="qty < moq">
+            Pesan sekarang
+        </button>
+        <button type="submit" name="lanjut" value="keranjang" class="tombol tombol-garis w-full" :disabled="qty < moq">
+            <x-ikon nama="tambah" ukuran="size-4" />
+            Masukkan ke keranjang
+        </button>
+    </div>
 
     <p class="text-xs leading-relaxed text-muted">
         Nama dan nomor punggung diisi setelah pesanan dibuat: Anda punya waktu

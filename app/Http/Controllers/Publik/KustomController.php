@@ -77,8 +77,7 @@ class KustomController extends Controller
             return back()->withInput()->withErrors(['baris' => $e->getMessage()]);
         }
 
-        return redirect()->route('keranjang')
-            ->with('sukses', $produk->nama.' masuk keranjang. Periksa sekali lagi sebelum melanjutkan.');
+        return $this->sesudahDitambah($request, $produk->nama.' masuk keranjang.');
     }
 
     /** @param  array<string, mixed>  $data */

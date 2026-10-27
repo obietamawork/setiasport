@@ -152,6 +152,22 @@ class KerjaQrTest extends TestCase
     }
 
     /**
+     * Antrian menyebut siapa yang memulai pekerjaan. Relasi petugasnya dulu
+     * dimuat satu per baris (N+1), dan karena hanya tampil untuk pekerjaan
+     * yang sudah dimulai, tidak ada tes maupun data contoh yang mengenainya.
+     */
+    public function test_antrian_tahap_menyebut_petugas_yang_memulai(): void
+    {
+        $item = $this->itemProduksi();
+        app(AlurPesanan::class)->mulaiKerja($item, $this->owner()->id);
+
+        $this->actingAs($this->owner())
+            ->get(route('panel.antrian.tahap', 'print'))
+            ->assertOk()
+            ->assertSee('oleh '.$this->owner()->name);
+    }
+
+    /**
      * PIN cuma empat angka. Batas per IP di rute tidak menghentikan penebak yang
      * berganti IP, jadi lembarnya sendiri dikunci setelah lima PIN salah (KEP-088).
      */

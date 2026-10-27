@@ -47,6 +47,40 @@ if (! function_exists('setting')) {
     }
 }
 
+if (! function_exists('siap_stok')) {
+    /**
+     * Kapan barang stok siap diambil, dari Pengaturan > Pesanan (KEP-091),
+     * bukan kata "besok" yang dulu tertulis langsung di lima tampilan.
+     */
+    function siap_stok(): string
+    {
+        $hari = (int) setting('stok_siap_hari', 1);
+
+        return match (true) {
+            $hari <= 0 => 'hari ini',
+            $hari === 1 => 'besok',
+            $hari === 2 => 'lusa',
+            default => $hari.' hari lagi',
+        };
+    }
+}
+
+if (! function_exists('rentang_hari_kerja')) {
+    /**
+     * Waktu pengerjaan produk kustom dari datanya (KEP-091): "7 hari kerja",
+     * atau "7–14 hari kerja" kalau produknya berbeda-beda. Null kalau belum ada
+     * produk kustom; dulu tampilan jatuh ke angka 7 yang dikarang.
+     */
+    function rentang_hari_kerja(?int $tercepat, ?int $terlama): ?string
+    {
+        if (! $tercepat) {
+            return null;
+        }
+
+        return ($terlama > $tercepat ? $tercepat.'–'.$terlama : $tercepat).' hari kerja';
+    }
+}
+
 if (! function_exists('urutkan_ukuran')) {
     /**
      * Mengurutkan ukuran seperti orang membacanya, bukan seperti komputer.

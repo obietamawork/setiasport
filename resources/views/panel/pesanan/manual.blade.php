@@ -97,8 +97,7 @@
                 </div>
                 <div>
                     <label for="qty" class="label-form">Jumlah</label>
-                    <input type="number" id="qty" name="qty" x-model.number="qty"
-                           class="kotak-input tabular" min="1" max="5000">
+                    <x-jumlah id="qty" name="qty" x-model.number="qty" max="5000" />
                 </div>
             </div>
         </template>
@@ -151,11 +150,10 @@
                                         </template>
                                     </select>
                                 </label>
-                                <label class="block">
-                                    <span class="label-form">Jumlah</span>
-                                    <input type="number" x-model.number="b.jumlah" :name="`baris[${i}][jumlah]`"
-                                           class="kotak-input tabular" min="1" max="5000">
-                                </label>
+                                <div>
+                                    <span class="label-form" aria-hidden="true">Jumlah</span>
+                                    <x-jumlah x-model.number="b.jumlah" ::name="`baris[${i}][jumlah]`" max="5000" />
+                                </div>
                                 <button type="button" @click="baris.splice(i, 1)"
                                         class="tautan pb-2 text-xs text-merah">Hapus</button>
                             </div>
@@ -175,8 +173,8 @@
                 <template x-if="!pilih.perUkuran">
                     <div>
                         <label for="qty-kustom" class="label-form">Jumlah (pcs)</label>
-                        <input type="number" id="qty-kustom" name="qty" x-model.number="qty"
-                               class="kotak-input tabular w-32" :min="pilih.moq" max="5000">
+                        {{-- Minimumnya MOQ produk yang dipilih, jadi diikat Alpine. --}}
+                        <x-jumlah id="qty-kustom" name="qty" x-model.number="qty" :min="null" ::min="pilih.moq" max="5000" />
                     </div>
                 </template>
             </div>

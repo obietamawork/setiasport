@@ -75,6 +75,10 @@ Minggu 08.00-14.00", 'teks', 'toko', 'Jam Buka Toko',
                 .'berbagi sendiri. Isi tautan Google Form/Dropbox File Request milik toko. Kosongkan '
                 .'untuk menyembunyikannya. Cara buatnya: docs/14-formulir-unggah-desain.md.'],
 
+            // Dulu kata "besok" tertulis langsung di tampilan (KEP-091).
+            ['stok_siap_hari', '1', 'int', 'pengambilan', 'Barang Stok Siap Diambil (hari)',
+                'Jarak dari pesanan dibayar sampai barang stok siap diambil: 0 berarti hari itu juga, '
+                .'1 berarti besok. Tampil di kartu produk, halaman produk, dan katalog.'],
             ['pengingat_ambil_hari', '3', 'int', 'pengambilan', 'Pengingat Belum Diambil (hari)'],
             ['hangus_hari', '30', 'int', 'pengambilan', 'Barang Hangus Setelah (hari)',
                 'Barang yang tidak pernah diambil selama ini dianggap hangus dan uangnya tidak kembali. '

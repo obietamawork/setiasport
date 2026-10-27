@@ -246,15 +246,35 @@
     @yield('isi')
 </main>
 
-<footer class="mt-20 border-t border-line bg-field">
+{{--
+    Kaki halaman (KEP-091). Di HP dulu satu kolom panjang setinggi 817px, dan
+    nomor WhatsApp, yang paling ingin diketuk orang, cuma teks biasa. Kini
+    kontaknya tombol di blok merek, tiap lokasi punya tautan petunjuk arah, dan
+    kolom "Hubungi kami" yang hanya mengulang nomor itu dilebur.
+--}}
+<footer class="mt-16 border-t border-line bg-field sm:mt-20">
     {{-- Dua lokasi dengan tugas berbeda: toko tempat pesanan diambil, konveksi
          tempat jersey dikerjakan. Keduanya punya jam buka sendiri. --}}
-    <div class="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-            <x-logo tinggi="h-10" />
-            <p class="mt-4 text-sm leading-relaxed text-muted">
+    <div class="mx-auto grid max-w-6xl gap-8 px-5 py-8 sm:grid-cols-2 sm:gap-10 sm:py-12 md:grid-cols-3">
+        {{-- Di tablet kecil merek selebar penuh, dua lokasi berdampingan di bawahnya. --}}
+        <div class="sm:col-span-2 md:col-span-1">
+            <x-logo tinggi="h-9 sm:h-10" />
+            <p class="mt-3 text-sm leading-relaxed text-muted">
                 Toko perlengkapan olahraga dan konveksi jersey di Wonogiri.
+                Pesanan diambil di toko atau dikirim ke alamat Anda.
             </p>
+
+            @if (tautan_wa())
+                <a href="{{ tautan_wa() }}" target="_blank" rel="noopener"
+                   class="tombol tombol-garis mt-4 w-full sm:w-auto">
+                    <x-ikon nama="whatsapp" ukuran="size-4" />
+                    Chat lewat WhatsApp
+                </a>
+                <p class="mt-2 text-xs leading-relaxed text-muted">
+                    <span class="tabular whitespace-nowrap">{{ setting('toko_telepon') }}</span> &middot;
+                    {{ cs_aktif() ? 'chat CS di website juga bisa, ' : 'dibalas ' }}{{ Str::lcfirst((string) setting('cs_jam_layanan')) }}.
+                </p>
+            @endif
 
             @if ($sosial !== [])
                 <div class="mt-4 flex gap-2">
@@ -271,35 +291,32 @@
                 </div>
             @endif
         </div>
-        <div>
-            <p class="text-sm font-semibold">Toko</p>
-            <p class="mt-2 text-sm leading-relaxed text-muted">{{ setting('toko_alamat') }}</p>
-            <p class="tabular mt-2 text-sm leading-relaxed text-muted">{{ baris_html(setting('toko_jam_buka')) }}</p>
-        </div>
-        @if (setting('konveksi_alamat'))
+        @foreach (array_filter([
+            ['Toko', 'Tempat pesanan diambil', setting('toko_alamat'), setting('toko_jam_buka'), setting('maps_embed') ?: tautan_peta((string) setting('toko_alamat'))],
+            setting('konveksi_alamat')
+                ? ['Konveksi', 'Tempat jersey dikerjakan', setting('konveksi_alamat'), setting('konveksi_jam_buka'), tautan_peta((string) setting('konveksi_alamat'))]
+                : null,
+        ]) as [$judul, $tugas, $alamat, $jam, $peta])
             <div>
-                <p class="text-sm font-semibold">Konveksi</p>
-                <p class="mt-2 text-sm leading-relaxed text-muted">{{ setting('konveksi_alamat') }}</p>
-                <p class="tabular mt-2 text-sm leading-relaxed text-muted">{{ baris_html(setting('konveksi_jam_buka')) }}</p>
+                <p class="text-sm font-semibold">{{ $judul }}</p>
+                <p class="text-xs text-muted">{{ $tugas }}</p>
+                <p class="mt-2 text-sm leading-relaxed text-muted">{{ $alamat }}</p>
+                @if (filled($jam))
+                    <p class="tabular mt-1.5 text-sm leading-relaxed text-muted">{{ baris_html($jam) }}</p>
+                @endif
+                <a href="{{ $peta }}" target="_blank" rel="noopener"
+                   class="tautan mt-1 inline-flex items-center gap-1.5 py-1.5 text-sm font-medium">
+                    Petunjuk arah
+                    <x-ikon nama="buka-luar" ukuran="size-3.5" />
+                </a>
             </div>
-        @endif
-        <div>
-            <p class="text-sm font-semibold">Hubungi kami</p>
-            <p class="mt-2 text-sm leading-relaxed text-muted">
-                {{ cs_aktif() ? 'Chat CS di website' : 'Lewat WhatsApp' }}, {{ Str::lcfirst((string) setting('cs_jam_layanan')) }}.
-            </p>
-            @if (setting('toko_telepon'))
-                <p class="tabular mt-1 text-sm text-muted">WhatsApp {{ setting('toko_telepon') }}</p>
-            @endif
-            <p class="mt-3 text-sm leading-relaxed text-muted">
-                Pesanan bisa diambil sendiri di toko atau dikirim ke alamat Anda, dipilih saat memesan.
-            </p>
-        </div>
+        @endforeach
     </div>
     <div class="border-t border-line">
-        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-4 text-xs text-muted">
+        {{-- Di HP tautan lebih dulu: hak cipta tidak perlu diketuk. --}}
+        <div class="mx-auto flex max-w-6xl flex-col-reverse gap-2 px-5 py-4 text-xs text-muted sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
             <span>&copy; {{ date('Y') }} {{ setting('toko_nama', 'Setia Sport') }}</span>
-            <nav class="flex flex-wrap items-center gap-x-4" aria-label="Tautan kebijakan">
+            <nav class="flex flex-wrap items-center gap-x-5" aria-label="Tautan kebijakan">
                 <a href="{{ route('kebijakan-privasi') }}" class="tautan inline-block py-1.5">Kebijakan Privasi</a>
                 <a href="{{ route('syarat-ketentuan') }}" class="tautan inline-block py-1.5">Syarat &amp; Ketentuan</a>
                 <a href="{{ route('panel.login') }}" class="tautan inline-block py-1.5">Masuk staf</a>

@@ -3116,6 +3116,58 @@ konsisten (menu dan judul "Produk"; "Katalog" hanya nama kelompok menu).
 
 ---
 
+## KEP-091 — Dua jalan pemesanan, tombol − +, hapus di keranjang, estimasi dari data
+**Status:** TERKUNCI · 2026-10-27
+
+Permintaan klien setelah mencoba sendiri alur pemesanan.
+
+- **Dua pilihan di setiap jalur pesan.** Barang stok: "Beli sekarang"
+  (langsung ke data pemesan) dan "Masukkan ke keranjang". Produk kustom:
+  "Pesan sekarang", bukan "beli", karena barangnya baru dibuat setelah mockup
+  disetujui, ditambah "Masukkan ke keranjang". Berlaku di halaman produk,
+  konfigurator, dan langkah terakhir form kustom. Keduanya memasukkan barang
+  ke keranjang yang sama; bedanya hanya halaman berikutnya
+  (`Controller::sesudahDitambah()`), jadi isi keranjang sebelumnya ikut ke
+  checkout dan tetap bisa dikeluarkan di sana. Merah tetap untuk satu aksi
+  utama ("sekarang"), keranjang bergaris. Ditumpuk selebar kolom: kotak beli
+  hanya 320px di tablet, dan "Masukkan ke keranjang" patah baris kalau
+  dipaksa berdampingan.
+- **Tombol − + di kiri-kanan kotak jumlah** (`<x-jumlah>`, app.js): jumlah di
+  halaman produk, konfigurator, daftar pemain kustom, keranjang, kalkulator
+  katalog, pesanan manual, dan ubah isi pesanan. − mati di minimum (1, atau
+  minimum pesan untuk kustom), + mati di sisa stok. Di keranjang perubahan
+  langsung tersimpan setelah jeda singkat, tanpa tombol "Perbarui". Kolom
+  harga, ongkir, urutan, dan pengaturan sengaja tetap diketik: satu ketukan
+  bernilai Rp1 tidak berguna. Halaman Stok sudah punya − + sendiri (KEP-077).
+  Komponen ini tidak boleh dibungkus `<label>`: tombol "−" akan menjadi
+  kontrol yang dilabeli, dan mengetuk tulisan "Jumlah" malah mengurangi angka.
+- **Hapus di keranjang ternyata sudah ada**, berupa tulisan kecil abu-abu
+  "Keluarkan" yang tidak terbaca sebagai tombol; diuji di browser, fungsinya
+  benar. Kini tombol berikon "Hapus" berwarna merah. Sekaligus: jumlah kustom
+  di keranjang tidak boleh di bawah minimum pesan (dulu lolos lalu menghalangi
+  checkout), dan batas ubah jumlah 999 dinaikkan ke 100.000 seperti saat
+  memesan.
+- **Estimasi hari.** Kustom sudah dari data sejak awal (`lead_time_hari` per
+  produk, diisi di panel). Yang tertanam di kode: "Siap besok" untuk barang
+  stok di lima tampilan, kini pengaturan `stok_siap_hari` di Pengaturan →
+  Pesanan → Pengambilan (0 hari ini, 1 besok, 2 lusa). Beranda dan katalog
+  juga dulu jatuh ke angka 7 yang dikarang kalau belum ada produk kustom, dan
+  hanya menyebut waktu tercepat; kini rentang dari data ("7–14 hari kerja"),
+  atau tanpa angka sama sekali.
+- **Kaki halaman di HP.** Dulu satu kolom setinggi 817px dengan nomor WhatsApp
+  sebagai teks biasa. Kini tombol "Chat lewat WhatsApp", tautan petunjuk arah
+  untuk toko dan konveksi, kolom "Hubungi kami" dilebur, dan di tablet kecil
+  dua lokasi berdampingan di bawah merek (tidak ada kolom yatim).
+- **Galat N+1 yang ditemukan klien**: antrian per tahap memuat petugas
+  pekerjaan satu per baris. Hanya tampil untuk pekerjaan yang sudah dimulai,
+  jadi tidak ada tes maupun data contoh yang mengenainya. Kini eager load,
+  dikunci tes yang mereproduksi galatnya persis.
+
+Diuji lewat `PemesananTombolTest` dan satu tes baru di `KerjaQrTest`; alurnya
+dijalankan di Chromium dan WebKit, axe 40/40 bersih termasuk keranjang berisi.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3210,3 +3262,4 @@ konsisten (menu dan judul "Produk"; "Katalog" hanya nama kelompok menu).
 | KEP-088 | Audit keamanan: CSP ber-nonce, batas pesanan, kunci PIN, dependensi rentan | TERKUNCI |
 | KEP-089 | Audit UI/UX: klik baris salah sasaran di Safari, dialog konfirmasi, aset, SEO | TERKUNCI |
 | KEP-090 | Audit developer/QA: N+1, galat yang menyamar, CI, analisis statis | TERKUNCI |
+| KEP-091 | Dua jalan pemesanan, tombol − +, hapus di keranjang, estimasi dari data | TERKUNCI |
