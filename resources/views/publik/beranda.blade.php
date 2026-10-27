@@ -67,8 +67,14 @@
             </div>
         </div>
 
-        <img src="{{ asset('logo-lengkap-640.webp') }}" srcset="{{ asset('logo-lengkap-640.webp') }} 640w, {{ asset('logo-lengkap.webp') }} 1000w" sizes="20rem" alt="{{ setting('toko_nama', 'Setia Sport') }} Wonogiri"
-             width="1000" height="505" class="hidden w-full max-w-xs justify-self-end opacity-90 lg:block">
+        {{-- Versi terang: tulisan navy logo asli tenggelam di latar hero yang
+             juga navy (KEP-092). Sama seperti logo-terang.png di kepala panel,
+             hanya tulisan dan lengkungnya yang diputihkan; atlet dan balok
+             warnanya tidak diubah. --}}
+        <img src="{{ asset('logo-lengkap-terang-640.webp') }}"
+             srcset="{{ asset('logo-lengkap-terang-640.webp') }} 640w, {{ asset('logo-lengkap-terang.webp') }} 1000w"
+             sizes="20rem" alt="{{ setting('toko_nama', 'Setia Sport') }} Wonogiri"
+             width="1000" height="505" class="hidden w-full max-w-xs justify-self-end lg:block">
     </div>
 
     {{-- Empat hal yang paling sering ditanyakan sebelum orang mau memulai.
