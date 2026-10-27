@@ -52,7 +52,7 @@
 <body>
 
 <div class="cetak">
-    <button type="button" onclick="window.print()">Cetak lembar kerja</button>
+    <button type="button" data-cetak>Cetak lembar kerja</button>
 </div>
 
 {{-- Nomor HP pelanggan sengaja TIDAK dicetak (KEP-056). Lembar ini difoto dan
@@ -200,5 +200,9 @@
 <h2 style="margin-top:14px">Catatan produksi</h2>
 <div class="catatan"></div>
 
+{{-- Tanpa onclick sebaris: CSP hanya menjalankan skrip ber-nonce (KEP-088). --}}
+<script nonce="{{ Vite::cspNonce() }}">
+    document.querySelector('[data-cetak]')?.addEventListener('click', () => window.print());
+</script>
 </body>
 </html>

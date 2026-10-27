@@ -248,7 +248,7 @@
 </form>
 
 @push('skrip')
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
     function pesananManual(produk, persenDp) {
         return {
             produk, persenDp,

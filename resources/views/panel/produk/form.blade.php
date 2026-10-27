@@ -57,7 +57,7 @@
 <form method="POST"
       action="{{ $produk->exists ? route('panel.produk.update', $produk) : route('panel.produk.store') }}"
       id="detail" class="kartu max-w-2xl space-y-4 scroll-mt-20 p-6"
-      x-data="{ jalur: '{{ old('fulfillment_type', $produk->fulfillment_type?->value ?? 'READY_STOCK') }}' }">
+      x-data="{ jalur: @js(old('fulfillment_type', $produk->fulfillment_type?->value ?? 'READY_STOCK')) }">
     @csrf
     @if ($produk->exists) @method('PUT') @endif
 
@@ -259,7 +259,7 @@
                                 </form>
                             @endunless
                             <form method="POST" action="{{ route('panel.produk.gambar.hapus', [$produk, $g]) }}"
-                                  class="ml-auto" onsubmit="return confirm('Hapus gambar ini?')">
+                                  class="ml-auto" data-konfirmasi="Hapus gambar ini?" data-konfirmasi-tombol="Hapus">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="tautan text-muted">Hapus</button>
                             </form>
@@ -401,7 +401,7 @@
                             </td>
                             <td class="text-right">
                                 <form method="POST" action="{{ route('panel.produk.varian.hapus', [$produk, $v]) }}"
-                                      onsubmit="return confirm('Hapus varian {{ $v->sku }}?')">
+                                      data-konfirmasi="Hapus varian {{ $v->sku }}?" data-konfirmasi-tombol="Hapus">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="tautan text-muted">Hapus</button>
                                 </form>
@@ -503,7 +503,7 @@
                         <span class="chip chip-netral">Opsional</span>
                     @endunless
                     <form method="POST" action="{{ route('panel.produk.opsi.hapus', [$produk, $opsi]) }}"
-                          class="ml-auto" onsubmit="return confirm({{ \Illuminate\Support\Js::from('Hapus opsi '.$opsi->nama.'?') }})">
+                          class="ml-auto" data-konfirmasi="Hapus opsi {{ $opsi->nama }}?" data-konfirmasi-tombol="Hapus">
                         @csrf @method('DELETE')
                         <button type="submit" class="tautan text-sm text-muted">Hapus opsi</button>
                     </form>
@@ -794,7 +794,7 @@
 
 <form method="POST" action="{{ route('panel.produk.destroy', $produk) }}"
       class="zona-bahaya max-w-4xl"
-      onsubmit="return confirm({{ \Illuminate\Support\Js::from('Hapus produk '.$produk->nama.'?') }})">
+      data-konfirmasi="Hapus produk {{ $produk->nama }}?" data-konfirmasi-tombol="Hapus produk">
     @csrf @method('DELETE')
     <button type="submit" class="tautan text-sm text-muted">Hapus produk ini</button>
     <p class="mt-1 text-xs text-muted">

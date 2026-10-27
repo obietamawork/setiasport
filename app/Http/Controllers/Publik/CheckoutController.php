@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Publik;
 
+use App\Exceptions\StokTidakCukup;
 use App\Http\Controllers\Controller;
 use App\Services\Checkout;
 use App\Enums\MetodeAmbil;
@@ -12,11 +13,20 @@ use App\Services\PengirimEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class CheckoutController extends Controller
 {
+    /**
+     * Pesanan baru per jaringan dalam 10 menit (KEP-088). Setiap pesanan menahan
+     * stok sampai batas bayar, jadi tanpa batas ini skrip bisa memborong seluruh
+     * stok tanpa membayar dan pembeli sungguhan melihat "habis". Longgar dengan
+     * sengaja: satu IP seluler bisa dipakai banyak orang sekaligus (CGNAT).
+     */
+    private const BATAS_PESANAN_PER_JARINGAN = 5;
+
     public function __construct(
         private Keranjang $keranjang,
         private Checkout $checkout,
@@ -157,6 +167,17 @@ class CheckoutController extends Controller
     {
         $this->isiOtomatis($request);
 
+        $kunci = 'checkout:'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($kunci, self::BATAS_PESANAN_PER_JARINGAN)) {
+            // Kembali ke formulir dengan isiannya, bukan halaman 429 yang
+            // membuang semua yang sudah diketik pelanggan.
+            return back()->withInput($request->except(['password', 'password_confirmation']))->withErrors([
+                'checkout' => 'Terlalu banyak pesanan dari jaringan ini dalam waktu singkat. Coba lagi dalam '
+                    .ceil(RateLimiter::availableIn($kunci) / 60).' menit, atau hubungi kami lewat WhatsApp.',
+            ]);
+        }
+
         if ($this->keranjang->kosong()) {
             return redirect()->route('keranjang');
         }
@@ -216,10 +237,16 @@ class CheckoutController extends Controller
 
         try {
             $order = $this->checkout->proses($data, $tipe, $kirim);
-        } catch (\RuntimeException $e) {
-            // Umumnya stok habis diambil pembeli lain di detik terakhir.
+        } catch (StokTidakCukup $e) {
+            // Stok habis diambil pembeli lain di detik terakhir. Hanya ini yang
+            // ditangkap: galat lain harus tercatat di log, bukan menyamar
+            // jadi pesan stok untuk pelanggan (KEP-090).
             throw ValidationException::withMessages(['nama' => $e->getMessage()]);
         }
+
+        // Dihitung hanya kalau pesanan benar-benar dibuat: salah isi formulir
+        // tidak boleh mendekatkan pelanggan ke batas.
+        RateLimiter::hit($kunci, 600);
 
         $this->email->kirim($order, 'order-dibuat');
 

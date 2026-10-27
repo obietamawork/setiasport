@@ -1,6 +1,8 @@
 @extends('layouts.publik')
 @section('judul', $judulTab)
 @section('subjudul', 'Katalog')
+{{-- Kategori, jalur, dan halaman memang halaman berbeda; kata pencarian bukan. --}}
+@section('kanonik', route('katalog', array_filter(request()->only('kategori', 'jalur', 'page'))))
 @section('subcatatan', 'Pilih produk, lihat harganya, lalu pesan dari halaman produknya.')
 
 @section('isi')
@@ -78,7 +80,7 @@
 
         <label class="sr-only" for="kategori">Kategori</label>
         <select id="kategori" name="kategori" class="kotak-input w-auto min-w-44"
-                onchange="this.form.requestSubmit()">
+                data-kirim-saat-ubah>
             <option value="">Semua kategori</option>
             @foreach ($semuaKategori as $k)
                 <option value="{{ $k->slug }}" @selected(request('kategori') === $k->slug)>
@@ -146,7 +148,7 @@
 </div>
 
 @push('skrip')
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
     function katalogJumlah(awal) {
         return {
             qty: awal,

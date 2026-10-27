@@ -1,0 +1,18 @@
+# Analisis statis (KEP-090). Kode baru wajib bersih di level 5.
+#
+# phpstan-baseline.neon mencatat 291 temuan yang sudah ada saat analisis ini
+# pertama kali dipasang. Sampel yang diperiksa ternyata false positive dari
+# inferensi tipe: kolom ber-cast enum dibaca sebagai string dari skema migrasi,
+# dan relasi tanpa anotasi generik dibaca sebagai Model polos. Perilakunya
+# dijaga tes. Temuan di baseline dikurangi bertahap dengan menambah anotasi
+# @return HasMany<...> pada relasi, bukan dengan menambah baris baseline.
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    paths:
+        - app
+        - routes
+        - database/seeders
+    level: 5

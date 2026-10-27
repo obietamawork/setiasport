@@ -40,6 +40,7 @@ class DrafHukum
         $draf = match ($kunci) {
             'kebijakan_privasi' => self::kebijakanPrivasi(),
             'syarat_ketentuan' => self::syaratKetentuan(),
+            default => throw new \InvalidArgumentException("Bukan dokumen hukum: {$kunci}"),
         };
 
         return trim(str_replace("\r\n", "\n", (string) Setting::ambil($kunci, ''))) === trim($draf);

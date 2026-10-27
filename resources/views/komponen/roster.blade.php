@@ -102,7 +102,7 @@
 
 @once
     @push('skrip')
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         function rosterEditor(awal, qty) {
             return {
                 qty,

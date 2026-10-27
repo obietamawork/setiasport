@@ -10,9 +10,17 @@
     {{-- Halaman yang memuat data pribadi pelanggan (pelacakan pesanan lewat
          tautan bertoken, pesanan saya) atau tidak berguna di hasil pencarian
          tidak boleh diindeks, walau tautannya sempat tersebar di tempat umum. --}}
-    @if (request()->routeIs('lacak.*', 'pesanan-saya', 'keranjang', 'checkout', 'masuk', 'daftar*'))
+    {{-- Hasil pencarian katalog juga: isinya hanya susunan ulang halaman lain,
+         dan kata yang diketik orang tidak layak jadi halaman di Google. --}}
+    @if (request()->routeIs('lacak.*', 'pesanan-saya', 'keranjang', 'checkout', 'masuk', 'daftar*')
+        || (request()->routeIs('katalog') && request()->filled('q')))
         <meta name="robots" content="noindex">
     @endif
+
+    {{-- Satu alamat resmi per halaman: tanpa ini ?utm_source=... dari tautan
+         yang dibagikan dianggap halaman terpisah dengan isi kembar (KEP-089). --}}
+    <link rel="canonical" href="@yield('kanonik', url()->current())">
+    @stack('kepala')
 
     {{-- Pratinjau tautan di WhatsApp, Facebook, dan Instagram. Tanpa ini tautan
          produk yang dibagikan ke grup hanya tampil sebagai alamat polos. --}}
@@ -34,13 +42,13 @@
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="flex min-h-screen flex-col antialiased">
+
+{{-- Pengguna papan ketik dan pembaca layar melompati kepala halaman (WCAG 2.4.1). --}}
+<a href="#konten" class="lewati-ke-konten">Lewati ke konten</a>
 
 @php
     /*
@@ -222,7 +230,7 @@
     </div>
 @endif
 
-<main class="flex-1">
+<main id="konten" tabindex="-1" class="flex-1">
     @if (session('sukses') && ! request()->routeIs('lacak.token'))
         <div class="mx-auto max-w-6xl px-5 pt-6">
             <p class="notis notis-ok">{{ session('sukses') }}</p>

@@ -108,7 +108,9 @@
                     @if ($izin->punyaIzin('order.batal'))
                         <form method="POST" action="{{ route('panel.pesanan.pembatalan.setujui', [$pesanan, $pembatalan]) }}"
                               class="space-y-3 border-t border-line pt-4"
-                              onsubmit="return confirm('Setujui pembatalan? Pesanan dibatalkan dan reservasi stoknya dilepas.')">
+                              data-konfirmasi="Setujui pembatalan?"
+                              data-konfirmasi-pesan="Pesanan dibatalkan dan reservasi stoknya dilepas."
+                              data-konfirmasi-tombol="Setujui pembatalan">
                             @csrf
                             <div class="grid gap-3 sm:grid-cols-2">
                                 <div>
@@ -943,7 +945,9 @@
 
         <form method="POST" action="{{ route('panel.pesanan.batal', $pesanan) }}"
               x-show="buka" x-cloak class="notis notis-galat mt-3 max-w-xl"
-              onsubmit="return confirm('Batalkan pesanan {{ $pesanan->kode }}? Reservasi stoknya dilepas.')">
+              data-konfirmasi="Batalkan pesanan {{ $pesanan->kode }}?"
+              data-konfirmasi-pesan="Reservasi stoknya dilepas."
+              data-konfirmasi-tombol="Batalkan pesanan">
             @csrf
             <p class="font-semibold">Pesanan akan dibatalkan dan reservasi stoknya dilepas.</p>
             <label for="alasan" class="label-form mt-3">Alasan, akan masuk riwayat pesanan</label>
@@ -957,7 +961,9 @@
              boleh tersedia "untuk berjaga-jaga". --}}
         @if ($pesanan->bolehDihanguskan())
             <form method="POST" action="{{ route('panel.pesanan.hangus', $pesanan) }}" class="mt-5"
-                  onsubmit="return confirm('Tandai pesanan {{ $pesanan->kode }} hangus? Uang yang sudah dibayar tidak dikembalikan.')">
+                  data-konfirmasi="Tandai pesanan {{ $pesanan->kode }} hangus?"
+                  data-konfirmasi-pesan="Uang yang sudah dibayar tidak dikembalikan."
+                  data-konfirmasi-tombol="Tandai hangus">
                 @csrf
                 <p class="text-sm leading-relaxed text-muted">
                     Barang sudah siap sejak {{ $pesanan->siap_pada->translatedFormat('j F Y') }} dan belum diambil,

@@ -335,7 +335,7 @@
 </div>
 
 @push('skrip')
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
     /*
      * Pilihan pengiriman di checkout (KEP-058).
      *

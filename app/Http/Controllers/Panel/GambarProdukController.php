@@ -27,6 +27,7 @@ class GambarProdukController extends Controller
         // memilih dari kotak, tidak mengetik, supaya salah ketik tidak
         // diam-diam membuat gambar tidak pernah cocok dengan pilihan di
         // halaman produk.
+        $produk->loadMissing(['variants', 'options.values']);
         $warnaTersedia = $produk->variants->pluck('warna')->filter()->unique()->values();
         $nilaiOpsiTersedia = $produk->options->flatMap(fn ($o) => $o->values->pluck('id'));
 

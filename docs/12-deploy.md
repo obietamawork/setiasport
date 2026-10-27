@@ -54,8 +54,9 @@ $app = require_once __DIR__.'/../setiasport/bootstrap/app.php';
 ```dotenv
 APP_ENV=production
 APP_DEBUG=false               # WAJIB false — kalau true, pesan galat membocorkan isi .env
-APP_URL=https://setiasport.example
+APP_URL=https://setiasport.example   # https: cookie sesi otomatis bertanda Secure
 APP_KEY=                      # php artisan key:generate
+LOG_LEVEL=warning             # bukan debug: log tingkat debug bisa memuat data pelanggan
 
 DB_HOST=localhost             # bukan "db" seperti di Docker
 DB_DATABASE=…
@@ -248,8 +249,13 @@ beban shared hosting. Yang perlu diperhatikan:
 9. Periksa header keamanan di [securityheaders.com](https://securityheaders.com) atau
    [Mozilla Observatory](https://developer.mozilla.org/en-US/observatory). Hasil yang
    diharapkan minimal A. Kalau ada skrip pihak ketiga baru (misalnya analitik), domainnya
-   perlu ditambahkan ke `HeaderKeamanan` lebih dulu, atau peramban akan memblokirnya (KEP-086)
+   perlu ditambahkan ke `HeaderKeamanan` lebih dulu, atau peramban akan memblokirnya
+   (KEP-086). `<script>` sebaris yang baru wajib membawa `nonce="{{ Vite::cspNonce() }}"`,
+   dan `onclick`/`onsubmit` sebaris tidak akan dijalankan sama sekali (KEP-088)
 10. Tempel alamat situs di WhatsApp dan pastikan pratinjaunya memuat judul dan gambar toko
+11. Buka `/robots.txt`: harus menyebut `Sitemap:` dengan domain asli, bukan `Disallow: /`
+    (yang itu tanda `APP_ENV` belum `production`). Daftarkan `/sitemap.xml` di Google
+    Search Console (KEP-089)
 
 ---
 

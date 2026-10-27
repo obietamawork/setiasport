@@ -2984,6 +2984,138 @@ ada di halaman galat: kode "404" berwarna navy-300 di latar terang, kontras
 
 ---
 
+## KEP-088 — Audit keamanan: CSP ber-nonce, batas pesanan, kunci PIN, dependensi rentan
+**Status:** TERKUNCI · 2026-10-27
+
+Audit ulang dari sudut penguji keamanan, setelah tiga penghalang tayang
+(KEP-084 s/d KEP-086) selesai.
+
+- **Dependensi dengan kerentanan yang sudah diumumkan.** `composer audit`
+  menemukan `symfony/http-foundation` 7.4.18 (CVE-2026-108082: ReDoS lewat
+  header `Cache-Control`, bisa dipicu siapa pun ke halaman publik mana pun) dan
+  `league/commonmark` 2.10.0 (penyaring HTML mentah bisa dilewati, dan DoS
+  kuadratik di tabel; dipakai halaman Kebijakan dan Syarat). Dinaikkan ke
+  7.4.21 dan 2.10.4, hanya paket itu beserta dependensinya. `npm audit`:
+  vite, source-map-js, shell-quote, ketiganya alat build yang tidak ikut ke
+  server, tetap diperbarui. Kedua audit kini dijalankan CI (KEP-090).
+- **CSP tanpa `'unsafe-inline'` untuk skrip.** Skrip sebaris hanya berjalan
+  kalau membawa nonce permintaan itu (`Vite::useCspNonce()`). Delapan blok
+  `<script>` diberi nonce; lima atribut `on*` diganti: saringan katalog dan
+  riwayat aktivitas memakai `data-kirim-saat-ubah` (app.js), tombol Cetak di
+  tiga lembar cetak memakai skrip kecil ber-nonce; 14 `onsubmit="confirm()"`
+  diganti dialog sendiri (KEP-089). Google Fonts tidak lagi diizinkan karena
+  huruf kini di-host sendiri. Dibuktikan di Chromium, Firefox, dan WebKit:
+  `<script>` dan `onerror` yang disisipkan ke halaman tidak dijalankan.
+  `'unsafe-eval'` tetap ada (Alpine mengevaluasi ekspresi `x-data`), begitu
+  pula `'unsafe-inline'` untuk gaya (atribut `style` dan `x-show`). Halaman
+  galat Laravel saat `APP_DEBUG=true` dikecualikan supaya jejak galat di lokal
+  tetap terbaca; di produksi `APP_DEBUG` wajib `false`.
+- **Pesanan baru dibatasi 5 per jaringan per 10 menit.** Setiap pesanan
+  menahan stok sampai batas bayar (bawaan 24 jam), jadi tanpa batas ini skrip
+  bisa memborong seluruh stok tanpa membayar dan pembeli sungguhan melihat
+  "habis". Hanya pesanan yang berhasil dibuat yang dihitung, salah isi tidak.
+  Kena batas tidak membuang isian pelanggan (kecuali kata sandi). Batasnya
+  longgar dengan sengaja: di jaringan seluler satu IP dipakai banyak orang.
+- **PIN pekerja dikunci per lembar.** Lima PIN salah di satu lembar kerja atau
+  roll mengunci lembar itu 15 menit. Batas 10/menit per IP di rutenya tidak
+  menghentikan penebak yang berganti IP, padahal PIN hanya empat angka.
+  `Pekerja::periksaPin()` kini satu-satunya tempat pemeriksaan PIN.
+- **XSS memantul di form produk.** `old('fulfillment_type')` ditulis ke
+  string JavaScript di `x-data` di antara kutip tunggal; isian yang memuat
+  kutip bisa keluar dari string itu. Kini `@js()`.
+- **Cookie sesi bertanda `Secure`** bawaannya mengikuti `APP_URL` (https),
+  tidak lagi bergantung pada `SESSION_SECURE_COOKIE` yang mudah terlupa.
+  Panduan deploy kini juga meminta `LOG_LEVEL=warning`.
+
+**Diperiksa dan sudah baik, tidak diubah:** setiap rute bersarang memastikan
+anaknya milik induknya (`abort_unless($x->order_id === $pesanan->id)`, dst.);
+unggahan dibatasi jenis dan ukurannya, dikodekan ulang, dan bukti bayar di
+disk privat; semua `{!! !!}` berisi keluaran yang sudah aman; login, daftar,
+dan lacak sudah dibatasi; kirim ganda sudah dijaga. Diuji lewat
+`TemuanAuditTest` dan dua tes baru di `KerjaQrTest`.
+
+---
+
+## KEP-089 — Audit UI/UX dan frontend: klik baris salah sasaran di Safari, dialog konfirmasi, aset
+**Status:** TERKUNCI · 2026-10-27
+
+- **Mengetuk satu pesanan membuka pesanan lain (Safari, iPhone, iPad).**
+  Seluruh baris tabel Pesanan dan Produk dibuat bisa diklik dengan tautan
+  ber-`::before` selebar baris di `<tr class="relative">`. WebKit tidak
+  menjadikan baris tabel acuan posisi, jadi lapisan tautan baris lain menutupi
+  seluruh tabel. Diukur: di WebKit desktop dan iPad, ketukan pada baris
+  SS-…-0002 membuka SS-…-0001, dan semua 14 baris produk membuka "Seragam
+  Olahraga". Kini baris membawa `data-tautan` dan klik ditangani delegasi di
+  app.js (Ctrl/Cmd/klik tengah membuka tab baru; memblok teks tidak
+  membuka apa-apa). Tautan di sel pertama tetap ada untuk papan ketik dan
+  pembaca layar. Diuji di Chromium, Firefox, dan WebKit, desktop/iPad/HP:
+  semua ketukan membuka baris yang benar.
+- **Membatalkan konfirmasi mematikan tombol.** Penjaga kirim ganda berjalan
+  di fase capture, sebelum `onsubmit="return confirm()"`: tombol sudah
+  menjadi "Memproses..." dan mati ketika pengguna menekan Batal, sampai
+  halaman dimuat ulang. Kini dialog sendiri (`<dialog>`, layouts/panel):
+  formulir cukup diberi `data-konfirmasi` (+ `-pesan`, `-tombol`), penanganan
+  didaftarkan sebelum penjaga dan menahan kiriman lebih dulu. Fokus awal di
+  Batal, Esc dan ketuk latar berarti batal, fokus kembali ke tombol asal
+  (bukan `activeElement`: Safari tidak memfokuskan tombol yang diklik).
+  14 `confirm()` menjadi 0, dikunci tes.
+- **"Lewati ke konten"** di etalase dan panel (WCAG 2.4.1).
+- **Huruf di-host sendiri**: Latin dan Latin-ext, 49 KB untuk semua
+  ketebalan (berkas variabel). `@font-face` ditulis sendiri dengan
+  `format("woff2")`: paket Fontsource menandainya `woff2-variations`, dan
+  WebKit yang sekarang menolak penanda itu, sehingga di Safari hurufnya tidak
+  pernah diunduh (tertangkap sebelum commit).
+- **Logo**: WebP 317×80 untuk kepala halaman, 67,6 KB menjadi 8,8 KB (versi
+  terang 35,3 menjadi 6,2 KB) di setiap halaman; logo lengkap di beranda
+  memakai `srcset` 640/1000 (97,6 KB menjadi 43,3 KB di layar 2×). PNG asli
+  tetap untuk email (Outlook tidak membaca WebP) dan `og:image`.
+- **SEO teknis**: `sitemap.xml` (beranda, katalog, kategori, produk,
+  kebijakan); `robots.txt` dibuat aplikasi, di luar produksi `Disallow: /`
+  dan di produksi menutup panel serta halaman bertoken; `rel="canonical"`
+  (katalog mempertahankan kategori, jalur, dan halaman; `utm_*` dibuang);
+  hasil pencarian `noindex`; JSON-LD `SportingGoodsStore` dan `Product`
+  (`Offer` untuk stok, `AggregateOffer` "mulai dari" + `MadeToOrder` untuk
+  kustom), angkanya sama dengan yang tampil di halaman.
+
+Penamaan "Produk" vs "Katalog" di panel yang dulu dicatat ternyata sudah
+konsisten (menu dan judul "Produk"; "Katalog" hanya nama kelompok menu).
+
+---
+
+## KEP-090 — Audit developer dan QA: N+1, galat yang menyamar, CI, analisis statis
+**Status:** TERKUNCI · 2026-10-27
+
+- **`Model::preventLazyLoading()` di luar produksi.** Begitu dinyalakan,
+  7 halaman panel menjadi galat 500 dan 9 tes gagal: semuanya kueri N+1
+  sungguhan (Laravel hanya menolak lazy load pada model yang dimuat bersama
+  model lain). Diperbaiki dengan eager load: daftar pesanan (`items.options`,
+  `items.rosters` per baris), laporan (`items.rosters`), daftar produk
+  (`priceTiers`, `prices`), pilihan kategori (`parent`), penerima email CS
+  (`roles.permissions` per staf), unggah gambar produk (`options.values`),
+  checkout (`items.rosters`), dan varian yang dimuat lewat produknya
+  (`chaperone()`). Di produksi tetap mati: halaman lambat lebih baik daripada
+  halaman galat.
+- **Galat pemrograman menyamar jadi "stok habis".** Checkout menangkap semua
+  `RuntimeException` dan menampilkannya di kolom nama. Lazy load di atas
+  ternyata muncul ke pelanggan sebagai pesan stok, dan tidak pernah tercatat
+  di log. Kini `ReservasiStok` melempar `StokTidakCukup`, dan hanya itu yang
+  ditangkap.
+- **CI** (`.github/workflows/ci.yml`): tes di MySQL 8, build ulang aset dan
+  gagal kalau `public/build` tidak sinkron (dibuktikan dari klon ber-LF:
+  hasil build identik, jadi tidak gagal palsu), PHPStan, `composer audit`,
+  `npm audit --audit-level=high`.
+- **Larastan level 5** dengan baseline 291 temuan lama. Sampel yang diperiksa
+  semuanya false positive inferensi tipe (kolom ber-cast enum dibaca sebagai
+  string, relasi tanpa anotasi generik). Kode baru wajib bersih; dua temuan di
+  berkas baru dibereskan sebelum baseline dibuat.
+- **Pint tidak dipaksakan.** 100 berkas lama tidak mengikuti gaya bawaan Pint;
+  memformat ulang semuanya akan menenggelamkan riwayat git. Berkas baru lolos
+  Pint.
+- **Firefox diuji untuk pertama kalinya**, bersama Chromium dan WebKit:
+  51 halaman × 2 ukuran per mesin.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3075,3 +3207,6 @@ ada di halaman galat: kode "404" berwarna navy-300 di latar terang, kontras
 | KEP-085 | Kebijakan Privasi dan Syarat & Ketentuan | TERKUNCI |
 | KEP-086 | Header keamanan HTTP | TERKUNCI |
 | KEP-087 | Grid tidak proporsional di HP dan tablet; teks "Tentang" menampilkan "\n\n" | TERKUNCI |
+| KEP-088 | Audit keamanan: CSP ber-nonce, batas pesanan, kunci PIN, dependensi rentan | TERKUNCI |
+| KEP-089 | Audit UI/UX: klik baris salah sasaran di Safari, dialog konfirmasi, aset, SEO | TERKUNCI |
+| KEP-090 | Audit developer/QA: N+1, galat yang menyamar, CI, analisis statis | TERKUNCI |

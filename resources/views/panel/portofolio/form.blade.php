@@ -94,7 +94,7 @@
 
 @if ($portofolio->exists)
     <form method="POST" action="{{ route('panel.portofolio.destroy', $portofolio) }}"
-          class="mt-6 max-w-xl" onsubmit="return confirm('Hapus portofolio ini beserta fotonya?')">
+          class="mt-6 max-w-xl" data-konfirmasi="Hapus portofolio ini beserta fotonya?" data-konfirmasi-tombol="Hapus">
         @csrf @method('DELETE')
         <button type="submit" class="tautan text-sm text-muted">Hapus portofolio ini</button>
     </form>

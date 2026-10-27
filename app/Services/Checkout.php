@@ -162,7 +162,7 @@ class Checkout
                 $order->update(['diskon' => $diskon]);
             }
 
-            $order->load(['items.options']);
+            $order->load(['items.options', 'items.rosters']);
 
             $order->payments()->create([
                 'jenis' => $tipePembayaran === 'DP' ? PaymentType::DP : PaymentType::FULL,

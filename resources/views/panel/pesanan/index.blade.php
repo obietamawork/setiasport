@@ -165,13 +165,14 @@
             </thead>
             <tbody>
                 @foreach ($pesanan as $o)
-                    {{-- Seluruh baris jadi sasaran klik lewat tautan rentang penuh,
-                         bukan hanya kodenya: memburu tautan selebar enam karakter
-                         adalah pekerjaan tambahan yang dilakukan ratusan kali sehari. --}}
-                    <tr class="group relative hover:bg-navy-50">
+                    {{-- Seluruh baris jadi sasaran klik, bukan hanya kodenya: memburu
+                         tautan selebar enam karakter adalah pekerjaan tambahan yang
+                         dilakukan ratusan kali sehari. Lewat data-tautan (app.js),
+                         bukan ::before: di Safari lapisan itu salah sasaran. --}}
+                    <tr class="group hover:bg-navy-50" data-tautan="{{ route('panel.pesanan.show', $o) }}">
                         <td>
                             <a href="{{ route('panel.pesanan.show', $o) }}"
-                               class="tabular font-semibold text-navy-700 before:absolute before:inset-0 before:content-['']">
+                               class="tabular font-semibold text-navy-700">
                                 {{ $o->kode }}
                             </a>
                             @if ($o->kode_ambil)

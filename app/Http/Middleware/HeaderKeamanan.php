@@ -12,16 +12,24 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Kebijakan konten (CSP) di sini sengaja disusun dari apa yang BENAR-BENAR
  * dimuat aplikasi ini, bukan dari daftar contoh: skrip hanya dari domain
- * sendiri (Alpine butuh 'unsafe-eval' dan tata letak memakai skrip sebaris),
- * huruf dari Google Fonts, gambar boleh dari CDN mana pun karena gambar
- * produk bisa berupa tautan luar, dan WebSocket untuk chat CS. Yang ditutup:
- * plugin (object), penggantian <base>, formulir ke domain lain, dan halaman
- * ini dibungkus situs lain (clickjacking).
+ * sendiri, gambar boleh dari CDN mana pun karena gambar produk bisa berupa
+ * tautan luar, dan WebSocket untuk chat CS. Yang ditutup: plugin (object),
+ * penggantian <base>, formulir ke domain lain, dan halaman ini dibungkus
+ * situs lain (clickjacking).
+ *
+ * Skrip sebaris hanya berjalan kalau membawa nonce permintaan ini (KEP-088):
+ * <script> yang berhasil disisipkan penyerang tidak ikut dijalankan. Karena
+ * itu tidak ada lagi onclick/onsubmit sebaris di tampilan. 'unsafe-eval'
+ * tetap ada karena Alpine mengevaluasi ekspresi x-data/@click; huruf kini
+ * di-host sendiri, jadi Google Fonts tidak lagi diizinkan.
  */
 class HeaderKeamanan
 {
     public function handle(Request $request, Closure $next): Response
     {
+        // Dibuat sebelum tampilan dirender: @vite dan <script nonce> membacanya.
+        $nonce = Vite::useCspNonce();
+
         $response = $next($request);
         $h = $response->headers;
 
@@ -29,7 +37,13 @@ class HeaderKeamanan
         $h->set('X-Frame-Options', 'SAMEORIGIN');
         $h->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $h->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
-        $h->set('Content-Security-Policy', $this->kebijakanKonten());
+
+        // Halaman galat bawaan Laravel saat APP_DEBUG=true memakai skrip
+        // sebaris tanpa nonce; tanpa pengecualian ini jejak galat di lokal
+        // tidak bisa dibaca. Di produksi APP_DEBUG wajib false.
+        if (! (config('app.debug') && $response->isServerError())) {
+            $h->set('Content-Security-Policy', $this->kebijakanKonten($nonce));
+        }
 
         // HSTS hanya lewat HTTPS. Tanpa includeSubDomains: subdomain bawaan
         // cPanel (mail, webmail) belum tentu semuanya HTTPS.
@@ -46,7 +60,7 @@ class HeaderKeamanan
         return $response;
     }
 
-    private function kebijakanKonten(): string
+    private function kebijakanKonten(string $nonce): string
     {
         // Saat `npm run dev`, aset datang dari server Vite dan HMR lewat WebSocket.
         $vite = '';
@@ -58,9 +72,9 @@ class HeaderKeamanan
 
         return implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'".$vite,
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com".$vite,
-            "font-src 'self' data: https://fonts.gstatic.com",
+            "script-src 'self' 'nonce-{$nonce}' 'unsafe-eval'".$vite,
+            "style-src 'self' 'unsafe-inline'".$vite,
+            "font-src 'self' data:",
             "img-src 'self' data: blob: https:",
             "connect-src 'self' https: wss: ws:".$vite,
             "frame-ancestors 'self'",

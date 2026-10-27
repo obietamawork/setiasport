@@ -9,7 +9,9 @@
             yang asli.
         </p>
         <form method="POST" action="{{ route('panel.profil.contoh.hapus') }}"
-              onsubmit="return confirm('Hapus semua portofolio dan testimoni contoh? Isian asli tidak ikut terhapus.')">
+              data-konfirmasi="Hapus semua portofolio dan testimoni contoh?"
+              data-konfirmasi-pesan="Isian asli tidak ikut terhapus."
+              data-konfirmasi-tombol="Hapus contoh">
             @csrf @method('DELETE')
             <button type="submit" class="tombol tombol-garis tombol-sm">Hapus semua data contoh</button>
         </form>

@@ -122,7 +122,7 @@
 
 @once
     @push('skrip')
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         function konfigurator(tiers, opsi, moq) {
             return {
                 tiers, opsi, moq,

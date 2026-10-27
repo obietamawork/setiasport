@@ -6,8 +6,13 @@
      * navy diganti putih, dipakai di latar navy seperti kepala panel dan ruang
      * CS; logo navy di atas navy akan tenggelam. Kalau berkasnya hilang,
      * komponen jatuh ke wordmark CSS supaya kepala halaman tidak kosong.
+     *
+     * Yang dikirim versi WebP 317x80 (dua kali tinggi tampil terbesar, h-10),
+     * bukan PNG 634x160: 9 KB, bukan 68 KB, di setiap halaman (KEP-089). PNG
+     * aslinya tetap untuk email (Outlook tidak membaca WebP) dan og:image.
      */
-    $berkas = collect($terang ? ['logo-terang.png', 'logo.png'] : ['logo.png'])
+    $nama = $terang ? 'logo-terang' : 'logo';
+    $berkas = collect([$nama.'.webp', $nama.'.png', 'logo.png'])
         ->first(fn ($f) => file_exists(public_path($f)));
 @endphp
 

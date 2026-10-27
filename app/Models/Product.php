@@ -32,6 +32,7 @@ class Product extends Model
         ];
     }
 
+    /** @return BelongsTo<Category, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
@@ -39,9 +40,12 @@ class Product extends Model
 
     public function variants(): HasMany
     {
-        return $this->hasMany(ProductVariant::class);
+        // chaperone(): varian yang dimuat lewat produknya langsung tahu
+        // produknya, tanpa satu kueri lagi per varian saat harga dihitung.
+        return $this->hasMany(ProductVariant::class)->chaperone('product');
     }
 
+    /** @return HasMany<ProductImage, $this> */
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->orderBy('urutan');

@@ -16,10 +16,16 @@ use App\Http\Controllers\Publik\PembatalanController;
 use App\Http\Controllers\Publik\RollController;
 use App\Http\Controllers\Publik\PesananItemController;
 use App\Http\Controllers\Publik\PesananSayaController;
+use App\Http\Controllers\Publik\SitemapController;
 use App\Http\Controllers\Webhook\ResendController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', BerandaController::class)->name('beranda');
+
+// Untuk mesin pencari (KEP-089). public/robots.txt sengaja tidak ada lagi:
+// berkas statis tidak bisa menyebut alamat sitemap yang bergantung pada domain.
+Route::get('/sitemap.xml', [SitemapController::class, 'peta'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 // Kebijakan Privasi dan Syarat & Ketentuan (KEP-085). Isinya dikelola di Pengaturan.
 Route::get('/kebijakan-privasi', [HalamanHukumController::class, 'privasi'])->name('kebijakan-privasi');

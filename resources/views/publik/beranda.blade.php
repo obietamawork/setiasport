@@ -5,6 +5,12 @@
 @section('judul', setting('tentang_judul') ?: 'Toko olahraga dan konveksi jersey di Wonogiri')
 @section('deskripsi', setting('tentang_ringkas') ?: 'Perlengkapan olahraga lengkap dan layanan jersey custom di Wonogiri. Bisa diambil di toko atau dikirim.')
 
+{{-- Data toko untuk mesin pencari (KEP-089). JSON_HEX_TAG: isian pengaturan
+     yang memuat "</script>" tidak bisa menutup blok ini. --}}
+@push('kepala')
+    <script type="application/ld+json">@json(\App\Support\DataTerstruktur::toko(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG)</script>
+@endpush
+
 @section('isi')
 
 @php
@@ -61,7 +67,7 @@
             </div>
         </div>
 
-        <img src="{{ asset('logo-lengkap.webp') }}" alt="{{ setting('toko_nama', 'Setia Sport') }} Wonogiri"
+        <img src="{{ asset('logo-lengkap-640.webp') }}" srcset="{{ asset('logo-lengkap-640.webp') }} 640w, {{ asset('logo-lengkap.webp') }} 1000w" sizes="20rem" alt="{{ setting('toko_nama', 'Setia Sport') }} Wonogiri"
              width="1000" height="505" class="hidden w-full max-w-xs justify-self-end opacity-90 lg:block">
     </div>
 
@@ -348,7 +354,7 @@
             </div>
         </div>
 
-        <img src="{{ asset('logo-lengkap.webp') }}" alt="{{ setting('toko_nama', 'Setia Sport') }}"
+        <img src="{{ asset('logo-lengkap-640.webp') }}" srcset="{{ asset('logo-lengkap-640.webp') }} 640w, {{ asset('logo-lengkap.webp') }} 1000w" sizes="20rem" alt="{{ setting('toko_nama', 'Setia Sport') }}"
              width="1000" height="505" class="hidden w-full max-w-xs lg:block">
     </div>
 </section>

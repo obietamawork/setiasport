@@ -3,11 +3,11 @@
 namespace App\Services;
 
 use App\Enums\FulfillmentType;
+use App\Exceptions\StokTidakCukup;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 /**
  * Menjaga agar dua pelanggan tidak bisa membeli barang terakhir yang sama.
@@ -28,11 +28,11 @@ class ReservasiStok
         $varian = ProductVariant::whereKey($item->product_variant_id)->lockForUpdate()->first();
 
         if (! $varian) {
-            throw new RuntimeException('Varian produk tidak ditemukan.');
+            throw new StokTidakCukup('Varian produk tidak ditemukan.');
         }
 
         if ($varian->stok - $varian->stok_dipesan < $item->qty) {
-            throw new RuntimeException(
+            throw new StokTidakCukup(
                 "Stok {$item->nama_produk} ({$varian->label}) tinggal ".
                 max(0, $varian->stok - $varian->stok_dipesan).' pcs.'
             );

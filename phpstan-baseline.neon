@@ -1,0 +1,1435 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:untukDaftar\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Events/PesanCsTerkirim.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\BuktiBayarController\:\:tagihanTerbuka\(\) should return App\\Models\\Payment\|null but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 2
+			path: app/Http/Controllers/BuktiBayarController.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/BuktiBayarController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:MENUNGGU_PELUNASAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/BuktiBayarController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:aktif\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Panel/AntrianController.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, list\<App\\Enums\\OrderItemStatus\> and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Http/Controllers/Panel/AntrianController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Panel/AntrianController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Enums\\ProductionStage\:\:DESAIN\|App\\Enums\\ProductionStage\:\:JAHIT\|App\\Enums\\ProductionStage\:\:PACKING\|App\\Enums\\ProductionStage\:\:POTONG\|App\\Enums\\ProductionStage\:\:PRESS\|App\\Enums\\ProductionStage\:\:PRINT\|App\\Enums\\ProductionStage\:\:QC\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Panel/AntrianController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Enums\\ProductionStage\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Panel/AntrianController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy\<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:untukDaftar\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Panel/CsController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy\<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:untukKlien\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Panel/CsController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\Order\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Panel/CsController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, array\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Panel/CsController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$values\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Panel/GambarProdukController.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Panel/LaporanController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$roster_wajib\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Panel/MockupController.php
+
+		-
+			message: '#^Call to function abort_unless\(\) with arguments false, 422 and ''Item ini sedang…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Http/Controllers/Panel/MockupController.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Enums\\OrderItemStatus\:\:ANTRIAN_DESAIN, App\\Enums\\OrderItemStatus\:\:PROSES_DESAIN\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Http/Controllers/Panel/MockupController.php
+
+		-
+			message: '#^Call to function abort_if\(\) with arguments false, 422 and ''Pembayaran ini…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Http/Controllers/Panel/PembayaranController.php
+
+		-
+			message: '#^Cannot call method final\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Panel/PembayaranController.php
+
+		-
+			message: '#^Parameter \#1 \$payment of method App\\Services\\AlurPesanan\:\:terimaPembayaran\(\) expects App\\Models\\Payment, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Panel/PembayaranController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\PaymentStatus\:\:LUNAS will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Panel/PembayaranController.php
+
+		-
+			message: '#^Cannot call method final\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Panel/PengirimanController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$deskripsi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Panel/PenyesuaianController.php
+
+		-
+			message: '#^Cannot call method final\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/Panel/PenyesuaianController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Panel/PesananController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$no_hp\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Panel/PesananController.php
+
+		-
+			message: '#^Array has 2 duplicate keys with value ''langkah'' \(''langkah'', ''langkah''\)\.$#'
+			identifier: array.duplicateKey
+			count: 1
+			path: app/Http/Controllers/Panel/PesananController.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\OrderStatus\:\:DIKIRIM is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Panel/PesananController.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\OrderStatus\:\:MENUNGGU_PELUNASAN is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Panel/PesananController.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\OrderStatus\:\:MENUNGGU_PEMBAYARAN is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Panel/PesananController.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\OrderStatus\:\:SIAP_DIAMBIL is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Panel/PesananController.php
+
+		-
+			message: '#^Parameter \#1 \$payment of method App\\Services\\AlurPesanan\:\:terimaPembayaran\(\) expects App\\Models\\Payment, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Panel/PesananManualController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Portofolio\:\:\$contoh\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Panel/PortofolioController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Panel/ProdukController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Panel/ProdukController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$values\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Panel/ProdukHargaController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Panel\\ProdukHargaController\:\:sel\(\) should return App\\Models\\ProductPrice\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Panel/ProdukHargaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Panel/ProdukKomponenController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sku\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Panel/ProdukKomponenController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Panel/StokController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Testimoni\:\:\$contoh\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Panel/TestimoniController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:mapWithKeys\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\<int\<0, max\>, array\{tautan\: string, svg\: string\}\>, Closure\(App\\Models\\OrderItem\)\: non\-empty\-array\<int\<0, max\>, array\{tautan\: string, svg\: string\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Panel/WorksheetController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\OrderItem\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Panel/WorksheetController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Http/Controllers/Publik/CheckoutController.php
+
+		-
+			message: '#^Parameter \#1 \$pelanggan of method App\\Http\\Controllers\\Publik\\CheckoutController\:\:buatkanAkun\(\) expects App\\Models\\Customer, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Publik/CheckoutController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy\<string, Illuminate\\Database\\Eloquent\\Model, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\>\:\:untukKlien\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Publik/CsController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\PercakapanCs\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Publik/CsController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, array\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Publik/CsController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Publik/KatalogController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$aktif\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Publik/KeranjangController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Publik/KeranjangController.php
+
+		-
+			message: '#^Cannot call method tahapProduksi\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Publik/KerjaController.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Http/Controllers/Publik/KustomController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenis\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Publik/LacakController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jumlah\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Publik/LacakController.php
+
+		-
+			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Publik/LacakController.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Publik/LacakController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:MENUNGGU_PELUNASAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Publik/LacakController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$roster_wajib\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Publik/PesananItemController.php
+
+		-
+			message: '#^Parameter \#1 \$status of method App\\Http\\Controllers\\Webhook\\ResendController\:\:peringkat\(\) expects App\\Enums\\EmailStatus, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Webhook/ResendController.php
+
+		-
+			message: '#^Parameter \#1 \$message of static method Symfony\\Component\\Mime\\MessageConverter\:\:toEmail\(\) expects Symfony\\Component\\Mime\\Message, Symfony\\Component\\Mime\\RawMessage given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mail/Transport/ResendTransport.php
+
+		-
+			message: '#^Cannot call method gt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/Customer.php
+
+		-
+			message: '#^Cannot call method lt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sum\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model\)\: int\)\|string\|null, Closure\(App\\Models\\OrderItem\)\: int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:contains\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|Illuminate\\Database\\Eloquent\\Model\|int\|string, Closure\(App\\Models\\OrderItem\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 6
+			path: app/Models/Order.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\OrderStatus\:\:SIAP_DIAMBIL will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\MetodeAmbil\:\:KIRIM will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Models/Order.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:SIAP_DIAMBIL will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 3
+			path: app/Models/Order.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sum\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model\)\: int\<0, max\>\)\|string\|null, Closure\(App\\Models\\OrderItemRoster\)\: int\<0, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/OrderItem.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\FulfillmentType\:\:PREORDER will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Models/OrderItem.php
+
+		-
+			message: '#^Cannot call method labelUkuran\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/OrderItemRoster.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\StatusPembatalan\:\:DIAJUKAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Models/Pembatalan.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$isi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PercakapanCs.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$lampiran_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PercakapanCs.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$orders\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PercakapanCs.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pengirim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PercakapanCs.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Models/PercakapanCs.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Models/PercakapanCs.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/PercakapanCs.php
+
+		-
+			message: '#^Parameter \#1 \$o of closure expects App\\Models\\Order, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/PercakapanCs.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PesanCs.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/PesanCs.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/PesanCs.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/PesanCs.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:aktif\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/Portofolio.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$harga_satuan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/Product.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tambahan_harga\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Enums\\FulfillmentType\:\:PREORDER, App\\Enums\\FulfillmentType\:\:BOTH\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Enums\\FulfillmentType\:\:READY_STOCK, App\\Enums\\FulfillmentType\:\:BOTH\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\ProductSizeChart\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:first\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\ProductPrice\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:first\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\ProductPriceTier\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:first\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\ProductSizeSurcharge\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:contains\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|Illuminate\\Database\\Eloquent\\Model\|int\|string, Closure\(App\\Models\\ProductPrice\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>tambahan_harga" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/Product.php
+
+		-
+			message: '#^Offset ''nilai'' does not exist on non\-falsy\-string\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Models/ProductSizeChart.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$harga_dasar\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/ProductVariant.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:aktif\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/Testimoni.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:aktif\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Providers/PanelServiceProvider.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AlurDesain.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$lead_time_hari\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AlurDesain.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$target_siap_pada\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AlurDesain.php
+
+		-
+			message: '#^Call to function abort_unless\(\) with arguments false, 422 and ''Item ini sedang…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 2
+			path: app/Services/AlurDesain.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/AlurDesain.php
+
+		-
+			message: '#^Method App\\Services\\AlurDesain\:\:unggahMockup\(\) should return App\\Models\\DesignAsset but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/AlurDesain.php
+
+		-
+			message: '#^Parameter \#1 \$order of method App\\Services\\OrderStatusResolver\:\:sinkronkan\(\) expects App\\Models\\Order, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/AlurDesain.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:MENUNGGU_PERSETUJUAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 2
+			path: app/Services/AlurDesain.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status_item\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Anonymous function has an unused use \$olehUserId\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kustom\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:lunas\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Call to function abort_if\(\) with arguments false, 422 and ''Belum ada mockup…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Call to function abort_if\(\) with arguments false, 422 and ''Hanya pelanggan…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Call to function abort_if\(\) with arguments false, 422 and ''Item ini menunggu…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 2
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Call to function abort_unless\(\) with arguments false, 422 and ''Hanya pesanan yang…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Call to function abort_unless\(\) with arguments false, 422 and ''Pesanan ini tidak…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Cannot call method berikutnya\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Cannot call method final\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Cannot call method tahapProduksi\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Parameter \#1 \$item of method App\\Services\\AlurPesanan\:\:setStatusItem\(\) expects App\\Models\\OrderItem, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 5
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Parameter \#1 \$order of method App\\Services\\AlurPesanan\:\:sinkronkan\(\) expects App\\Models\\Order, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Parameter \#1 \$order of method App\\Services\\PengirimEmail\:\:kirim\(\) expects App\\Models\\Order, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\OrderStatus\:\:MENUNGGU_PELUNASAN will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\OrderStatus\:\:SIAP_DIAMBIL will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:MENUNGGU_PELUNASAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:MENUNGGU_PEMBAYARAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:MENUNGGU_PERSETUJUAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:PROSES_DESAIN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:DIKIRIM will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:SIAP_DIAMBIL will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:options\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/Checkout.php
+
+		-
+			message: '#^Parameter \#1 \$isi of method App\\Services\\Checkout\:\:buat\(\) expects Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>, Illuminate\\Support\\Collection\<int, array\{kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, qty\: int, jalur\: App\\Enums\\FulfillmentType, opsi\: array, rincian\: App\\Services\\PriceBreakdown, masalah\: string\|null\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Checkout.php
+
+		-
+			message: '#^Parameter \#1 \$item of method App\\Services\\Checkout\:\:siapkanJobProduksi\(\) expects App\\Models\\OrderItem, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Checkout.php
+
+		-
+			message: '#^Parameter \#1 \$item of method App\\Services\\Checkout\:\:simpanDaftarUkuran\(\) expects App\\Models\\OrderItem, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Checkout.php
+
+		-
+			message: '#^Parameter \#1 \$item of method App\\Services\\ReservasiStok\:\:pesan\(\) expects App\\Models\\OrderItem, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Checkout.php
+
+		-
+			message: '#^Parameter \#1 \$tipe of static method App\\Enums\\OrderItemStatus\:\:alur\(\) expects App\\Enums\\FulfillmentType, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Checkout.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Enums\\OrderItemStatus\:\:ANTRIAN_PRODUKSI, App\\Enums\\OrderItemStatus\:\:PRINTING, App\\Enums\\OrderItemStatus\:\:PRESS, App\\Enums\\OrderItemStatus\:\:POTONG, App\\Enums\\OrderItemStatus\:\:JAHIT, App\\Enums\\OrderItemStatus\:\:QC, App\\Enums\\OrderItemStatus\:\:MENUNGGU_PELUNASAN\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/KebijakanPembatalan.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Enums\\OrderItemStatus\:\:PROSES_DESAIN, App\\Enums\\OrderItemStatus\:\:MENUNGGU_PERSETUJUAN\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/KebijakanPembatalan.php
+
+		-
+			message: '#^Cannot call method final\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/KebijakanPembatalan.php
+
+		-
+			message: '#^Method App\\Services\\KebijakanPembatalan\:\:ajukan\(\) should return App\\Models\\Pembatalan but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/KebijakanPembatalan.php
+
+		-
+			message: '#^Method App\\Services\\KebijakanPembatalan\:\:pengajuanTertunda\(\) should return App\\Models\\Pembatalan\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/KebijakanPembatalan.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: \(array\<int, Illuminate\\Database\\Eloquent\\Model\>\|Illuminate\\Support\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\), Closure\(App\\Models\\OrderItem\)\: Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KebijakanPembatalan.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:contains\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|Illuminate\\Database\\Eloquent\\Model\|int\|string, Closure\(App\\Models\\OrderItem\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KebijakanPembatalan.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:contains\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|Illuminate\\Database\\Eloquent\\Model\|int\|string, Closure\(App\\Models\\OrderItem\)\: false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KebijakanPembatalan.php
+
+		-
+			message: '#^Parameter \#1 \$order of method App\\Services\\AlurPesanan\:\:batalkan\(\) expects App\\Models\\Order, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KebijakanPembatalan.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\OrderStatus\:\:DIKIRIM will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/KebijakanPembatalan.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Keranjang.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Services/Keranjang.php
+
+		-
+			message: '#^Instanceof between App\\Services\\PriceBreakdown and App\\Services\\RincianPerUkuran will always evaluate to false\.$#'
+			identifier: instanceof.alwaysFalse
+			count: 1
+			path: app/Services/Keranjang.php
+
+		-
+			message: '#^Method App\\Services\\Keranjang\:\:isi\(\) should return Illuminate\\Support\\Collection\<int, array\{kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, qty\: int, jalur\: App\\Enums\\FulfillmentType, opsi\: array, rincian\: App\\Services\\PriceBreakdown, masalah\: string\|null\}\> but returns Illuminate\\Support\\Collection\<int, array\{qty\: int, opsi\: array\<int, int\>, catatan\: null, desain_sumber\: null, ukuran\: null, kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, \.\.\.\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Keranjang.php
+
+		-
+			message: '#^Offset ''catatan'' on array\{product_id\: int, variant_id\: int\|null, qty\: int, jalur\: string, opsi\: array\<int, int\>\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/Keranjang.php
+
+		-
+			message: '#^Offset ''desain_sumber'' on array\{product_id\: int, variant_id\: int\|null, qty\: int, jalur\: string, opsi\: array\<int, int\>\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/Keranjang.php
+
+		-
+			message: '#^Offset ''kategori'' on array\{kategori\: string, ukuran\: string, jumlah\: int, nama_punggung\?\: string\|null, nomor\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/Keranjang.php
+
+		-
+			message: '#^Offset ''ukuran'' on array\{product_id\: int, variant_id\: int\|null, qty\: int, jalur\: string, opsi\: array\<int, int\>\} in isset\(\) does not exist\.$#'
+			identifier: isset.offset
+			count: 2
+			path: app/Services/Keranjang.php
+
+		-
+			message: '#^Offset ''ukuran'' on array\{product_id\: int, variant_id\: int\|null, qty\: int, jalur\: string, opsi\: array\<int, int\>\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/Keranjang.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>qty" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Keranjang.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$bukti_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Cannot call method translatedFormat\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Result of \|\| is always false\.$#'
+			identifier: booleanOr.alwaysFalse
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:DIBATALKAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:DIKIRIM will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:DIPROSES will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:KADALUARSA will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:MENUNGGU_PELUNASAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:MENUNGGU_PEMBAYARAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:SELESAI will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:SIAP_DIAMBIL will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Method App\\Services\\LayananCs\:\:balasDariStaf\(\) should return App\\Models\\PesanCs but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/LayananCs.php
+
+		-
+			message: '#^Method App\\Services\\LayananCs\:\:kirimDariPelanggan\(\) should return App\\Models\\PesanCs but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/LayananCs.php
+
+		-
+			message: '#^Parameter \#1 \$pesan of method App\\Services\\LayananCs\:\:siarkan\(\) expects App\\Models\\PesanCs, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Services/LayananCs.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>email" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/LayananCs.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/LayananCs.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>harga" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/Ongkir/PilihanKirim.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/OrderStatusResolver.php
+
+		-
+			message: '#^Property App\\Models\\Order\:\:\$status \(string\) does not accept App\\Enums\\OrderStatus\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/OrderStatusResolver.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between App\\Enums\\OrderStatus and string will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/OrderStatusResolver.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/OrderStatusResolver.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PengirimEmail.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PengirimEmail.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$harga_dasar\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PriceCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/PriceCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PriceCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sku\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PriceCalculator.php
+
+		-
+			message: '#^Anonymous function should never return but return statement found\.$#'
+			identifier: return.never
+			count: 1
+			path: app/Services/PriceCalculator.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:punyaJalurReadyStock\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/PriceCalculator.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:contains\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|Illuminate\\Database\\Eloquent\\Model\|int\|string, Closure\(App\\Models\\ProductPrice\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/PriceCalculator.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\PriceBasis\:\:PER_PCS will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 2
+			path: app/Services/PriceCalculator.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/PriceCalculator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fulfillment_type\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ReservasiStok.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_variant_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/ReservasiStok.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$qty\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/ReservasiStok.php
+
+		-
+			message: '#^Result of \|\| is always true\.$#'
+			identifier: booleanOr.alwaysTrue
+			count: 1
+			path: app/Services/ReservasiStok.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\FulfillmentType\:\:READY_STOCK will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/ReservasiStok.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Services/ReservasiStok.php
+
+		-
+			message: '#^Cannot call method tahapProduksi\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/RollPrinting.php
+
+		-
+			message: '#^Parameter \#1 \$item of method App\\Services\\AlurPesanan\:\:majukanItem\(\) expects App\\Models\\OrderItem, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/RollPrinting.php
+
+		-
+			message: '#^Parameter \#1 \$item of method App\\Services\\RollPrinting\:\:diTahapPrinting\(\) expects App\\Models\\OrderItem, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/RollPrinting.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$roster_wajib\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RosterPemain.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Services/RosterPemain.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{kunci\: string, jumlah\: int\<0, max\>\}, Closure\(App\\Models\\OrderItemRoster\)\: array\{kunci\: string, jumlah\: int\<0, max\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/RosterPemain.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:mapWithKeys\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\<string, int\<0, max\>\|null\>, Closure\(App\\Models\\OrderItemRoster\)\: non\-empty\-array\<string, int\<0, max\>\|null\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/RosterPemain.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$option_nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$option_value\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$options\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prices\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:hargaPerPotong\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:tambahanUkuran\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Call to function abort_unless\(\) with arguments false, 422 and ''Baris ini bukan…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 3
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:mapWithKeys\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\<string, int\<0, max\>\|null\>, Closure\(App\\Models\\OrderItemRoster\)\: non\-empty\-array\<string, int\<0, max\>\|null\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\FulfillmentType\:\:READY_STOCK will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/UbahIsiPesanan.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Enums\\OrderStatus\:\:DIPROSES, App\\Enums\\OrderStatus\:\:MENUNGGU_PELUNASAN\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Comparison operation "\<" between int and \*NEVER\* results in an error\.$#'
+			identifier: smaller.invalid
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\OrderItemStatus\:\:ANTRIAN_DESAIN is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\OrderItemStatus\:\:MENUNGGU_PERSETUJUAN is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Match arm comparison between string and App\\Enums\\OrderItemStatus\:\:PROSES_DESAIN is always false\.$#'
+			identifier: match.alwaysFalse
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Method App\\Support\\LinimasaItem\:\:waktuMasuk\(\) should return Illuminate\\Support\\Carbon\|null but returns Carbon\\Carbon\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Method App\\Support\\LinimasaItem\:\:waktuMasuk\(\) should return Illuminate\\Support\\Carbon\|null but returns string\.$#'
+			identifier: return.type
+			count: 2
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Parameter \#1 \$status of static method App\\Enums\\FasePesanan\:\:untuk\(\) expects App\\Enums\\OrderItemStatus, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Parameter \#1 \$tipe of static method App\\Enums\\FasePesanan\:\:alur\(\) expects App\\Enums\\FulfillmentType, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Parameter \#1 \$tipe of static method App\\Enums\\OrderItemStatus\:\:alur\(\) expects App\\Enums\\FulfillmentType, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 3
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Result of \|\| is always true\.$#'
+			identifier: booleanOr.alwaysTrue
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between false and false will always evaluate to true\.$#'
+			identifier: identical.alwaysTrue
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between int and \*NEVER\* will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:ANTRIAN_PRODUKSI will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:DIBATALKAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:SELESAI will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:DIKIRIM will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:MENUNGGU_PELUNASAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Support/LinimasaItem.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Console\\Command\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: database/seeders/ContohProfilSeeder.php

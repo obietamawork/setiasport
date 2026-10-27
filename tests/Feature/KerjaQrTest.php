@@ -152,6 +152,42 @@ class KerjaQrTest extends TestCase
     }
 
     /**
+     * PIN cuma empat angka. Batas per IP di rute tidak menghentikan penebak yang
+     * berganti IP, jadi lembarnya sendiri dikunci setelah lima PIN salah (KEP-088).
+     */
+    public function test_pin_salah_berulang_mengunci_lembarnya(): void
+    {
+        $item = $this->itemProduksi();
+        $this->pekerja('Budi', '1234', [ProductionStage::PRINT->value]);
+
+        foreach (range(1, Pekerja::BATAS_SALAH_PIN) as $i) {
+            $this->post(route('kerja.selesai', $item->tokenKerja()), ['pin' => '000'.$i])
+                ->assertSessionHasErrors(['pin' => 'PIN tidak dikenali. Pastikan Anda memakai PIN Anda sendiri.']);
+        }
+
+        // PIN yang benar pun ditahan selama terkunci.
+        $this->post(route('kerja.selesai', $item->tokenKerja()), ['pin' => '1234'])
+            ->assertSessionHasErrors('pin');
+        $this->assertStringContainsString('Terlalu banyak PIN salah', session('errors')->first('pin'));
+        $this->assertSame(OrderItemStatus::PRINTING, $item->fresh()->status_item);
+    }
+
+    /** Salah ketik sekali dua kali lalu benar tetap jalan, dan hitungannya kembali nol. */
+    public function test_pin_benar_setelah_salah_ketik_tetap_diterima(): void
+    {
+        $item = $this->itemProduksi();
+        $this->pekerja('Budi', '1234', [ProductionStage::PRINT->value]);
+
+        foreach (range(1, Pekerja::BATAS_SALAH_PIN - 1) as $i) {
+            $this->post(route('kerja.selesai', $item->tokenKerja()), ['pin' => '000'.$i]);
+        }
+
+        $this->post(route('kerja.selesai', $item->tokenKerja()), ['pin' => '1234'])
+            ->assertSessionHas('sukses');
+        $this->assertSame(OrderItemStatus::PRESS, $item->fresh()->status_item);
+    }
+
+    /**
      * Tandai Desain selesai lewat QR tidak boleh memindahkan item ke Menunggu
      * Persetujuan Pelanggan tanpa mockup -- pelanggan akan diminta menyetujui
      * desain yang belum pernah mereka lihat sama sekali.

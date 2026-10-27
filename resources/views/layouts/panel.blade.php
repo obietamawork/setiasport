@@ -13,13 +13,10 @@
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <meta name="robots" content="noindex">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     {{-- Sidebar yang disembunyikan diingat per perangkat. Dipasang sebelum halaman
          tergambar, supaya sidebar tidak sempat muncul lalu hilang. --}}
-    <script>
+    <script nonce="{{ Vite::cspNonce() }}">
         try {
             if (localStorage.getItem('panel-sidebar') === 'tutup') document.documentElement.classList.add('sidebar-tutup');
         } catch (e) {}
@@ -47,6 +44,9 @@
       x-init="window.matchMedia('(min-width: 64rem)').addEventListener('change', (e) => { lebar = e.matches; menu = false; })"
       @keydown.escape.window="menu = false"
       :class="{ 'overflow-hidden': menu }">
+
+{{-- Pengguna papan ketik melompati sidebar dan kepala panel (WCAG 2.4.1). --}}
+<a href="#konten" class="lewati-ke-konten">Lewati ke konten</a>
 
 @php
     $u = auth('web')->user();
@@ -255,7 +255,7 @@
         </a>
     </aside>
 
-    <main class="min-w-0 flex-1">
+    <main id="konten" tabindex="-1" class="min-w-0 flex-1">
         <div class="kolom-kerja">
             @if (session('sukses'))
                 <p class="notis notis-ok mb-5">{{ session('sukses') }}</p>
@@ -306,6 +306,20 @@
 </nav>
 
 </div>
+
+{{-- Konfirmasi untuk formulir ber-data-konfirmasi (app.js), pengganti confirm()
+     bawaan peramban: yang itu berjudul alamat situs, tidak bisa diberi gaya,
+     dan membatalkannya dulu meninggalkan tombol "Memproses..." yang mati. --}}
+<dialog id="dialog-konfirmasi" class="dialog" aria-labelledby="dialog-konfirmasi-judul" aria-describedby="dialog-konfirmasi-pesan">
+    <div class="p-5 sm:p-6">
+        <h2 id="dialog-konfirmasi-judul" class="text-lg font-bold" data-konfirmasi-judul></h2>
+        <p id="dialog-konfirmasi-pesan" class="mt-2 leading-relaxed text-muted" data-konfirmasi-pesan></p>
+        <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <button type="button" class="tombol tombol-garis" data-konfirmasi-batal>Batal</button>
+            <button type="button" class="tombol tombol-utama" data-konfirmasi-ya></button>
+        </div>
+    </div>
+</dialog>
 
 @stack('skrip')
 </body>

@@ -169,7 +169,9 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // Bawaannya mengikuti APP_URL (KEP-088): situs HTTPS tidak boleh mengirim
+    // cookie sesi tanpa tanda Secure hanya karena baris .env ini terlupa.
+    'secure' => env('SESSION_SECURE_COOKIE', str_starts_with((string) env('APP_URL'), 'https://')),
 
     /*
     |--------------------------------------------------------------------------

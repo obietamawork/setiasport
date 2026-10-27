@@ -169,7 +169,7 @@ class LayananCs
             return 0;
         }
 
-        $penerima = User::where('aktif', true)->get()
+        $penerima = User::with('roles.permissions')->where('aktif', true)->get()
             ->filter(fn (User $u) => $u->punyaIzin('cs.balas'))
             ->pluck('email');
 

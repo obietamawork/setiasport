@@ -42,7 +42,7 @@ class PesananController extends Controller
 
         return view('panel.pesanan.index', [
             'pesanan' => Order::query()
-                ->with(['customer', 'items', 'payments', 'adjustments'])
+                ->with(['customer', 'items.options', 'items.rosters', 'payments', 'adjustments'])
                 ->tap($saring)
                 ->when($status === 'aktif', fn ($q) => $q->aktif())
                 ->when($status === 'tindakan', fn ($q) => $q->perluTindakan())

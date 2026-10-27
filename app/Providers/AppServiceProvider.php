@@ -9,6 +9,7 @@ use Illuminate\Mail\Events\MessageSent;
 use App\Services\Ongkir\Biteship;
 use App\Services\Ongkir\OngkirMati;
 use App\Services\Ongkir\PenyediaOngkir;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
@@ -46,5 +47,13 @@ class AppServiceProvider extends ServiceProvider
         ));
 
         Event::listen(MessageSent::class, CatatIdPesanEmail::class);
+
+        /*
+         * Relasi yang dimuat diam-diam di dalam perulangan (kueri N+1) langsung
+         * gagal di lokal dan di tes, bukan baru terasa lambat di shared hosting
+         * saat daftar pesanan sudah ratusan baris (KEP-090). Di produksi
+         * dimatikan: halaman yang lambat masih lebih baik daripada halaman galat.
+         */
+        Model::preventLazyLoading(! $this->app->isProduction());
     }
 }

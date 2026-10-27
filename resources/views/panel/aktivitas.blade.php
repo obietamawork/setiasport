@@ -14,7 +14,7 @@
         </div>
 
         <label for="saring-pengguna" class="sr-only">Saring menurut pengguna</label>
-        <select id="saring-pengguna" name="user_id" class="kotak-input w-40" onchange="this.form.submit()">
+        <select id="saring-pengguna" name="user_id" class="kotak-input w-40" data-kirim-saat-ubah>
             <option value="">Semua pengguna</option>
             @foreach ($pengguna as $p)
                 <option value="{{ $p->id }}" @selected((string) request('user_id') === (string) $p->id)>

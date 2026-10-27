@@ -59,7 +59,7 @@
 
 @if ($template->exists)
     <form method="POST" action="{{ route('panel.cs.template.destroy', $template) }}" class="mt-4"
-          onsubmit="return confirm('Hapus template ini?')">
+          data-konfirmasi="Hapus template ini?" data-konfirmasi-tombol="Hapus">
         @csrf @method('DELETE')
         <button type="submit" class="tautan text-sm text-muted">Hapus template ini</button>
     </form>

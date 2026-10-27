@@ -109,7 +109,9 @@
                                             terbaca dan tidak tertutup.
                                         </p>
                                         <form method="POST" action="{{ route('panel.pengaturan.qris.hapus') }}"
-                                              onsubmit="return confirm('Hapus gambar QRIS? Pelanggan hanya akan melihat rekening bank.')">
+                                              data-konfirmasi="Hapus gambar QRIS?"
+                                              data-konfirmasi-pesan="Pelanggan hanya akan melihat rekening bank."
+                                              data-konfirmasi-tombol="Hapus QRIS">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="tautan text-merah">Hapus gambar QRIS</button>
                                         </form>

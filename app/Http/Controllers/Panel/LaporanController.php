@@ -33,14 +33,14 @@ class LaporanController extends Controller
             ->get();
 
         $pesanan = Order::query()
-            ->with(['items.options', 'adjustments', 'payments'])
+            ->with(['items.options', 'items.rosters', 'adjustments', 'payments'])
             ->whereBetween('created_at', [$dari, $sampai])
             ->get();
 
         // Sisa tagihan dihitung atas seluruh pesanan yang masih berjalan,
         // bukan hanya yang masuk periode ini: uangnya memang belum diterima.
         $berjalan = Order::query()
-            ->with(['items.options', 'adjustments', 'payments'])
+            ->with(['items.options', 'items.rosters', 'adjustments', 'payments'])
             ->aktif()
             ->get();
 

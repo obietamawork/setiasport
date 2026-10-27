@@ -47,7 +47,7 @@ class ProdukController extends Controller
                 'belum-lengkap' => $dasar()->where('aktif', true)->tap($belumLengkap)->count(),
             ],
             'produk' => $dasar()
-                ->with(['category', 'images'])
+                ->with(['category', 'images', 'priceTiers', 'prices'])
                 ->withCount('variants')
                 ->when($saring === 'tayang', fn ($q) => $q->where('aktif', true))
                 ->when($saring === 'sembunyi', fn ($q) => $q->where('aktif', false))
@@ -124,7 +124,7 @@ class ProdukController extends Controller
     private function pilihanKategori()
     {
         return Category::with('parent')->whereNotNull('parent_id')->orderBy('nama')->get()
-            ->merge(Category::whereNull('parent_id')->whereDoesntHave('children')->get())
+            ->merge(Category::with('parent')->whereNull('parent_id')->whereDoesntHave('children')->get())
             ->sortBy(fn (Category $k) => ($k->parent?->nama ?? '').$k->nama);
     }
 

@@ -48,13 +48,7 @@ class KerjaController extends Controller
         abort_if($tahap === null, 422,
             'Barang ini sedang tidak berada di meja produksi. Tanyakan ke admin konveksi.');
 
-        $pekerja = Pekerja::cariLewatPin($data['pin']);
-
-        if (! $pekerja) {
-            throw ValidationException::withMessages([
-                'pin' => 'PIN tidak dikenali. Pastikan Anda memakai PIN Anda sendiri.',
-            ]);
-        }
+        $pekerja = Pekerja::periksaPin($data['pin'], 'item:'.$item->id);
 
         /*
          * Tiap orang hanya menandai mejanya sendiri. Tanpa pagar ini, satu PIN

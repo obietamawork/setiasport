@@ -1,0 +1,96 @@
+# Pemeriksaan otomatis di setiap push dan pull request (KEP-090).
+#
+# Empat hal yang selama ini hanya bergantung pada ingatan developer:
+#   1. seluruh tes lulus,
+#   2. public/build sinkron dengan kode (hosting tanpa Node, jadi hasil build
+#      ikut di-commit, dan dua kali kelas CSS baru tidak pernah sampai produksi),
+#   3. tidak ada temuan analisis statis baru,
+#   4. tidak ada dependensi dengan kerentanan yang sudah diumumkan.
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tes:
+    name: Tes, build, dan audit dependensi
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    services:
+      mysql:
+        # Sama dengan compose.yaml; tes memakai fitur MySQL, bukan SQLite.
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: setiasport_test
+          MYSQL_ROOT_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psecret"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    # Menimpa DB_HOST=db di phpunit.xml: <env> di sana tidak menimpa variabel
+    # yang sudah ada di lingkungan.
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: setiasport_test
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          # Sama dengan docker/php/Dockerfile dan batas bawah composer.json.
+          php-version: '8.2'
+          extensions: pdo_mysql, mbstring, bcmath, gd, zip, exif, intl
+          coverage: none
+          tools: composer:v2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Dependensi PHP
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Dependensi JS
+        run: npm ci --no-audit --no-fund
+
+      - name: Build aset dan pastikan public/build sinkron
+        run: |
+          npm run build
+          if [ -n "$(git status --porcelain public/build)" ]; then
+            git status --porcelain public/build
+            echo "::error::public/build tidak sinkron dengan kode. Jalankan npm run build lalu commit hasilnya."
+            exit 1
+          fi
+
+      - name: Siapkan .env
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Tes
+        run: php artisan test
+
+      # Temuan lama tercatat di phpstan-baseline.neon; yang baru membuat CI gagal.
+      - name: Analisis statis (Larastan level 5)
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+      - name: Audit kerentanan dependensi
+        run: |
+          composer audit --no-interaction
+          npm audit --audit-level=high

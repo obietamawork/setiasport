@@ -9,7 +9,6 @@ use App\Services\RollPrinting;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Halaman roll yang dibuka operator printing lewat pindai QR (KEP-051).
@@ -34,13 +33,7 @@ class RollController extends Controller
             'pin' => ['required', 'string', 'min:4', 'max:8'],
         ], ['pin.required' => 'Masukkan PIN Anda dulu.']);
 
-        $pekerja = Pekerja::cariLewatPin($data['pin']);
-
-        if (! $pekerja) {
-            throw ValidationException::withMessages([
-                'pin' => 'PIN tidak dikenali. Pastikan Anda memakai PIN Anda sendiri.',
-            ]);
-        }
+        $pekerja = Pekerja::periksaPin($data['pin'], 'roll:'.$roll->id);
 
         $maju = $this->roll->selesaikan($roll, $pekerja);
 

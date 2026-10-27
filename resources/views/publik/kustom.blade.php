@@ -503,7 +503,7 @@
 </div>
 
 @push('skrip')
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
     function pesanKustom(cfg) {
         return {
             ...cfg,

@@ -8,6 +8,12 @@
 @section('subjudul', $produk->nama)
 @section('subcatatan', 'Lihat rincian produk, harga, dan cara memesannya.')
 
+{{-- Data produk untuk mesin pencari (KEP-089): harga dan ketersediaan yang
+     sama dengan yang tampil di halaman ini. --}}
+@push('kepala')
+    <script type="application/ld+json">@json(\App\Support\DataTerstruktur::produk($produk), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG)</script>
+@endpush
+
 @section('isi')
 @php
     $adaStok = $produk->punyaJalurReadyStock();
@@ -413,7 +419,7 @@
     </div>
 </div>
 @push('skrip')
-<script>
+<script nonce="{{ Vite::cspNonce() }}">
     function pilihVarian(varian, warna, ukuran) {
         return {
             varian, warna, ukuran,

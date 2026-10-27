@@ -50,7 +50,7 @@
 <body>
 
 <div class="cetak">
-    <button type="button" onclick="window.print()">Cetak atau simpan PDF</button>
+    <button type="button" data-cetak>Cetak atau simpan PDF</button>
 </div>
 
 @php
@@ -245,5 +245,9 @@
     </div>
 </div>
 
+{{-- Tanpa onclick sebaris: CSP hanya menjalankan skrip ber-nonce (KEP-088). --}}
+<script nonce="{{ Vite::cspNonce() }}">
+    document.querySelector('[data-cetak]')?.addEventListener('click', () => window.print());
+</script>
 </body>
 </html>

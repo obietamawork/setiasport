@@ -7,7 +7,9 @@
         /* Ditempel di roll kertasnya, jadi dicetak besar dan ringkas. */
         * { box-sizing: border-box; }
         body { margin: 0; padding: 14mm 12mm; font: 12px/1.5 Arial, Helvetica, sans-serif; }
-        .kop { display: flex; justify-content: space-between; gap: 16px;
+        /* flex-wrap: di HP QR turun ke bawah, bukan terdorong keluar layar
+           (Firefox tidak menyusutkan kolom kiri). Di A4 keduanya tetap sebaris. */
+        .kop { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px;
                border-bottom: 2px solid #000; padding-bottom: 10px; }
         .kode { font-size: 28px; font-weight: bold; letter-spacing: 1px; }
         table { width: 100%; border-collapse: collapse; margin-top: 12px; }
@@ -22,7 +24,7 @@
 <body>
 
 <div class="cetak">
-    <button type="button" onclick="window.print()">Cetak lembar roll</button>
+    <button type="button" data-cetak>Cetak lembar roll</button>
     <a href="{{ route('panel.antrian.tahap', 'print') }}">Kembali ke antrian printing</a>
 </div>
 
@@ -74,5 +76,9 @@
     <span class="tautan">{{ $tautan }}</span>
 </p>
 
+{{-- Tanpa onclick sebaris: CSP hanya menjalankan skrip ber-nonce (KEP-088). --}}
+<script nonce="{{ Vite::cspNonce() }}">
+    document.querySelector('[data-cetak]')?.addEventListener('click', () => window.print());
+</script>
 </body>
 </html>

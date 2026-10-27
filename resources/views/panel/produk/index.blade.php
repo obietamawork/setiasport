@@ -88,7 +88,10 @@
                                 ? 'harga' : null,
                         ]);
                     @endphp
-                    <tr class="group relative hover:bg-navy-50 {{ $p->aktif ? '' : 'text-muted' }}">
+                    {{-- Seluruh baris bisa diklik lewat data-tautan (app.js); lihat
+                         catatan di daftar pesanan soal ::before di Safari. --}}
+                    <tr class="group hover:bg-navy-50 {{ $p->aktif ? '' : 'text-muted' }}"
+                        data-tautan="{{ route('panel.produk.edit', $p) }}">
                         {{-- Gambar kecil di kolomnya sendiri: itu yang paling cepat
                              dikenali mata saat mencari satu produk di antara lima puluh. --}}
                         <td class="hidden w-14 md:table-cell">
@@ -107,7 +110,7 @@
                         </td>
                         <td data-utama>
                             <a href="{{ route('panel.produk.edit', $p) }}"
-                               class="font-semibold text-navy-700 before:absolute before:inset-0 before:content-['']">
+                               class="font-semibold text-navy-700">
                                 {{ $p->nama }}
                             </a>
                             <div class="text-xs text-muted tabular">{{ $p->sku }}</div>
