@@ -3270,13 +3270,14 @@ diperiksa sebelum apa pun dipasang. Tiga temuan mengubah kode dan cara deploy:
 
 ---
 
-## KEP-094 — Resend dipasang; email yang ditolak di antrian tercatat Gagal Kirim
+## KEP-094 — Email Resend dan ongkir Biteship dinyalakan di produksi
 **Status:** TERKUNCI · 2026-10-30
 
 Kunci Resend dipasang di `bersama/.env`. Kunci itu berizin *Sending access*
-saja, jadi menambah domain dan webhook tetap dikerjakan di dasbor Resend
-(docs/12 bagian 6 dan 7). Memeriksa jalur email sebelum menyalakannya
-menemukan dua hal:
+saja, jadi domain dan webhook ditambahkan di dasbor Resend (docs/12 bagian 6
+dan 7). Record DNS-nya (DKIM, `send`, `rsend`) ditambahkan ke zona Rumahweb
+lewat `uapi`, dan webhook diuji dari luar dengan tanda tangan sah dan palsu.
+Memeriksa jalur email sebelum menyalakannya menemukan dua hal:
 
 - **Penolakan Resend di antrian tidak pernah tercatat.** `PengirimEmail` menangkap
   galat kirim, tetapi di hosting email baru dikirim cron lewat antrian, jauh dari
@@ -3291,6 +3292,17 @@ menemukan dua hal:
   `MAIL_MAILER=resend` dinyalakan sebelum domain terverifikasi, berlawanan
   dengan catatan di KEP-093: penolakan yang terlihat di dashboard lebih baik
   daripada email yang hilang tanpa jejak.
+
+**Ongkir otomatis memakai kunci TEST Biteship untuk sementara.** Kunci live baru
+keluar setelah Biteship menyetujui formulir aktivasi. Dicoba lebih dulu: kunci
+test mengembalikan tarif yang berbeda per tujuan dan berat (Wonogiri ke Selogiri
+Rp9.000, ke Jakarta Selatan Rp15.000, ke Jayapura Rp165.000, JNE REG 1 kg), dan
+resi rekaan dijawab "tidak ditemukan", bukan riwayat palsu. Menurut Biteship,
+cek tarif di mode test memang memakai data nyata dan dipotong Rp5 per cek dari
+saldo; batasnya 5 permintaan per detik, jauh di atas kebutuhan toko ini. Area
+asal diisi `Wonogiri, Wonogiri, Jawa Tengah. 57612`, sesuai kode pos alamat
+toko di Pengaturan. Setelah kunci live keluar, cukup `BITESHIP_KUNCI` yang
+ditukar, lalu `php artisan config:cache`.
 
 ---
 
@@ -3391,4 +3403,4 @@ menemukan dua hal:
 | KEP-091 | Dua jalan pemesanan, tombol − +, hapus di keranjang, estimasi dari data | TERKUNCI |
 | KEP-092 | Logo hero versi terang, dan banner promo beranda yang digeser manual | TERKUNCI |
 | KEP-093 | Rilis pertama ke hosting, deploy lewat SSH | TERKUNCI |
-| KEP-094 | Resend dipasang; email yang ditolak di antrian tercatat Gagal Kirim | TERKUNCI |
+| KEP-094 | Email Resend dan ongkir Biteship dinyalakan di produksi | TERKUNCI |

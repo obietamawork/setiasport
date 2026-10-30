@@ -111,8 +111,8 @@ RESEND_WEBHOOK_SECRET=whsec_…
 # dibuat; selama itu ongkir dihitung admin seperti sebelumnya. Area asal toko
 # BUKAN di sini (KEP-067): diisi staf lewat Pengaturan > Pengiriman di panel,
 # dicari lewat kotak pencarian karena kodenya tidak bisa ditebak.
-ONGKIR_PENYEDIA=mati          # mati | biteship
-BITESHIP_KUNCI=
+ONGKIR_PENYEDIA=biteship      # mati | biteship
+BITESHIP_KUNCI=biteship_test… # sementara kunci TEST: tarifnya nyata (KEP-094); tukar ke kunci live setelah aktivasi disetujui
 ONGKIR_KURIR=jne,jnt
 
 FITUR_CS=false                # true hanya kalau chat CS dinyalakan kembali
@@ -273,11 +273,11 @@ lewat kunci tersebut.
 2. Resend menampilkan record DNS berikut. Isinya disalin persis dari halaman
    Resend, karena kunci DKIM berbeda untuk setiap akun:
 
-   | Jenis | Nama | Isi |
+   | Jenis | Nama | Isi (yang ditampilkan untuk `setiasport.com`, Oktober 2026) |
    |---|---|---|
-   | TXT | `resend._domainkey` | kunci DKIM (`p=…`) |
-   | MX | `send` | `feedback-smtp.<region>.amazonses.com`, prioritas 10 |
-   | TXT | `send` | `v=spf1 include:amazonses.com ~all` |
+   | TXT | `resend._domainkey` | kunci DKIM (`p=MIGfMA0…`) |
+   | CNAME | `send` | `send.forge.rmta.net` |
+   | CNAME | `rsend` | `rsend-apne1.forge.rmta.net` |
 
    Nameserver `setiasport.com` milik Rumahweb, jadi record ini ditambahkan di
    cPanel → **Zone Editor** (lewat SSH: `uapi DNS mass_edit_zone`). Semuanya di
