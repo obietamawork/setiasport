@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Enums\DesignAssetType;
 use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Enums\PaymentType;
 use App\Enums\ProductionStage;
 use App\Enums\ProductionStatus;
 use App\Models\Order;
@@ -108,6 +110,55 @@ class AlurPesanan
         if ($order->status !== OrderStatus::SIAP_DIAMBIL) {
             $this->email->kirim($order, 'pembayaran-diterima');
         }
+    }
+
+    /**
+     * Bukti pembayaran tidak cocok dengan mutasi (KEP-097).
+     *
+     * Dulu hanya ditandai gagal: alasannya tersimpan di log staf, tagihan untuk
+     * pesanan baru tidak ada lagi, form unggah di halaman pesanan hilang, dan
+     * pesanan dibatalkan otomatis begitu batas bayarnya lewat. Satu salah
+     * transfer berakhir jadi pesanan hangus. Kini alasannya disimpan dan
+     * dikirim ke pelanggan, dan tagihan awal yang ditolak diganti tagihan baru
+     * dengan nominal sama serta batas bayar yang dimulai ulang.
+     *
+     * Pelunasan tidak butuh tagihan pengganti: halaman pesanan membacanya
+     * langsung dari sisa tagihan, dan unggahan berikutnya membuat barisnya.
+     */
+    public function tolakPembayaran(Payment $payment, string $alasan, ?int $olehUserId = null): void
+    {
+        DB::transaction(function () use ($payment, $alasan, $olehUserId) {
+            $order = Order::whereKey($payment->order_id)->lockForUpdate()->firstOrFail();
+            $payment->refresh();
+
+            abort_unless($payment->status === PaymentStatus::MENUNGGU, 422,
+                'Pembayaran ini sudah tidak menunggu verifikasi.');
+
+            $payment->update([
+                'status' => PaymentStatus::GAGAL,
+                'alasan_tolak' => $alasan,
+                'diverifikasi_oleh' => $olehUserId,
+            ]);
+
+            if ($order->status === OrderStatus::MENUNGGU_PEMBAYARAN && $payment->jenis !== PaymentType::PELUNASAN) {
+                // Pesanan yang diketik admin tidak punya batas bayar (KEP-054).
+                $batas = $order->kadaluarsa_pada
+                    ? now()->addHours((int) Setting::ambil('batas_bayar_jam', 24))
+                    : null;
+
+                $order->update(['kadaluarsa_pada' => $batas]);
+
+                $order->payments()->create([
+                    'jenis' => $payment->jenis,
+                    'metode' => PaymentMethod::TRANSFER,
+                    'status' => PaymentStatus::MENUNGGU,
+                    'jumlah' => $payment->jumlah,
+                    'kadaluarsa_pada' => $batas,
+                ]);
+            }
+        });
+
+        $this->email->kirim(Order::findOrFail($payment->order_id), 'pembayaran-ditolak');
     }
 
     /**

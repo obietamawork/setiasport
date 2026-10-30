@@ -37,7 +37,7 @@ enum OrderStatus: string
             self::DIKIRIM => 'Dalam Pengiriman',
             self::SELESAI => 'Selesai',
             self::DIBATALKAN => 'Dibatalkan',
-            self::KADALUARSA => 'Kadaluarsa',
+            self::KADALUARSA => 'Kedaluwarsa',
         };
     }
 

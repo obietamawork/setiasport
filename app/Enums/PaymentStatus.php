@@ -15,7 +15,7 @@ enum PaymentStatus: string
             self::MENUNGGU => 'Menunggu Pembayaran',
             self::LUNAS => 'Lunas',
             self::GAGAL => 'Gagal',
-            self::KADALUARSA => 'Kadaluarsa',
+            self::KADALUARSA => 'Kedaluwarsa',
         };
     }
 }

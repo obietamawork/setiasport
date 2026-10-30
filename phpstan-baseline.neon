@@ -709,6 +709,12 @@ parameters:
 			path: app/Services/AlurPesanan.php
 
 		-
+			message: '#^Call to function abort_unless\(\) with arguments false, 422 and ''Pembayaran ini…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
 			message: '#^Call to function abort_unless\(\) with arguments false, 422 and ''Pesanan ini tidak…'' will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 1
@@ -759,7 +765,7 @@ parameters:
 		-
 			message: '#^Result of && is always false\.$#'
 			identifier: booleanAnd.alwaysFalse
-			count: 1
+			count: 2
 			path: app/Services/AlurPesanan.php
 
 		-
@@ -770,6 +776,12 @@ parameters:
 
 		-
 			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\OrderStatus\:\:SIAP_DIAMBIL will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\PaymentType\:\:PELUNASAN will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: app/Services/AlurPesanan.php
@@ -805,7 +817,19 @@ parameters:
 			path: app/Services/AlurPesanan.php
 
 		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:MENUNGGU_PEMBAYARAN will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
 			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderStatus\:\:SIAP_DIAMBIL will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\PaymentStatus\:\:MENUNGGU will always evaluate to false\.$#'
 			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Services/AlurPesanan.php

@@ -156,13 +156,11 @@ class PembayaranController extends Controller
             'alasan.required' => 'Tulis alasannya agar bisa dijelaskan ke pelanggan.',
         ], ['alasan' => 'alasan']);
 
-        $pembayaran->update([
-            'status' => PaymentStatus::GAGAL,
-            'diverifikasi_oleh' => auth('web')->id(),
-        ]);
+        $this->alur->tolakPembayaran($pembayaran, $data['alasan'], auth('web')->id());
 
         ActivityLog::catat('pembayaran.ditolak', $pesanan, $data);
 
-        return back()->with('sukses', 'Pembayaran ditandai gagal. Hubungi pelanggan untuk menjelaskannya.');
+        return back()->with('sukses', 'Pembayaran ditandai gagal. Pelanggan sudah dikabari lewat email '
+            .'beserta alasannya, dan bisa mengirim ulang bukti dari halaman pesanannya.');
     }
 }

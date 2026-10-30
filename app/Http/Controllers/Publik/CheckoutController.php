@@ -142,7 +142,7 @@ class CheckoutController extends Controller
         // Penyedia ongkirnya mati, atau tujuannya belum ketemu di daftar area.
         // Pesanannya tetap dibuat: alamatnya tercatat dan ongkirnya menyusul
         // dari admin, persis cara kerja toko sebelum ada hitungan otomatis.
-        if (! $this->pengiriman->otomatis() || $area === '' || $kode === '') {
+        if (! $this->pengiriman->otomatis() || $area === '') {
             return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area !== '' ? $area : null, tautanLokasi: $tautanLokasi);
         }
 
@@ -155,6 +155,15 @@ class CheckoutController extends Controller
         // API pihak ketiga sedang bermasalah berarti kehilangan pesanan.
         if ($pilihan === []) {
             return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area, tautanLokasi: $tautanLokasi);
+        }
+
+        // Tarifnya ada tapi kurirnya belum dipilih (KEP-097). Dulu ini diam-diam
+        // jadi "ongkir menyusul": tagihan terbit tanpa ongkos kirim, pembeli
+        // membayar, lalu admin harus menagih ongkirnya belakangan.
+        if ($kode === '') {
+            throw ValidationException::withMessages([
+                'tarif' => 'Pilih kurir pengirimannya dulu, ya.',
+            ]);
         }
 
         $tarif = collect($pilihan)->first(fn ($t) => $t->kode() === $kode);

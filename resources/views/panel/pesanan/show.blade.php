@@ -436,7 +436,7 @@
                         @if ($bayar->status === PaymentStatus::MENUNGGU && $izin->punyaIzin('pembayaran.verifikasi'))
                             {{-- Tidak ada gerbang yang mengabari kami (KEP-023): admin
                                  mencocokkan sendiri mutasi rekening dengan bukti yang
-                                 masuk lewat WhatsApp, lalu mencatat hasilnya di sini. --}}
+                                 diunggah pelanggan, lalu mencatat hasilnya di sini. --}}
                             <details class="lipatan w-full">
                                 <summary>Verifikasi pembayaran ini</summary>
                                 <div class="grid gap-4 bg-navy-50 p-4 sm:grid-cols-2">

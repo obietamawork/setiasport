@@ -5,7 +5,10 @@
 
 <p style="margin:0 0 16px;">
   Pesanan <strong>{{ $order->kode }}</strong> sudah selesai dikerjakan.
-  Tinggal satu langkah sebelum bisa diambil: pelunasan.
+  {{-- Pesanan yang dikirim tidak lewat toko sama sekali (KEP-097). --}}
+  {{ $order->dikirim()
+      ? 'Tinggal satu langkah sebelum paketnya kami kirim: pelunasan.'
+      : 'Tinggal satu langkah sebelum bisa diambil: pelunasan.' }}
 </p>
 
 <div style="border-left:3px solid #ff5a1f;background:#ffede4;padding:16px;margin:0 0 16px;">
@@ -19,7 +22,7 @@
      termurah terhadap penipuan atas nama toko. --}}
 <p style="margin:0 0 16px;">
   Rekening dan QRIS resmi kami ada di halaman pesanan Anda, bersama tempat untuk
-  mengunggah bukti transfernya. Bisa juga dibayar langsung di kasir saat datang.
+  mengunggah bukti transfernya.@unless ($order->dikirim()) Bisa juga dibayar langsung di kasir saat datang.@endunless
 </p>
 
 <p style="margin:0 0 20px;font-size:13px;color:#5c6b64;">

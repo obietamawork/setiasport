@@ -135,7 +135,10 @@
                                 <template x-for="t in daftarTarif" :key="t.kode">
                                     <label class="flex items-start justify-between gap-3 border border-line bg-white px-3 py-2 text-sm">
                                         <span class="flex items-start gap-2">
+                                            {{-- Wajib hanya selama "dikirim" dipilih: kolom wajib
+                                                 yang tersembunyi membuat peramban menolak formulir. --}}
                                             <input type="radio" name="tarif" :value="t.kode" x-model="tarif"
+                                                   :required="metode === 'KIRIM'"
                                                    class="mt-0.5 size-4 accent-navy">
                                             <span x-text="t.label"></span>
                                         </span>

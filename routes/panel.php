@@ -3,40 +3,40 @@
 use App\Http\Controllers\BuktiBayarController;
 use App\Http\Controllers\Panel\AktivitasController;
 use App\Http\Controllers\Panel\AkunSayaController;
+use App\Http\Controllers\Panel\AntrianController;
 use App\Http\Controllers\Panel\AuthController;
 use App\Http\Controllers\Panel\BahanController;
 use App\Http\Controllers\Panel\BannerController;
 use App\Http\Controllers\Panel\BantuanController;
 use App\Http\Controllers\Panel\ContohProfilController;
 use App\Http\Controllers\Panel\CsController;
-use App\Http\Controllers\Panel\TemplateBalasanController;
 use App\Http\Controllers\Panel\DashboardController;
+use App\Http\Controllers\Panel\GambarProdukController;
 use App\Http\Controllers\Panel\InvoiceController;
 use App\Http\Controllers\Panel\IsiPesananController;
 use App\Http\Controllers\Panel\KategoriController;
 use App\Http\Controllers\Panel\KesiapanController;
-use App\Http\Controllers\Panel\AntrianController;
-use App\Http\Controllers\Panel\GambarProdukController;
 use App\Http\Controllers\Panel\LaporanController;
 use App\Http\Controllers\Panel\MockupController;
 use App\Http\Controllers\Panel\PekerjaController;
 use App\Http\Controllers\Panel\PembatalanController;
-use App\Http\Controllers\Panel\PenggunaController;
 use App\Http\Controllers\Panel\PembayaranController;
-use App\Http\Controllers\Panel\PenyesuaianController;
 use App\Http\Controllers\Panel\PengaturanController;
+use App\Http\Controllers\Panel\PenggunaController;
 use App\Http\Controllers\Panel\PengirimanController;
-use App\Http\Controllers\Panel\PortofolioController;
-use App\Http\Controllers\Panel\RollCetakController;
+use App\Http\Controllers\Panel\PenyesuaianController;
 use App\Http\Controllers\Panel\PesananController;
 use App\Http\Controllers\Panel\PesananManualController;
-use App\Http\Controllers\Panel\SerahTerimaController;
-use App\Http\Controllers\Panel\WorksheetController;
+use App\Http\Controllers\Panel\PortofolioController;
 use App\Http\Controllers\Panel\ProdukController;
 use App\Http\Controllers\Panel\ProdukHargaController;
 use App\Http\Controllers\Panel\ProdukKomponenController;
+use App\Http\Controllers\Panel\RollCetakController;
+use App\Http\Controllers\Panel\SerahTerimaController;
 use App\Http\Controllers\Panel\StokController;
+use App\Http\Controllers\Panel\TemplateBalasanController;
 use App\Http\Controllers\Panel\TestimoniController;
+use App\Http\Controllers\Panel\WorksheetController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('panel')->name('panel.')->group(function () {
@@ -59,9 +59,9 @@ Route::prefix('panel')->name('panel.')->group(function () {
         // Mengganti email memeriksa kata sandi sekarang: tanpa batas, sesi
         // yang tertinggal di HP lain bisa dipakai menebaknya.
         Route::put('akun', [AkunSayaController::class, 'updateProfil'])
-            ->middleware('throttle:10,1')->name('akun.profil');
+            ->middleware('throttle:10,1,akun-profil')->name('akun.profil');
         Route::put('akun/sandi', [AkunSayaController::class, 'updateSandi'])
-            ->middleware('throttle:10,1')->name('akun.sandi');
+            ->middleware('throttle:10,1,akun-sandi')->name('akun.sandi');
 
         Route::middleware('izin:pengguna.kelola')->prefix('pengguna')->name('pengguna.')->group(function () {
             Route::get('/', [PenggunaController::class, 'index'])->name('index');

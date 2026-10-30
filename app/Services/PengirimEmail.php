@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Enums\EmailStatus;
+use App\Enums\PaymentStatus;
 use App\Mail\EmailPesanan;
 use App\Mail\KonfirmasiAkun;
 use App\Models\Customer;
 use App\Models\EmailLog;
 use App\Models\Order;
+use App\Models\Payment;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
@@ -23,6 +25,7 @@ class PengirimEmail
     private const SUBJEK = [
         'order-dibuat' => 'Pesanan %s diterima: menunggu pembayaran',
         'pembayaran-diterima' => 'Pembayaran pesanan %s sudah kami terima',
+        'pembayaran-ditolak' => 'Bukti pembayaran pesanan %s belum bisa kami terima',
         'menunggu-pelunasan' => 'Pesanan %s sudah jadi, tinggal pelunasan',
         'pesanan-siap' => 'Pesanan %s sudah siap',
         'pesanan-dikirim' => 'Pesanan %s sudah dikirim, ini nomor resinya',
@@ -97,18 +100,23 @@ class PengirimEmail
 
         return match ($template) {
             'order-dibuat' => "Halo {$nama}, pesanan {$order->kode} sudah kami terima. "
-                ."Total ".rupiah($order->total).". Rincian dan cara bayar ada di sini: {$tautan}",
+                .'Total '.rupiah($order->total).". Rincian dan cara bayar ada di sini: {$tautan}",
+
+            // Rekening tidak ditulis di sini (KEP-029): halaman pesanan satu-satunya sumbernya.
+            'pembayaran-ditolak' => "Halo {$nama}, bukti pembayaran pesanan {$order->kode} belum bisa kami terima: "
+                .($this->alasanTolakTerakhir($order) ?? 'tidak cocok dengan mutasi rekening kami')
+                .". Silakan kirim ulang buktinya di halaman pesanan: {$tautan}",
 
             'pembayaran-diterima' => "Halo {$nama}, pembayaran untuk pesanan {$order->kode} sudah kami terima. "
                 .($order->sisa_tagihan > 0
-                    ? "Sisa ".rupiah($order->sisa_tagihan)." dilunasi setelah barang selesai dikerjakan. "
+                    ? 'Sisa '.rupiah($order->sisa_tagihan).' dilunasi setelah barang selesai dikerjakan. '
                     : '')
                 ."Pantau progresnya di sini: {$tautan}",
 
             // Rekening sengaja tidak ditulis di pesan (KEP-029): halaman pesanan
             // di domain toko adalah satu-satunya sumber rekening yang sah.
             'menunggu-pelunasan' => "Halo {$nama}, pesanan {$order->kode} sudah selesai dikerjakan. "
-                ."Tinggal pelunasan ".rupiah($order->sisa_tagihan).". Rekening resmi dan tempat "
+                .'Tinggal pelunasan '.rupiah($order->sisa_tagihan).'. Rekening resmi dan tempat '
                 ."unggah buktinya ada di halaman pesanan: {$tautan}",
 
             'pesanan-dikirim' => "Halo {$nama}, pesanan {$order->kode} sudah dikirim lewat {$order->jasa_kirim}. "
@@ -116,11 +124,24 @@ class PengirimEmail
 
             'pesanan-siap' => "Halo {$nama}, pesanan {$order->kode} sudah siap diambil di toko. "
                 ."Kode ambil: {$order->kode_ambil}. "
-                .($order->sisa_tagihan > 0 ? "Mohon bawa ".rupiah($order->sisa_tagihan)." untuk pelunasan. " : '')
+                .($order->sisa_tagihan > 0 ? 'Mohon bawa '.rupiah($order->sisa_tagihan).' untuk pelunasan. ' : '')
                 ."Detail: {$tautan}",
 
             default => "Halo {$nama}, pesanan {$order->kode} masih menunggu diambil di toko. "
                 ."Kode ambil: {$order->kode_ambil}. Detail: {$tautan}",
         };
+    }
+
+    /** Alasan dari bukti pembayaran yang terakhir ditolak (KEP-097). */
+    public function alasanTolakTerakhir(Order $order): ?string
+    {
+        /** @var Payment|null $ditolak */
+        $ditolak = $order->payments
+            ->where('status', PaymentStatus::GAGAL)
+            ->whereNotNull('alasan_tolak')
+            ->sortByDesc('id')
+            ->first();
+
+        return $ditolak?->alasan_tolak;
     }
 }

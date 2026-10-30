@@ -262,6 +262,41 @@ class CheckoutOngkirTest extends TestCase
     }
 
     /** Penyedianya hidup tetapi sedang tidak menjawab: pesanan tetap jadi. */
+    /**
+     * Tarifnya tersedia tapi kurirnya tidak dipilih (KEP-097). Dulu pesanan tetap
+     * dibuat dengan ongkir nol "menyusul": tagihan terbit tanpa ongkos kirim dan
+     * admin harus menagihnya belakangan.
+     */
+    public function test_kurir_wajib_dipilih_kalau_tarifnya_tersedia(): void
+    {
+        $this->nyalakanPenyedia();
+        $this->tarifPalsu();
+        $this->keranjang();
+
+        $this->kirimCheckout([
+            'metode_ambil' => 'KIRIM',
+            'alamat_kirim' => 'Jl. Melati 5, Wonogiri',
+            'area_tujuan' => 'IDNP6IDNC148IDND874',
+        ])->assertSessionHasErrors(['tarif' => 'Pilih kurir pengirimannya dulu, ya.']);
+
+        $this->assertSame(0, Order::count());
+    }
+
+    /** Area tujuan yang tidak ketemu di pencarian tetap boleh: ongkirnya menyusul. */
+    public function test_tanpa_area_tujuan_pesanan_kirim_tetap_jadi_dengan_ongkir_menyusul(): void
+    {
+        $this->nyalakanPenyedia();
+        $this->tarifPalsu();
+        $this->keranjang();
+
+        $this->kirimCheckout([
+            'metode_ambil' => 'KIRIM',
+            'alamat_kirim' => 'Dusun Sumber, Desa Terpencil',
+        ])->assertRedirect();
+
+        $this->assertSame(0, (int) Order::firstOrFail()->ongkir);
+    }
+
     public function test_penyedia_error_pesanan_tetap_jadi(): void
     {
         $this->nyalakanPenyedia();

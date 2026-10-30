@@ -43,8 +43,14 @@ Route::get('/checkout', [CheckoutController::class, 'form'])->name('checkout');
  * di sesi database, dan tiap baris dihitung ulang harganya di setiap halaman:
  * tanpa batas, satu skrip bisa menggelembungkan sesi sebanyak yang ia mau.
  * Enam puluh per menit jauh di atas kecepatan orang mengklik.
+ *
+ * SETIAP throttle di berkas ini wajib punya awalan sendiri (parameter ketiga).
+ * Tanpa awalan, Laravel memakai satu penghitung per IP untuk semua route:
+ * mencari area ongkir dan menambah barang ikut menghabiskan jatah enam unggahan
+ * bukti transfer, dan pembeli ditolak 429 tepat saat hendak membayar (KEP-097).
+ * PembatasLajuTest menolak throttle tanpa awalan.
  */
-Route::middleware('throttle:60,1')->group(function () {
+Route::middleware('throttle:60,1,keranjang')->group(function () {
     Route::post('/pesan/{produk:slug}', [KustomController::class, 'simpan'])->name('kustom.simpan');
     Route::post('/keranjang', [KeranjangController::class, 'tambah'])->name('keranjang.tambah');
     Route::post('/keranjang/kustom/{produk:slug}', [KeranjangController::class, 'tambahKustom'])
@@ -57,14 +63,14 @@ Route::middleware('throttle:60,1')->group(function () {
 // menahan percobaan yang gagal, yang tiap kalinya bisa memanggil tarif
 // Biteship berbayar untuk area tujuan acak (KEP-096).
 Route::post('/checkout', [CheckoutController::class, 'proses'])
-    ->middleware('throttle:20,1')->name('checkout.proses');
+    ->middleware('throttle:20,1,checkout')->name('checkout.proses');
 
 /*
  * Pilihan pengiriman di checkout (KEP-058). Dibatasi lajunya karena tiap
  * panggilan ke penyedia ongkir berbiaya, dan kotak pencarian yang mengetik
  * sendiri adalah cara termudah menghabiskan saldo orang lain.
  */
-Route::middleware('throttle:30,1')->group(function () {
+Route::middleware('throttle:30,1,ongkir')->group(function () {
     Route::get('/pengiriman/area', [OngkirController::class, 'area'])->name('pengiriman.area');
     Route::get('/pengiriman/tarif', [OngkirController::class, 'tarif'])->name('pengiriman.tarif');
 });
@@ -85,7 +91,7 @@ Route::middleware('guest:pelanggan')->group(function () {
         ->name('daftar.konfirmasi');
     // Kata sandi diminta sebelum akun aktif (KEP-096).
     Route::post('/daftar/konfirmasi/{token}', [AkunController::class, 'konfirmasiProses'])
-        ->middleware('throttle:10,1')->name('daftar.konfirmasi.proses');
+        ->middleware('throttle:10,1,konfirmasi-akun')->name('daftar.konfirmasi.proses');
 });
 
 Route::middleware('auth:pelanggan')->group(function () {
@@ -103,9 +109,9 @@ Route::get('/lacak/{token}', [LacakController::class, 'show'])->name('lacak.toke
  * tanpa batas, siapa pun yang memegang satu tautan bisa memenuhi disk hosting.
  */
 Route::post('/lacak/{token}/bukti', [BuktiBayarController::class, 'unggah'])
-    ->middleware('throttle:6,10')->name('lacak.bukti');
+    ->middleware('throttle:6,10,bukti')->name('lacak.bukti');
 Route::get('/lacak/{token}/pembayaran/{pembayaran}/bukti', [BuktiBayarController::class, 'lihatPelanggan'])
-    ->middleware('throttle:30,1')->name('lacak.bukti.lihat');
+    ->middleware('throttle:30,1,lihat-bukti')->name('lacak.bukti.lihat');
 
 /*
  * Chat CS (KEP-030). Batasnya ketat karena semuanya publik: membuka percakapan
@@ -113,12 +119,12 @@ Route::get('/lacak/{token}/pembayaran/{pembayaran}/bukti', [BuktiBayarController
  * cadangan dibatasi supaya widget yang macet tidak menghantam hosting.
  */
 Route::prefix('/cs')->name('cs.')->group(function () {
-    Route::get('/', [CsController::class, 'status'])->middleware('throttle:30,1')->name('status');
-    Route::post('/mulai', [CsController::class, 'mulai'])->middleware('throttle:5,60')->name('mulai');
-    Route::post('/pesan', [CsController::class, 'kirim'])->middleware('throttle:20,1')->name('kirim');
-    Route::get('/pesan', [CsController::class, 'pesanBaru'])->middleware('throttle:20,1')->name('pesan');
-    Route::post('/auth', [CsController::class, 'otorisasi'])->middleware('throttle:20,1')->name('auth');
-    Route::get('/lampiran/{pesan}', [CsController::class, 'lampiran'])->middleware('throttle:30,1')->name('lampiran');
+    Route::get('/', [CsController::class, 'status'])->middleware('throttle:30,1,cs-status')->name('status');
+    Route::post('/mulai', [CsController::class, 'mulai'])->middleware('throttle:5,60,cs-mulai')->name('mulai');
+    Route::post('/pesan', [CsController::class, 'kirim'])->middleware('throttle:20,1,cs-kirim')->name('kirim');
+    Route::get('/pesan', [CsController::class, 'pesanBaru'])->middleware('throttle:20,1,cs-pesan')->name('pesan');
+    Route::post('/auth', [CsController::class, 'otorisasi'])->middleware('throttle:20,1,cs-auth')->name('auth');
+    Route::get('/lampiran/{pesan}', [CsController::class, 'lampiran'])->middleware('throttle:30,1,cs-lampiran')->name('lampiran');
 });
 
 /*
@@ -127,24 +133,24 @@ Route::prefix('/cs')->name('cs.')->group(function () {
  * Batasnya ketat karena PIN cuma empat angka.
  */
 Route::get('/kerja/{token}', [KerjaController::class, 'show'])
-    ->middleware('throttle:60,1')->name('kerja');
+    ->middleware('throttle:60,1,kerja')->name('kerja');
 Route::post('/kerja/{token}/selesai', [KerjaController::class, 'selesai'])
-    ->middleware('throttle:10,1')->name('kerja.selesai');
+    ->middleware('throttle:10,1,kerja-selesai')->name('kerja.selesai');
 
 // Roll printing (KEP-051), dibuka operator lewat pindai QR di lembar roll.
 Route::get('/roll/{token}', [RollController::class, 'show'])
-    ->middleware('throttle:60,1')->name('roll');
+    ->middleware('throttle:60,1,roll')->name('roll');
 Route::post('/roll/{token}/selesai', [RollController::class, 'selesai'])
-    ->middleware('throttle:10,1')->name('roll.selesai');
+    ->middleware('throttle:10,1,roll-selesai')->name('roll.selesai');
 
 // Pengajuan pembatalan dari pelanggan (KEP-041). Dibatasi supaya satu tautan
 // tidak bisa dipakai membanjiri panel dengan pengajuan.
 Route::post('/lacak/{token}/pembatalan', [PembatalanController::class, 'ajukan'])
-    ->middleware('throttle:6,60')->name('lacak.pembatalan');
+    ->middleware('throttle:6,60,pembatalan')->name('lacak.pembatalan');
 
 // Pemegang satu tautan pesanan tidak boleh bisa menulis ulang roster ribuan
 // kali per menit; tiap simpan menghapus dan menulis ulang seluruh barisnya.
-Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->middleware('throttle:30,1')->group(function () {
+Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->middleware('throttle:30,1,item-pesanan')->group(function () {
     Route::post('roster', [PesananItemController::class, 'simpanRoster'])->name('roster');
     // Tidak ada unggah desain di sini: file desain pelanggan hanya lewat
     // WhatsApp (KEP-095).

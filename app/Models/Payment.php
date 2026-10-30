@@ -11,15 +11,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Seluruh pembayaran diverifikasi manual (KEP-023).
  *
- * Pelanggan membayar lewat QRIS statis atau transfer bank, mengirim buktinya
- * lewat WhatsApp, lalu admin mencatat dan memverifikasinya di panel. Kolom
+ * Pelanggan membayar lewat QRIS statis atau transfer bank, mengunggah buktinya
+ * di halaman pesanan (KEP-029), lalu admin memverifikasinya di panel. Kolom
  * dicatat_oleh dan diverifikasi_oleh wajib terisi: ini titik rawan uang kas,
  * dan setiap pencatatan masuk audit log.
  */
 class Payment extends Model
 {
     protected $fillable = [
-        'order_id', 'jenis', 'metode', 'status', 'jumlah', 'bukti_path',
+        'order_id', 'jenis', 'metode', 'status', 'jumlah', 'bukti_path', 'alasan_tolak',
         'dicatat_oleh', 'diverifikasi_oleh', 'dibayar_pada', 'kadaluarsa_pada',
     ];
 

@@ -10,15 +10,24 @@
 
 @include('emails.komponen-rincian')
 
+{{-- Pesanan yang dikirim tidak pernah lewat toko (KEP-097): sisanya dilunasi
+     lewat transfer sebelum paket berangkat, bukan di kasir. --}}
 @if ($order->sisa_tagihan > 0)
   <p style="margin:0 0 12px;">
-    Sisa <strong>{{ rupiah($order->sisa_tagihan) }}</strong> dibayar saat Anda mengambil
-    barang di toko. Bisa tunai maupun non-tunai.
+    @if ($order->dikirim())
+      Sisa <strong>{{ rupiah($order->sisa_tagihan) }}</strong> dilunasi setelah barang selesai
+      dikerjakan, sebelum paketnya kami kirim. Kami kabari lewat email saat waktunya.
+    @else
+      Sisa <strong>{{ rupiah($order->sisa_tagihan) }}</strong> dibayar saat Anda mengambil
+      barang di toko. Bisa tunai maupun non-tunai.
+    @endif
   </p>
 @endif
 
 <p style="margin:0 0 20px;">
-  Kami akan mengirim email lagi begitu pesanan siap diambil.
+  {{ $order->dikirim()
+      ? 'Kami akan mengirim email lagi begitu paketnya dikirim, lengkap dengan nomor resinya.'
+      : 'Kami akan mengirim email lagi begitu pesanan siap diambil.' }}
 </p>
 
 <a href="{{ $tautan }}"

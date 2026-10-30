@@ -3438,6 +3438,55 @@ pernah dipakai menimbun stok, batas bayar untuk barang stok bisa dipersingkat.
 
 ---
 
+## KEP-097 — Audit sisi pelanggan sampai pembayaran: pembatas bersama, bukti ditolak, kurir wajib
+**Status:** TERKUNCI · 2026-10-31
+
+Diminta klien: audit menyeluruh dari sisi pelanggan sampai pembayaran. Dijalankan di
+browser sebagai pelanggan (layar HP) dan admin, empat skenario utuh: barang stok
+lunas dikirim kurir sampai resi; kustom per ukuran dengan DP, bukti pertama ditolak,
+mockup, persetujuan, produksi, pelunasan, kode ambil, dan serah terima; pesanan yang
+tidak dibayar sampai kedaluwarsa; dan isi setiap email untuk pesanan ambil maupun
+dikirim. Di produksi juga diperiksa (hanya membaca): rekening, QRIS, dan pesanan
+pertama yang email konfirmasinya berstatus Sampai. Yang ditemukan dan diperbaiki:
+
+- **Semua pembatas laju berbagi satu penghitung.** `throttle:X,Y` tanpa awalan
+  memakai kunci `sha1(domain|ip)` yang sama untuk semua route. Mencari area ongkir,
+  melihat tarif, menambah barang, dan checkout ikut menghabiskan jatah enam unggahan
+  bukti, sehingga pembeli ditolak 429 tepat saat hendak mengunggah bukti transfer.
+  Celah ini sudah ada sebelum KEP-096 dan diperparah olehnya. Kini setiap throttle
+  punya awalan sendiri, dan `PembatasLajuTest` menolak throttle tanpa awalan.
+- **Bukti yang ditolak membuat pesanan hangus.** "Tandai gagal" hanya mengubah status
+  pembayaran. Alasannya hanya masuk log staf, tagihan di halaman pesanan hilang
+  bersama form unggahnya, dan penjadwal membatalkan pesanan begitu batas bayar lewat.
+  Kini alasannya disimpan (`payments.alasan_tolak`), tagihan awal diganti tagihan
+  baru dengan nominal sama dan batas bayar yang dimulai ulang, halaman pesanan
+  menampilkan alasannya di atas form unggah, dan pelanggan menerima email
+  `pembayaran-ditolak`. Pembayaran yang sudah lunas tidak bisa lagi ditolak.
+- **Pesanan "dikirim" bisa dibuat tanpa kurir.** Pilihan kurir tidak wajib, dan
+  server menganggap kosong sebagai "ongkir menyusul" walau daftar tarif tersedia:
+  tagihan terbit tanpa ongkos kirim dan admin harus menagihnya belakangan. Kini kurir
+  wajib dipilih selama tarif tersedia. Ongkir menyusul hanya untuk area yang tidak
+  ketemu atau penyedia yang tidak menjawab.
+- **Teks ambil-di-toko pada pesanan yang dikirim.** Email pembayaran diterima ("siap
+  diambil", "dibayar saat mengambil di toko"), email menunggu pelunasan ("sebelum bisa
+  diambil", "kasir saat datang"), dan tagihan pelunasan di halaman pesanan ("kode
+  ambil terbit") kini mengikuti cara terima.
+- **Pesanan kedaluwarsa tanpa penjelasan.** Halaman hanya menulis "Item ini
+  dibatalkan". Kini menjelaskan sebabnya, cara menghubungi toko kalau sudah terlanjur
+  transfer, dan tombol "Pesan lagi". Ejaan label diganti "Kedaluwarsa" (KBBI).
+
+Diperiksa dan sudah benar: DP 50% dari harga sebelum potongan dan tanpa ongkir,
+pelunasan sama dengan sisa, tagihan lunas sudah termasuk ongkir, verifikasi
+mengunci baris pesanan dan menolak nominal melebihi sisa, rekening dan QRIS hanya
+di halaman pesanan (tidak di email), stok kembali saat pesanan kedaluwarsa, dan
+kode ambil hilang setelah serah terima.
+
+**Belum siap dari sisi isi (diisi pemilik toko):** ke-14 produk belum berfoto,
+kebijakan privasi dan syarat ketentuan masih draf, belum ada portofolio, dan belum
+ada pekerja konveksi terdaftar (halaman Kesiapan tayang).
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3538,3 +3587,4 @@ pernah dipakai menimbun stok, batas bayar untuk barang stok bisa dipersingkat.
 | KEP-094 | Email Resend dan ongkir Biteship dinyalakan di produksi | TERKUNCI |
 | KEP-095 | File desain pelanggan hanya lewat WhatsApp, dijelaskan sejak langkah desain | TERKUNCI |
 | KEP-096 | Audit pemesanan dan keamanan: opsi ganda, pembatas laju, konfirmasi akun | TERKUNCI |
+| KEP-097 | Audit pelanggan sampai pembayaran: pembatas bersama, bukti ditolak, kurir wajib | TERKUNCI |

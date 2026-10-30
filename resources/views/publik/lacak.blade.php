@@ -66,11 +66,38 @@
                 {{ $tagihan['jenis'] === 'pelunasan' ? 'Pelunasan' : 'Yang perlu dibayar sekarang' }}
             </h2>
             <div class="space-y-5 p-5">
+                @php
+                    // Penolakan pada putaran tagihan ini saja (KEP-097): penolakan lama
+                    // sebelum pembayaran yang sudah lunas tidak relevan lagi, dan
+                    // begitu bukti baru terkirim, catatannya tidak perlu tampil.
+                    $ditolak = $buktiAda ? null : $order->payments
+                        ->where('status', \App\Enums\PaymentStatus::GAGAL)
+                        ->whereNotNull('alasan_tolak')
+                        ->sortByDesc('id')
+                        ->first();
+
+                    if ($ditolak && $order->payments->contains(fn ($p) => $p->status === \App\Enums\PaymentStatus::LUNAS && $p->id > $ditolak->id)) {
+                        $ditolak = null;
+                    }
+                @endphp
+
+                @if ($ditolak)
+                    <p class="border-l-2 border-merah bg-merah-50 p-3 text-sm leading-relaxed">
+                        <strong>Bukti sebelumnya belum bisa kami terima:</strong> {{ $ditolak->alasan_tolak }}
+                        Periksa lagi transfernya, lalu kirim ulang buktinya di bawah.
+                    </p>
+                @endif
+
                 <div>
                     @if ($tagihan['jenis'] === 'pelunasan')
                         <p class="mb-2 text-sm leading-relaxed">
-                            Barang Anda sudah selesai dikerjakan. Setelah sisa ini lunas,
-                            kode ambil terbit dan barang bisa diambil.
+                            @if ($order->dikirim())
+                                Barang Anda sudah selesai dikerjakan. Setelah sisa ini lunas,
+                                paketnya kami kirim ke alamat Anda.
+                            @else
+                                Barang Anda sudah selesai dikerjakan. Setelah sisa ini lunas,
+                                kode ambil terbit dan barang bisa diambil.
+                            @endif
                         </p>
                     @endif
 
@@ -82,7 +109,7 @@
                             <strong>{{ $tagihan['batas']->translatedFormat('l, j F Y H:i') }}</strong>.
                             Lewat itu pesanan otomatis dibatalkan dan barangnya kembali dijual.
                         </p>
-                    @elseif ($tagihan['jenis'] === 'pelunasan')
+                    @elseif ($tagihan['jenis'] === 'pelunasan' && ! $order->dikirim())
                         <p class="mt-2 text-sm text-muted">
                             Bisa juga dibayar tunai atau QRIS langsung di kasir saat datang.
                         </p>
@@ -227,6 +254,22 @@
                     </form>
                 </div>
             </div>
+        </section>
+    @endif
+
+    {{-- Kedaluwarsa (KEP-097). Tanpa ini pembeli hanya membaca "Item ini dibatalkan"
+         tanpa tahu sebabnya, dan yang sudah terlanjur transfer tidak tahu harus
+         menghubungi siapa. --}}
+    @if ($order->status === OrderStatus::KADALUARSA)
+        <section class="mt-8 border border-line bg-field p-5">
+            <h2 class="font-bold">Pesanan ini dibatalkan otomatis</h2>
+            <p class="mt-1 text-sm leading-relaxed">
+                Pembayarannya belum kami terima sampai batas waktu, jadi pesanan dibatalkan dan
+                barangnya kembali dijual. Tidak ada tagihan yang perlu dibayar. Kalau Anda sudah
+                terlanjur transfer, hubungi kami lewat {{ kanal_kontak() }} dan sebutkan kode
+                {{ $order->kode }}.
+            </p>
+            <a href="{{ route('katalog') }}" class="tombol tombol-garis mt-4">Pesan lagi</a>
         </section>
     @endif
 
