@@ -7,18 +7,17 @@ Prasyarat: hosting sudah dibeli dan memenuhi [10-spesifikasi-hosting.md](10-spes
 
 ---
 
-## 1. Siapkan berkas di komputer
+## 1. Hosting yang dipakai
 
-Shared hosting tidak punya Node, dan sering `exec`/`proc_open` dimatikan sehingga
-Composer tidak bisa jalan di sana. Keduanya dikerjakan di lokal:
+`setiasport.com` di Rumahweb (cPanel, server `talang.iixcp.rumahweb.net`, SSH port
+2223, pengguna `setp2739`). Yang perlu diingat dari hosting ini (KEP-093):
 
-```bash
-composer install --no-dev --optimize-autoloader
-npm ci && npm run build
-```
-
-Hasil `public/build` memang sengaja ikut di-commit (lihat `.gitignore`).
-Folder `vendor/` diunggah manual bila server tidak punya Composer.
+| Keadaan | Akibatnya |
+|---|---|
+| LiteSpeed, PHP 8.3, MariaDB 10.11 (bukan MySQL 8) | Seluruh tes juga dijalankan di MariaDB 10.11 sebelum rilis pertama |
+| `proc_open`, `exec`, `symlink` dimatikan, juga untuk PHP di SSH | Composer dan `storage:link` tidak bisa jalan di server; tugas terjadwal wajib `Schedule::call`, bukan `Schedule::command` (dikunci `PenjadwalHostingTest`) |
+| Tidak ada Node | Aset dibangun di lokal; `public/build` sengaja ikut di-commit |
+| Document root domain utama tetap `public_html` | Isi `public/` disalin ke sana oleh `deploy/pasang.sh` |
 
 ---
 
@@ -28,34 +27,73 @@ Kode aplikasi berada **di luar** jangkauan browser — ini kebocoran paling umum
 di setup Laravel di shared hosting:
 
 ```
-/home/user/
-├── setiasport/          ← seluruh kode, TIDAK bisa diakses browser
-│   ├── app/ bootstrap/ config/ database/ resources/ routes/ storage/ vendor/
-│   └── .env
-└── public_html/         ← document root, isinya HANYA milik public/
-    ├── index.php  .htaccess  build/  storage/
+/home/setp2739/
+├── setiasport/
+│   ├── rilis/<id>/       ← kode tiap rilis, 3 terakhir disimpan; tidak bisa diakses browser
+│   ├── terkini → rilis/<id>      untuk cron dan artisan lewat SSH
+│   ├── bersama/.env      ← rahasia produksi (chmod 600), dipakai semua rilis
+│   ├── bersama/storage/  ← unggahan, bukti bayar, sesi, log; tidak ikut berganti saat deploy
+│   └── cadangan/         ← halaman bawaan hosting yang semula ada di public_html
+└── public_html/          ← document root, isinya HANYA salinan public/
+    ├── index.php         ← dibuat deploy/pasang.sh, menunjuk langsung ke rilis aktif
+    ├── .htaccess         ← blok PHP buatan cPanel + aturan Laravel
+    ├── build/  logo-*.webp  favicon.*
+    └── storage → ~/setiasport/bersama/storage/app/public
 ```
 
-Kalau panel hosting bisa mengarahkan document root ke subfolder, arahkan ke
-`setiasport/public` dan lewati pemisahan di atas.
+`index.php` sengaja menunjuk ke folder rilisnya sendiri, bukan lewat `terkini`:
+proses PHP web hidup lama dan mengingat hasil resolusi tautan, sehingga bisa
+terus melayani rilis lama beberapa menit setelah tautannya dipindah.
 
-Kalau tidak bisa, salin isi `public/` ke `public_html/`, lalu sesuaikan dua baris
-di `public_html/index.php`:
+---
 
-```php
-require __DIR__.'/../setiasport/vendor/autoload.php';
-$app = require_once __DIR__.'/../setiasport/bootstrap/app.php';
+## Deploy lewat SSH
+
+Dari komputer pengembang, di Git Bash, dengan container Docker menyala:
+
+```bash
+bash deploy/rilis.sh
 ```
+
+Yang dikirim adalah **commit HEAD**, bukan isi folder kerja; skrip menolak
+berjalan kalau masih ada perubahan yang belum di-commit. Jadi jalankan
+`npm run build` dan commit hasilnya lebih dulu. Urutannya:
+
+1. Di lokal: `git archive HEAD`, lalu `composer install --no-dev` di dalam container
+   (server tidak bisa menjalankan Composer), dikemas dan diperiksa sidik SHA-256-nya
+2. Diunggah lewat `scp` ke `~/setiasport/rilis/<tanggal-jam-commit>/`
+3. Di server, `deploy/pasang.sh`: menautkan `.env` dan `storage` bersama, `migrate`,
+   `db:seed`, `optimize`, menyalin aset ke `public_html`, mengalihkan `index.php`
+   ke rilis baru, menghapus rilis lama selain 3 terakhir, lalu memeriksa beranda
+   menjawab HTTP 200
+
+Kunci SSH-nya `~/.ssh/setiasport_deploy`. Server, port, dan kunci bisa diganti lewat
+variabel `SERVER`, `PORT`, dan `KUNCI`.
+
+**Kembali ke rilis sebelumnya:**
+
+```bash
+ls ~/setiasport/rilis
+bash ~/setiasport/rilis/<id-lama>/deploy/pasang.sh <id-lama>
+```
+
+Database tidak ikut mundur. Migrasi yang sudah berjalan tetap ada, jadi mundur
+hanya aman kalau rilis yang dibatalkan tidak menghapus atau mengganti nama kolom.
 
 ---
 
 ## 3. Berkas `.env` produksi
 
+Letaknya `~/setiasport/bersama/.env`, dengan izin 600. Sandi database dan `APP_KEY`
+dibuat acak langsung di server saat persiapan, jadi tidak pernah tersalin ke komputer
+lain. Isinya mengikuti `.env.example`, dengan perbedaan berikut:
+
 ```dotenv
 APP_ENV=production
 APP_DEBUG=false               # WAJIB false — kalau true, pesan galat membocorkan isi .env
-APP_URL=https://setiasport.example   # https: cookie sesi otomatis bertanda Secure
-APP_KEY=                      # php artisan key:generate
+APP_URL=https://setiasport.com       # https: cookie sesi otomatis bertanda Secure
+APP_KEY=                      # base64 dari 32 bait acak
+LOG_STACK=daily               # satu berkas per hari, 14 hari disimpan; berkas tunggal tumbuh tanpa batas
 LOG_LEVEL=warning             # bukan debug: log tingkat debug bisa memuat data pelanggan
 
 DB_HOST=localhost             # bukan "db" seperti di Docker
@@ -63,8 +101,8 @@ DB_DATABASE=…
 DB_USERNAME=…
 DB_PASSWORD=…
 
-MAIL_MAILER=resend
-MAIL_FROM_ADDRESS="noreply@setiasport.example"
+MAIL_MAILER=resend           # "log" selama kunci Resend belum ada: email hanya tercatat di log
+MAIL_FROM_ADDRESS="noreply@setiasport.com"
 RESEND_API_KEY=re_…
 RESEND_WEBHOOK_SECRET=whsec_…
 
@@ -134,25 +172,34 @@ kunci tidak pernah membuat pesan pelanggan hilang.
 
 ---
 
-## 4. Perintah sekali jalan
+## 4. Persiapan server (sekali saja)
 
-```bash
-php artisan key:generate
-php artisan migrate --force
-php artisan db:seed --force        # peran, pengaturan, katalog contoh
-php artisan storage:link
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-```
+Sudah dikerjakan untuk `setiasport.com` pada 30 Oktober 2026. Dicatat di sini
+untuk pindah hosting atau membangun ulang:
 
-Lalu **ganti kata sandi kedua akun bawaan**, keduanya masih `password`. Cara
+1. Buat database dan penggunanya di cPanel (atau lewat SSH: `uapi Mysql create_database`,
+   `create_user`, `set_privileges_on_database`). Nama wajib berawalan `setp2739_`
+2. Buat folder `~/setiasport/{rilis,cadangan}` dan `~/setiasport/bersama/storage/`
+   beserta isinya (`app/public`, `app/private`, `framework/{cache/data,sessions,views}`,
+   `logs`). Folder yang dilalui gambar unggahan (`setiasport`, `bersama`, `storage`,
+   `storage/app`) diberi izin 711 dan `app/public` 755, supaya web server bisa
+   menyajikan foto produk. Sisanya 700
+3. Tulis `~/setiasport/bersama/.env` (bagian 3), `chmod 600`
+4. Jalankan `bash deploy/rilis.sh` dari lokal. `migrate`, `db:seed` (peran, pengaturan,
+   katalog), dan `optimize` dijalankan olehnya. `key:generate` dan `storage:link` tidak
+   dipakai: kuncinya sudah ditulis di langkah 3, dan tautan storage dibuat `pasang.sh`
+   dengan `ln -s` karena fungsi `symlink()` PHP dimatikan
+5. Pasang cron (bagian 5)
+
+Lalu **ganti kata sandi kedua akun bawaan**. Di rilis pertama keduanya sudah diberi
+sandi sementara yang wajib diganti saat pertama masuk, bukan `password`. Cara
 termudah: masuk panel, buka menu akun di kanan atas, pilih **Akun saya**. Akun
 staf lain (kasir, penjahit) dibuat Pemilik di menu **Pengguna** dengan sandi
 sementara yang wajib diganti sendiri saat pertama masuk (KEP-084). Lewat SSH
 juga bisa:
 
 ```bash
+cd ~/setiasport/terkini
 php artisan staf:sandi owner@setiasport.test
 php artisan staf:sandi admin@setiasport.test
 ```
@@ -166,14 +213,8 @@ Izin tulis yang dibutuhkan: `storage/` dan `bootstrap/cache/`.
 
 ### Saat memperbarui aplikasi
 
-```bash
-composer install --no-dev --optimize-autoloader
-php artisan migrate --force
-php artisan db:seed --force        # aman diulang, lihat di bawah
-php artisan config:cache && php artisan route:cache && php artisan view:cache
-```
-
-`db:seed` **aman dijalankan ulang**: ia menambahkan pengaturan, izin, dan template yang
+Cukup `bash deploy/rilis.sh` (lihat "Deploy lewat SSH"). `db:seed` yang ikut dijalankannya
+**aman diulang**: ia menambahkan pengaturan, izin, dan template yang
 baru tanpa menimpa apa pun yang sudah diisi toko. Rekening dan QRIS tetap, harga katalog
 yang sudah dikoreksi tetap, dan kata sandi owner serta admin tidak kembali ke `password`.
 Ketiganya dulu ikut tertimpa dan kini dikunci oleh tes (`SeedUlangAmanTest`).
@@ -187,8 +228,12 @@ email tidak pernah terkirim, order tidak pernah kadaluarsa, dan reservasi stok
 tidak pernah dilepas** — stok tersedia akan menipis tanpa sebab yang terlihat.
 
 ```cron
-* * * * * cd /home/user/setiasport && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /home/setp2739/setiasport/terkini && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1
 ```
+
+Karena `proc_open` dimatikan, `schedule:run` tidak bisa membuka proses baru. Setiap
+tugas terjadwal, termasuk antrian email, berjalan di dalam proses itu sendiri lewat
+`Schedule::call` (KEP-093).
 
 Verifikasi setelah beberapa menit: buka **Dashboard panel**. Kalau cron berjalan,
 tidak ada peringatan apa pun. Kalau muncul kotak merah "Tugas otomatis berhenti
@@ -206,7 +251,7 @@ tanpa rahasia yang benar**, jadi aman dibuka ke publik.
 
 | Penyedia | URL | Peristiwa |
 |---|---|---|
-| Resend | `https://setiasport.example/webhook/resend` | `email.delivered`, `email.opened`, `email.bounced`, `email.complained` |
+| Resend | `https://setiasport.com/webhook/resend` | `email.delivered`, `email.opened`, `email.bounced`, `email.complained` |
 
 Salin *signing secret* Resend ke `RESEND_WEBHOOK_SECRET`. Selama variabel itu
 kosong, seluruh notifikasi ditolak — disengaja (KEP-016).

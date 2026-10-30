@@ -25,15 +25,17 @@ jobs:
 
     services:
       mysql:
-        # Sama dengan compose.yaml; tes memakai fitur MySQL, bukan SQLite.
-        image: mysql:8.0
+        # Sama dengan hosting, bukan dengan compose.yaml (MySQL 8): MariaDB
+        # menolak kueri yang diterima MySQL 8, dan baru ketahuan di produksi
+        # kalau tes hanya jalan di MySQL (KEP-093).
+        image: mariadb:10.11
         env:
-          MYSQL_DATABASE: setiasport_test
-          MYSQL_ROOT_PASSWORD: secret
+          MARIADB_DATABASE: setiasport_test
+          MARIADB_ROOT_PASSWORD: secret
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -psecret"
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
           --health-interval=5s
           --health-timeout=5s
           --health-retries=20

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Services\KesiapanTayang;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SettingSeeder;
 use Database\Seeders\UserSeeder;
@@ -216,6 +217,23 @@ class AkunStafTest extends TestCase
         $this->actingAs($rina->fresh())->get(route('panel.dashboard'))->assertOk();
     }
 
+    /** Sandi yang diatur developer lewat server untuk pemilik toko (KEP-093). */
+    public function test_sandi_sementara_lewat_server_wajib_diganti(): void
+    {
+        $this->artisan('staf:sandi', ['email' => 'owner@setiasport.test', 'sandi' => 'Sementara-2026', '--sementara' => true])
+            ->assertSuccessful();
+
+        $owner = $this->owner();
+        $this->assertTrue(Hash::check('Sementara-2026', $owner->password));
+        $this->assertTrue($owner->wajib_ganti_sandi);
+        $this->actingAs($owner)->get(route('panel.dashboard'))->assertRedirect(route('panel.akun'));
+
+        // Tanpa --sementara: pemilik akun sendiri yang memulihkan sandinya lewat SSH.
+        $this->artisan('staf:sandi', ['email' => 'owner@setiasport.test', 'sandi' => 'Punya-sendiri-2026'])
+            ->assertSuccessful();
+        $this->assertFalse($this->owner()->wajib_ganti_sandi);
+    }
+
     /** Dulu status aktif hanya dicek di formulir masuk. */
     public function test_akun_yang_dinonaktifkan_langsung_terputus(): void
     {
@@ -301,7 +319,7 @@ class AkunStafTest extends TestCase
     /** Diperiksa dari hash sandinya, bukan dari email akun contoh. */
     public function test_kesiapan_menandai_akun_yang_masih_bersandi_bawaan(): void
     {
-        $butir = fn () => collect(app(\App\Services\KesiapanTayang::class)->bagian())
+        $butir = fn () => collect(app(KesiapanTayang::class)->bagian())
             ->flatMap(fn ($b) => $b['isi'])->keyBy('judul')['Kata sandi bawaan sudah diganti'];
 
         $this->assertFalse($butir()['siap']);

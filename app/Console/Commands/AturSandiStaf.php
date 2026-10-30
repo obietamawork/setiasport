@@ -5,8 +5,8 @@ namespace App\Console\Commands;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * Pemulihan kata sandi staf lewat server.
@@ -18,7 +18,8 @@ use Illuminate\Support\Facades\Validator;
  */
 class AturSandiStaf extends Command
 {
-    protected $signature = 'staf:sandi {email} {sandi?}';
+    protected $signature = 'staf:sandi {email} {sandi?}
+        {--sementara : Sandi untuk orang lain; wajib diganti pemilik akun saat pertama masuk}';
 
     protected $description = 'Mengatur ulang kata sandi akun staf';
 
@@ -43,10 +44,20 @@ class AturSandiStaf extends Command
             return self::FAILURE;
         }
 
-        $user->forceFill(['password' => Hash::make($sandi), 'aktif' => true])->save();
+        $sementara = (bool) $this->option('sementara');
+
+        $user->forceFill([
+            'password' => Hash::make($sandi),
+            'aktif' => true,
+            'wajib_ganti_sandi' => $sementara,
+        ])->save();
 
         $this->info("Kata sandi {$user->email} berhasil diganti.");
         $this->line('Akun juga dipastikan aktif.');
+
+        if ($sementara) {
+            $this->line('Sandi ini sementara: wajib diganti saat pertama masuk panel.');
+        }
 
         return self::SUCCESS;
     }

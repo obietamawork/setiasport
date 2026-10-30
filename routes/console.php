@@ -7,6 +7,7 @@ use App\Services\AlurPesanan;
 use App\Services\LayananCs;
 use App\Services\PengirimEmail;
 use App\Services\SinkronPaket;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
@@ -28,10 +29,18 @@ Schedule::call(fn () => Cache::forever('denyut_penjadwal', now()->toIso8601Strin
     ->everyMinute()
     ->name('denyut-penjadwal');
 
-// Antrian email. Tanpa ini email hanya menumpuk di tabel jobs dan tidak pernah terkirim.
-Schedule::command('queue:work --stop-when-empty --max-time=50')
+/*
+ * Antrian email. Tanpa ini email hanya menumpuk di tabel jobs dan tidak pernah terkirim.
+ *
+ * Dijalankan di dalam proses schedule:run, bukan lewat Schedule::command: hosting
+ * mematikan proc_open, sehingga perintah yang dijalankan sebagai proses terpisah
+ * selalu gagal tanpa suara. Kuncinya lepas sendiri setelah 5 menit, supaya proses
+ * yang dihentikan paksa oleh hosting tidak menahan antrian sehari penuh.
+ */
+Schedule::call(fn () => Artisan::call('queue:work', ['--stop-when-empty' => true, '--max-time' => 50]))
     ->everyMinute()
-    ->withoutOverlapping();
+    ->name('antrian-email')
+    ->withoutOverlapping(5);
 
 /**
  * Order yang tidak dibayar sampai batas waktu dibatalkan, dan reservasi stoknya

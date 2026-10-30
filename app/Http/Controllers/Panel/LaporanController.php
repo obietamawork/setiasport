@@ -98,6 +98,10 @@ class LaporanController extends Controller
      * dan terlaris sungguhan bisa tidak muncul di Top 10 sama sekali karena
      * jumlahnya terbelah dua. Dikelompokkan dari `product_id` (tidak pernah
      * berubah) supaya sejarah penjualannya tetap menyatu.
+     *
+     * `products.nama` ikut disebut di GROUP BY walau bergantung penuh pada id:
+     * MySQL 8 memahaminya, MariaDB di hosting tidak dan menolak kuerinya
+     * (ONLY_FULL_GROUP_BY, KEP-093).
      */
     private function terlaris(CarbonImmutable $dari, CarbonImmutable $sampai)
     {
@@ -108,7 +112,7 @@ class LaporanController extends Controller
             ->whereNotIn('orders.status', [
                 OrderStatus::DIBATALKAN->value, OrderStatus::KADALUARSA->value,
             ])
-            ->groupBy('products.id')
+            ->groupBy('products.id', 'products.nama')
             ->orderByDesc(DB::raw('SUM(order_items.qty)'))
             ->limit(10)
             ->get([

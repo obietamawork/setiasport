@@ -3211,6 +3211,53 @@ di beranda dan ketiga halaman panelnya.
 
 ---
 
+## KEP-093 — Rilis pertama ke hosting, deploy lewat SSH
+**Status:** TERKUNCI · 2026-10-30
+
+Hosting `setiasport.com` (Rumahweb, cPanel, LiteSpeed, PHP 8.3, MariaDB 10.11)
+diperiksa sebelum apa pun dipasang. Tiga temuan mengubah kode dan cara deploy:
+
+- **`proc_open` dimatikan, juga untuk PHP di SSH dan cron.** Antrian email
+  dijalankan lewat `Schedule::command('queue:work …')`, yang membuka proses baru:
+  di hosting ini ia akan gagal tiap menit tanpa suara, dan tidak satu email pun
+  terkirim. Kini `Schedule::call` yang memanggil `queue:work` di dalam proses
+  `schedule:run` sendiri. Kuncinya lepas setelah 5 menit, bukan 24 jam bawaan,
+  supaya proses yang dihentikan paksa oleh hosting tidak menahan antrian
+  sehari penuh. `PenjadwalHostingTest` menolak tugas terjadwal apa pun yang
+  bukan `CallbackEvent`, dan memastikan antrian benar-benar dikerjakan.
+- **Database MariaDB 10.11, bukan MySQL 8** seperti di Docker dan CI. Seluruh
+  suite dijalankan di container `mariadb:10.11` sebelum rilis pertama, dan
+  langsung menemukan 4 tes gagal: produk terlaris di Laporan memilih
+  `products.nama` sambil mengelompokkan per `products.id`. MySQL 8 tahu nama
+  bergantung penuh pada id; MariaDB tidak, dan menolak kuerinya
+  (`ONLY_FULL_GROUP_BY`). Di produksi halaman Laporan akan galat 500. Kini
+  namanya ikut disebut di `GROUP BY`. CI kini menguji di `mariadb:10.11`, sama
+  dengan hosting.
+- **Composer, Node, `symlink()`, dan rsync tidak tersedia; document root tetap
+  `public_html`.** `deploy/rilis.sh` menyusun rilis di lokal dari commit HEAD
+  (`git archive` + `composer install --no-dev` di container), memeriksa sidik
+  SHA-256, lalu mengunggah. `deploy/pasang.sh` di server menautkan `.env` dan
+  `storage` bersama, menjalankan `migrate`, `db:seed`, `optimize`, menyalin
+  aset ke `public_html`, dan mengalihkan `index.php` langsung ke folder rilis.
+  Tiga rilis terakhir disimpan untuk kembali mundur.
+  - `index.php` menunjuk ke folder rilis, bukan ke tautan `terkini`: proses PHP
+    web hidup lama dan mengingat hasil resolusi tautan, sehingga bisa melayani
+    rilis lama beberapa menit setelah tautannya dipindah.
+  - Blok PHP buatan cPanel di `.htaccess` dipertahankan apa adanya; `php.ini`
+    dan `.user.ini` di `public_html` ditolak untuk dibaca pengunjung.
+  - Rahasia produksi (sandi database, `APP_KEY`) dibuat acak di server dan
+    ditulis langsung ke `~/setiasport/bersama/.env` (600), tidak pernah
+    tersalin ke komputer lain. Rahasia yang pernah bocor tidak dipakai.
+  - Email tetap `MAIL_MAILER=log` sampai kunci Resend diisi dan domainnya
+    terverifikasi; tanpa itu pengiriman hanya akan gagal berulang.
+- **`staf:sandi --sementara`.** Sandi yang diatur developer untuk pemilik toko
+  wajib diganti sendiri saat pertama masuk, sama seperti akun yang dibuat
+  Pemilik dari menu Pengguna (KEP-084). Rilis pertama memakainya untuk akun
+  owner dan admin, dijalankan begitu deploy selesai, sehingga `password`
+  bawaan hanya hidup beberapa detik di situs yang belum dikenal siapa pun.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3307,3 +3354,4 @@ di beranda dan ketiga halaman panelnya.
 | KEP-090 | Audit developer/QA: N+1, galat yang menyamar, CI, analisis statis | TERKUNCI |
 | KEP-091 | Dua jalan pemesanan, tombol − +, hapus di keranjang, estimasi dari data | TERKUNCI |
 | KEP-092 | Logo hero versi terang, dan banner promo beranda yang digeser manual | TERKUNCI |
+| KEP-093 | Rilis pertama ke hosting, deploy lewat SSH | TERKUNCI |
