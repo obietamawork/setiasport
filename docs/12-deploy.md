@@ -304,6 +304,12 @@ beban shared hosting. Yang perlu diperhatikan:
 
 - **Jangan cache** `/panel/*`, `/lacak/*`, `/keranjang`, `/checkout`, `/webhook/*`
 - Aset ber-hash di `/build/*` aman di-cache lama
+- **Atur proxy tepercaya sebelum menyalakannya.** Pembatas laju login, pencarian
+  pesanan, checkout, dan keranjang menghitung per alamat IP. Di belakang Cloudflare,
+  alamat yang terlihat aplikasi adalah alamat Cloudflare, jadi seluruh pembeli berbagi
+  satu jatah dan saling memblokir. Tambahkan `$middleware->trustProxies(at: [...])`
+  berisi rentang IP Cloudflare di `bootstrap/app.php`, jangan `*`: dengan `*`, siapa
+  pun bisa memalsukan alamatnya lewat header dan lolos dari semua pembatas (KEP-096)
 
 ---
 

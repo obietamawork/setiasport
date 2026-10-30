@@ -65,7 +65,7 @@ class PemisahanJalurTest extends TestCase
     private function pesananKustom(): Order
     {
         $jersey = $this->jersey();
-        $this->post(route('keranjang.kustom', $jersey), ['qty' => $jersey->moq, 'opsi' => []]);
+        $this->post(route('keranjang.kustom', $jersey), ['qty' => $jersey->moq, 'opsi' => $this->opsiLengkap($jersey)]);
 
         return $this->checkout(['tipe_pembayaran' => 'DP']);
     }
@@ -75,7 +75,7 @@ class PemisahanJalurTest extends TestCase
         $jersey = $this->jersey();
         $bola = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();
 
-        $this->post(route('keranjang.kustom', $jersey), ['qty' => $jersey->moq, 'opsi' => []]);
+        $this->post(route('keranjang.kustom', $jersey), ['qty' => $jersey->moq, 'opsi' => $this->opsiLengkap($jersey)]);
         $this->post('/keranjang', ['variant_id' => $bola->id, 'qty' => 1]);
 
         return $this->checkout(['tipe_pembayaran' => 'DP']);

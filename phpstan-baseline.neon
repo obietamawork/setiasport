@@ -1099,12 +1099,6 @@ parameters:
 			path: app/Services/PriceCalculator.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/PriceCalculator.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sku\.$#'
 			identifier: property.notFound
 			count: 1

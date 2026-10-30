@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -41,16 +42,24 @@ class LacakController extends Controller
             'email' => ['required', 'email'],
         ], [], ['kode' => 'kode pesanan', 'email' => 'email']);
 
-        // Tanpa pembatasan, kombinasi kode + email bisa ditebak dengan mencoba.
+        /*
+         * Tanpa pembatasan, kombinasi kode + email bisa ditebak dengan mencoba,
+         * dan kode pesanan berurutan. Pembatasnya tidak dikosongkan saat
+         * pencarian berhasil (KEP-096): dulu satu pencarian pesanan sendiri
+         * mengosongkannya, sehingga tebakan berikutnya tidak pernah terbatas.
+         * Kunci per email menahan penebakan kode untuk satu email dari banyak IP.
+         */
         $kunci = 'lacak:'.$request->ip();
+        $kunciEmail = 'lacak-email:'.Str::lower($data['email']);
 
-        if (RateLimiter::tooManyAttempts($kunci, 10)) {
+        if (RateLimiter::tooManyAttempts($kunci, 10) || RateLimiter::tooManyAttempts($kunciEmail, 10)) {
             throw ValidationException::withMessages([
                 'kode' => 'Terlalu banyak percobaan. Coba lagi dalam beberapa menit.',
             ]);
         }
 
         RateLimiter::hit($kunci, 300);
+        RateLimiter::hit($kunciEmail, 3600);
 
         $order = Order::where('kode', $data['kode'])
             ->whereHas('customer', fn ($q) => $q->where('email', $data['email']))
@@ -61,8 +70,6 @@ class LacakController extends Controller
                 'kode' => 'Kode pesanan dan email tidak cocok. Periksa lagi email konfirmasi Anda.',
             ]);
         }
-
-        RateLimiter::clear($kunci);
 
         return redirect()->route('lacak.token', $order->access_token);
     }
@@ -124,5 +131,4 @@ class LacakController extends Controller
             ],
         ]);
     }
-
 }

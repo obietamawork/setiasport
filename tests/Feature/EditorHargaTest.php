@@ -7,6 +7,7 @@ use App\Models\OptionValue;
 use App\Models\Product;
 use App\Models\ProductPrice;
 use App\Models\User;
+use App\Services\PriceCalculator;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SettingSeeder;
@@ -69,10 +70,10 @@ class EditorHargaTest extends TestCase
             ->value('harga_satuan'));
 
         // Harga baru langsung dipakai menghitung pesanan.
-        $rincian = app(\App\Services\PriceCalculator::class)->kustomPerUkuran(
+        $rincian = app(PriceCalculator::class)->kustomPerUkuran(
             $this->produk(),
             [['kategori' => 'SD', 'ukuran' => 'L', 'jumlah' => 6]],
-            [$serena->id],
+            $this->opsiLengkap($produk, 'Serena'),
         );
 
         $this->assertSame(47_000, $rincian->baris[0]['harga_satuan']);
@@ -152,12 +153,14 @@ class EditorHargaTest extends TestCase
         $this->assertSame(68, $panduan->nilai('Panjang'));
 
         // Ukuran di luar panduan langsung ditolak kalkulator harga.
+        // Opsi lainnya lengkap, supaya yang menolak memang ukurannya.
         $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Ukuran 5XL tidak tersedia');
 
-        app(\App\Services\PriceCalculator::class)->kustomPerUkuran(
+        app(PriceCalculator::class)->kustomPerUkuran(
             $produk,
             [['kategori' => 'DEWASA', 'ukuran' => '5XL', 'jumlah' => 6]],
-            [$this->bahan($produk, 'Lotto')->id],
+            $this->opsiLengkap($produk, 'Lotto'),
         );
     }
 

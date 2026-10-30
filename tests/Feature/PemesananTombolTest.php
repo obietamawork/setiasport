@@ -59,7 +59,7 @@ class PemesananTombolTest extends TestCase
     {
         $jersey = $this->jerseyTier();
 
-        $this->post(route('keranjang.kustom', $jersey), ['qty' => $jersey->moq, 'opsi' => [], 'lanjut' => 'checkout'])
+        $this->post(route('keranjang.kustom', $jersey), ['qty' => $jersey->moq, 'opsi' => $this->opsiLengkap($jersey), 'lanjut' => 'checkout'])
             ->assertRedirect(route('checkout'));
 
         $produk = Product::where('sku', 'CUST-JRS-ATASAN')->firstOrFail();
@@ -105,7 +105,7 @@ class PemesananTombolTest extends TestCase
     public function test_jumlah_kustom_di_keranjang_tidak_boleh_di_bawah_minimum(): void
     {
         $jersey = $this->jerseyTier();
-        $this->post(route('keranjang.kustom', $jersey), ['qty' => $jersey->moq, 'opsi' => []]);
+        $this->post(route('keranjang.kustom', $jersey), ['qty' => $jersey->moq, 'opsi' => $this->opsiLengkap($jersey)]);
         $kunci = app(Keranjang::class)->isi()->first()['kunci'];
 
         $this->get(route('keranjang'))->assertSee('min="'.$jersey->moq.'"', false);

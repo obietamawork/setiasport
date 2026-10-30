@@ -8,7 +8,9 @@ use App\Services\PengirimEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -38,9 +40,17 @@ class AkunController extends Controller
             'password' => ['required', 'string'],
         ], [], ['email' => 'email', 'password' => 'kata sandi']);
 
-        $kunci = 'masuk-pelanggan:'.$request->ip();
+        /*
+         * Dua kunci (KEP-096). Per email+IP untuk salah ketik biasa, dikosongkan
+         * begitu berhasil. Per IP saja, yang TIDAK dikosongkan login berhasil:
+         * dulu hanya ada satu kunci per IP yang dikosongkan saat berhasil, jadi
+         * siapa pun yang punya akun bisa login ke akunnya sendiri tiap beberapa
+         * tebakan, lalu menebak sandi akun orang lain tanpa batas.
+         */
+        $kunci = 'masuk-pelanggan:'.Str::lower($data['email']).'|'.$request->ip();
+        $kunciIp = 'masuk-pelanggan-ip:'.$request->ip();
 
-        if (RateLimiter::tooManyAttempts($kunci, 8)) {
+        if (RateLimiter::tooManyAttempts($kunci, 8) || RateLimiter::tooManyAttempts($kunciIp, 30)) {
             throw ValidationException::withMessages([
                 'email' => 'Terlalu banyak percobaan. Coba lagi dalam beberapa menit.',
             ]);
@@ -48,6 +58,7 @@ class AkunController extends Controller
 
         if (! Auth::guard('pelanggan')->attempt($data, $request->boolean('ingat'))) {
             RateLimiter::hit($kunci, 300);
+            RateLimiter::hit($kunciIp, 3600);
 
             // Pesan yang sama untuk email tidak dikenal maupun kata sandi salah,
             // supaya halaman ini tidak bisa dipakai menebak email pelanggan.
@@ -142,15 +153,42 @@ class AkunController extends Controller
         return view('publik.akun.terkirim');
     }
 
-    public function konfirmasi(Request $request, string $token): RedirectResponse
+    /**
+     * Membuka tautan konfirmasi belum mengaktifkan apa pun (KEP-096).
+     *
+     * Siapa saja bisa mendaftar memakai email orang lain dengan kata sandi
+     * pilihannya sendiri. Kalau satu klik di tautan email langsung
+     * mengaktifkan akun, pemilik email yang penasaran mengaktifkan akun
+     * bersandi milik orang itu, dan orang itu lalu bisa melihat semua pesanan
+     * yang tercatat atas email tersebut. Karena itu kata sandinya diminta di
+     * sini: hanya yang memegang email DAN membuat kata sandinya yang bisa
+     * menyelesaikan pendaftaran.
+     */
+    public function konfirmasi(string $token)
     {
-        $pelanggan = Customer::where('token_verifikasi', hash('sha256', $token))->first();
+        $pelanggan = $this->pendaftaranTertunda($token);
 
-        if (! $pelanggan || ! $pelanggan->tokenMasihBerlaku()) {
-            return redirect()->route('daftar')->withErrors(
-                'Tautan konfirmasi sudah tidak berlaku. Silakan daftar ulang untuk '
-                .'mendapatkan tautan baru.'
-            );
+        if (! $pelanggan) {
+            return $this->tautanTidakBerlaku();
+        }
+
+        return view('publik.akun.konfirmasi', ['pelanggan' => $pelanggan, 'token' => $token]);
+    }
+
+    public function konfirmasiProses(Request $request, string $token): RedirectResponse
+    {
+        $data = $request->validate(['password' => ['required', 'string']], [], ['password' => 'kata sandi']);
+
+        $pelanggan = $this->pendaftaranTertunda($token);
+
+        if (! $pelanggan) {
+            return $this->tautanTidakBerlaku();
+        }
+
+        if (! Hash::check($data['password'], (string) $pelanggan->password)) {
+            throw ValidationException::withMessages([
+                'password' => 'Kata sandinya tidak cocok dengan yang dibuat saat mendaftar.',
+            ]);
         }
 
         $pelanggan->selesaikanKonfirmasi();
@@ -163,6 +201,21 @@ class AkunController extends Controller
             $pelanggan->orders()->exists()
                 ? 'Akun aktif. Pesanan Anda sebelumnya sudah ikut tercatat di sini.'
                 : 'Akun aktif. Pesanan Anda nanti akan muncul di halaman ini.'
+        );
+    }
+
+    private function pendaftaranTertunda(string $token): ?Customer
+    {
+        $pelanggan = Customer::where('token_verifikasi', hash('sha256', $token))->first();
+
+        return $pelanggan?->tokenMasihBerlaku() ? $pelanggan : null;
+    }
+
+    private function tautanTidakBerlaku(): RedirectResponse
+    {
+        return redirect()->route('daftar')->withErrors(
+            'Tautan konfirmasi sudah tidak berlaku. Silakan daftar ulang untuk '
+            .'mendapatkan tautan baru.'
         );
     }
 

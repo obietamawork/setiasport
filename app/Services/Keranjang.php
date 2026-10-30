@@ -21,6 +21,13 @@ class Keranjang
 {
     private const KUNCI = 'keranjang';
 
+    /**
+     * Keranjang hidup di sesi database dan tiap barisnya dihitung ulang di setiap
+     * halaman (KEP-096). Tiga puluh baris jauh di atas pesanan sungguhan; pesanan
+     * sebesar itu memang lebih cocok diketik admin lewat panel.
+     */
+    public const MAKS_BARIS = 30;
+
     public function __construct(private PriceCalculator $kalkulator) {}
 
     /** @return array<string, array{product_id:int, variant_id:?int, qty:int, jalur:string, opsi:array<int,int>, catatan?:?string, desain_sumber?:?string, ukuran?:array<int, array<string, mixed>>}> */
@@ -39,6 +46,17 @@ class Keranjang
         return count($this->baris());
     }
 
+    /** @param  array<string, mixed>  $baris */
+    private function pastikanMuat(array $baris): void
+    {
+        if (count($baris) >= self::MAKS_BARIS) {
+            throw new InvalidArgumentException(
+                'Keranjang sudah berisi '.self::MAKS_BARIS.' barang. Selesaikan pesanan ini dulu, '
+                .'atau hubungi kami untuk pesanan sebesar ini.'
+            );
+        }
+    }
+
     public function tambahReadyStock(ProductVariant $varian, int $qty): void
     {
         if ($qty < 1) {
@@ -47,6 +65,10 @@ class Keranjang
 
         $baris = $this->baris();
         $kunci = 'rs:'.$varian->id;
+
+        if (! isset($baris[$kunci])) {
+            $this->pastikanMuat($baris);
+        }
         $qtyBaru = ($baris[$kunci]['qty'] ?? 0) + $qty;
 
         if ($qtyBaru > $varian->stok_tersedia) {
@@ -78,6 +100,7 @@ class Keranjang
         $this->kalkulator->kustom($produk, $qty, $optionValueIds);
 
         $baris = $this->baris();
+        $this->pastikanMuat($baris);
 
         $baris['ks:'.Str::random(8)] = [
             'product_id' => $produk->id,
@@ -110,6 +133,7 @@ class Keranjang
         $rincian = $this->kalkulator->kustomPerUkuran($produk, $daftarUkuran, $optionValueIds);
 
         $baris = $this->baris();
+        $this->pastikanMuat($baris);
 
         $baris['ks:'.Str::random(8)] = [
             'product_id' => $produk->id,

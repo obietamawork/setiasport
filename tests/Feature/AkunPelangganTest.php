@@ -146,7 +146,7 @@ class AkunPelangganTest extends TestCase
 
         $this->post('/daftar', $this->dataDaftar());
 
-        $this->get(route('daftar.konfirmasi', $this->tokenTerkirim()))
+        $this->post(route('daftar.konfirmasi.proses', $this->tokenTerkirim()), ['password' => 'rahasia12345'])
             ->assertRedirect(route('pesanan-saya'));
 
         $pelanggan = Customer::where('email', 'budi@contoh.test')->firstOrFail();
@@ -154,6 +154,44 @@ class AkunPelangganTest extends TestCase
         $this->assertTrue($pelanggan->akunAktif());
         $this->assertAuthenticatedAs($pelanggan, 'pelanggan');
         $this->get('/pesanan-saya')->assertOk()->assertSee(Order::first()->kode);
+    }
+
+    /**
+     * Pendaftaran memakai email orang lain dengan kata sandi si pendaftar
+     * (KEP-096). Pemilik email yang mengklik tautannya tidak boleh ikut
+     * mengaktifkan akun itu: kata sandinya bukan miliknya.
+     */
+    public function test_membuka_tautan_konfirmasi_saja_tidak_mengaktifkan_akun(): void
+    {
+        $this->post('/daftar', $this->dataDaftar([
+            'password' => 'sandi-penyerang',
+            'password_confirmation' => 'sandi-penyerang',
+        ]));
+        $token = $this->tokenTerkirim();
+
+        $this->get(route('daftar.konfirmasi', $token))
+            ->assertOk()
+            ->assertSee('Aktifkan akun')
+            ->assertSee('Tidak merasa mendaftar?');
+
+        $this->post(route('daftar.konfirmasi.proses', $token), ['password' => 'sandi-pemilik-email'])
+            ->assertSessionHasErrors('password');
+
+        $this->assertFalse(Customer::where('email', 'budi@contoh.test')->firstOrFail()->akunAktif());
+        $this->assertGuest('pelanggan');
+    }
+
+    public function test_tautan_kedaluwarsa_tidak_bisa_diselesaikan_lewat_formulir(): void
+    {
+        $this->post('/daftar', $this->dataDaftar());
+        $token = $this->tokenTerkirim();
+
+        Customer::where('email', 'budi@contoh.test')->update(['token_dibuat_pada' => now()->subDays(2)]);
+
+        $this->post(route('daftar.konfirmasi.proses', $token), ['password' => 'rahasia12345'])
+            ->assertRedirect(route('daftar'));
+
+        $this->assertGuest('pelanggan');
     }
 
     public function test_akun_aktif_tidak_bisa_direbut_lewat_pendaftaran_ulang(): void
@@ -244,7 +282,7 @@ class AkunPelangganTest extends TestCase
         $this->assertGuest('pelanggan');
         Mail::assertQueued(KonfirmasiAkun::class);
 
-        $this->get(route('daftar.konfirmasi', $this->tokenTerkirim()))
+        $this->post(route('daftar.konfirmasi.proses', $this->tokenTerkirim()), ['password' => 'rahasia12345'])
             ->assertRedirect(route('pesanan-saya'));
 
         $this->assertAuthenticated('pelanggan');

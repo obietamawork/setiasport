@@ -216,7 +216,9 @@ class AlurPesanKustomTest extends TestCase
         $this->get(route('lacak.token', $order->access_token))
             ->assertOk()
             ->assertSee('File desain Anda dikirim lewat WhatsApp')
-            ->assertSee('nomor 081234567890')
+            // Disamarkan: tautan halaman pesanan beredar di grup tim (KEP-008).
+            ->assertSee('nomor 0812******90')
+            ->assertDontSee('081234567890')
             ->assertSee(rawurlencode('pesanan '.$order->kode), false)
             ->assertDontSee('name="berkas"', false);
 

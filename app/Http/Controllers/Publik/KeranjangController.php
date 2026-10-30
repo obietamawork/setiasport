@@ -44,7 +44,8 @@ class KeranjangController extends Controller
     }
 
     /**
-     * Jalur kustom. Harga tetap dihitung ulang di server oleh PriceCalculator, * angka apa pun yang dikirim konfigurator di browser tidak dipercaya (KEP-009).
+     * Jalur kustom. Harga tetap dihitung ulang di server oleh PriceCalculator:
+     * angka apa pun yang dikirim konfigurator di browser tidak dipercaya (KEP-009).
      */
     public function tambahKustom(Request $request, Product $produk): RedirectResponse
     {
@@ -62,7 +63,7 @@ class KeranjangController extends Controller
 
         $data = $request->validate([
             'qty' => ['required', 'integer', 'min:1', 'max:100000'],
-            'opsi' => ['array'],
+            'opsi' => ['array', 'max:50'],
             'opsi.*' => ['integer', 'exists:option_values,id'],
         ], [
             'opsi.*.integer' => 'Ada pilihan yang tidak dikenali. Muat ulang halaman lalu coba lagi.',

@@ -3357,6 +3357,75 @@ dibiarkan dan tidak dibaca apa pun.
 
 ---
 
+## KEP-096 — Audit alur pemesanan dan keamanan: opsi ganda, pembatas laju, konfirmasi akun
+**Status:** TERKUNCI · 2026-10-31
+
+Diminta klien setelah rilis: audit alur pemesanan barang stok dan semua jenis
+kustom, sekaligus audit keamanan. Alurnya dijalankan di browser untuk setiap jenis
+(bola dan sepatu, jersey polos stok+kustom, jersey futsal dan kaos sekolah per
+jumlah, setelan per ukuran, keranjang campuran sampai checkout DP). Semua 426
+kombinasi kategori × bahan × ukuran yang ditawarkan konfigurator per ukuran, dan
+semua jumlah dari minimum sampai 100.000 untuk produk per jumlah, dihitung server
+tanpa galat. Yang ditemukan dan diperbaiki:
+
+- **Dua nilai dari satu opsi diterima.** Server memeriksa opsi milik produk, tapi
+  tidak membatasi satu nilai per opsi. Permintaan yang dirakit sendiri berisi bahan
+  Milano (+7.000) dan Hyget (−8.000) lolos dengan harga −1.000 per potong, dan
+  lembar kerjanya memuat dua bahan. Kini ditolak, di titik yang dipakai semua jalur
+  (`PriceCalculator::ambilOptionValues`).
+- **Opsi wajib tidak pernah diperiksa server.** Pesanan tanpa model kerah atau bahan
+  bisa dibuat lewat permintaan langsung. Kini ditolak. Tes lama ternyata selama ini
+  memesan jersey futsal tanpa kerah; helper bersama `opsiLengkap()` mengisi opsi
+  wajib dengan pilihan bawaan seperti di layar.
+- **Pesanan manual di panel selalu menagih opsi tidak wajib.** Setiap opsi berupa
+  pilihan tanpa nilai kosong, jadi "Setup Desain Kustom +Rp75.000" ikut tertagih
+  pada setiap jersey futsal yang diketik admin. Nilai nonaktif ikut tampil (lalu
+  ditolak saat disimpan), dan potongan tertulis "(+-8.000)". Ketiganya diperbaiki.
+- **Pembatas login pelanggan bisa dikosongkan.** Satu kunci per IP, dikosongkan saat
+  login berhasil: pemilik akun mana pun bisa login ke akunnya sendiri tiap beberapa
+  tebakan dan menebak sandi orang lain tanpa batas. Kini per email+IP (dikosongkan
+  saat berhasil) ditambah per IP yang tidak pernah dikosongkan login berhasil.
+- **Pembatas pencarian pesanan bisa dikosongkan dengan cara yang sama**, padahal
+  kode pesanan berurutan. Kini tidak dikosongkan saat berhasil, dan ada kunci per
+  email.
+- **Akun bisa disiapkan untuk diambil alih.** Siapa pun bisa mendaftar memakai email
+  orang lain dengan sandinya sendiri; satu klik pemilik email di tautan konfirmasi
+  mengaktifkan akun bersandi milik pendaftar, yang lalu bisa membuka semua pesanan
+  atas email itu. Kini tautan hanya membuka formulir, dan akun aktif setelah sandi
+  yang dibuat saat mendaftar diketik.
+- **Jalur yang mengubah keranjang tanpa batas laju, keranjang tanpa batas isi.**
+  Keranjang hidup di sesi database dan dihitung ulang di setiap halaman. Kini 60
+  permintaan per menit, paling banyak 30 baris keranjang, 500 baris ukuran, dan 50
+  opsi per permintaan. `POST /checkout` dibatasi 20 per menit: pembatas lamanya baru
+  dihitung setelah pesanan jadi, sementara setiap percobaan dengan area tujuan acak
+  memanggil tarif Biteship yang berbayar. Aksi roster, setujui, dan revisi 30 per
+  menit.
+- **Nomor HP utuh di halaman pesanan.** Kabar WhatsApp dari KEP-095 menampilkan nomor
+  pelanggan apa adanya, padahal tautan halaman ini beredar di grup tim (KEP-008).
+  Kini disamarkan seperti data kontak lain di halaman itu.
+- **Keranjang tidak memperlihatkan pilihan barang kustom.** Pembeli melihat "Rp
+  160.000 / pcs" tanpa bahan dan modelnya. Kini tertulis di bawah nama barang.
+  Kalimat "Diambil di toko, tanpa ongkos kirim" diganti, karena pengiriman dengan
+  ongkir otomatis sudah tersedia.
+- **`symfony/mime` CVE-2026-45070** (injeksi header email, sedang) diperbarui ke
+  7.4.22. Dampaknya kecil di sini: email dikirim sebagai JSON ke API Resend.
+
+Diperiksa dan sudah aman: harga dihitung ulang dari data master di checkout,
+kepemilikan opsi per produk, DP hanya untuk keranjang berisi kustom, ongkir dari
+browser dicocokkan ulang dengan tarif segar, stok dikunci `lockForUpdate`, susunan
+ukuran roster tidak bisa diubah pelanggan, bukti bayar di disk privat dengan
+pemeriksaan pemilik, izin per peran di semua route panel, CSRF hanya dikecualikan
+untuk webhook, tidak ada SQL mentah berisi input, keluaran HTML mentah hanya dari
+sistem atau Markdown dengan HTML dibuang, nilai di atribut Alpine hanya angka atau
+`Js::from`, token 48–64 karakter acak, sesi diregenerasi saat masuk dan keluar.
+Di produksi, berkas sensitif tertutup (403/404), dan TRACE ditolak.
+
+**Dicatat, belum diubah:** pemesanan tanpa bayar bisa menahan stok barang siap
+selama batas bayar (24 jam), dibatasi pembatas checkout per jaringan. Kalau ini
+pernah dipakai menimbun stok, batas bayar untuk barang stok bisa dipersingkat.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3456,3 +3525,4 @@ dibiarkan dan tidak dibaca apa pun.
 | KEP-093 | Rilis pertama ke hosting, deploy lewat SSH | TERKUNCI |
 | KEP-094 | Email Resend dan ongkir Biteship dinyalakan di produksi | TERKUNCI |
 | KEP-095 | File desain pelanggan hanya lewat WhatsApp, dijelaskan sejak langkah desain | TERKUNCI |
+| KEP-096 | Audit pemesanan dan keamanan: opsi ganda, pembatas laju, konfirmasi akun | TERKUNCI |

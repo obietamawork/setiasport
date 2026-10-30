@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\OptionValue;
 use App\Models\Product;
 use App\Services\PriceCalculator;
 use Database\Seeders\CatalogSeeder;
@@ -38,10 +37,7 @@ class PriceCalculatorTest extends TestCase
 
     private function nilaiOpsi(Product $p, string ...$label): array
     {
-        return OptionValue::whereIn('label', $label)
-            ->whereHas('option', fn ($q) => $q->where('product_id', $p->id))
-            ->pluck('id')
-            ->all();
+        return $this->opsiLengkap($p, ...$label);
     }
 
     public function test_singkatan_rupiah_tidak_memotong_nol_signifikan(): void
@@ -90,9 +86,9 @@ class PriceCalculatorTest extends TestCase
     {
         $p = $this->jersey();
 
-        $this->assertSame(95_000, $this->kalkulator->kustom($p, 23)->hargaTier);
-        $this->assertSame(88_000, $this->kalkulator->kustom($p, 24)->hargaTier);
-        $this->assertSame(82_000, $this->kalkulator->kustom($p, 100)->hargaTier);
+        $this->assertSame(95_000, $this->kalkulator->kustom($p, 23, $this->nilaiOpsi($p))->hargaTier);
+        $this->assertSame(88_000, $this->kalkulator->kustom($p, 24, $this->nilaiOpsi($p))->hargaTier);
+        $this->assertSame(82_000, $this->kalkulator->kustom($p, 100, $this->nilaiOpsi($p))->hargaTier);
     }
 
     public function test_opsi_boleh_mengurangi_harga(): void
@@ -128,7 +124,7 @@ class PriceCalculatorTest extends TestCase
         $p = Product::with(['priceTiers', 'variants'])->where('sku', 'JRS-POLOS-01')->firstOrFail();
 
         $readyStock = $this->kalkulator->readyStock($p->variants->first(), 1);
-        $kustom = $this->kalkulator->kustom($p, 48);
+        $kustom = $this->kalkulator->kustom($p, 48, $this->nilaiOpsi($p));
 
         $this->assertSame(65_000, $readyStock->hargaSatuan);
         $this->assertSame(52_000, $kustom->hargaSatuan);

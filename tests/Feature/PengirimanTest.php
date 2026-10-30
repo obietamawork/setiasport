@@ -122,7 +122,7 @@ class PengirimanTest extends TestCase
 
         $this->post(route('keranjang.kustom', $jersey), [
             'qty' => $jersey->moq,
-            'opsi' => [],
+            'opsi' => $this->opsiLengkap($jersey),
         ]);
         $this->post('/checkout', [
             'nama' => 'Tim Garuda',

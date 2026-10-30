@@ -35,17 +35,29 @@ Route::get('/produk/{produk:slug}', [KatalogController::class, 'show'])->name('p
 
 // Pemesanan kustom empat langkah (KEP-040).
 Route::get('/pesan/{produk:slug}', [KustomController::class, 'form'])->name('kustom.buat');
-Route::post('/pesan/{produk:slug}', [KustomController::class, 'simpan'])->name('kustom.simpan');
-
 Route::get('/keranjang', [KeranjangController::class, 'index'])->name('keranjang');
-Route::post('/keranjang', [KeranjangController::class, 'tambah'])->name('keranjang.tambah');
-Route::post('/keranjang/kustom/{produk:slug}', [KeranjangController::class, 'tambahKustom'])
-    ->name('keranjang.kustom');
-Route::put('/keranjang', [KeranjangController::class, 'ubah'])->name('keranjang.ubah');
-Route::delete('/keranjang', [KeranjangController::class, 'hapus'])->name('keranjang.hapus');
-
 Route::get('/checkout', [CheckoutController::class, 'form'])->name('checkout');
-Route::post('/checkout', [CheckoutController::class, 'proses'])->name('checkout.proses');
+
+/*
+ * Semua yang mengubah keranjang dibatasi lajunya (KEP-096). Keranjang disimpan
+ * di sesi database, dan tiap baris dihitung ulang harganya di setiap halaman:
+ * tanpa batas, satu skrip bisa menggelembungkan sesi sebanyak yang ia mau.
+ * Enam puluh per menit jauh di atas kecepatan orang mengklik.
+ */
+Route::middleware('throttle:60,1')->group(function () {
+    Route::post('/pesan/{produk:slug}', [KustomController::class, 'simpan'])->name('kustom.simpan');
+    Route::post('/keranjang', [KeranjangController::class, 'tambah'])->name('keranjang.tambah');
+    Route::post('/keranjang/kustom/{produk:slug}', [KeranjangController::class, 'tambahKustom'])
+        ->name('keranjang.kustom');
+    Route::put('/keranjang', [KeranjangController::class, 'ubah'])->name('keranjang.ubah');
+    Route::delete('/keranjang', [KeranjangController::class, 'hapus'])->name('keranjang.hapus');
+});
+
+// Pembatas di dalam controller baru dihitung setelah pesanan jadi. Yang ini
+// menahan percobaan yang gagal, yang tiap kalinya bisa memanggil tarif
+// Biteship berbayar untuk area tujuan acak (KEP-096).
+Route::post('/checkout', [CheckoutController::class, 'proses'])
+    ->middleware('throttle:20,1')->name('checkout.proses');
 
 /*
  * Pilihan pengiriman di checkout (KEP-058). Dibatasi lajunya karena tiap
@@ -71,6 +83,9 @@ Route::middleware('guest:pelanggan')->group(function () {
     // Penguasaan email dibuktikan di sini, bukan di formulir (KEP-021).
     Route::get('/daftar/konfirmasi/{token}', [AkunController::class, 'konfirmasi'])
         ->name('daftar.konfirmasi');
+    // Kata sandi diminta sebelum akun aktif (KEP-096).
+    Route::post('/daftar/konfirmasi/{token}', [AkunController::class, 'konfirmasiProses'])
+        ->middleware('throttle:10,1')->name('daftar.konfirmasi.proses');
 });
 
 Route::middleware('auth:pelanggan')->group(function () {
@@ -127,7 +142,9 @@ Route::post('/roll/{token}/selesai', [RollController::class, 'selesai'])
 Route::post('/lacak/{token}/pembatalan', [PembatalanController::class, 'ajukan'])
     ->middleware('throttle:6,60')->name('lacak.pembatalan');
 
-Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->group(function () {
+// Pemegang satu tautan pesanan tidak boleh bisa menulis ulang roster ribuan
+// kali per menit; tiap simpan menghapus dan menulis ulang seluruh barisnya.
+Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->middleware('throttle:30,1')->group(function () {
     Route::post('roster', [PesananItemController::class, 'simpanRoster'])->name('roster');
     // Tidak ada unggah desain di sini: file desain pelanggan hanya lewat
     // WhatsApp (KEP-095).

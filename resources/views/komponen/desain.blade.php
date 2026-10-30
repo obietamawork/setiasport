@@ -115,7 +115,8 @@
             <p class="font-semibold">File desain Anda dikirim lewat WhatsApp</p>
             <p class="mt-1">
                 Admin kami menghubungi
-                {{ $order->customer->no_hp ? 'nomor '.$order->customer->no_hp : 'Anda' }}
+                {{-- Disamarkan: tautan halaman ini beredar di grup tim (KEP-008). --}}
+                {{ $order->customer->no_hp ? 'nomor '.$order->customer->no_hp_samar : 'Anda' }}
                 untuk menerima filenya. Semua format diterima: CDR, AI, PSD, PDF, PNG, JPG,
                 atau tautan Google Drive. Sudah siap? Kirim sekarang; kode pesanannya sudah
                 tertulis di pesan.

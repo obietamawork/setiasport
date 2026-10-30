@@ -23,7 +23,10 @@
         'opsi' => $p->options->map(fn ($o) => [
             'id' => $o->id,
             'nama' => $o->nama,
-            'values' => $o->values->map(fn ($v) => [
+            'wajib' => $o->wajib,
+            // Nilai nonaktif ditolak kalkulator; menampilkannya hanya membuat
+            // pesanan gagal disimpan setelah seluruh formulir terisi.
+            'values' => $o->values->where('aktif', true)->map(fn ($v) => [
                 'id' => $v->id,
                 'label' => $v->label,
                 'harga' => $v->tambahan_harga,
@@ -107,11 +110,16 @@
             <div class="mt-4 space-y-4">
                 <template x-for="o in pilih.opsi" :key="o.id">
                     <div>
-                        <label class="label-form" x-text="o.nama"></label>
+                        <label class="label-form" x-text="o.nama + (o.wajib ? '' : ' (opsional)')"></label>
+                        {{-- Opsi tidak wajib bisa dikosongkan (KEP-096). Tanpa pilihan
+                             kosong, biaya seperti "Setup Desain" selalu ikut tertagih. --}}
                         <select :name="`opsi[${o.id}]`" class="kotak-input">
+                            <template x-if="!o.wajib">
+                                <option value="">Tidak dipakai</option>
+                            </template>
                             <template x-for="v in o.values" :key="v.id">
                                 <option :value="v.id"
-                                        x-text="v.label + (v.harga ? ' (+' + rp(v.harga) + ')' : '')"></option>
+                                        x-text="v.label + (v.harga ? ' (' + (v.harga > 0 ? '+' : '−') + rp(Math.abs(v.harga)) + ')' : '')"></option>
                             </template>
                         </select>
                     </div>

@@ -8,6 +8,7 @@ use App\Models\OptionValue;
 use App\Models\Product;
 use App\Models\ProductPrice;
 use App\Models\ProductVariant;
+use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
 /**
@@ -238,15 +239,11 @@ class PriceCalculator
      * produk ini, mencegah harga dimanipulasi lewat id opsi dari produk lain.
      *
      * @param  array<int, int>  $ids
-     * @return \Illuminate\Support\Collection<int, OptionValue>
+     * @return Collection<int, OptionValue>
      */
     private function ambilOptionValues(Product $product, array $ids)
     {
-        if ($ids === []) {
-            return collect();
-        }
-
-        $values = OptionValue::with('option')
+        $values = $ids === [] ? collect() : OptionValue::with('option')
             ->whereIn('id', $ids)
             ->where('aktif', true)
             ->get();
@@ -261,6 +258,30 @@ class PriceCalculator
 
         if ($values->count() !== count(array_unique($ids))) {
             throw new InvalidArgumentException('Ada opsi yang tidak dikenali atau sudah nonaktif.');
+        }
+
+        // Satu nilai per opsi (KEP-096). Konfigurator memang hanya mengirim
+        // satu, tapi permintaan yang dirakit sendiri bisa menumpuk dua bahan
+        // atau dua potongan harga dari opsi yang sama, dan pesanannya sampai
+        // di produksi dengan dua bahan sekaligus.
+        $ganda = $values->groupBy('product_option_id')->first(fn ($g) => $g->count() > 1);
+
+        if ($ganda) {
+            throw new InvalidArgumentException("Pilih satu saja untuk {$ganda->first()->option->nama}.");
+        }
+
+        // Opsi wajib harus terisi, kalau tidak lembar kerjanya sampai di
+        // konveksi tanpa, misalnya, model kerah. Opsi wajib yang semua
+        // nilainya sedang nonaktif tidak bisa dipilih siapa pun, jadi dilewati.
+        $belumDipilih = $product->options()
+            ->where('wajib', true)
+            ->whereHas('values', fn ($q) => $q->where('aktif', true))
+            ->whereNotIn('id', $values->pluck('product_option_id'))
+            ->orderBy('urutan')
+            ->value('nama');
+
+        if ($belumDipilih) {
+            throw new InvalidArgumentException("Pilih {$belumDipilih} dulu.");
         }
 
         return $values;

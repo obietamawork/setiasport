@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentType;
-use App\Models\OptionValue;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -52,10 +51,7 @@ class KustomFlowTest extends TestCase
      */
     private function opsi(string ...$label): array
     {
-        return OptionValue::whereIn('label', $label)
-            ->whereHas('option', fn ($q) => $q->where('product_id', $this->jersey()->id))
-            ->pluck('id')
-            ->all();
+        return $this->opsiLengkap($this->jersey(), ...$label);
     }
 
     private function staf(string $email): User
@@ -101,7 +97,7 @@ class KustomFlowTest extends TestCase
         // "Tidak dipakai". Itu berarti tidak memilih, bukan pilihan tidak sah.
         $this->post(route('keranjang.kustom', $this->jersey()), [
             'qty' => 12,
-            'opsi' => [1 => $this->opsi('Milano')[0], 6 => ''],
+            'opsi' => [...$this->opsi('Milano'), ''],
         ])->assertSessionHasNoErrors()->assertRedirect(route('keranjang'));
 
         $this->assertSame(1, app(Keranjang::class)->jumlahBaris());

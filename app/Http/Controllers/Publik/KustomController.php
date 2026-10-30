@@ -45,9 +45,11 @@ class KustomController extends Controller
         abort_unless($produk->aktif && $produk->punyaJalurKustom(), 404);
 
         $data = $request->validate([
-            'opsi' => ['array'],
+            // Batas atas (KEP-096): tanpanya satu permintaan bisa membawa ratusan
+            // ribu baris yang semuanya dihitung harganya dan disimpan di sesi.
+            'opsi' => ['array', 'max:50'],
             'opsi.*' => ['nullable', 'integer'],
-            'baris' => ['required', 'array', 'min:1'],
+            'baris' => ['required', 'array', 'min:1', 'max:500'],
             'baris.*.kategori' => ['nullable', 'string', 'max:10'],
             'baris.*.ukuran' => ['required', 'string', 'max:10'],
             'baris.*.jumlah' => ['required', 'integer', 'min:1', 'max:5000'],

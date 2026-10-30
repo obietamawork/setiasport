@@ -6,7 +6,6 @@ use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Enums\StatusPembatalan;
 use App\Enums\TahapPembatalan;
-use App\Models\OptionValue;
 use App\Models\Order;
 use App\Models\Pembatalan;
 use App\Models\Product;
@@ -52,10 +51,7 @@ class PembatalanTest extends TestCase
 
     private function opsi(string ...$label): array
     {
-        return OptionValue::whereIn('label', $label)
-            ->whereHas('option', fn ($q) => $q->where('product_id', $this->jersey()->id))
-            ->pluck('id')
-            ->all();
+        return $this->opsiLengkap($this->jersey(), ...$label);
     }
 
     /** Pesanan kustom yang DP-nya sudah masuk dan terverifikasi. */

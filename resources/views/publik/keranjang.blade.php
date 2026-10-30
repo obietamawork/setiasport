@@ -37,6 +37,16 @@
                             <p class="text-sm text-muted">{{ $b['varian']->label }}</p>
                         @endif
 
+                        {{-- Pilihan barang kustom (KEP-096). Tanpa ini pembeli hanya
+                             melihat "Rp 160.000 / pcs" tanpa tahu bahan dan model apa
+                             yang sedang ia bayar, dan baru bisa memeriksanya setelah
+                             pesanan jadi. --}}
+                        @if ($b['rincian']?->komponenPerPcs)
+                            <p class="mt-0.5 text-sm text-muted">
+                                {{ collect($b['rincian']->komponenPerPcs)->map(fn ($k) => $k['label'].': '.$k['nilai'])->implode(' · ') }}
+                            </p>
+                        @endif
+
                         {{-- Baris kustom berharga per ukuran (KEP-039): jumlahnya
                              berasal dari daftar ukuran, jadi daftar itu yang
                              ditampilkan, bukan satu angka jumlah. --}}
@@ -126,7 +136,12 @@
             <div>
                 <p class="text-sm text-muted">Total</p>
                 <p class="numeral mt-1 text-3xl text-merah">{{ rupiah($total) }}</p>
-                <p class="mt-2 text-sm text-muted">Diambil di toko, tanpa ongkos kirim.</p>
+                {{-- Pengiriman dipilih di checkout (KEP-058), dan ongkirnya dihitung
+                     otomatis di sana (KEP-094). --}}
+                <p class="mt-2 text-sm text-muted">
+                    Belum termasuk ongkos kirim. Ambil di toko gratis, atau pilih dikirim
+                    di langkah berikutnya.
+                </p>
             </div>
             <div class="kelompok-tombol">
                 <a href="{{ route('katalog') }}" class="tombol tombol-garis">Tambah barang lain</a>
