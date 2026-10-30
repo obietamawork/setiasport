@@ -73,7 +73,8 @@ class ResendController extends Controller
         $rahasia = config('services.resend.webhook_secret');
 
         if (blank($rahasia)) {
-            // Tanpa rahasia, endpoint ini tidak boleh menerima apa pun, // siapa saja bisa memalsukan status email.
+            // Tanpa rahasia, endpoint ini tidak boleh menerima apa pun: siapa
+            // saja bisa memalsukan status email.
             return false;
         }
 

@@ -2,6 +2,8 @@
 
 namespace App\Mail;
 
+use App\Enums\EmailStatus;
+use App\Models\EmailLog;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -10,6 +12,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Queue\SerializesModels;
+use Throwable;
 
 /**
  * Satu Mailable untuk seluruh email pesanan; yang membedakan hanya template.
@@ -52,5 +55,20 @@ class EmailPesanan extends Mailable implements ShouldQueue
                 'tautan' => route('lacak.token', $this->order->access_token),
             ],
         );
+    }
+
+    /**
+     * Dipanggil antrian saat Resend menolak atau tidak bisa dihubungi. Di hosting
+     * pengiriman berjalan lewat cron, jauh dari try/catch di PengirimEmail; tanpa
+     * ini log tetap "Terkirim" dan admin tidak pernah diminta mengabari pelanggan.
+     */
+    public function failed(Throwable $e): void
+    {
+        if ($this->logId) {
+            EmailLog::whereKey($this->logId)->update([
+                'status' => EmailStatus::GAGAL,
+                'error' => mb_substr($e->getMessage(), 0, 250),
+            ]);
+        }
     }
 }

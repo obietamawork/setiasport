@@ -101,7 +101,7 @@ DB_DATABASE=…
 DB_USERNAME=…
 DB_PASSWORD=…
 
-MAIL_MAILER=resend           # "log" selama kunci Resend belum ada: email hanya tercatat di log
+MAIL_MAILER=resend           # jangan "log": dengan LOG_LEVEL=warning email dibuang, padahal panel menulis "Terkirim"
 MAIL_FROM_ADDRESS="noreply@setiasport.com"
 RESEND_API_KEY=re_…
 RESEND_WEBHOOK_SECRET=whsec_…
@@ -256,13 +256,37 @@ tanpa rahasia yang benar**, jadi aman dibuka ke publik.
 Salin *signing secret* Resend ke `RESEND_WEBHOOK_SECRET`. Selama variabel itu
 kosong, seluruh notifikasi ditolak — disengaja (KEP-016).
 
+Setiap kali `bersama/.env` diubah, jalankan `cd ~/setiasport/terkini && php artisan
+config:cache`. Tanpa itu aplikasi tetap memakai isi lama yang tersimpan di cache.
+
 ---
 
 ## 7. Verifikasi domain Resend
 
-Tambahkan record SPF dan DKIM yang diberikan Resend ke DNS. Kalau DNS sudah di
-Cloudflare, prosesnya beberapa menit. Sebelum domain terverifikasi, pengiriman
-akan ditolak dan tercatat sebagai `GAGAL` di dashboard panel.
+Kunci API yang dipasang di server cukup berizin **Sending access**: kunci itu
+hanya bisa mengirim, tidak bisa membaca atau mengubah apa pun di akun Resend.
+Akibatnya, menambah domain dan webhook dikerjakan di dasbor resend.com, bukan
+lewat kunci tersebut.
+
+1. resend.com → **Domains** → **Add Domain**: `setiasport.com`, region **Tokyo
+   (ap-northeast-1)**, yang terdekat dari Indonesia.
+2. Resend menampilkan record DNS berikut. Isinya disalin persis dari halaman
+   Resend, karena kunci DKIM berbeda untuk setiap akun:
+
+   | Jenis | Nama | Isi |
+   |---|---|---|
+   | TXT | `resend._domainkey` | kunci DKIM (`p=…`) |
+   | MX | `send` | `feedback-smtp.<region>.amazonses.com`, prioritas 10 |
+   | TXT | `send` | `v=spf1 include:amazonses.com ~all` |
+
+   Nameserver `setiasport.com` milik Rumahweb, jadi record ini ditambahkan di
+   cPanel → **Zone Editor** (lewat SSH: `uapi DNS mass_edit_zone`). Semuanya di
+   subdomain, sehingga SPF utama `setiasport.com` milik email cPanel tidak disentuh.
+3. Tekan **Verify** di Resend. Biasanya selesai dalam beberapa menit.
+
+Sebelum domain terverifikasi, Resend menolak setiap kiriman. Penolakan itu
+tercatat **Gagal Kirim** di detail pesanan dan muncul di kartu "Email tidak
+sampai" pada dashboard, supaya admin mengabari pelanggannya lewat WhatsApp.
 
 ---
 

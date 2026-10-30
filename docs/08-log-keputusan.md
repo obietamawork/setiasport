@@ -3270,6 +3270,30 @@ diperiksa sebelum apa pun dipasang. Tiga temuan mengubah kode dan cara deploy:
 
 ---
 
+## KEP-094 — Resend dipasang; email yang ditolak di antrian tercatat Gagal Kirim
+**Status:** TERKUNCI · 2026-10-30
+
+Kunci Resend dipasang di `bersama/.env`. Kunci itu berizin *Sending access*
+saja, jadi menambah domain dan webhook tetap dikerjakan di dasbor Resend
+(docs/12 bagian 6 dan 7). Memeriksa jalur email sebelum menyalakannya
+menemukan dua hal:
+
+- **Penolakan Resend di antrian tidak pernah tercatat.** `PengirimEmail` menangkap
+  galat kirim, tetapi di hosting email baru dikirim cron lewat antrian, jauh dari
+  `try/catch` itu. Baris log tetap "Terkirim", kartu "Email tidak sampai" kosong,
+  dan admin tidak pernah diminta mengabari pelanggan lewat WhatsApp. Tes yang ada
+  lulus karena antrian di tes berjalan langsung (`sync`). Kini `EmailPesanan::failed()`
+  menandai barisnya **Gagal Kirim** beserta pesan dari Resend. Tes barunya
+  mengirim lewat antrian `database` seperti di hosting.
+- **`MAIL_MAILER=log` di produksi membuang email.** Pengirim `log` menulis di
+  tingkat *debug*, sedangkan log produksi `LOG_LEVEL=warning`. Akibatnya email
+  tidak tersimpan di mana pun, padahal panel menulis "Terkirim". Karena itu
+  `MAIL_MAILER=resend` dinyalakan sebelum domain terverifikasi, berlawanan
+  dengan catatan di KEP-093: penolakan yang terlihat di dashboard lebih baik
+  daripada email yang hilang tanpa jejak.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3367,3 +3391,4 @@ diperiksa sebelum apa pun dipasang. Tiga temuan mengubah kode dan cara deploy:
 | KEP-091 | Dua jalan pemesanan, tombol − +, hapus di keranjang, estimasi dari data | TERKUNCI |
 | KEP-092 | Logo hero versi terang, dan banner promo beranda yang digeser manual | TERKUNCI |
 | KEP-093 | Rilis pertama ke hosting, deploy lewat SSH | TERKUNCI |
+| KEP-094 | Resend dipasang; email yang ditolak di antrian tercatat Gagal Kirim | TERKUNCI |

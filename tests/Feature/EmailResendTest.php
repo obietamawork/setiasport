@@ -10,10 +10,13 @@ use App\Enums\PaymentType;
 use App\Models\Customer;
 use App\Models\EmailLog;
 use App\Models\Order;
+use App\Services\KesehatanSistem;
 use App\Services\PengirimEmail;
 use Database\Seeders\SettingSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
@@ -60,7 +63,7 @@ class EmailResendTest extends TestCase
         return $order->load('payments');
     }
 
-    private function kirimWebhook(array $isi, ?int $waktu = null, ?string $rahasia = null): \Illuminate\Testing\TestResponse
+    private function kirimWebhook(array $isi, ?int $waktu = null, ?string $rahasia = null): TestResponse
     {
         $body = json_encode($isi);
         $id = 'msg_uji';
@@ -117,6 +120,26 @@ class EmailResendTest extends TestCase
 
         $this->assertSame(EmailStatus::GAGAL, $log->status);
         $this->assertTrue($log->status->perluTindakLanjut());
+    }
+
+    public function test_penolakan_resend_saat_dikirim_cron_tetap_tercatat_gagal(): void
+    {
+        // Seperti di hosting: email masuk antrian dan baru dikirim penjadwal.
+        config()->set('queue.default', 'database');
+        config()->set('mail.default', 'resend');
+        config()->set('mail.mailers.resend.key', 're_kunci_uji');
+
+        Http::fake(['api.resend.com/*' => Http::response(['message' => 'The setiasport.com domain is not verified.'], 403)]);
+
+        $log = app(PengirimEmail::class)->kirim($this->order(), 'order-dibuat');
+        $this->assertSame(EmailStatus::TERKIRIM, $log->status);
+
+        Artisan::call('queue:work', ['--stop-when-empty' => true]);
+
+        $log->refresh();
+        $this->assertSame(EmailStatus::GAGAL, $log->status);
+        $this->assertStringContainsString('domain is not verified', $log->error);
+        $this->assertSame(1, app(KesehatanSistem::class)->emailGagal());
     }
 
     public function test_email_tetap_terkirim_meski_pesanan_belum_punya_tagihan(): void
