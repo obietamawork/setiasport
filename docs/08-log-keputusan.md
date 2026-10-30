@@ -3393,6 +3393,13 @@ tanpa galat. Yang ditemukan dan diperbaiki:
   karena itu meloloskan tebakan yang benar. Penguncian lewat dua puluh tebakan salah
   tetap mungkin, tapi hanya mengenai formulir: tautan pesanan di email selalu
   berfungsi, dan pesan pembatasnya menyebut itu.
+- **Pembatas laju dipesan sebelum diperiksa.** Kedua pembatas di atas awalnya
+  memeriksa jatah dulu dan mencatat setelah pengecekan sandi atau pencarian, jadi
+  tebakan yang dikirim serentak lolos bersama sebelum satu pun tercatat (ditandai
+  tinjauan keamanan otomatis). Kini jatahnya ditambah lebih dulu secara atomik
+  (`RateLimiter::hit`, cache database memakai `lockForUpdate`) dan dikembalikan
+  dengan `decrement` kalau berhasil, supaya pembeli yang berbagi satu IP operator
+  seluler tidak saling menghabiskan jatah.
 - **Akun bisa disiapkan untuk diambil alih.** Siapa pun bisa mendaftar memakai email
   orang lain dengan sandinya sendiri; satu klik pemilik email di tautan konfirmasi
   mengaktifkan akun bersandi milik pendaftar, yang lalu bisa membuka semua pesanan

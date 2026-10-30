@@ -176,6 +176,25 @@ class KeamananPemesananTest extends TestCase
         $this->assertGuest('pelanggan');
     }
 
+    /**
+     * Jatah per jaringan dipesan sebelum sandi diperiksa, supaya tebakan serentak
+     * tidak lolos bersamaan, lalu dikembalikan kalau sandinya benar: banyak
+     * pembeli berbagi satu alamat IP operator seluler.
+     */
+    public function test_login_berhasil_tidak_menghabiskan_jatah_jaringan(): void
+    {
+        Customer::create([
+            'nama' => 'Pelanggan', 'email' => 'budi@contoh.test', 'no_hp' => '081200000000',
+            'password' => Hash::make('rahasia12345'),
+        ])->selesaikanKonfirmasi();
+
+        foreach (range(1, 35) as $i) {
+            $this->post('/masuk', ['email' => 'budi@contoh.test', 'password' => 'rahasia12345'])
+                ->assertSessionHasNoErrors();
+            $this->post('/keluar');
+        }
+    }
+
     public function test_tebakan_ke_banyak_email_dari_satu_jaringan_ikut_dibatasi(): void
     {
         foreach (range(1, 30) as $i) {

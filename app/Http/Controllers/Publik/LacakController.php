@@ -54,30 +54,36 @@ class LacakController extends Controller
          * pemiliknya. Penguncian terarah tetap mungkin lewat dua puluh tebakan
          * salah, tapi yang terkunci hanya formulir ini; tautan pesanan di email
          * selalu berfungsi, dan pesannya menyebut itu.
+         *
+         * Jatahnya DIPESAN lebih dulu lewat penambahan atomik, lalu dikembalikan
+         * kalau pencariannya berhasil. Memeriksa dulu lalu mencatat belakangan
+         * meloloskan tebakan yang dikirim serentak: semuanya lewat pemeriksaan
+         * sebelum satu pun tercatat.
          */
         $kunci = 'lacak:'.$request->ip();
         $kunciEmail = 'lacak-email:'.Str::lower($data['email']);
 
-        if (RateLimiter::tooManyAttempts($kunci, 10) || RateLimiter::tooManyAttempts($kunciEmail, 20)) {
+        $percobaanIp = RateLimiter::hit($kunci, 300);
+        $percobaanEmail = RateLimiter::hit($kunciEmail, 3600);
+
+        if ($percobaanIp > 10 || $percobaanEmail > 20) {
             throw ValidationException::withMessages([
                 'kode' => 'Terlalu banyak percobaan. Coba lagi nanti, atau buka tautan pesanan '
                     .'yang kami kirim ke email Anda.',
             ]);
         }
 
-        RateLimiter::hit($kunci, 300);
-
         $order = Order::where('kode', $data['kode'])
             ->whereHas('customer', fn ($q) => $q->where('email', $data['email']))
             ->first();
 
         if (! $order) {
-            RateLimiter::hit($kunciEmail, 3600);
-
             throw ValidationException::withMessages([
                 'kode' => 'Kode pesanan dan email tidak cocok. Periksa lagi email konfirmasi Anda.',
             ]);
         }
+
+        RateLimiter::decrement($kunciEmail, 3600);
 
         return redirect()->route('lacak.token', $order->access_token);
     }

@@ -46,26 +46,34 @@ class AkunController extends Controller
          * dulu hanya ada satu kunci per IP yang dikosongkan saat berhasil, jadi
          * siapa pun yang punya akun bisa login ke akunnya sendiri tiap beberapa
          * tebakan, lalu menebak sandi akun orang lain tanpa batas.
+         *
+         * Jatahnya dipesan lebih dulu lewat penambahan atomik dan dikembalikan
+         * kalau kata sandinya benar. Memeriksa dulu lalu mencatat setelah
+         * pengecekan sandi yang lambat meloloskan tebakan yang dikirim serentak.
          */
         $kunci = 'masuk-pelanggan:'.Str::lower($data['email']).'|'.$request->ip();
         $kunciIp = 'masuk-pelanggan-ip:'.$request->ip();
 
-        if (RateLimiter::tooManyAttempts($kunci, 8) || RateLimiter::tooManyAttempts($kunciIp, 30)) {
+        $percobaan = RateLimiter::hit($kunci, 300);
+        $percobaanIp = RateLimiter::hit($kunciIp, 3600);
+
+        if ($percobaan > 8 || $percobaanIp > 30) {
             throw ValidationException::withMessages([
                 'email' => 'Terlalu banyak percobaan. Coba lagi dalam beberapa menit.',
             ]);
         }
 
         if (! Auth::guard('pelanggan')->attempt($data, $request->boolean('ingat'))) {
-            RateLimiter::hit($kunci, 300);
-            RateLimiter::hit($kunciIp, 3600);
-
             // Pesan yang sama untuk email tidak dikenal maupun kata sandi salah,
             // supaya halaman ini tidak bisa dipakai menebak email pelanggan.
             throw ValidationException::withMessages([
                 'email' => 'Email atau kata sandi tidak cocok.',
             ]);
         }
+
+        // Kata sandinya benar: jatah jaringan dikembalikan, karena banyak pembeli
+        // berbagi satu alamat IP operator seluler.
+        RateLimiter::decrement($kunciIp, 3600);
 
         $pelanggan = Auth::guard('pelanggan')->user();
 
