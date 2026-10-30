@@ -112,8 +112,8 @@ RESEND_WEBHOOK_SECRET=whsec_…
 # BUKAN di sini (KEP-067): diisi staf lewat Pengaturan > Pengiriman di panel,
 # dicari lewat kotak pencarian karena kodenya tidak bisa ditebak.
 ONGKIR_PENYEDIA=biteship      # mati | biteship
-BITESHIP_KUNCI=biteship_test… # sementara kunci TEST: tarifnya nyata (KEP-094); tukar ke kunci live setelah aktivasi disetujui
-ONGKIR_KURIR=jne,jnt
+BITESHIP_KUNCI=biteship_live… # kunci LIVE di server; di lokal kunci test, tarifnya sama (KEP-094)
+ONGKIR_KURIR=jne,jnt          # hanya JNE dan J&T: dua kurir yang dilayani toko
 
 FITUR_CS=false                # true hanya kalau chat CS dinyalakan kembali
 # Isi hanya kalau chat CS dinyalakan kembali, lihat "Menyalakan chat CS kembali".

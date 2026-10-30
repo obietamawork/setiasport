@@ -3301,8 +3301,10 @@ resi rekaan dijawab "tidak ditemukan", bukan riwayat palsu. Menurut Biteship,
 cek tarif di mode test memang memakai data nyata dan dipotong Rp5 per cek dari
 saldo; batasnya 5 permintaan per detik, jauh di atas kebutuhan toko ini. Area
 asal diisi `Wonogiri, Wonogiri, Jawa Tengah. 57612`, sesuai kode pos alamat
-toko di Pengaturan. Setelah kunci live keluar, cukup `BITESHIP_KUNCI` yang
-ditukar, lalu `php artisan config:cache`.
+toko di Pengaturan. Kunci live dipasang 31 Oktober 2026, begitu aktivasinya
+disetujui. Untuk rute dan berat yang sama, tarifnya persis sama dengan kunci
+test. Kurir tetap hanya JNE dan J&T (`ONGKIR_KURIR=jne,jnt`) atas permintaan
+toko. Di lokal tetap dipakai kunci test.
 
 Checkout di situs dengan jawaban Biteship yang asli (pemeriksaan yang ditunda
 KEP-057 sampai kunci ada) menampilkan "JNE JNE Trucking (1 - 1 days)" dan
