@@ -282,6 +282,13 @@ lewat kunci tersebut.
    Nameserver `setiasport.com` milik Rumahweb, jadi record ini ditambahkan di
    cPanel → **Zone Editor** (lewat SSH: `uapi DNS mass_edit_zone`). Semuanya di
    subdomain, sehingga SPF utama `setiasport.com` milik email cPanel tidak disentuh.
+
+   **Lewat `uapi`, tanda `+` di kunci DKIM wajib ditulis `%2B`.** Argumen `uapi`
+   dibaca seperti alamat web, jadi `+` berubah menjadi spasi tanpa pesan galat,
+   dan DKIM gagal diverifikasi. Setelah memasang, bandingkan isi record dengan
+   nilai di Resend lewat `uapi DNS parse_zone`, bukan sekadar memastikan
+   record-nya ada. Nameserver Rumahweb menyalin perubahan zona dalam beberapa
+   menit.
 3. Tekan **Verify** di Resend. Biasanya selesai dalam beberapa menit.
 
 Sebelum domain terverifikasi, Resend menolak setiap kiriman. Penolakan itu

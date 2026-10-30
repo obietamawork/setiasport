@@ -3277,6 +3277,10 @@ Kunci Resend dipasang di `bersama/.env`. Kunci itu berizin *Sending access*
 saja, jadi domain dan webhook ditambahkan di dasbor Resend (docs/12 bagian 6
 dan 7). Record DNS-nya (DKIM, `send`, `rsend`) ditambahkan ke zona Rumahweb
 lewat `uapi`, dan webhook diuji dari luar dengan tanda tangan sah dan palsu.
+Verifikasi DKIM pertama gagal: `uapi` membaca argumennya seperti alamat web,
+sehingga satu `+` di kunci DKIM tersimpan sebagai spasi. Pemeriksaan setelah
+pemasangan hanya memastikan record-nya ada, bukan isinya sama persis. Kini `+`
+ditulis `%2B`, dan isi record dibandingkan utuh dengan nilai dari Resend.
 Memeriksa jalur email sebelum menyalakannya menemukan dua hal:
 
 - **Penolakan Resend di antrian tidak pernah tercatat.** `PengirimEmail` menangkap
@@ -3312,7 +3316,9 @@ menaruh JNE Trucking, yang tarifnya dihitung minimal 10 kg, di urutan pertama
 untuk paket satu bola. Tes lama memakai jawaban rekaan "2-3 hari", jadi ketiganya
 lolos. Kini nama kurir tidak diulang, durasi dibaca "1 hari" dan "2-3 hari",
 dan tarif termurah ditawarkan lebih dulu. Tes barunya memakai bentuk jawaban
-asli.
+asli. Tarif disimpan satu jam sebagai hasil yang sudah dibaca, jadi tepat
+setelah deploy label lama masih tampil; entri `ongkir:` di tabel `cache` dihapus
+manual, tanpa `cache:clear` yang ikut menghapus denyut penjadwal.
 
 ---
 
