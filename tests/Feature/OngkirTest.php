@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Services\Ongkir\Biteship;
 use App\Services\Ongkir\OngkirMati;
 use App\Services\Ongkir\PenyediaOngkir;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -76,6 +77,41 @@ class OngkirTest extends TestCase
         $this->assertSame(20_000, $tarif[1]->harga);
     }
 
+    /** Bentuk jawaban Biteship yang sebenarnya, diambil dari rilis pertama (KEP-094). */
+    public function test_jawaban_asli_biteship_dibaca_dalam_bahasa_pembeli(): void
+    {
+        Http::fake(['*/v1/rates/couriers' => Http::response([
+            'pricing' => [
+                [
+                    'courier_code' => 'jne', 'courier_service_code' => 'jtr',
+                    'courier_name' => 'JNE', 'courier_service_name' => 'JNE Trucking',
+                    'price' => 55_000, 'duration' => '4 - 5 days',
+                    'shipment_duration_range' => '4 - 5', 'shipment_duration_unit' => 'days',
+                ],
+                [
+                    'courier_code' => 'jne', 'courier_service_code' => 'yes',
+                    'courier_name' => 'JNE', 'courier_service_name' => 'Yakin Esok Sampai (YES)',
+                    'price' => 25_000, 'duration' => '1 - 1 days',
+                    'shipment_duration_range' => '1 - 1', 'shipment_duration_unit' => 'days',
+                ],
+                [
+                    'courier_code' => 'jnt', 'courier_service_code' => 'ez',
+                    'courier_name' => 'J&T', 'courier_service_name' => 'EZ',
+                    'price' => 15_000,
+                    'shipment_duration_range' => '2 - 3', 'shipment_duration_unit' => 'days',
+                ],
+            ],
+        ])]);
+
+        $label = array_map(fn ($t) => $t->label(), $this->biteship()->tarif('IDNP6IDNC148IDND874', 1_000));
+
+        $this->assertSame([
+            'JNE Trucking (4-5 hari)',
+            'JNE Yakin Esok Sampai (YES) (1 hari)',
+            'J&T EZ (2-3 hari)',
+        ], $label);
+    }
+
     /** Tarif yang sama tidak perlu ditanyakan dua kali; tiap panggilan berbiaya. */
     public function test_tarif_yang_sama_hanya_dipanggil_sekali(): void
     {
@@ -108,7 +144,7 @@ class OngkirTest extends TestCase
 
     public function test_jaringan_putus_juga_tidak_melempar_galat(): void
     {
-        Http::fake(fn () => throw new \Illuminate\Http\Client\ConnectionException('putus'));
+        Http::fake(fn () => throw new ConnectionException('putus'));
 
         $this->assertSame([], $this->biteship()->tarif('IDNP6', 1_000));
     }

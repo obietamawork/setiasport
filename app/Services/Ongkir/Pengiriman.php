@@ -49,6 +49,10 @@ class Pengiriman
     {
         $tarif = $this->penyedia->tarif($areaTujuan, $beratGram);
 
+        // Termurah lebih dulu. Urutan penyedia bisa menaruh JNE Trucking, yang
+        // bertarif minimum 10 kg, di atas Reguler untuk paket satu kaus.
+        usort($tarif, fn (TarifKirim $a, TarifKirim $b) => $a->harga <=> $b->harga);
+
         if (! $this->gratis($subtotal)) {
             return $tarif;
         }

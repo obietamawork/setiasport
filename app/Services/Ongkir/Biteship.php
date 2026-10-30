@@ -62,9 +62,9 @@ class Biteship implements PenyediaOngkir
                 ->map(fn (array $t) => new TarifKirim(
                     kurir: (string) ($t['courier_code'] ?? ''),
                     layanan: (string) ($t['courier_service_code'] ?? ''),
-                    nama: trim(($t['courier_name'] ?? '').' '.($t['courier_service_name'] ?? '')),
+                    nama: $this->namaLayanan($t),
                     harga: (int) ($t['price'] ?? 0),
-                    estimasi: $t['duration'] ?? $t['shipment_duration_range'] ?? null,
+                    estimasi: $this->estimasi($t),
                 ))
                 ->filter(fn (TarifKirim $t) => $t->harga > 0 && $t->kurir !== '')
                 ->values()
@@ -128,6 +128,44 @@ class Biteship implements PenyediaOngkir
             ->filter(fn (array $a) => $a['kode'] !== '')
             ->values()
             ->all();
+    }
+
+    /**
+     * Nama layanan kadang sudah memuat nama kurirnya ("JNE" + "JNE Trucking"),
+     * kadang tidak ("J&T" + "EZ").
+     *
+     * @param  array<string, mixed>  $t
+     */
+    private function namaLayanan(array $t): string
+    {
+        $kurir = trim((string) ($t['courier_name'] ?? ''));
+        $layanan = trim((string) ($t['courier_service_name'] ?? ''));
+
+        if ($kurir !== '' && str_starts_with(mb_strtolower($layanan), mb_strtolower($kurir))) {
+            return $layanan;
+        }
+
+        return trim($kurir.' '.$layanan);
+    }
+
+    /**
+     * Biteship menjawab dalam bahasa Inggris ("1 - 2 days", "1 - 1 days"). Yang
+     * dibaca pembeli: "1-2 hari" dan "1 hari". Bentuk lain diteruskan apa adanya.
+     *
+     * @param  array<string, mixed>  $t
+     */
+    private function estimasi(array $t): ?string
+    {
+        $teks = trim((string) ($t['duration']
+            ?? trim(($t['shipment_duration_range'] ?? '').' '.($t['shipment_duration_unit'] ?? ''))));
+
+        if (! preg_match('/^(\d+)\s*-\s*(\d+)\s*(days?|hours?)$/i', $teks, $m)) {
+            return $teks !== '' ? $teks : null;
+        }
+
+        $satuan = str_starts_with(strtolower($m[3]), 'hour') ? 'jam' : 'hari';
+
+        return ($m[1] === $m[2] ? $m[1] : $m[1].'-'.$m[2]).' '.$satuan;
     }
 
     /**

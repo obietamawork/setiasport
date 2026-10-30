@@ -3304,6 +3304,14 @@ asal diisi `Wonogiri, Wonogiri, Jawa Tengah. 57612`, sesuai kode pos alamat
 toko di Pengaturan. Setelah kunci live keluar, cukup `BITESHIP_KUNCI` yang
 ditukar, lalu `php artisan config:cache`.
 
+Checkout di situs dengan jawaban Biteship yang asli (pemeriksaan yang ditunda
+KEP-057 sampai kunci ada) menampilkan "JNE JNE Trucking (1 - 1 days)" dan
+menaruh JNE Trucking, yang tarifnya dihitung minimal 10 kg, di urutan pertama
+untuk paket satu bola. Tes lama memakai jawaban rekaan "2-3 hari", jadi ketiganya
+lolos. Kini nama kurir tidak diulang, durasi dibaca "1 hari" dan "2-3 hari",
+dan tarif termurah ditawarkan lebih dulu. Tes barunya memakai bentuk jawaban
+asli.
+
 ---
 
 ## Ringkasan keputusan

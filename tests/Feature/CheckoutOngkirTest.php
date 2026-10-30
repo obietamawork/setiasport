@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\MetodeAmbil;
+use App\Models\OptionValue;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -317,6 +318,23 @@ class CheckoutOngkirTest extends TestCase
             ->assertJsonPath('tarif.0.kode', 'jne:REG');
     }
 
+    public function test_tarif_termurah_ditawarkan_lebih_dulu(): void
+    {
+        $this->nyalakanPenyedia();
+        Http::fake(['*/v1/rates/couriers' => Http::response([
+            'pricing' => collect([['jtr', 55_000], ['reg', 15_000], ['yes', 25_000]])
+                ->map(fn ($l) => [
+                    'courier_code' => 'jne', 'courier_service_code' => $l[0],
+                    'courier_name' => 'JNE', 'courier_service_name' => strtoupper($l[0]), 'price' => $l[1],
+                ])->all(),
+        ])]);
+        $this->keranjang();
+
+        $this->get('/pengiriman/tarif?area=IDNP6IDNC148IDND874')
+            ->assertOk()
+            ->assertJsonPath('tarif.*.kode', ['jne:reg', 'jne:yes', 'jne:jtr']);
+    }
+
     public function test_pencarian_area_menolak_kata_terlalu_pendek(): void
     {
         $this->nyalakanPenyedia();
@@ -359,7 +377,7 @@ class CheckoutOngkirTest extends TestCase
 
         $produk = Product::where('sku', 'CUST-JRS-ATASAN')->firstOrFail();
 
-        $opsi = \App\Models\OptionValue::whereIn('label', ['Serena', 'Oblong', 'Pendek', 'Tanpa Saku'])
+        $opsi = OptionValue::whereIn('label', ['Serena', 'Oblong', 'Pendek', 'Tanpa Saku'])
             ->whereHas('option', fn ($q) => $q->where('product_id', $produk->id))
             ->get()
             ->mapWithKeys(fn ($v) => [$v->product_option_id => $v->id])
