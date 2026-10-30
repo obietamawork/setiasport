@@ -201,6 +201,39 @@ class KeamananPemesananTest extends TestCase
             ->assertRedirect(route('lacak.token', $milikSendiri->access_token));
 
         $this->post('/lacak', ['kode' => 'SS-0000-0010', 'email' => 'korban@contoh.test'])
-            ->assertSessionHasErrors(['kode' => 'Terlalu banyak percobaan. Coba lagi dalam beberapa menit.']);
+            ->assertSessionHasErrors('kode');
+        $this->assertStringStartsWith('Terlalu banyak percobaan.', session('errors')->first('kode'));
+    }
+
+    /**
+     * Pencarian yang berhasil tidak memakan jatah per email. Kalau memakan,
+     * siapa pun yang tahu email seseorang bisa menghabiskannya dari jaringan
+     * lain dan mengunci pemiliknya dari formulir ini.
+     */
+    public function test_pencarian_berhasil_tidak_menghabiskan_jatah_per_email(): void
+    {
+        $this->post('/keranjang', ['variant_id' => ProductVariant::where('sku', 'BOLA-MITRE-01')->value('id'), 'qty' => 1]);
+        $this->post('/checkout', ['nama' => 'Budi', 'email' => 'budi@contoh.test', 'no_hp' => '081234567890', 'setuju' => '1']);
+        $order = Order::firstOrFail();
+
+        foreach (range(1, 25) as $i) {
+            // Tiap pencarian dari alamat berbeda, seperti dari banyak jaringan.
+            $this->withServerVariables(['REMOTE_ADDR' => "10.0.0.{$i}"])
+                ->post('/lacak', ['kode' => $order->kode, 'email' => 'budi@contoh.test'])
+                ->assertRedirect(route('lacak.token', $order->access_token));
+        }
+    }
+
+    public function test_tebakan_kode_untuk_satu_email_dibatasi_walau_dari_banyak_jaringan(): void
+    {
+        foreach (range(1, 20) as $i) {
+            $this->withServerVariables(['REMOTE_ADDR' => "10.0.1.{$i}"])
+                ->post('/lacak', ['kode' => 'SS-0000-'.str_pad((string) $i, 4, '0', STR_PAD_LEFT), 'email' => 'korban@contoh.test']);
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '10.0.1.99'])
+            ->post('/lacak', ['kode' => 'SS-0000-0099', 'email' => 'korban@contoh.test'])
+            ->assertSessionHasErrors('kode');
+        $this->assertStringStartsWith('Terlalu banyak percobaan.', session('errors')->first('kode'));
     }
 }

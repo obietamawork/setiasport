@@ -3387,7 +3387,12 @@ tanpa galat. Yang ditemukan dan diperbaiki:
   saat berhasil) ditambah per IP yang tidak pernah dikosongkan login berhasil.
 - **Pembatas pencarian pesanan bisa dikosongkan dengan cara yang sama**, padahal
   kode pesanan berurutan. Kini tidak dikosongkan saat berhasil, dan ada kunci per
-  email.
+  email yang hanya menghitung pencarian gagal (20 per jam). Kalau pencarian berhasil
+  ikut dihitung, siapa pun yang tahu email seseorang bisa mengunci pemiliknya dari
+  formulir ini; meloloskan pasangan yang benar walau sudah dibatasi juga ditolak,
+  karena itu meloloskan tebakan yang benar. Penguncian lewat dua puluh tebakan salah
+  tetap mungkin, tapi hanya mengenai formulir: tautan pesanan di email selalu
+  berfungsi, dan pesan pembatasnya menyebut itu.
 - **Akun bisa disiapkan untuk diambil alih.** Siapa pun bisa mendaftar memakai email
   orang lain dengan sandinya sendiri; satu klik pemilik email di tautan konfirmasi
   mengaktifkan akun bersandi milik pendaftar, yang lalu bisa membuka semua pesanan
