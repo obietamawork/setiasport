@@ -13,6 +13,11 @@ PORT="${PORT:-2223}"
 KUNCI="${KUNCI:-$HOME/.ssh/setiasport_deploy}"
 SSH_OPSI=(-i "$KUNCI" -o BatchMode=yes)
 
+# Git Bash mengubah argumen seperti /tmp/... menjadi path Windows saat memanggil
+# program Windows (docker), padahal path itu milik container. ssh dan scp
+# bawaan Git Bash tidak terpengaruh; di Linux/macOS variabel ini diabaikan.
+export MSYS_NO_PATHCONV=1
+
 cd "$(dirname "$0")/.."
 
 if [ -n "$(git status --porcelain)" ]; then
