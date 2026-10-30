@@ -36,7 +36,7 @@ di setup Laravel di shared hosting:
 │   └── cadangan/         ← halaman bawaan hosting yang semula ada di public_html
 └── public_html/          ← document root, isinya HANYA salinan public/
     ├── index.php         ← dibuat deploy/pasang.sh, menunjuk langsung ke rilis aktif
-    ├── .htaccess         ← blok PHP buatan cPanel + aturan Laravel
+    ├── .htaccess         ← blok PHP buatan cPanel + pengalihan ke https://setiasport.com + aturan Laravel
     ├── build/  logo-*.webp  favicon.*
     └── storage → ~/setiasport/bersama/storage/app/public
 ```

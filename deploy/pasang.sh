@@ -22,6 +22,7 @@ if [ ! -f "$BERSAMA/.env" ]; then
     echo "Belum ada $BERSAMA/.env. Siapkan server dulu, lihat docs/12-deploy.md." >&2
     exit 1
 fi
+URL_APP="$(grep -E '^APP_URL=' "$BERSAMA/.env" | cut -d= -f2-)"
 
 # .env dan storage dipakai bersama semua rilis: unggahan, bukti bayar, sesi,
 # dan log tidak boleh ikut berganti setiap kali deploy.
@@ -56,6 +57,19 @@ blok_cpanel="$(sed -n '/# BEGIN cPanel-generated/,/# END cPanel-generated/p' "$P
     if [ -n "$blok_cpanel" ]; then
         printf '%s\n\n' "$blok_cpanel"
     fi
+    # Satu alamat saja. HSTS baru berlaku setelah kunjungan https pertama, dan
+    # www serta tanpa-www yang sama-sama hidup memecah peringkat di mesin pencari.
+    # /.well-known/ dikecualikan: validasi SSL otomatis cPanel lewat http.
+    cat <<HTACCESS
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/\.well-known/
+    RewriteCond %{HTTPS} !=on [OR]
+    RewriteCond %{HTTP_HOST} !^${URL_APP#https://}$ [NC]
+    RewriteRule ^ ${URL_APP}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+HTACCESS
     cat <<'HTACCESS'
 # Pengaturan PHP buatan cPanel di folder ini tidak untuk dibaca pengunjung.
 <FilesMatch "^(php\.ini|\.user\.ini)$">
@@ -102,6 +116,6 @@ ln -sfn "rilis/$ID" "$AKAR/terkini"
 cd "$AKAR/rilis"
 ls -1 | sort -r | tail -n +$((SIMPAN + 1)) | xargs -r rm -rf
 
-kode="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$(grep -E '^APP_URL=' "$BERSAMA/.env" | cut -d= -f2-)")"
+kode="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$URL_APP")"
 echo "Rilis $ID terpasang. Beranda menjawab HTTP $kode."
 [ "$kode" = "200" ]

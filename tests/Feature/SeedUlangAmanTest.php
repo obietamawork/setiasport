@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
+use App\Models\Role;
 use App\Models\Setting;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
@@ -42,6 +43,29 @@ class SeedUlangAmanTest extends TestCase
         $this->assertFalse(Hash::check('password', $owner->fresh()->password));
         $this->assertSame('0123456789', Setting::ambil('bank_rekening'));
         $this->assertSame('Nama yang sudah dikoreksi pemilik toko', $produk->fresh()->nama);
+    }
+
+    /**
+     * Seed ulang berjalan di setiap deploy (KEP-093). Akun bawaan yang emailnya
+     * sudah diganti, dihapus, atau perannya diubah tidak boleh kembali: akun
+     * owner@setiasport.test bersandi "password" adalah pintu belakang.
+     */
+    public function test_seed_ulang_tidak_menghidupkan_lagi_akun_bawaan(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $owner = User::where('email', 'owner@setiasport.test')->firstOrFail();
+        $owner->update(['email' => 'pemilik@setiasport.com']);
+        $admin = User::where('email', 'admin@setiasport.test')->firstOrFail();
+        $admin->roles()->sync(Role::where('slug', 'owner')->pluck('id'));
+        $admin->delete();
+
+        $this->seed(DatabaseSeeder::class);
+
+        $this->assertNull(User::where('email', 'owner@setiasport.test')->first());
+        $this->assertNull(User::where('email', 'admin@setiasport.test')->first());
+        $this->assertSame(1, User::count());
+        $this->assertTrue($owner->fresh()->punyaPeran('owner'));
     }
 
     /**

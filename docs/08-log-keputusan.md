@@ -3245,6 +3245,18 @@ diperiksa sebelum apa pun dipasang. Tiga temuan mengubah kode dan cara deploy:
     rilis lama beberapa menit setelah tautannya dipindah.
   - Blok PHP buatan cPanel di `.htaccess` dipertahankan apa adanya; `php.ini`
     dan `.user.ini` di `public_html` ditolak untuk dibaca pengunjung.
+  - Pemeriksaan setelah rilis pertama menemukan `http://` dan `www.` sama-sama
+    melayani situs tanpa dialihkan. HSTS baru berlaku setelah kunjungan https
+    pertama, dan alamat ganda memecah peringkat di mesin pencari. Kini keduanya
+    dialihkan 301 ke `APP_URL`; `/.well-known/` dikecualikan untuk validasi SSL
+    otomatis cPanel.
+- **`db:seed` di setiap deploy menghidupkan lagi akun bawaan** (ditandai tinjauan
+  keamanan otomatis setelah rilis pertama). `UserSeeder` memakai `firstOrCreate`
+  per email: Pemilik yang mengganti `owner@setiasport.test` ke alamat aslinya
+  akan mendapati akun itu muncul lagi bersandi `password` dan berperan Pemilik
+  pada deploy berikutnya; akun yang dihapus kembali, peran yang diubah
+  dipulihkan. Kini akun bawaan hanya dibuat kalau belum ada akun sama sekali.
+  Dikunci `SeedUlangAmanTest`.
   - Rahasia produksi (sandi database, `APP_KEY`) dibuat acak di server dan
     ditulis langsung ke `~/setiasport/bersama/.env` (600), tidak pernah
     tersalin ke komputer lain. Rahasia yang pernah bocor tidak dipakai.
