@@ -10,9 +10,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\Setting;
 use App\Models\User;
 use App\Services\AlurPesanan;
+use App\Services\Keranjang;
 use App\Support\LinimasaItem;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -104,7 +104,7 @@ class KustomFlowTest extends TestCase
             'opsi' => [1 => $this->opsi('Milano')[0], 6 => ''],
         ])->assertSessionHasNoErrors()->assertRedirect(route('keranjang'));
 
-        $this->assertSame(1, app(\App\Services\Keranjang::class)->jumlahBaris());
+        $this->assertSame(1, app(Keranjang::class)->jumlahBaris());
     }
 
     public function test_konfigurator_menegakkan_moq_dan_menghitung_harga_di_server(): void
@@ -236,125 +236,49 @@ class KustomFlowTest extends TestCase
     }
 
     /**
-     * Kekhawatiran keamanan dan beban server dari unggahan pelanggan (KEP-064)
-     * diselesaikan dengan cara yang sama seperti bukti transfer (KEP-029): hanya
-     * gambar, di-encode ulang oleh GD, PDF ditolak. Yang punya file mentah siap
-     * cetak menempel tautan Google Drive-nya, bukan mengunggah berkasnya.
+     * File desain pelanggan hanya lewat WhatsApp (KEP-095), jadi tidak ada yang
+     * masuk ke sistem sampai mockup diunggah. Admin yang memintanya, ke nomor
+     * yang diisi pelanggan saat checkout, dan desainer tahu filenya ada di mana.
      */
-    public function test_desain_kiriman_pelanggan_dikecilkan_dan_dikonversi_ke_webp(): void
+    public function test_panel_menandai_desain_kiriman_pelanggan_dan_tombol_minta_file(): void
     {
         $order = $this->buatPesanan(12);
         app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
         $item = $order->items()->first();
+        $item->update(['desain_sumber' => 'sendiri']);
 
-        $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
-            'berkas' => UploadedFile::fake()->image('referensi.png', 2200, 1800),
-        ])->assertSessionHas('sukses');
+        $owner = $this->staf('owner@setiasport.test');
 
-        $aset = $item->designAssets()->where('tipe', 'UPLOAD_PELANGGAN')->firstOrFail();
-
-        $ext = function_exists('imagewebp') ? '.webp' : '.jpg';
-        $this->assertStringEndsWith($ext, $aset->path);
-
-        Storage::disk('public')->assertExists($aset->path);
-    }
-
-    public function test_pelanggan_tidak_bisa_mengunggah_pdf_sebagai_desain(): void
-    {
-        $order = $this->buatPesanan(12);
-        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
-        $item = $order->items()->first();
-
-        $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
-            'berkas' => UploadedFile::fake()->create('logo-tim.pdf', 500, 'application/pdf'),
-        ])->assertSessionHasErrors('berkas');
-
-        $this->assertSame(0, $item->designAssets()->count());
-    }
-
-    /** Tautan Google Drive tetap jalan normal: itulah tempat file mentahnya. */
-    public function test_pelanggan_tetap_bisa_kirim_tautan_drive_tanpa_berkas(): void
-    {
-        $order = $this->buatPesanan(12);
-        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
-        $item = $order->items()->first();
-
-        $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
-            'tautan' => 'https://drive.google.com/file/d/contoh',
-        ])->assertSessionHas('sukses');
-
-        $aset = $item->designAssets()->where('tipe', 'UPLOAD_PELANGGAN')->firstOrFail();
-
-        $this->assertNull($aset->path);
-        $this->assertSame('https://drive.google.com/file/d/contoh', $aset->external_url);
-    }
-
-    /**
-     * Jalan pintas untuk pelanggan yang belum punya tautan siap tempel (KEP-065).
-     * Kosong berarti tombolnya sama sekali tidak digambar, bukan ditampilkan
-     * mati: tautan mati lebih membingungkan daripada tidak ada tautan.
-     */
-    public function test_tautan_unggah_file_besar_tidak_tampil_selama_kosong(): void
-    {
-        $order = $this->buatPesanan(12);
-        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
-        $item = $order->items()->first();
-
-        $this->get(route('lacak.token', $order->access_token))
+        $this->actingAs($owner)->get(route('panel.pesanan.show', $order))
             ->assertOk()
-            ->assertDontSee('Unggah file besar di sini');
+            ->assertSee('Desain dikirim pelanggan sendiri, lewat WhatsApp.')
+            ->assertSee('https://wa.me/6281234567890?text=', false)
+            ->assertSee(rawurlencode('pesanan '.$order->kode), false);
+
+        $this->actingAs($owner)->get(route('panel.antrian.tahap', 'desain'))
+            ->assertOk()
+            ->assertSee('Desain dari pelanggan, lewat WhatsApp');
     }
 
-    public function test_tautan_unggah_file_besar_tampil_dengan_kode_pesanan(): void
-    {
-        Setting::simpan('desain_link_unggah', 'https://forms.gle/contoh-formulir');
-
-        $order = $this->buatPesanan(12);
-        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
-
-        $halaman = $this->get(route('lacak.token', $order->access_token))->assertOk();
-
-        $halaman->assertSee('Unggah file besar di sini');
-        $halaman->assertSee('https://forms.gle/contoh-formulir', false);
-        // Kode pesanan disebut di teksnya, supaya pelanggan tahu apa yang
-        // harus ditulis di formulir eksternal itu.
-        $halaman->assertSee($order->kode);
-    }
-
-    /** Pemilik toko mengisinya lewat panel, di tab Pesanan → Desain & produksi. */
-    public function test_owner_mengisi_tautan_unggah_file_besar_lewat_pengaturan(): void
-    {
-        $this->actingAs($this->staf('owner@setiasport.test'))->put(route('panel.pengaturan.update'), [
-            'setting' => [
-                'desain_link_unggah' => 'https://forms.gle/contoh-formulir',
-            ],
-        ])->assertRedirect();
-
-        $this->assertSame('https://forms.gle/contoh-formulir', setting('desain_link_unggah'));
-    }
-
-    /**
-     * Enam unggahan per sepuluh menit per alamat IP (KEP-064), persis seperti
-     * bukti transfer (KEP-029): tanpa batas, siapa pun yang memegang satu
-     * tautan pesanan bisa memenuhi disk hosting.
-     */
-    public function test_unggah_desain_dibatasi_per_sepuluh_menit(): void
+    /** Begitu mockup terkirim ke pelanggan, file desainnya jelas sudah diterima. */
+    public function test_tombol_minta_file_desain_hilang_setelah_mockup_dikirim(): void
     {
         $order = $this->buatPesanan(12);
         app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
         $item = $order->items()->first();
+        $item->update(['desain_sumber' => 'sendiri', 'status_item' => OrderItemStatus::MENUNGGU_PERSETUJUAN]);
 
-        foreach (range(1, 6) as $i) {
-            $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
-                'tautan' => "https://drive.google.com/file/d/percobaan-{$i}",
-            ])->assertSessionHas('sukses');
-        }
+        $this->actingAs($this->staf('owner@setiasport.test'))->get(route('panel.pesanan.show', $order))
+            ->assertOk()
+            ->assertDontSee('Minta file desain');
+    }
 
-        $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
-            'tautan' => 'https://drive.google.com/file/d/percobaan-7',
-        ])->assertStatus(429);
-
-        $this->assertSame(6, $item->designAssets()->count());
+    /** Tautan formulir unggah file besar (KEP-065) ikut hilang bersama kotak unggahnya. */
+    public function test_pengaturan_tidak_lagi_menawarkan_tautan_unggah_file_besar(): void
+    {
+        $this->actingAs($this->staf('owner@setiasport.test'))->get(route('panel.pengaturan.index', ['tab' => 'pesanan']))
+            ->assertOk()
+            ->assertDontSee('Tautan Unggah File Besar');
     }
 
     public function test_persetujuan_menolak_tanpa_nama_dan_pernyataan(): void

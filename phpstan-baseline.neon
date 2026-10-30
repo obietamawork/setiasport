@@ -817,7 +817,7 @@ parameters:
 			path: app/Services/Checkout.php
 
 		-
-			message: '#^Parameter \#1 \$isi of method App\\Services\\Checkout\:\:buat\(\) expects Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>, Illuminate\\Support\\Collection\<int, array\{kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, qty\: int, jalur\: App\\Enums\\FulfillmentType, opsi\: array, rincian\: App\\Services\\PriceBreakdown, masalah\: string\|null\}\> given\.$#'
+			message: '#^Parameter \#1 \$isi of method App\\Services\\Checkout\:\:buat\(\) expects Illuminate\\Support\\Collection\<int, array\<string, mixed\>\>, Illuminate\\Support\\Collection\<int, array\{kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, qty\: int, jalur\: App\\Enums\\FulfillmentType, opsi\: array, rincian\: App\\Services\\PriceBreakdown, masalah\: string\|null, \.\.\.\}\> given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Services/Checkout.php
@@ -925,37 +925,13 @@ parameters:
 			path: app/Services/Keranjang.php
 
 		-
-			message: '#^Method App\\Services\\Keranjang\:\:isi\(\) should return Illuminate\\Support\\Collection\<int, array\{kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, qty\: int, jalur\: App\\Enums\\FulfillmentType, opsi\: array, rincian\: App\\Services\\PriceBreakdown, masalah\: string\|null\}\> but returns Illuminate\\Support\\Collection\<int, array\{qty\: int, opsi\: array\<int, int\>, catatan\: null, desain_sumber\: null, ukuran\: null, kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, \.\.\.\}\>\.$#'
+			message: '#^Method App\\Services\\Keranjang\:\:isi\(\) should return Illuminate\\Support\\Collection\<int, array\{kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, qty\: int, jalur\: App\\Enums\\FulfillmentType, opsi\: array, rincian\: App\\Services\\PriceBreakdown, masalah\: string\|null, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{qty\: int, opsi\: array\<int, int\>, catatan\: string\|null, desain_sumber\: string\|null, ukuran\: array\<int, array\<string, mixed\>\>\|null, kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, \.\.\.\}\>\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Services/Keranjang.php
 
 		-
-			message: '#^Offset ''catatan'' on array\{product_id\: int, variant_id\: int\|null, qty\: int, jalur\: string, opsi\: array\<int, int\>\} on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/Keranjang.php
-
-		-
-			message: '#^Offset ''desain_sumber'' on array\{product_id\: int, variant_id\: int\|null, qty\: int, jalur\: string, opsi\: array\<int, int\>\} on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/Keranjang.php
-
-		-
 			message: '#^Offset ''kategori'' on array\{kategori\: string, ukuran\: string, jumlah\: int, nama_punggung\?\: string\|null, nomor\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/Keranjang.php
-
-		-
-			message: '#^Offset ''ukuran'' on array\{product_id\: int, variant_id\: int\|null, qty\: int, jalur\: string, opsi\: array\<int, int\>\} in isset\(\) does not exist\.$#'
-			identifier: isset.offset
-			count: 2
-			path: app/Services/Keranjang.php
-
-		-
-			message: '#^Offset ''ukuran'' on array\{product_id\: int, variant_id\: int\|null, qty\: int, jalur\: string, opsi\: array\<int, int\>\} on left side of \?\? does not exist\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Services/Keranjang.php

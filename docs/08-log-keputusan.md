@@ -1982,7 +1982,7 @@ ikon: pengunjung mengiranya akun resmi yang ditinggalkan.
 ---
 
 ## KEP-064 — Unggahan desain diperlakukan sama seperti bukti transfer
-**Status:** TERKUNCI · 2026-09-28 (merevisi bagian PDF dari KEP-002)
+**Status:** DIREVISI KEP-095 · 2026-09-28 (merevisi bagian PDF dari KEP-002)
 
 Klien dan yang mengembangkan sama-sama khawatir dengan opsi "Kirim desain sendiri" di
 langkah pemesanan kustom: berkas dari orang yang belum tentu dikenal, diunggah lewat
@@ -2026,7 +2026,7 @@ mana pun.
 ---
 
 ## KEP-065 — Tautan unggah file besar, disediakan toko sendiri
-**Status:** TERKUNCI · 2026-09-28
+**Status:** DIREVISI KEP-095 · 2026-09-28
 
 KEP-064 menutup jalur unggah mentah ke server sendiri, dan mengarahkan pelanggan yang
 punya file siap cetak (AI/PSD/CDR) ke kolom "tempel tautan Google Drive". Masalahnya baru
@@ -2142,7 +2142,7 @@ disimpan sebagai Setting biasa yang bisa diubah dari panel kapan saja.
 ---
 
 ## KEP-068 — Pilihan "kirim desain sendiri" mengingatkan sejak halaman pesanan dibuka
-**Status:** TERKUNCI · 2026-10-16
+**Status:** DIREVISI KEP-095 · 2026-10-16
 
 Langkah 2 konfigurator (KEP-040) sudah menanyakan sumber desain — katalog, kirim
 sendiri, atau dibantu admin — tapi jawabannya hanya dilipat jadi kalimat bebas
@@ -3322,6 +3322,41 @@ manual, tanpa `cache:clear` yang ikut menghapus denyut penjadwal.
 
 ---
 
+## KEP-095 — File desain pelanggan hanya lewat WhatsApp, dijelaskan sejak langkah desain
+**Status:** TERKUNCI · 2026-10-31 (merevisi KEP-064, KEP-065, dan KEP-068)
+
+Pemilik toko mencoba alurnya sendiri. Pilihan "Kirim desain sendiri" ada di
+langkah 2 konfigurator, tetapi caranya baru terlihat setelah checkout. Di halaman
+pesanan, kotak unggahnya muncul tepat di bawah tagihan, sehingga terbaca seperti
+bagian dari pembayaran. Keputusan klien, final: **file desain hanya lewat
+WhatsApp**, dan caranya dijelaskan sebelum data pemesan dan pembayaran.
+
+- **Langkah 2 konfigurator.** Memilih "Kirim desain sendiri" memunculkan
+  penjelasan bahwa file dikirim lewat WhatsApp, bahwa semua format diterima
+  (CDR, AI, PSD, PDF, PNG, JPG, tautan Drive), dan tombol untuk mengirimnya saat
+  itu juga. Pelanggan diminta mengirim dari nomor yang nanti diisi di data
+  pemesan: belum ada kode pesanan, jadi nomor itulah yang mencocokkan file
+  dengan pesanannya. Yang tidak mengirim saat itu akan dihubungi admin.
+- **Checkout.** Kolom nomor WhatsApp menyebut bahwa admin menghubungi nomor itu
+  untuk meminta file desain.
+- **Halaman pesanan.** Kotak unggah, tautan formulir file besar (KEP-065), dan
+  pengingat unggah (KEP-068) dihapus; jalur `POST …/item/{item}/desain` ikut
+  dihapus, bukan sekadar disembunyikan. Selama mockup pertama belum ada, bagian
+  Desain menyebut bahwa admin akan menghubungi pelanggan dan menyediakan tombol
+  WhatsApp yang pesannya sudah memuat kode pesanan. Tagihan tetap khusus pembayaran.
+- **Panel.** Barang "Kirim desain sendiri" yang belum sampai di tahap
+  persetujuan diberi penanda dan tombol **Minta file desain** ke WhatsApp
+  pelanggan, dengan pesan yang memuat kode pesanan. Antrian desain menyebut
+  bahwa filenya ada di WhatsApp.
+
+Penjagaan unggahan publik di KEP-064 (encode ulang lewat GD, batas enam unggahan
+per sepuluh menit) tidak lagi diperlukan untuk desain, karena jalurnya sudah
+tidak ada. Penjagaan yang sama tetap berlaku untuk bukti transfer (KEP-029).
+Pengaturan `desain_link_unggah` dihapus dari panel; barisnya di database
+dibiarkan dan tidak dibaca apa pun.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3389,11 +3424,11 @@ manual, tanpa `cache:clear` yang ikut menghapus denyut penjadwal.
 | KEP-061 | Kesiapan tayang dihitung sendiri, dan posisi paket ikut ditampilkan | TERKUNCI |
 | KEP-062 | Halaman depan disusun ulang mengikuti rancangan klien | TERKUNCI |
 | KEP-063 | Media sosial di bilah atas dan kaki halaman | TERKUNCI |
-| KEP-064 | Unggahan desain diperlakukan sama seperti bukti transfer | TERKUNCI |
-| KEP-065 | Tautan unggah file besar, disediakan toko sendiri | TERKUNCI |
+| KEP-064 | Unggahan desain diperlakukan sama seperti bukti transfer | DIREVISI KEP-095 |
+| KEP-065 | Tautan unggah file besar, disediakan toko sendiri | DIREVISI KEP-095 |
 | KEP-066 | Gambar produk bisa ditandai mewakili satu varian (warna/opsi) | TERKUNCI |
 | KEP-067 | Area asal Biteship dicari dan diatur lewat panel, bukan `.env` | TERKUNCI |
-| KEP-068 | Pilihan "kirim desain sendiri" mengingatkan sejak halaman pesanan dibuka | TERKUNCI |
+| KEP-068 | Pilihan "kirim desain sendiri" mengingatkan sejak halaman pesanan dibuka | DIREVISI KEP-095 |
 | KEP-069 | "Tempel dari Excel" memeriksa kategori yang benar-benar tersedia | TERKUNCI |
 | KEP-070 | Tautan lokasi Google Maps, pelengkap alamat kirim | TERKUNCI |
 | KEP-071 | Penanda langkah konfigurator ikut bergeser ke langkah aktif | TERKUNCI |
@@ -3420,3 +3455,4 @@ manual, tanpa `cache:clear` yang ikut menghapus denyut penjadwal.
 | KEP-092 | Logo hero versi terang, dan banner promo beranda yang digeser manual | TERKUNCI |
 | KEP-093 | Rilis pertama ke hosting, deploy lewat SSH | TERKUNCI |
 | KEP-094 | Email Resend dan ongkir Biteship dinyalakan di produksi | TERKUNCI |
+| KEP-095 | File desain pelanggan hanya lewat WhatsApp, dijelaskan sejak langkah desain | TERKUNCI |

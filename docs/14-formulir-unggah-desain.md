@@ -1,5 +1,9 @@
 # 14 — Formulir Unggah File Desain Besar
 
+> **Tidak dipakai lagi sejak KEP-095.** File desain pelanggan kini hanya lewat
+> WhatsApp, dan tautan formulir ini tidak ditampilkan di mana pun. Dokumen ini
+> disimpan sebagai catatan.
+
 Panduan untuk pemilik toko / admin, bukan untuk pengembang. Tidak butuh coding,
 cukup akun Google yang sudah ada (Gmail toko).
 

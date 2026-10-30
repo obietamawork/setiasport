@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Publik;
 
+use App\Enums\FulfillmentType;
+use App\Enums\MetodeAmbil;
 use App\Exceptions\StokTidakCukup;
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Services\Checkout;
-use App\Enums\MetodeAmbil;
 use App\Services\Keranjang;
 use App\Services\Ongkir\Pengiriman;
 use App\Services\Ongkir\PilihanKirim;
@@ -48,16 +50,19 @@ class CheckoutController extends Controller
             'adaMasalah' => $this->keranjang->adaMasalah(),
             // DP hanya masuk akal untuk pesanan kustom: barang stok diambil
             // besok, jadi tidak ada gunanya menunda pembayarannya (KEP-005).
-            'bolehDp' => $isi->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::PREORDER),
+            'bolehDp' => $isi->contains(fn ($b) => $b['jalur'] === FulfillmentType::PREORDER),
             // Keranjang campuran (stok + kustom): barang stok ikut menunggu
             // sampai pesanan SELURUHNYA siap dan lunas (satu nomor pesanan,
             // satu kali serah terima -- Order::bolehDiserahkan() mensyaratkan
             // SEMUA item Siap). Teks DP yang bilang "setelah barang selesai
             // dikerjakan" membingungkan kalau sebagian isinya cuma barang
             // stok yang sebenarnya tidak "dikerjakan" apa-apa.
-            'campuran' => $isi->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::PREORDER)
-                && $isi->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::READY_STOCK),
+            'campuran' => $isi->contains(fn ($b) => $b['jalur'] === FulfillmentType::PREORDER)
+                && $isi->contains(fn ($b) => $b['jalur'] === FulfillmentType::READY_STOCK),
             'persenDp' => (int) setting('dp_minimum_persen', 50),
+            // File desain kiriman sendiri hanya lewat WhatsApp (KEP-095), ke
+            // nomor yang diisi di halaman ini.
+            'desainLewatWa' => $isi->contains(fn ($b) => $b['desain_sumber'] === 'sendiri'),
             'biayaLayanan' => (int) setting('biaya_layanan', 0),
             /*
              * Dihitung dengan aturan yang sama persis dengan Order::dpMinimum():
@@ -103,7 +108,7 @@ class CheckoutController extends Controller
      * dimasukkan (KEP-021). Pesanannya sendiri tetap berjalan normal: tautan
      * bertoken di email pesanan tetap membukanya tanpa perlu akun.
      */
-    private function buatkanAkun(\App\Models\Customer $pelanggan, string $password): void
+    private function buatkanAkun(Customer $pelanggan, string $password): void
     {
         if ($pelanggan->akunAktif()) {
             return;
@@ -231,7 +236,7 @@ class CheckoutController extends Controller
         $kirim = $this->pilihanKirim($data);
 
         $adaKustom = $this->keranjang->isi()
-            ->contains(fn ($b) => $b['jalur'] === \App\Enums\FulfillmentType::PREORDER);
+            ->contains(fn ($b) => $b['jalur'] === FulfillmentType::PREORDER);
 
         $tipe = (($data['tipe_pembayaran'] ?? 'LUNAS') === 'DP' && $adaKustom) ? 'DP' : 'LUNAS';
 

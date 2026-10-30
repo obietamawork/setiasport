@@ -4,18 +4,18 @@ use App\Http\Controllers\BuktiBayarController;
 use App\Http\Controllers\Publik\AkunController;
 use App\Http\Controllers\Publik\BerandaController;
 use App\Http\Controllers\Publik\CheckoutController;
-use App\Http\Controllers\Publik\OngkirController;
 use App\Http\Controllers\Publik\CsController;
 use App\Http\Controllers\Publik\HalamanHukumController;
 use App\Http\Controllers\Publik\KatalogController;
-use App\Http\Controllers\Publik\KerjaController;
 use App\Http\Controllers\Publik\KeranjangController;
+use App\Http\Controllers\Publik\KerjaController;
 use App\Http\Controllers\Publik\KustomController;
 use App\Http\Controllers\Publik\LacakController;
+use App\Http\Controllers\Publik\OngkirController;
 use App\Http\Controllers\Publik\PembatalanController;
-use App\Http\Controllers\Publik\RollController;
 use App\Http\Controllers\Publik\PesananItemController;
 use App\Http\Controllers\Publik\PesananSayaController;
+use App\Http\Controllers\Publik\RollController;
 use App\Http\Controllers\Publik\SitemapController;
 use App\Http\Controllers\Webhook\ResendController;
 use Illuminate\Support\Facades\Route;
@@ -129,10 +129,8 @@ Route::post('/lacak/{token}/pembatalan', [PembatalanController::class, 'ajukan']
 
 Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->group(function () {
     Route::post('roster', [PesananItemController::class, 'simpanRoster'])->name('roster');
-    // Berkas gambar, sama seperti bukti transfer (KEP-029): tanpa batas, siapa
-    // pun yang memegang satu tautan pesanan bisa memenuhi disk hosting.
-    Route::post('desain', [PesananItemController::class, 'unggahDesain'])
-        ->middleware('throttle:6,10')->name('desain');
+    // Tidak ada unggah desain di sini: file desain pelanggan hanya lewat
+    // WhatsApp (KEP-095).
     Route::post('setujui', [PesananItemController::class, 'setujuiDesain'])->name('setujui');
     Route::post('revisi', [PesananItemController::class, 'mintaRevisi'])->name('revisi');
 });

@@ -98,6 +98,11 @@
                             {{ $item->order->customer->nama }}
                         </p>
 
+                        {{-- KEP-095: filenya ada di WhatsApp toko, bukan di sistem. --}}
+                        @if ($stage === ProductionStage::DESAIN && $item->desain_sumber === 'sendiri')
+                            <p class="mt-1 text-sm font-medium">Desain dari pelanggan, lewat WhatsApp</p>
+                        @endif
+
                         @if ($item->rosters->isNotEmpty())
                             <p class="mt-1 text-sm tabular">{{ $item->ringkasanUkuran() }}</p>
                         @endif

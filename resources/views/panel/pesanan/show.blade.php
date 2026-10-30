@@ -214,6 +214,32 @@
                             </p>
                         @endif
 
+                        {{-- File desain pelanggan hanya lewat WhatsApp (KEP-095), jadi
+                             tidak ada yang masuk ke sistem sampai mockup diunggah. Admin
+                             yang memintanya, ke nomor yang diisi pelanggan saat checkout. --}}
+                        @if ($item->desain_sumber === 'sendiri' && in_array($item->status_item,
+                            [OrderItemStatus::MENUNGGU_PEMBAYARAN, OrderItemStatus::ANTRIAN_DESAIN, OrderItemStatus::PROSES_DESAIN], true))
+                            @php
+                                $waPelanggan = nomor_wa($pesanan->customer?->no_hp);
+                                $mintaDesain = 'Halo '.$pesanan->customer?->nama.', kami dari '.setting('toko_nama', 'Setia Sport')
+                                    .'. Untuk pesanan '.$pesanan->kode.' ('.$item->nama_produk.'), silakan kirim file desainnya '
+                                    .'di sini. Semua format kami terima: CDR, AI, PSD, PDF, PNG, JPG, atau tautan Google Drive.';
+                            @endphp
+                            <div class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[7px] bg-kuning-50 px-3 py-2 text-sm">
+                                <span>
+                                    <strong>Desain dikirim pelanggan sendiri, lewat WhatsApp.</strong>
+                                    Pastikan filenya sudah diterima sebelum mulai mendesain.
+                                </span>
+                                @if ($waPelanggan)
+                                    <a href="https://wa.me/{{ $waPelanggan }}?text={{ rawurlencode($mintaDesain) }}"
+                                       target="_blank" rel="noopener" class="tombol tombol-garis tombol-sm">
+                                        <x-ikon nama="whatsapp" ukuran="size-4" />
+                                        Minta file desain
+                                    </a>
+                                @endif
+                            </div>
+                        @endif
+
                         {{-- Tautan kerja (KEP-047) disalin dari sini, lalu dikirim ke
                              pekerja atau grup bagiannya lewat WhatsApp. Sama persis
                              dengan yang ada di QR lembar kerja, untuk pekerja yang

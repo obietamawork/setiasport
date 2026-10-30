@@ -25,7 +25,7 @@ harga jelas, hasil bisa dibayangkan, progres bisa dilihat.
 
 **Kustom / PreOrder:** ini bukan halaman produk, ini **konfigurator**. Isinya:
 - Pilih bahan / tipe (dryfit, hyget, dll) — mempengaruhi harga
-- **Pilih desain dari template** ATAU **kirim desain sendiri** (upload)
+- **Pilih desain dari template** ATAU **kirim desain sendiri** (filenya lewat WhatsApp, bukan diunggah ke website; KEP-095)
 - (Roster **tidak** diisi di sini — lihat KEP-013)
 - Tabel ukuran (size chart) yang jelas + catatan "ukuran Asia"
 - MOQ (minimum order) ditegakkan di sini, bukan di checkout

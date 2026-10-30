@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\FulfillmentType;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Setting;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -22,7 +23,7 @@ class Keranjang
 
     public function __construct(private PriceCalculator $kalkulator) {}
 
-    /** @return array<string, array{product_id:int, variant_id:?int, qty:int, jalur:string, opsi:array<int,int>}> */
+    /** @return array<string, array{product_id:int, variant_id:?int, qty:int, jalur:string, opsi:array<int,int>, catatan?:?string, desain_sumber?:?string, ukuran?:array<int, array<string, mixed>>}> */
     public function baris(): array
     {
         return session(self::KUNCI, []);
@@ -192,7 +193,7 @@ class Keranjang
     /**
      * Isi keranjang lengkap dengan rincian harga terkini.
      *
-     * @return Collection<int, array{kunci:string, produk:Product, varian:?ProductVariant, qty:int, jalur:FulfillmentType, opsi:array, rincian:PriceBreakdown, masalah:?string}>
+     * @return Collection<int, array{kunci:string, produk:Product, varian:?ProductVariant, qty:int, jalur:FulfillmentType, opsi:array, rincian:PriceBreakdown, masalah:?string, catatan:?string, desain_sumber:?string, ukuran:?array<int, array<string, mixed>>}>
      */
     public function isi(): Collection
     {
@@ -251,7 +252,7 @@ class Keranjang
      */
     public function beratGram(): int
     {
-        $bawaan = (int) \App\Models\Setting::ambil('berat_bawaan_gram', 300);
+        $bawaan = (int) Setting::ambil('berat_bawaan_gram', 300);
 
         return (int) $this->isi()->sum(
             fn (array $b) => max(1, (int) ($b['produk']->berat_gram ?: $bawaan)) * $b['qty']

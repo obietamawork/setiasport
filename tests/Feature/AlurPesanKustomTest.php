@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\OptionValue;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\Keranjang;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SettingSeeder;
@@ -89,7 +90,7 @@ class AlurPesanKustomTest extends TestCase
             ->assertRedirect(route('kustom.buat', $this->produk()))
             ->assertSessionHasErrors('baris');
 
-        $this->assertTrue(app(\App\Services\Keranjang::class)->kosong());
+        $this->assertTrue(app(Keranjang::class)->kosong());
     }
 
     public function test_dari_pemesanan_sampai_pesanan_jadi(): void
@@ -165,43 +166,75 @@ class AlurPesanKustomTest extends TestCase
     }
 
     /**
-     * Pelanggan yang sudah bilang mau kirim desain sendiri saat memesan tidak
-     * perlu lagi menemukan sendiri tautan "Kirim desain sendiri" yang
-     * terlipat di ujung halaman (KEP-068): kotaknya langsung terbuka dan
-     * diberi pengingat menonjol begitu halaman pesanan dibuka.
+     * File desain pelanggan hanya lewat WhatsApp (KEP-095), dan caranya
+     * dijelaskan di langkah desain: sebelum data pemesan, sebelum tagihan.
      */
-    public function test_kotak_unggah_desain_sendiri_terbuka_otomatis(): void
+    public function test_langkah_desain_menjelaskan_file_dikirim_lewat_whatsapp(): void
     {
-        $order = $this->pesanDenganDesainSumber('sendiri');
-
-        $this->get(route('lacak.token', $order->access_token))
+        $this->get(route('kustom.buat', $this->produk()))
             ->assertOk()
-            ->assertSee('Anda memilih mengirim desain sendiri')
-            ->assertSeeInOrder(['Anda memilih mengirim desain sendiri', 'Kirim desain sendiri'], false);
+            ->assertSeeInOrder(['Kirim desain sendiri', 'File desain dikirim lewat WhatsApp', 'Data pemain'], false)
+            ->assertSee('https://wa.me/6285160025810?text=', false);
     }
 
-    /** Begitu ada yang diunggah, pengingatnya tidak perlu tampil lagi. */
-    public function test_pengingat_desain_sendiri_hilang_setelah_pelanggan_mengunggah(): void
+    public function test_checkout_menyebut_nomor_whatsapp_dipakai_meminta_file_desain(): void
+    {
+        $this->post(route('kustom.simpan', $this->produk()), [
+            'opsi' => $this->opsi('Serena', 'Oblong', 'Pendek', 'Tanpa Saku'),
+            'baris' => [['kategori' => 'SD', 'ukuran' => 'L', 'jumlah' => 6]],
+            'desain_sumber' => 'sendiri',
+        ]);
+
+        $this->get(route('checkout'))
+            ->assertOk()
+            ->assertSee('Admin menghubungi nomor ini lewat WhatsApp untuk menerima file desain Anda.');
+    }
+
+    public function test_checkout_tanpa_desain_sendiri_tidak_menyebut_file_desain(): void
+    {
+        $this->post(route('kustom.simpan', $this->produk()), [
+            'opsi' => $this->opsi('Serena', 'Oblong', 'Pendek', 'Tanpa Saku'),
+            'baris' => [['kategori' => 'SD', 'ukuran' => 'L', 'jumlah' => 6]],
+            'desain_sumber' => 'katalog',
+        ]);
+
+        $this->get(route('checkout'))
+            ->assertOk()
+            ->assertDontSee('untuk menerima file desain Anda');
+    }
+
+    /**
+     * Halaman pesanan juga memuat tagihan. Kotak unggah desain di bawah
+     * instruksi transfer terbaca seperti bagian dari pembayaran, jadi yang
+     * tersisa hanya kabar ke mana filenya dikirim, dengan kode pesanannya.
+     */
+    public function test_halaman_pesanan_mengarahkan_file_desain_ke_whatsapp_bukan_unggah(): void
     {
         $order = $this->pesanDenganDesainSumber('sendiri');
         $item = $order->items->first();
 
-        $this->post(route('lacak.item.desain', [$order->access_token, $item]), [
-            'tautan' => 'https://drive.google.com/file/d/contoh',
-        ])->assertSessionHas('sukses');
-
         $this->get(route('lacak.token', $order->access_token))
             ->assertOk()
-            ->assertDontSee('Anda memilih mengirim desain sendiri');
+            ->assertSee('File desain Anda dikirim lewat WhatsApp')
+            ->assertSee('nomor 081234567890')
+            ->assertSee(rawurlencode('pesanan '.$order->kode), false)
+            ->assertDontSee('name="berkas"', false);
+
+        // Jalur unggahnya sendiri sudah tidak ada, bukan hanya disembunyikan.
+        $status = $this->post("/lacak/{$order->access_token}/item/{$item->id}/desain", [
+            'tautan' => 'https://drive.google.com/file/d/contoh',
+        ])->getStatusCode();
+
+        $this->assertContains($status, [404, 405]);
+        $this->assertSame(0, $item->designAssets()->count());
     }
 
-    /** Pelanggan yang memilih katalog atau minta dibantu admin tidak perlu diingatkan mengunggah. */
-    public function test_pengingat_desain_sendiri_tidak_tampil_untuk_sumber_lain(): void
+    public function test_kabar_whatsapp_tidak_tampil_untuk_sumber_desain_lain(): void
     {
         $order = $this->pesanDenganDesainSumber('katalog');
 
         $this->get(route('lacak.token', $order->access_token))
             ->assertOk()
-            ->assertDontSee('Anda memilih mengirim desain sendiri');
+            ->assertDontSee('File desain Anda dikirim lewat WhatsApp');
     }
 }

@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Setting;
+use Illuminate\Support\HtmlString;
+
 if (! function_exists('rupiah')) {
     /** Rupiah tidak punya pecahan sen; seluruh nominal di sistem ini bilangan bulat. */
     function rupiah(int|float|null $nominal, bool $prefix = true): string
@@ -43,7 +46,7 @@ if (! function_exists('setting')) {
     /** Nilai bisnis yang boleh diubah pemilik toko tanpa deploy (lihat Setting). */
     function setting(string $key, mixed $default = null): mixed
     {
-        return \App\Models\Setting::ambil($key, $default);
+        return Setting::ambil($key, $default);
     }
 }
 
@@ -147,9 +150,10 @@ if (! function_exists('tautan_wa')) {
     /**
      * Tautan chat WhatsApp ke nomor toko, dengan pesan pembuka yang sudah terisi.
      *
-     * Hanya untuk KONTAK saat chat CS dimatikan (KEP-033): pertanyaan dan
-     * komplain. Bukan untuk transaksi; bukti bayar tetap diunggah di website
-     * (KEP-029), dan halaman pembayaran tidak pernah memakai fungsi ini.
+     * Hanya untuk KONTAK saat chat CS dimatikan (KEP-033): pertanyaan, komplain,
+     * dan file desain pelanggan, yang memang hanya lewat WhatsApp (KEP-095). Bukan
+     * untuk transaksi; bukti bayar tetap diunggah di website (KEP-029), dan
+     * bagian tagihan tidak pernah memakai fungsi ini.
      */
     function tautan_wa(string $pesan = ''): ?string
     {
@@ -186,9 +190,9 @@ if (! function_exists('baris_html')) {
      * baris, Minggu di baris berikutnya) ditampilkan dengan pindah barisnya.
      * Isinya tetap di-escape; hanya pindah baris yang diubah jadi <br>.
      */
-    function baris_html(?string $teks): Illuminate\Support\HtmlString
+    function baris_html(?string $teks): HtmlString
     {
-        return new Illuminate\Support\HtmlString(nl2br(e((string) $teks), false));
+        return new HtmlString(nl2br(e((string) $teks), false));
     }
 }
 

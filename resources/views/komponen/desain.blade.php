@@ -4,15 +4,10 @@
     use App\Enums\OrderItemStatus;
 
     $mockup = $item->designAssets->where('tipe', DesignAssetType::MOCKUP)->sortByDesc('versi');
-    $kiriman = $item->designAssets->where('tipe', DesignAssetType::UPLOAD_PELANGGAN)->sortByDesc('versi');
     $perluSetuju = $item->status_item === OrderItemStatus::MENUNGGU_PERSETUJUAN;
 
-    // Pelanggan sudah bilang "Kirim desain sendiri" saat memesan (KEP-040)
-    // tapi belum benar-benar mengunggah apa pun. Kotak unggahnya dibuka
-    // otomatis dan ditonjolkan, bukan menunggu ditemukan di balik tautan
-    // "Kirim desain sendiri" yang tertutup -- itulah celah yang bikin
-    // pelanggan baru sadar harus mengunggah justru di langkah terakhir.
-    $menungguUnggahanSendiri = $item->desain_sumber === 'sendiri' && $kiriman->isEmpty();
+    $waDesain = tautan_wa('Halo '.setting('toko_nama', 'Setia Sport').', saya mau mengirim file desain '
+        .'untuk pesanan '.$order->kode.' ('.$item->nama_produk.').');
 @endphp
 
 <div class="border-t border-line px-5 py-4">
@@ -111,77 +106,26 @@
         </div>
     @endif
 
-    @unless ($item->sudahDisetujui())
-        <div class="mt-4">
-            @if ($kiriman->isNotEmpty())
-                <p class="text-sm font-medium">Desain yang Anda kirim</p>
-                <ul class="mt-2 space-y-1 text-sm">
-                    @foreach ($kiriman as $k)
-                        <li class="flex flex-wrap items-center gap-3">
-                            <span class="text-muted">v{{ $k->versi }}</span>
-                            @if ($k->path)
-                                <a href="{{ asset('storage/'.$k->path) }}" target="_blank" rel="noopener" class="tautan">Lihat gambar</a>
-                            @endif
-                            @if ($k->external_url)
-                                <a href="{{ $k->external_url }}" target="_blank" rel="noopener" class="tautan">Tautan file</a>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
+    {{-- File desain pelanggan hanya lewat WhatsApp (KEP-095), tidak diunggah di
+         sini. Halaman ini juga memuat tagihan, dan kotak unggah di bawah
+         instruksi transfer terbaca seperti bagian dari pembayaran. Yang tersisa
+         hanya kabar ke mana filenya dikirim, sampai mockup pertama terbit. --}}
+    @if ($item->desain_sumber === 'sendiri' && $mockup->isEmpty() && ! $item->sudahDisetujui())
+        <div class="mt-3 border-l-2 border-navy bg-navy-50 p-3 text-sm leading-relaxed">
+            <p class="font-semibold">File desain Anda dikirim lewat WhatsApp</p>
+            <p class="mt-1">
+                Admin kami menghubungi
+                {{ $order->customer->no_hp ? 'nomor '.$order->customer->no_hp : 'Anda' }}
+                untuk menerima filenya. Semua format diterima: CDR, AI, PSD, PDF, PNG, JPG,
+                atau tautan Google Drive. Sudah siap? Kirim sekarang; kode pesanannya sudah
+                tertulis di pesan.
+            </p>
+            @if ($waDesain)
+                <a href="{{ $waDesain }}" target="_blank" rel="noopener" class="tombol tombol-garis tombol-sm mt-3">
+                    <x-ikon nama="whatsapp" ukuran="size-4" />
+                    Kirim desain lewat WhatsApp
+                </a>
             @endif
-
-            @if ($menungguUnggahanSendiri)
-                <div class="mt-3 border border-kuning bg-kuning-50 p-4">
-                    <p class="font-semibold">Anda memilih mengirim desain sendiri</p>
-                    <p class="mt-1 text-sm leading-relaxed">
-                        Belum ada yang diunggah. Kirim gambar previewnya di bawah ini supaya
-                        desainer kami bisa mulai &mdash; tim produksi baru mulai mengerjakan
-                        setelah ini diterima.
-                    </p>
-                </div>
-            @endif
-
-            <details class="mt-3" @if ($menungguUnggahanSendiri) open @endif>
-                <summary class="cursor-pointer text-sm font-medium">Kirim desain sendiri</summary>
-                <form method="POST" action="{{ route('lacak.item.desain', [$order->access_token, $item]) }}"
-                      enctype="multipart/form-data" class="mt-3 space-y-3">
-                    @csrf
-                    <div>
-                        <label for="berkas-{{ $item->id }}" class="label-form">Gambar preview</label>
-                        <input type="file" id="berkas-{{ $item->id }}" name="berkas"
-                               accept=".jpg,.jpeg,.png,.webp" class="kotak-input">
-                        <p class="mt-1 text-xs leading-relaxed text-muted">
-                            JPG, PNG, atau WebP, maksimal {{ setting('upload_maks_mb', 10) }} MB.
-                            Ini cuma referensi buat desainer, bukan file cetaknya. File mentah
-                            siap cetak seperti AI, PSD, CDR, atau PDF terlalu besar untuk sistem:
-                            bagikan lewat tautan Google Drive di bawah.
-                        </p>
-                    </div>
-                    <div>
-                        <label for="tautan-{{ $item->id }}" class="label-form">Tautan Google Drive (opsional)</label>
-                        <input type="url" id="tautan-{{ $item->id }}" name="tautan" class="kotak-input"
-                               placeholder="https://drive.google.com/...">
-
-                        {{-- Tidak semua orang tahu cara membuat tautan berbagi (KEP-065).
-                             Ini jalan pintas: formulir milik toko sendiri yang sudah minta
-                             kode pesanan, jadi begitu terkirim tidak perlu balik ke sini
-                             menempelkan apa pun. --}}
-                        @if (setting('desain_link_unggah'))
-                            <p class="mt-1.5 text-xs leading-relaxed text-muted">
-                                Belum punya link? <a href="{{ setting('desain_link_unggah') }}" target="_blank"
-                                rel="noopener" class="tautan font-medium">Unggah file besar di sini</a> —
-                                tulis kode pesanan <strong class="tabular">{{ $order->kode }}</strong> di
-                                formulirnya supaya kami tahu ini punya siapa. Tidak perlu ditempel di sini lagi.
-                            </p>
-                        @endif
-                    </div>
-                    <div>
-                        <label for="catdes-{{ $item->id }}" class="label-form">Catatan untuk desainer</label>
-                        <textarea id="catdes-{{ $item->id }}" name="catatan" rows="2" class="kotak-input"></textarea>
-                    </div>
-                    <button type="submit" class="tombol tombol-garis text-sm">Kirim desain</button>
-                </form>
-            </details>
         </div>
-    @endunless
+    @endif
 </div>

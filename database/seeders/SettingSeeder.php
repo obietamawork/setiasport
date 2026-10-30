@@ -3,8 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Setting;
-use Illuminate\Support\Facades\Storage;
+use App\Support\DrafHukum;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 
 /** Nilai bisnis yang pasti akan diubah pemilik toko, tidak boleh di-hardcode. */
 class SettingSeeder extends Seeder
@@ -21,8 +22,8 @@ class SettingSeeder extends Seeder
              */
             ['toko_alamat', 'Jl. Manyar II No.2, Sukorejo, Giripurwo, Kec. Wonogiri, Kabupaten Wonogiri, Jawa Tengah 57612', 'string', 'toko', 'Alamat Toko',
                 'Tempat pesanan diambil dan dilunasi. Tampil di halaman pesanan dan email.'],
-            ['toko_jam_buka', "Senin-Sabtu 08.00-16.00
-Minggu 08.00-14.00", 'teks', 'toko', 'Jam Buka Toko',
+            ['toko_jam_buka', 'Senin-Sabtu 08.00-16.00
+Minggu 08.00-14.00', 'teks', 'toko', 'Jam Buka Toko',
                 'Satu baris per rentang hari.'],
             ['konveksi_alamat', 'Donoharjo, RT.02/RW.01, Donoharjo, Wuryorejo, Kec. Wonogiri, Kabupaten Wonogiri, Jawa Tengah 57614', 'string', 'toko', 'Alamat Konveksi',
                 'Tempat jersey dikerjakan. Tampil di halaman depan.'],
@@ -64,16 +65,8 @@ Minggu 08.00-14.00", 'teks', 'toko', 'Jam Buka Toko',
                 'Maksimal permintaan revisi dari pelanggan. Semuanya gratis, dan setelah habis tidak ada revisi berbayar.'],
             ['upload_maks_mb', '10', 'int', 'produksi', 'Batas Ukuran Upload Preview (MB)',
                 'Berlaku untuk preview desain dan foto. File mentah siap cetak dikirim lewat tautan Drive, bukan diunggah.'],
-            /*
-             * Kosong berarti tombolnya tidak muncul sama sekali (KEP-065).
-             * Bukan link ke sistem kami, tapi ke formulir milik toko sendiri
-             * (Google Form / Dropbox File Request) yang menampung file mentah
-             * tanpa pelanggan perlu tahu cara membuat tautan berbagi sendiri.
-             */
-            ['desain_link_unggah', '', 'string', 'produksi', 'Tautan Unggah File Besar (opsional)',
-                'Untuk pelanggan yang punya file mentah (AI/PSD/CDR) tapi tidak bisa membuat tautan '
-                .'berbagi sendiri. Isi tautan Google Form/Dropbox File Request milik toko. Kosongkan '
-                .'untuk menyembunyikannya. Cara buatnya: docs/14-formulir-unggah-desain.md.'],
+            // "desain_link_unggah" (KEP-065) dihapus: file desain pelanggan kini
+            // hanya lewat WhatsApp (KEP-095), tidak ada lagi tempat menampilkannya.
 
             // Dulu kata "besok" tertulis langsung di tampilan (KEP-091).
             ['stok_siap_hari', '1', 'int', 'pengambilan', 'Barang Stok Siap Diambil (hari)',
@@ -103,10 +96,10 @@ Minggu 08.00-14.00", 'teks', 'toko', 'Jam Buka Toko',
                 'Belanja di atas nominal ini tidak dikenai ongkos kirim. Isi 0 untuk mematikan. '
                 .'Ongkir tetap dibayar toko ke kurir, jadi pastikan angkanya masih menguntungkan.'],
 
-            ['jasa_kirim_daftar', "JNE
+            ['jasa_kirim_daftar', 'JNE
 J&T Express
 SiCepat
-Pos Indonesia", 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
+Pos Indonesia', 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
                 'Satu nama per baris. Inilah pilihan yang muncul saat admin mengisi resi.'],
             ['panduan_resi', 'Nomor resi bisa dilacak di cekresi.com, atau di situs resmi jasa kirimnya. Nomor baru terbaca beberapa jam setelah paket diserahkan ke kurir.', 'teks', 'pengiriman', 'Panduan Melacak Resi',
                 'Muncul di halaman pesanan pelanggan, tepat di bawah nomor resinya.'],
@@ -175,9 +168,9 @@ Pos Indonesia", 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
              * kerja sistem ini; Kesiapan tayang menahannya sebagai butir wajib
              * selama teksnya belum disesuaikan pemilik toko.
              */
-            ['kebijakan_privasi', \App\Support\DrafHukum::kebijakanPrivasi(), 'markdown', 'hukum', 'Kebijakan Privasi',
+            ['kebijakan_privasi', DrafHukum::kebijakanPrivasi(), 'markdown', 'hukum', 'Kebijakan Privasi',
                 'Tampil di halaman /kebijakan-privasi dan ditautkan dari checkout.'],
-            ['syarat_ketentuan', \App\Support\DrafHukum::syaratKetentuan(), 'markdown', 'hukum', 'Syarat & Ketentuan',
+            ['syarat_ketentuan', DrafHukum::syaratKetentuan(), 'markdown', 'hukum', 'Syarat & Ketentuan',
                 'Tampil di halaman /syarat-ketentuan dan ditautkan dari checkout.'],
         ];
 

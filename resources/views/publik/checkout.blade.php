@@ -48,7 +48,13 @@
                 <label for="no_hp" class="label-form">Nomor HP (WhatsApp)</label>
                 <input type="tel" id="no_hp" name="no_hp" value="{{ old('no_hp', $pelanggan?->no_hp) }}"
                        class="kotak-input tabular" required autocomplete="tel">
-                <p class="mt-1 text-xs text-muted">Dipakai kalau kami perlu menghubungi Anda langsung.</p>
+                @if ($desainLewatWa)
+                    <p class="mt-1 text-xs text-muted">
+                        Admin menghubungi nomor ini lewat WhatsApp untuk menerima file desain Anda.
+                    </p>
+                @else
+                    <p class="mt-1 text-xs text-muted">Dipakai kalau kami perlu menghubungi Anda langsung.</p>
+                @endif
             </div>
 
             {{-- Pilihan penyerahan (KEP-058). Ditaruh sebelum cara pembayaran

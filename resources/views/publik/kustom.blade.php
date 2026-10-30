@@ -201,13 +201,36 @@
                     </div>
                     <input type="hidden" name="desain_sumber" :value="desainSumber">
 
+                    {{-- Dijelaskan di sini, sebelum data pemesan dan pembayaran
+                         (KEP-095). File desain hanya lewat WhatsApp: tidak ada
+                         kotak unggah di website, termasuk di halaman pesanan. --}}
+                    <div x-show="desainSumber === 'sendiri'" x-cloak
+                         class="mt-4 border-l-2 border-navy-200 bg-navy-50 p-3 text-sm leading-relaxed">
+                        <p class="font-semibold">File desain dikirim lewat WhatsApp</p>
+                        <p class="mt-1">
+                            Semua format diterima: CDR, AI, PSD, PDF, PNG, JPG, atau tautan Google Drive.
+                            Kirim sekarang, atau nanti saja: setelah pesanan dibuat, admin kami menghubungi
+                            nomor WhatsApp yang Anda isi di data pemesan untuk meminta filenya.
+                        </p>
+                        @if ($waDesain = tautan_wa('Halo '.setting('toko_nama', 'Setia Sport').', saya mau mengirim file desain untuk pesanan '.$produk->nama.'. Pesanannya saya buat di website.'))
+                            <p class="mt-2 text-xs text-muted">
+                                Kirim dari nomor yang sama dengan yang nanti Anda isi, supaya desainnya
+                                langsung kami cocokkan dengan pesanan Anda.
+                            </p>
+                            <a href="{{ $waDesain }}" target="_blank" rel="noopener"
+                               class="tombol tombol-garis tombol-sm mt-3">
+                                <x-ikon nama="whatsapp" ukuran="size-4" />
+                                Kirim desain lewat WhatsApp
+                            </a>
+                        @endif
+                    </div>
+
                     <label for="catatan-desain" class="label-form mt-5">Permintaan desain (opsional)</label>
                     <textarea id="catatan-desain" name="catatan_desain" rows="3" class="kotak-input"
                               x-model="catatanDesain"
                               placeholder="Contoh: warna dasar navy, logo tim di dada kiri, nomor punggung putih"></textarea>
                     <p class="mt-2 text-xs leading-relaxed text-muted">
-                        Gambar desainnya diunggah setelah pesanan dibuat, di halaman pesanan Anda.
-                        Mockup dikirim untuk disetujui sebelum apa pun dicetak.
+                        Mockup dikirim ke halaman pesanan Anda untuk disetujui sebelum apa pun dicetak.
                     </p>
                 </div>
             </section>
@@ -708,7 +731,7 @@
             },
 
             get labelDesain() {
-                return { katalog: 'Pilih dari katalog', sendiri: 'Kirim desain sendiri', admin: 'Dibantu admin' }[this.desainSumber];
+                return { katalog: 'Pilih dari katalog', sendiri: 'Kirim desain sendiri, lewat WhatsApp', admin: 'Dibantu admin' }[this.desainSumber];
             },
 
             /*
