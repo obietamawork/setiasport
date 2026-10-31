@@ -64,7 +64,7 @@ class AlurPesanan
              * sudah diperbarui.
              */
             $order = Order::whereKey($payment->order_id)->lockForUpdate()->firstOrFail()
-                ->load(['items.options', 'payments', 'adjustments']);
+                ->load(['items.options', 'items.rosters', 'payments', 'adjustments']);
 
             /*
              * Dibaca ulang SETELAH pesanan terkunci (KEP-098). Halaman panel
@@ -113,16 +113,16 @@ class AlurPesanan
                 );
             }
 
-            $this->lepaskanPelunasan($order->fresh(['items.options', 'payments', 'adjustments']), $olehUserId);
+            $this->lepaskanPelunasan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']), $olehUserId);
 
             // Batas waktu bayar tidak lagi berlaku begitu uangnya masuk.
             $order->update(['kadaluarsa_pada' => null]);
 
-            $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']));
+            $this->sinkronkan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']));
 
             // Sesudah status disinkronkan: tagihan awal yang lain baru bisa
             // dikenali basi setelah pesanan keluar dari Menunggu Pembayaran.
-            $this->rapikanTagihan($order->fresh(['items.options', 'payments', 'adjustments']));
+            $this->rapikanTagihan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']));
         });
 
         // Pelunasan yang membuat pesanan siap sudah diwakili email "pesanan
@@ -181,7 +181,7 @@ class AlurPesanan
 
                 // Nominal lama bisa sudah basi kalau tagihannya berubah selama
                 // bukti itu menunggu diperiksa.
-                $this->rapikanTagihan($order->fresh(['items.options', 'payments', 'adjustments']));
+                $this->rapikanTagihan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']));
             }
         });
 
@@ -254,9 +254,9 @@ class AlurPesanan
         DB::transaction(function () use ($order, $olehUserId) {
             $order = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
 
-            $this->lepaskanPelunasan($order->fresh(['items.options', 'payments', 'adjustments']), $olehUserId);
-            $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']));
-            $this->rapikanTagihan($order->fresh(['items.options', 'payments', 'adjustments']));
+            $this->lepaskanPelunasan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']), $olehUserId);
+            $this->sinkronkan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']));
+            $this->rapikanTagihan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']));
         });
     }
 
@@ -357,7 +357,7 @@ class AlurPesanan
 
         // Pesanan yang sudah lunas di muka tidak perlu berhenti di gerbang.
         if ($berikutnya === OrderItemStatus::MENUNGGU_PELUNASAN
-            && $item->order->fresh(['items.options', 'payments', 'adjustments'])->lunas()) {
+            && $item->order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments'])->lunas()) {
             $berikutnya = OrderItemStatus::SIAP;
         }
 
@@ -372,10 +372,29 @@ class AlurPesanan
             $this->setStatusItem($item, $berikutnya, null, $olehUserId);
             $this->mulaiJob($item, $berikutnya->tahapProduksi(), $olehUserId);
 
-            $this->sinkronkan($item->order->fresh(['items.options', 'payments', 'adjustments']));
+            $this->sinkronkan($item->order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']));
         });
 
         return $berikutnya;
+    }
+
+    /**
+     * Pekerja menandai mejanya selesai lewat QR atau roll (KEP-100).
+     *
+     * Barang yang masih antri di meja printing dilewatkan ke Printing dulu,
+     * lalu printingnya diselesaikan, dalam satu transaksi: operatornya memang
+     * sudah mencetaknya, hanya tidak ada yang menekan "Mulai kerjakan" di
+     * panel.
+     */
+    public function selesaikanDiMeja(OrderItem $item, int $pekerjaId, ?OrderItemStatus $dari = null): OrderItemStatus
+    {
+        return DB::transaction(function () use ($item, $pekerjaId, $dari) {
+            if ($item->status_item === OrderItemStatus::ANTRIAN_PRODUKSI) {
+                $dari = $this->majukanItem($item, null, $pekerjaId, $dari);
+            }
+
+            return $this->majukanItem($item, null, $pekerjaId, $dari);
+        });
     }
 
     /**
@@ -430,7 +449,7 @@ class AlurPesanan
             // Barang yang ditarik dari rak siap tidak boleh membawa tanggal
             // siapnya yang lama: pengingat ambil dan batas hangus dihitung
             // dari situ, dan email "pesanan siap" harus terkirim lagi.
-            $order = Order::with(['items.options', 'payments', 'adjustments'])->findOrFail($item->order_id);
+            $order = Order::with(['items.options', 'items.rosters', 'payments', 'adjustments'])->findOrFail($item->order_id);
 
             if ($order->status === OrderStatus::SIAP_DIAMBIL) {
                 $order->siap_pada = null;
@@ -475,7 +494,7 @@ class AlurPesanan
     /** Serah terima di kasir: pelunasan dan pengambilan adalah satu tindakan (KEP-006). */
     public function serahkan(Order $order, string $diambilOleh, ?int $olehUserId = null): void
     {
-        $order->load(['items.options', 'payments', 'adjustments']);
+        $order->load(['items.options', 'items.rosters', 'payments', 'adjustments']);
 
         abort_unless(
             $order->bolehDiserahkan(),
@@ -501,7 +520,7 @@ class AlurPesanan
                 'diserahkan_oleh' => $olehUserId,
             ]);
 
-            $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']));
+            $this->sinkronkan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']));
         });
     }
 
@@ -516,7 +535,7 @@ class AlurPesanan
      */
     public function kirimkan(Order $order, string $jasaKirim, string $noResi, ?int $olehUserId = null): void
     {
-        $order->load(['items.options', 'payments', 'adjustments']);
+        $order->load(['items.options', 'items.rosters', 'payments', 'adjustments']);
 
         abort_unless(
             $order->bolehDikirim(),
@@ -543,7 +562,7 @@ class AlurPesanan
                 'diserahkan_oleh' => $olehUserId,
             ]);
 
-            $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']));
+            $this->sinkronkan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']));
         });
 
         // Nomor resi tidak ada gunanya kalau pelanggan harus bertanya dulu untuk
@@ -561,7 +580,7 @@ class AlurPesanan
             $order->update(['diterima_pada' => now()]);
 
             $this->sinkronkan(
-                $order->fresh(['items.options', 'payments', 'adjustments']),
+                $order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']),
                 'Paket dikonfirmasi sudah diterima pelanggan.'
             );
 
@@ -591,7 +610,7 @@ class AlurPesanan
                 ->where('status', PaymentStatus::MENUNGGU->value)
                 ->update(['status' => PaymentStatus::KADALUARSA->value]);
 
-            $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']), $alasan);
+            $this->sinkronkan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']), $alasan);
         });
     }
 

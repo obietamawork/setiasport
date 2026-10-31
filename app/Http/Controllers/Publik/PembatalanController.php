@@ -21,7 +21,7 @@ class PembatalanController extends Controller
     public function ajukan(Request $request, string $token): RedirectResponse
     {
         $order = Order::where('access_token', $token)
-            ->with(['items.options', 'payments', 'adjustments'])
+            ->with(['items.options', 'items.rosters', 'payments', 'adjustments'])
             ->firstOrFail();
 
         $data = $request->validate([

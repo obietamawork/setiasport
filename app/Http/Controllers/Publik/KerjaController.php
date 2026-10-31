@@ -58,7 +58,7 @@ class KerjaController extends Controller
                 .'. Tidak ada yang diubah. Halaman ini sudah dimuat ulang.']);
         }
 
-        $tahap = $item->status_item->tahapProduksi();
+        $tahap = $item->status_item->mejaKerja();
 
         abort_if($tahap === null, 422,
             'Barang ini sedang tidak berada di meja produksi. Tanyakan ke admin konveksi.');
@@ -86,7 +86,7 @@ class KerjaController extends Controller
          * galat inline biasa di sebelah kotak PIN, bukan halaman debug.
          */
         try {
-            $this->alur->majukanItem($item, null, $pekerja->id, $item->status_item);
+            $this->alur->selesaikanDiMeja($item, $pekerja->id, $item->status_item);
         } catch (HttpExceptionInterface $e) {
             throw ValidationException::withMessages(['pin' => $e->getMessage()]);
         }

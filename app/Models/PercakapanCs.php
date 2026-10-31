@@ -123,7 +123,7 @@ class PercakapanCs extends Model
     /** Konteks lengkap untuk panel kanan ruang CS. */
     public function untukDetail(): array
     {
-        $this->loadMissing(['order.items.options', 'order.payments', 'order.adjustments', 'customer.orders']);
+        $this->loadMissing(['order.items.options', 'order.items.rosters', 'order.payments', 'order.adjustments', 'customer.orders']);
 
         $kartu = fn (Order $o) => [
             'kode' => $o->kode,

@@ -313,6 +313,34 @@ class PembayaranManualTest extends TestCase
     }
 
     /**
+     * Total pesanan ikut menghitung harga per ukuran di daftar pemain, jadi
+     * setiap tempat yang menghitungnya memuat rosters sekaligus (KEP-100).
+     * Dulu pesanan dua barang berakhir galat 500 di kasir di lokal dan tes,
+     * dan di produksi rosternya dimuat satu kueri per barang.
+     */
+    public function test_kasir_mencatat_dp_untuk_pesanan_dua_barang(): void
+    {
+        $bola = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();
+        $sepatu = ProductVariant::where('sku', 'SEPATU-ORT-CTL-41-HIT')->firstOrFail();
+
+        $this->post('/keranjang', ['variant_id' => $bola->id, 'qty' => 1]);
+        $this->post('/keranjang', ['variant_id' => $sepatu->id, 'qty' => 1]);
+        $this->post('/checkout', [
+            'nama' => 'Budi Santoso', 'email' => 'budi@contoh.test',
+            'no_hp' => '081234567890', 'setuju' => '1',
+        ]);
+
+        $order = Order::with(['items.options', 'items.rosters', 'payments', 'adjustments'])->latest('id')->firstOrFail();
+        $this->assertCount(2, $order->items);
+
+        $this->actingAs(User::where('email', 'admin@setiasport.test')->firstOrFail())
+            ->post(route('panel.pesanan.pembayaran.catat', $order), [
+                'jumlah' => intdiv($order->sisa_tagihan, 2), 'metode' => 'TUNAI', 'jenis' => 'DP',
+            ])
+            ->assertSessionHas('sukses');
+    }
+
+    /**
      * Lapis kedua (review keamanan menemukan celah ini): pengadaluarsaan
      * otomatis di atas hanya berjalan lewat jalur yang sudah dikenali
      * (pembayaran lain, penyesuaian harga). verifikasi() sendiri harus

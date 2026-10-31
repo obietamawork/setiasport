@@ -93,7 +93,7 @@ class PengirimanController extends Controller
     /** Paket sudah diserahkan ke kurir dan resinya sudah di tangan. */
     public function kirim(Request $request, Order $pesanan): RedirectResponse
     {
-        $pesanan->load(['items.options', 'payments', 'adjustments']);
+        $pesanan->load(['items.options', 'items.rosters', 'payments', 'adjustments']);
 
         $data = $request->validate([
             'jasa_kirim' => ['required', 'string', 'max:50'],
@@ -123,7 +123,7 @@ class PengirimanController extends Controller
 
     public function diterima(Order $pesanan): RedirectResponse
     {
-        $pesanan->load(['items.options', 'payments', 'adjustments']);
+        $pesanan->load(['items.options', 'items.rosters', 'payments', 'adjustments']);
 
         $this->alur->tandaiDiterima($pesanan, auth('web')->id());
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use BaconQrCode\Common\ErrorCorrectionLevel;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -13,17 +14,23 @@ use BaconQrCode\Writer;
  * SVG, bukan PNG: lembar kerja dicetak, dan SVG tetap tajam di printer mana pun
  * tanpa perlu ekstensi gambar di hosting. Digambar saat halaman dibuka, tidak
  * disimpan sebagai berkas, karena isinya cuma tautan yang sudah ada di database.
+ *
+ * Koreksi galat tingkat M, bukan bawaan L, dan tepi putih dua modul (KEP-100):
+ * kertas ini ikut kain dari meja ke meja, terlipat dan kena tinta, dan
+ * tingkat L hanya tahan rusak 7%. Tautan ke halaman kerja masih muat di QR
+ * versi 5, jadi kotaknya tetap kecil.
  */
 class KodeQr
 {
     public function svg(string $isi, int $ukuran = 180): string
     {
         $writer = new Writer(new ImageRenderer(
-            new RendererStyle($ukuran, 1),
-            new SvgImageBackEnd(),
+            new RendererStyle($ukuran, 2),
+            new SvgImageBackEnd,
         ));
 
         // Deklarasi XML dibuang supaya SVG-nya bisa ditempel langsung di HTML.
-        return preg_replace('/<\?xml.*?\?>\s*/', '', $writer->writeString($isi));
+        return preg_replace('/<\?xml.*?\?>\s*/', '',
+            $writer->writeString($isi, ecLevel: ErrorCorrectionLevel::M()));
     }
 }

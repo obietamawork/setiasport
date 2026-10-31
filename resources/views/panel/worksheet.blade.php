@@ -22,7 +22,15 @@
         .kop { display: flex; justify-content: space-between; align-items: flex-start;
                border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 14px; }
         .kode { font-size: 22px; font-weight: bold; letter-spacing: 1px; }
-        .item { border: 1px solid #000; margin-bottom: 12px; page-break-inside: avoid; }
+        /*
+         * Barang boleh terbelah di antara halaman, bagian atasnya dan baris
+         * tabelnya tidak (KEP-100). Dulu seluruh barang dilarang terbelah:
+         * daftar 26 pemain tidak muat satu halaman, jadi browser mendorongnya
+         * ke halaman 2 dan halaman 1 tercetak kosong kecuali kop.
+         */
+        .item { border: 1px solid #000; margin-bottom: 12px; }
+        .atas, .kerja, tr { break-inside: avoid; }
+        .ringkas { break-after: avoid; }
         .item-kop { display: flex; justify-content: space-between; gap: 12px;
                     border-bottom: 1px solid #000; padding: 8px 10px; font-weight: bold; }
         .meta { padding: 8px 10px; border-bottom: 1px solid #ccc; }
@@ -32,13 +40,13 @@
         th { background: #eee; }
         .no { width: 30px; text-align: center; }
         .nomor { width: 60px; text-align: center; font-weight: bold; font-size: 14px; }
-        .ukuran { width: 110px; text-align: center; font-weight: bold; }
+        .ukuran { width: 130px; text-align: center; font-weight: bold; white-space: nowrap; }
         .ringkas { padding: 8px 10px; font-weight: bold; }
         .catatan { border: 1px solid #000; padding: 8px 10px; margin-top: 4px; min-height: 40px; }
         .cetak { margin-bottom: 14px; }
         .desain { display: flex; gap: 12px; padding: 10px; border-bottom: 1px solid #ccc;
                   align-items: flex-start; }
-        .desain img { width: 46mm; border: 1px solid #000; }
+        .desain img { width: 46mm; max-height: 80mm; object-fit: contain; border: 1px solid #000; }
         .desain .ket { font-size: 11px; line-height: 1.5; }
         .desain .ket strong { font-size: 13px; }
         .kerja { display: flex; gap: 12px; align-items: center; padding: 10px;
@@ -46,6 +54,11 @@
         .kerja .petunjuk { font-size: 11px; line-height: 1.5; }
         .kerja .petunjuk strong { font-size: 13px; }
         .kerja .tautan { font-family: monospace; font-size: 9px; color: #444; word-break: break-all; }
+        /* Kepala tabel diulang di tiap halaman; baris ini membuat halaman
+           lanjutan yang terlepas tetap ketahuan milik pesanan mana. */
+        .judul-tabel th { background: #fff; font-weight: normal; font-size: 11px; }
+        .batal { border: 3px solid #000; padding: 10px; margin-bottom: 14px;
+                 font-size: 18px; font-weight: bold; text-align: center; }
         @media print { .cetak { display: none; } body { padding: 10mm; } }
     </style>
 </head>
@@ -54,6 +67,11 @@
 <div class="cetak">
     <button type="button" data-cetak>Cetak lembar kerja</button>
 </div>
+
+{{-- Lembar lama masih menempel di kain saat pesanannya dibatalkan (KEP-100). --}}
+@if (in_array($pesanan->status, [\App\Enums\OrderStatus::DIBATALKAN, \App\Enums\OrderStatus::KADALUARSA], true))
+    <div class="batal">PESANAN DIBATALKAN: jangan dikerjakan</div>
+@endif
 
 {{-- Nomor HP pelanggan sengaja TIDAK dicetak (KEP-056). Lembar ini difoto dan
      dikirim ke grup WhatsApp konveksi, dan nomor pelanggan tidak ada gunanya di
@@ -73,6 +91,7 @@
 
 @foreach ($pesanan->items as $item)
     <div class="item">
+        <div class="atas">
         <div class="item-kop">
             <span>{{ $item->nama_produk }}</span>
             <span>{{ $item->qty }} pcs</span>
@@ -135,11 +154,15 @@
                 </div>
             </div>
         @endif
+        </div>
 
         @if ($item->rosters->isNotEmpty())
             <div class="ringkas">{{ $item->ringkasanUkuran() }}</div>
             <table>
                 <thead>
+                    <tr class="judul-tabel">
+                        <th colspan="6">Daftar ukuran {{ $pesanan->kode }} &middot; {{ $item->nama_produk }}</th>
+                    </tr>
                     <tr>
                         <th class="no">#</th>
                         <th>Nama punggung</th>

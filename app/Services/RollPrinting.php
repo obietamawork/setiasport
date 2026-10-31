@@ -90,7 +90,7 @@ class RollPrinting
                     continue;
                 }
 
-                $this->alur->majukanItem($item, null, $pekerja->id);
+                $this->alur->selesaikanDiMeja($item, $pekerja->id);
                 $maju++;
             }
 
@@ -106,8 +106,12 @@ class RollPrinting
         });
     }
 
+    /**
+     * Termasuk yang masih antri di meja printing (KEP-100): itulah justru
+     * isi roll yang wajar, pesanan yang baru disetujui pelanggan.
+     */
     private function diTahapPrinting(OrderItem $item): bool
     {
-        return $item->status_item->tahapProduksi() === ProductionStage::PRINT;
+        return $item->status_item->mejaKerja() === ProductionStage::PRINT;
     }
 }

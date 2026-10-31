@@ -15,7 +15,7 @@ class PesananSayaController extends Controller
         return view('publik.pesanan-saya', [
             'pelanggan' => $pelanggan,
             'pesanan' => $pelanggan->orders()
-                ->with(['items.options', 'adjustments', 'payments'])
+                ->with(['items.options', 'items.rosters', 'adjustments', 'payments'])
                 ->latest('id')
                 ->paginate(15),
         ]);

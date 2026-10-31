@@ -20,7 +20,8 @@ Satu klik menyelesaikan pekerjaan **dan** menaikkan status yang dilihat pelangga
 Sejak KEP-047 ada jalur kedua yang menghasilkan hal yang sama: pekerja konveksi memindai
 QR di lembar kerja, memasukkan PIN-nya, lalu tahapnya berpindah tanpa melapor ke admin.
 Pekerja tidak punya akun panel, dan halaman pindainya tidak memuat harga maupun data
-pelanggan.
+pelanggan. Barang yang baru disetujui dan masih antri di meja printing ikut bisa
+ditandai lewat QR dan roll, tanpa menunggu admin menekan "Mulai kerjakan" (KEP-100).
 
 ## Prinsip #2: Nol input ganda
 

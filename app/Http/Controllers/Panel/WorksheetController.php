@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Panel;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Services\KodeQr;
 use Illuminate\Contracts\View\View;
 
@@ -35,11 +36,11 @@ class WorksheetController extends Controller
          * barang yang tahapnya berbeda.
          */
         $qr = $pesanan->items
-            ->filter(fn (\App\Models\OrderItem $i) => $i->productionJobs->isNotEmpty())
-            ->mapWithKeys(fn (\App\Models\OrderItem $i) => [
+            ->filter(fn (OrderItem $i) => $i->productionJobs->isNotEmpty())
+            ->mapWithKeys(fn (OrderItem $i) => [
                 $i->id => [
                     'tautan' => route('kerja', $i->tokenKerja()),
-                    'svg' => $this->qr->svg(route('kerja', $i->tokenKerja()), 150),
+                    'svg' => $this->qr->svg(route('kerja', $i->tokenKerja()), 170),
                 ],
             ]);
 

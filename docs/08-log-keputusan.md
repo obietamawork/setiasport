@@ -3645,6 +3645,58 @@ di 360 px.
 
 ---
 
+## KEP-100 — Uji lembar kerja dan QR: antrian printing bisa ditandai, cetakan panjang tidak kosong
+**Status:** TERKUNCI · 2026-10-31
+
+Diminta klien: uji lembar kerja dan QR. Pesanan kustom dibuat lewat panel dan
+etalase, mockup dikirim, pelanggan menyetujui, lalu barangnya berjalan dari meja ke
+meja lewat pindai QR dan PIN pekerja di layar HP (Chromium dan Safari). Lembar kerja
+dan lembar roll dicetak ke PDF A4, dirender jadi gambar, dan QR-nya dibaca betulan
+dengan pembaca QR, bukan hanya dicek ada atau tidak.
+
+**Temuan**
+
+- **Barang yang baru disetujui tidak bisa ditandai lewat QR.** Persetujuan desain
+  menaruh barang di Antrian Produksi, yang tidak punya tahap produksi sendiri. QR-nya
+  berkata "tidak berada di meja produksi", padahal operator printing tidak punya akun
+  panel untuk menekan "Mulai kerjakan". Kini antrian itu dihitung meja printing:
+  menandai printing selesai melewatkannya ke Printing lalu ke Press dalam satu
+  transaksi, dan riwayatnya tetap mencatat keduanya.
+- **Roll printing menolak isi roll yang paling wajar.** Pesanan yang baru disetujui
+  ditolak masuk roll dengan pesan "sudah tidak berada di tahap printing", sampai admin
+  menekan "Mulai kerjakan" satu per satu. Kini roll menerimanya dan memajukannya
+  dengan cara yang sama.
+- **Daftar pemain panjang mengosongkan halaman 1.** Seluruh barang dilarang terbelah
+  di antara halaman; 26 pemain tidak muat satu halaman, jadi browser mendorongnya ke
+  halaman 2 dan halaman 1 tercetak kosong kecuali kop. Kini yang tidak boleh terbelah
+  hanya bagian atas barang (nama, opsi, mockup), baris tabel, dan kotak QR. Kepala
+  tabel yang diulang di tiap halaman membawa kode pesanan, supaya halaman lanjutan
+  yang terlepas tetap ketahuan milik siapa. Kolom ukuran tidak lagi patah jadi dua
+  baris ("SMA / Dewasa" / "XL"), dan mockup yang tinggi dibatasi 80 mm.
+- **QR barang yang dibatalkan hanya berkata "tidak ada yang perlu ditandai".** Kini
+  halaman kerjanya berkata pesanan dibatalkan dan meminta pengerjaan dihentikan, dan
+  lembar kerja yang dicetak ulang memuat tanda DIBATALKAN.
+- **Pesanan dua barang galat 500 di kasir** di lokal dan tes. Total pesanan menghitung
+  harga per ukuran dari daftar pemain, tetapi sebagian besar tempat yang menghitungnya
+  tidak memuat `items.rosters`. Di produksi tidak galat, hanya satu kueri tambahan per
+  barang; kini semuanya memuatnya sekaligus.
+
+**QR lebih tahan rusak.** Koreksi galat dinaikkan dari tingkat L (tahan rusak 7%) ke
+M (15%), tepi putihnya dua modul, dan kotaknya 170 px. Kertas ini ikut kain dari meja
+ke meja, terlipat dan kena tinta. Tautan halaman kerja masih muat di QR versi 5, dan
+QR-nya tetap terbaca dari cetakan A4 yang dirender di 72 dpi.
+
+Diperiksa dan sudah benar: QR membuka halaman barangnya sendiri, satu QR per barang
+(barang stok di pesanan campuran memakai QR-nya untuk packing); nomor HP pelanggan
+tidak tercetak; halaman kerja tanpa harga dan data pelanggan; PIN asal dan PIN
+bagian lain ditolak di samping kotak PIN dengan nama pemegang bagiannya; halaman
+lama dan ketukan ganda tidak memajukan barang dua tahap; lima PIN salah mengunci
+lembar itu 15 menit; urutan tahap mencatat siapa menandai; lembar roll ditandai
+sekali untuk seluruh isinya dan halaman roll lama ditolak dengan kalimat yang jelas;
+lembar kerja, lembar roll, dan halaman kerja tidak bergeser ke samping di HP.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3748,3 +3800,4 @@ di 360 px.
 | KEP-097 | Audit pelanggan sampai pembayaran: pembatas bersama, bukti ditolak, kurir wajib | TERKUNCI |
 | KEP-098 | Audit alur internal: tagihan mengikuti pesanan, tahap bisa diulang, pesan galat terbaca | TERKUNCI |
 | KEP-099 | Uji bagian Pesanan: pelanggan tanpa email, ukuran berkategori, isian tidak hilang | TERKUNCI |
+| KEP-100 | Uji lembar kerja dan QR: antrian printing bisa ditandai, cetakan panjang tidak kosong | TERKUNCI |

@@ -361,13 +361,13 @@ parameters:
 			path: app/Http/Controllers/Publik/KerjaController.php
 
 		-
-			message: '#^Cannot call method tahapProduksi\(\) on string\.$#'
+			message: '#^Cannot call method mejaKerja\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: app/Http/Controllers/Publik/KerjaController.php
 
 		-
-			message: '#^Parameter \#4 \$dari of method App\\Services\\AlurPesanan\:\:majukanItem\(\) expects App\\Enums\\OrderItemStatus\|null, string given\.$#'
+			message: '#^Parameter \#3 \$dari of method App\\Services\\AlurPesanan\:\:selesaikanDiMeja\(\) expects App\\Enums\\OrderItemStatus\|null, string given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Publik/KerjaController.php
@@ -901,6 +901,12 @@ parameters:
 			path: app/Services/AlurPesanan.php
 
 		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:ANTRIAN_PRODUKSI will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
 			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:MENUNGGU_PELUNASAN will always evaluate to false\.$#'
 			identifier: identical.alwaysFalse
 			count: 1
@@ -1327,13 +1333,13 @@ parameters:
 			path: app/Services/ReservasiStok.php
 
 		-
-			message: '#^Cannot call method tahapProduksi\(\) on string\.$#'
+			message: '#^Cannot call method mejaKerja\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: app/Services/RollPrinting.php
 
 		-
-			message: '#^Parameter \#1 \$item of method App\\Services\\AlurPesanan\:\:majukanItem\(\) expects App\\Models\\OrderItem, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			message: '#^Parameter \#1 \$item of method App\\Services\\AlurPesanan\:\:selesaikanDiMeja\(\) expects App\\Models\\OrderItem, Illuminate\\Database\\Eloquent\\Model given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Services/RollPrinting.php

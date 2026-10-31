@@ -51,7 +51,7 @@ class EmailPesanan extends Mailable implements ShouldQueue
         return new Content(
             view: 'emails.'.$this->template,
             with: [
-                'order' => $this->order->loadMissing(['customer', 'items.options', 'adjustments', 'payments']),
+                'order' => $this->order->loadMissing(['customer', 'items.options', 'items.rosters', 'adjustments', 'payments']),
                 'tautan' => route('lacak.token', $this->order->access_token),
             ],
         );

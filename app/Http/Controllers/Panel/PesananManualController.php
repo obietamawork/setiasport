@@ -130,7 +130,7 @@ class PesananManualController extends Controller
          * pesanan punya dua tagihan dan sisa tagihannya salah.
          */
         if (($data['dibayar'] ?? 0) > 0) {
-            $order->load(['items.options', 'payments', 'adjustments']);
+            $order->load(['items.options', 'items.rosters', 'payments', 'adjustments']);
             $tagihan = $order->payments->firstWhere('status', PaymentStatus::MENUNGGU);
 
             $jumlah = min((int) $data['dibayar'], $order->total);

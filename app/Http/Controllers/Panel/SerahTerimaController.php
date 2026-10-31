@@ -26,7 +26,7 @@ class SerahTerimaController extends Controller
         $kode = $request->string('kode')->trim()->toString();
 
         if ($kode !== '') {
-            $order = Order::with(['customer', 'items.options', 'adjustments', 'payments'])
+            $order = Order::with(['customer', 'items.options', 'items.rosters', 'adjustments', 'payments'])
                 ->where('kode_ambil', strtoupper($kode))
                 ->orWhere('kode', strtoupper($kode))
                 ->first();
@@ -47,7 +47,7 @@ class SerahTerimaController extends Controller
 
     public function proses(Request $request, Order $pesanan): RedirectResponse
     {
-        $pesanan->load(['items.options', 'adjustments', 'payments']);
+        $pesanan->load(['items.options', 'items.rosters', 'adjustments', 'payments']);
 
         $data = $request->validate([
             'diambil_oleh' => ['required', 'string', 'max:100'],

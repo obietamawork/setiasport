@@ -146,6 +146,34 @@ class RollPrintingTest extends TestCase
         $this->assertNull($roll->fresh()->selesai_pada);
     }
 
+    /**
+     * Isi roll yang paling wajar adalah pesanan yang baru disetujui, yang
+     * masih antri di meja printing (KEP-100). Dulu roll menolaknya dengan
+     * pesan "sudah tidak berada di tahap printing" sampai admin menekan
+     * "Mulai kerjakan" satu per satu.
+     */
+    public function test_pesanan_yang_masih_antri_printing_bisa_masuk_roll(): void
+    {
+        $a = $this->itemPrinting('a@contoh.test');
+        $b = $this->itemPrinting('b@contoh.test');
+        $a->update(['status_item' => OrderItemStatus::ANTRIAN_PRODUKSI]);
+        $operator = $this->operator();
+
+        $this->actingAs($this->owner())
+            ->post(route('panel.roll.simpan'), ['item' => [$a->id, $b->id]])
+            ->assertSessionHasNoErrors();
+
+        $roll = RollCetak::latest('id')->firstOrFail();
+
+        $this->post(route('roll.selesai', $roll->token), ['pin' => '1234'])
+            ->assertSessionHas('sukses', fn ($pesan) => str_contains($pesan, '2 pesanan naik'));
+
+        $this->assertSame(OrderItemStatus::PRESS, $a->fresh()->status_item);
+        $this->assertSame(OrderItemStatus::PRESS, $b->fresh()->status_item);
+        $this->assertSame($operator->id, $a->productionJobs()
+            ->where('tahap', ProductionStage::PRINT->value)->first()->pekerja_id);
+    }
+
     public function test_pesanan_di_luar_tahap_printing_ditolak_masuk_roll(): void
     {
         $a = $this->itemPrinting('a@contoh.test');

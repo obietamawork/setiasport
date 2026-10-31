@@ -37,7 +37,7 @@ class RollCetakController extends Controller
 
         return view('panel.roll', [
             'roll' => $roll,
-            'qr' => $this->qr->svg(route('roll', $roll->token), 160),
+            'qr' => $this->qr->svg(route('roll', $roll->token), 170),
             'tautan' => route('roll', $roll->token),
         ]);
     }

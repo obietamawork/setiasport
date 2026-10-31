@@ -153,6 +153,84 @@ class KerjaQrTest extends TestCase
     }
 
     /**
+     * Barang yang baru disetujui pelanggan menunggu di Antrian Produksi.
+     * Operator printing tidak punya akun panel untuk menekan "Mulai
+     * kerjakan" (KEP-100), jadi dulu QR-nya hanya berkata barang ini tidak di
+     * meja produksi, dan printing yang sudah selesai tidak bisa ditandai.
+     */
+    public function test_barang_di_antrian_produksi_bisa_ditandai_printing_selesai(): void
+    {
+        $item = $this->itemProduksi();
+        $item->update(['status_item' => OrderItemStatus::ANTRIAN_PRODUKSI]);
+        $pekerja = $this->pekerja('Budi', '1234', [ProductionStage::PRINT->value]);
+
+        $this->get(route('kerja', $item->tokenKerja()))
+            ->assertOk()
+            ->assertSee('Tandai Printing Jersey selesai');
+
+        $this->post(route('kerja.selesai', $item->tokenKerja()), ['pin' => '1234', 'dari' => 'ANTRIAN_PRODUKSI'])
+            ->assertSessionHas('sukses');
+
+        $item->refresh();
+        $job = $item->productionJobs()->where('tahap', ProductionStage::PRINT->value)->first();
+
+        $this->assertSame(OrderItemStatus::PRESS, $item->status_item);
+        $this->assertSame($pekerja->id, $job->pekerja_id);
+        $this->assertNotNull($job->selesai_pada);
+        // Pelanggan tetap melihat printing dilewati, bukan melompat ke press.
+        $this->assertSame(['PRINTING', 'PRESS'], $item->order->statusLogs()
+            ->where('order_item_id', $item->id)->whereIn('dari', ['ANTRIAN_PRODUKSI', 'PRINTING'])
+            ->orderBy('id')->pluck('ke')->all());
+    }
+
+    /** Bagian lain tetap tidak boleh menandai printing dari antrian. */
+    public function test_antrian_produksi_tetap_hanya_untuk_operator_printing(): void
+    {
+        $item = $this->itemProduksi();
+        $item->update(['status_item' => OrderItemStatus::ANTRIAN_PRODUKSI]);
+        $this->pekerja('Sari', '5678', [ProductionStage::JAHIT->value]);
+
+        $this->post(route('kerja.selesai', $item->tokenKerja()), ['pin' => '5678', 'dari' => 'ANTRIAN_PRODUKSI'])
+            ->assertSessionHasErrors('pin');
+
+        $this->assertSame(OrderItemStatus::ANTRIAN_PRODUKSI, $item->fresh()->status_item);
+    }
+
+    /** Lembar lama masih menempel di kain saat pesanannya dibatalkan. */
+    public function test_qr_barang_yang_dibatalkan_meminta_pekerjaan_dihentikan(): void
+    {
+        $item = $this->itemProduksi();
+        app(AlurPesanan::class)->batalkan($item->order, 'Turnamen batal');
+
+        $this->get(route('kerja', $item->tokenKerja()))
+            ->assertOk()
+            ->assertSee('Pesanan dibatalkan')
+            ->assertSee('Hentikan pengerjaannya')
+            ->assertDontSee('PIN Anda');
+
+        $this->actingAs($this->owner())
+            ->get(route('panel.pesanan.worksheet', $item->order))
+            ->assertOk()
+            ->assertSee('PESANAN DIBATALKAN');
+    }
+
+    /**
+     * Daftar pemain panjang menyambung ke halaman berikutnya. Kepala tabel
+     * yang diulang browser membawa kode pesanan, supaya halaman lanjutan yang
+     * terlepas tetap ketahuan milik siapa (KEP-100).
+     */
+    public function test_kepala_tabel_lembar_kerja_membawa_kode_pesanan(): void
+    {
+        $item = $this->itemProduksi();
+
+        $this->actingAs($this->owner())
+            ->get(route('panel.pesanan.worksheet', $item->order))
+            ->assertOk()
+            ->assertSee('Daftar ukuran '.$item->order->kode)
+            ->assertDontSee('page-break-inside: avoid', false);
+    }
+
+    /**
      * Antrian menyebut siapa yang memulai pekerjaan. Relasi petugasnya dulu
      * dimuat satu per baris (N+1), dan karena hanya tampil untuk pekerjaan
      * yang sudah dimulai, tidak ada tes maupun data contoh yang mengenainya.

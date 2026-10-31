@@ -37,7 +37,7 @@ class BuktiBayarController extends Controller
     public function unggah(Request $request, string $token, PengunggahGambar $pengunggah): RedirectResponse
     {
         $order = Order::where('access_token', $token)
-            ->with(['items.options', 'payments', 'adjustments'])
+            ->with(['items.options', 'items.rosters', 'payments', 'adjustments'])
             ->firstOrFail();
 
         $request->validate([

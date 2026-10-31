@@ -160,4 +160,18 @@ enum OrderItemStatus: string
             default => null,
         };
     }
+
+    /**
+     * Meja yang memegang barang ini bagi pekerja yang memindai QR (KEP-100).
+     *
+     * Sama dengan tahapProduksi(), ditambah barang yang baru disetujui dan
+     * masih antri di meja printing. Pekerja konveksi tidak punya akun panel
+     * untuk menekan "Mulai kerjakan", jadi tanpa ini barang yang baru
+     * disetujui tidak bisa ditandai dari lembar kerjanya maupun lewat roll.
+     * Antrian desain tidak ikut: tahap desain hanya selesai lewat mockup.
+     */
+    public function mejaKerja(): ?ProductionStage
+    {
+        return $this === self::ANTRIAN_PRODUKSI ? ProductionStage::PRINT : $this->tahapProduksi();
+    }
 }

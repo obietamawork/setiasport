@@ -117,7 +117,7 @@ class PembayaranController extends Controller
      */
     public function catat(Request $request, Order $pesanan): RedirectResponse
     {
-        $pesanan->load(['items.options', 'adjustments', 'payments']);
+        $pesanan->load(['items.options', 'items.rosters', 'adjustments', 'payments']);
 
         abort_if($pesanan->status->final(), 422, 'Pesanan ini sudah selesai atau dibatalkan.');
 

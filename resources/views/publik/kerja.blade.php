@@ -1,7 +1,7 @@
 @extends('layouts.kerja')
 {{-- Satu pesanan bisa punya beberapa barang, masing-masing dengan QR-nya
      sendiri: tanpa tahap dan nama barang, semua tabnya berjudul sama persis. --}}
-@php $tahapJudul = $item->status_item->tahapProduksi(); @endphp
+@php $tahapJudul = $item->status_item->mejaKerja(); @endphp
 @section('judul', ($tahapJudul ? $tahapJudul->label().': ' : '').$item->nama_produk.' · '.$item->order->kode)
 @section('kop', $item->order->kode)
 
@@ -9,11 +9,12 @@
 @php
     use App\Enums\OrderItemStatus;
 
-    $tahap = $item->status_item->tahapProduksi();
+    // Barang yang masih antri di meja printing ditandai dari meja itu (KEP-100).
+    $tahap = $item->status_item->mejaKerja();
     $alur = collect(OrderItemStatus::alur($item->fulfillment_type))
         ->filter(fn (OrderItemStatus $s) => $s->tahapProduksi() !== null)
         ->values();
-    $posisi = $alur->search($item->status_item);
+    $posisi = $alur->search(fn (OrderItemStatus $s) => $s->tahapProduksi() === $tahap);
 @endphp
 
     <p class="tabular text-sm text-muted">{{ $item->order->kode }}</p>
@@ -52,6 +53,14 @@
                     Salah tandai? Hubungi admin konveksi; hanya admin yang bisa memperbaikinya.
                 </p>
             </form>
+        @elseif ($item->status_item === OrderItemStatus::DIBATALKAN)
+            {{-- Lembar kerjanya masih menempel di kain. Yang memindainya harus
+                 tahu untuk berhenti, bukan sekadar "tidak ada yang ditandai". --}}
+            <p class="text-sm text-muted">Tahap sekarang</p>
+            <p class="mt-1 text-2xl font-extrabold text-merah">Pesanan dibatalkan</p>
+            <p class="mt-3 text-sm leading-relaxed">
+                Hentikan pengerjaannya. Serahkan kain dan lembar kerja ini ke admin konveksi.
+            </p>
         @else
             <p class="text-sm text-muted">Tahap sekarang</p>
             <p class="mt-1 text-2xl font-extrabold">{{ $item->status_item->labelStaf() }}</p>
