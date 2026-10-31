@@ -116,7 +116,7 @@ class PesananFlowTest extends TestCase
         // diverifikasi sama sekali.
         $this->actingAs($kasir)
             ->post(route('panel.pesanan.item.maju', [$order, $item]))
-            ->assertStatus(422);
+            ->assertSessionHasErrors('alur');
 
         $this->assertSame(OrderItemStatus::MENUNGGU_PEMBAYARAN, $item->fresh()->status_item);
     }

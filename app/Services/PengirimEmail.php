@@ -26,11 +26,18 @@ class PengirimEmail
         'order-dibuat' => 'Pesanan %s diterima: menunggu pembayaran',
         'pembayaran-diterima' => 'Pembayaran pesanan %s sudah kami terima',
         'pembayaran-ditolak' => 'Bukti pembayaran pesanan %s belum bisa kami terima',
+        'mockup-siap' => 'Desain pesanan %s siap Anda periksa',
         'menunggu-pelunasan' => 'Pesanan %s sudah jadi, tinggal pelunasan',
         'pesanan-siap' => 'Pesanan %s sudah siap',
         'pesanan-dikirim' => 'Pesanan %s sudah dikirim, ini nomor resinya',
         'pengingat-ambil' => 'Pengingat: pesanan %s masih menunggu diambil',
     ];
+
+    /** Template yang masih dikenal, untuk tombol kirim ulang (KEP-098). */
+    public function punyaTemplate(string $template): bool
+    {
+        return array_key_exists($template, self::SUBJEK);
+    }
 
     /**
      * Mengembalikan null untuk pelanggan tanpa alamat email (KEP-054): pesanan
@@ -106,6 +113,12 @@ class PengirimEmail
             'pembayaran-ditolak' => "Halo {$nama}, bukti pembayaran pesanan {$order->kode} belum bisa kami terima: "
                 .($this->alasanTolakTerakhir($order) ?? 'tidak cocok dengan mutasi rekening kami')
                 .". Silakan kirim ulang buktinya di halaman pesanan: {$tautan}",
+
+            // Hanya pelanggan yang bisa menyetujui (KEP-011), jadi yang bisa
+            // dikirim toko hanyalah tautannya.
+            'mockup-siap' => "Halo {$nama}, desain pesanan {$order->kode} sudah jadi. "
+                .'Mohon diperiksa, termasuk nama dan nomor punggungnya, lalu setujui atau minta revisi '
+                ."di sini: {$tautan}. Produksi kami mulai setelah desainnya Anda setujui.",
 
             'pembayaran-diterima' => "Halo {$nama}, pembayaran untuk pesanan {$order->kode} sudah kami terima. "
                 .($order->sisa_tagihan > 0

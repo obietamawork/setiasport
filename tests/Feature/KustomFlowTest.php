@@ -314,7 +314,7 @@ class KustomFlowTest extends TestCase
 
         $this->post(route('lacak.item.revisi', [$item->order->access_token, $item]), [
             'catatan' => 'Sekali lagi tolong warnanya diubah.',
-        ])->assertStatus(422);
+        ])->assertSessionHasErrors('alur');
 
         $item->refresh();
 
@@ -380,7 +380,7 @@ class KustomFlowTest extends TestCase
         $this->assertTrue($item->rosterTerkunci());
         $this->post(route('lacak.item.roster', [$order->access_token, $item]), [
             'roster' => [['nama_punggung' => 'BARU', 'nomor' => '99', 'ukuran' => 'M']],
-        ])->assertStatus(422);
+        ])->assertSessionHasErrors('alur');
     }
 
     public function test_admin_memegang_seluruh_antrian_produksi(): void
@@ -401,7 +401,7 @@ class KustomFlowTest extends TestCase
         // Bolanya sedang di tangan pelanggan, bukan di divisi mana pun.
         $this->actingAs($this->staf('admin@setiasport.test'))
             ->post(route('panel.antrian.selesai', $item))
-            ->assertStatus(422);
+            ->assertSessionHasErrors('alur');
 
         $this->assertSame(OrderItemStatus::MENUNGGU_PERSETUJUAN, $item->fresh()->status_item);
     }
@@ -501,7 +501,7 @@ class KustomFlowTest extends TestCase
 
         $this->actingAs($this->staf('owner@setiasport.test'))
             ->post(route('panel.pesanan.item.maju', [$item->order, $item->fresh()]))
-            ->assertStatus(422);
+            ->assertSessionHasErrors('alur');
 
         $this->assertSame(OrderItemStatus::MENUNGGU_PELUNASAN, $item->fresh()->status_item);
         $this->assertNull($item->order->fresh()->kode_ambil);
@@ -654,7 +654,7 @@ class KustomFlowTest extends TestCase
         // sengketa berbulan-bulan kemudian.
         $this->actingAs($this->staf('owner@setiasport.test'))
             ->post(route('panel.pesanan.item.maju', [$item->order, $item]))
-            ->assertStatus(422);
+            ->assertSessionHasErrors('alur');
 
         $item->refresh();
 

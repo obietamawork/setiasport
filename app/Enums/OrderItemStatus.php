@@ -117,6 +117,35 @@ enum OrderItemStatus: string
         return $i === false ? null : ($alur[$i + 1] ?? null);
     }
 
+    /**
+     * Tahap tujuan saat barang dikembalikan untuk dikerjakan ulang (KEP-098).
+     *
+     * Null untuk tahap yang tidak boleh dimundurkan dari panel: gerbang
+     * pembayaran dan persetujuan desain, serta barang yang sudah keluar dari
+     * toko. Barang kustom yang sudah siap kembali ke Finishing, bukan ke
+     * Menunggu Pelunasan: yang diulang pekerjaannya, bukan pembayarannya.
+     */
+    public function sebelumnya(FulfillmentType $tipe): ?self
+    {
+        if ($tipe === FulfillmentType::READY_STOCK) {
+            return match ($this) {
+                self::PACKING => self::DIPROSES,
+                self::SIAP => self::PACKING,
+                default => null,
+            };
+        }
+
+        return match ($this) {
+            self::PRINTING => self::ANTRIAN_PRODUKSI,
+            self::PRESS => self::PRINTING,
+            self::POTONG => self::PRESS,
+            self::JAHIT => self::POTONG,
+            self::QC => self::JAHIT,
+            self::MENUNGGU_PELUNASAN, self::SIAP => self::QC,
+            default => null,
+        };
+    }
+
     /** Tahap produksi yang menghasilkan status ini, bila ada. */
     public function tahapProduksi(): ?ProductionStage
     {

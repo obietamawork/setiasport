@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Panel;
 
 use App\Enums\OrderItemStatus;
 use App\Enums\ProductionStage;
-use App\Enums\ProductionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\OrderItem;
 use App\Services\AlurPesanan;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 /**
  * Antrian kerja per divisi, layar yang paling sering dibuka operator.
@@ -81,8 +81,12 @@ class AntrianController extends Controller
         'ANTRIAN_PRODUKSI' => true,
     ];
 
-    public function mulai(OrderItem $item): RedirectResponse
+    public function mulai(Request $request, OrderItem $item): RedirectResponse
     {
+        if ($sudah = $this->sudahBerpindah($request, $item)) {
+            return $sudah;
+        }
+
         $this->pastikanBoleh($item);
 
         if (isset(self::ANTRI_KE_KERJA[$item->status_item->value])) {
@@ -96,14 +100,36 @@ class AntrianController extends Controller
         return back()->with('sukses', "Mulai mengerjakan {$item->nama_produk}.");
     }
 
-    public function selesai(OrderItem $item): RedirectResponse
+    public function selesai(Request $request, OrderItem $item): RedirectResponse
     {
+        if ($sudah = $this->sudahBerpindah($request, $item)) {
+            return $sudah;
+        }
+
         $this->pastikanBoleh($item);
 
         $baru = $this->alur->majukanItem($item, auth('web')->id());
 
         return back()->with('sukses',
             "{$item->nama_produk} selesai dan diteruskan ke tahap {$baru->label()}.");
+    }
+
+    /**
+     * Tombol membawa tahap yang dilihat orangnya saat menekan (KEP-098).
+     * Ketukan kedua pada Selesai dulu menaikkan barang satu tahap lagi bagi
+     * yang memegang beberapa divisi, dari Printing langsung ke Potong.
+     */
+    private function sudahBerpindah(Request $request, OrderItem $item): ?RedirectResponse
+    {
+        $dari = OrderItemStatus::tryFrom($request->string('dari')->toString());
+
+        if ($dari === null || $dari === $item->status_item) {
+            return null;
+        }
+
+        return back()->with('peringatan', $item->nama_produk.' sudah berada di tahap '
+            .$item->status_item->labelStaf().'. Tidak ada yang diubah: mungkin tombolnya tertekan '
+            .'dua kali, atau orang lain lebih dulu menandainya.');
     }
 
     private function pastikanBoleh(OrderItem $item): void

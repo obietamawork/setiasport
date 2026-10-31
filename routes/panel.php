@@ -36,6 +36,7 @@ use App\Http\Controllers\Panel\SerahTerimaController;
 use App\Http\Controllers\Panel\StokController;
 use App\Http\Controllers\Panel\TemplateBalasanController;
 use App\Http\Controllers\Panel\TestimoniController;
+use App\Http\Controllers\Panel\TindakLanjutController;
 use App\Http\Controllers\Panel\WorksheetController;
 use Illuminate\Support\Facades\Route;
 
@@ -107,6 +108,17 @@ Route::prefix('panel')->name('panel.')->group(function () {
         Route::prefix('pesanan/{pesanan}')->name('pesanan.')->group(function () {
             Route::post('item/{item}/maju', [PesananController::class, 'majukanItem'])
                 ->middleware('izin:order.kelola')->name('item.maju');
+
+            // Dikerjakan ulang: cacat produksi atau salah tandai (KEP-098).
+            Route::post('item/{item}/mundur', [PesananController::class, 'mundurkanItem'])
+                ->middleware('izin:order.kelola')->name('item.mundur');
+
+            // Kabar yang tidak sampai ke pelanggan (KEP-098).
+            Route::middleware('izin:order.kelola')->group(function () {
+                Route::put('pelanggan', [TindakLanjutController::class, 'ubahKontak'])->name('pelanggan.kontak');
+                Route::post('email/{log}/ulang', [TindakLanjutController::class, 'kirimUlang'])->name('email.ulang');
+                Route::post('email/{log}/selesai', [TindakLanjutController::class, 'selesai'])->name('email.selesai');
+            });
 
             // Tambah atau kurangi isi pesanan yang sedang berjalan (KEP-044).
             Route::post('item/{item}/jumlah', [IsiPesananController::class, 'ubah'])

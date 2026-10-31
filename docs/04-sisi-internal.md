@@ -87,6 +87,10 @@ mutasi tidak. Di situ pula **metode sebenarnya**
 dan **gambar buktinya** dicatat, karena saat checkout belum ada yang tahu pelanggan
 akan membayar lewat apa. Buktinya disimpan sebagai jejak kalau kelak ada selisih setoran.
 
+Yang dicatat adalah **nominal yang benar-benar terlihat di mutasi**, paling banyak
+sebesar sisa tagihan (KEP-098): pelanggan bisa mentransfer kurang, atau tagihannya
+berubah setelah bukti diunggah.
+
 Alternatifnya satu tombol lagi: **tandai gagal** dengan alasan yang wajib ditulis,
 supaya ada yang bisa dijelaskan ke pelanggan.
 
@@ -150,6 +154,8 @@ ke manusia:
   tautan tracking, admin klik, `wa.me` terbuka, tinggal kirim
 - Status email dari webhook Resend (delivered/opened/bounced) tampil di detail order
 - Dashboard menandai order yang emailnya bounce atau tidak direspons > 2 hari
+- Alamat yang salah ketik dibetulkan dari halaman pesanan, emailnya dikirim ulang,
+  dan yang sudah dikabari lewat WhatsApp ditandai supaya hilang dari dashboard (KEP-098)
 
 ### Manajemen stok (hanya untuk alur biasa)
 - Stok di level **varian** (ukuran × warna), bukan di level produk

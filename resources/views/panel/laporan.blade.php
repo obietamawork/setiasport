@@ -22,6 +22,14 @@
         <p class="numeral mt-2 text-2xl">{{ rupiah($uangMasuk) }}</p>
         <p class="mt-2 text-xs leading-relaxed text-muted">
             Pembayaran yang sudah lunas pada periode ini, tunai maupun transfer.
+            @if ($dikembalikan > 0)
+                {{-- Pengembalian pembatalan (KEP-098) disebut di sini, supaya
+                     angkanya bisa dicocokkan dengan rekening. --}}
+                <span class="tabular mt-1 block text-ink">
+                    Dikembalikan karena pembatalan {{ rupiah($dikembalikan) }},
+                    bersih {{ rupiah($uangMasuk - $dikembalikan) }}.
+                </span>
+            @endif
         </p>
     </div>
 

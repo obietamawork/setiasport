@@ -15,7 +15,8 @@
     <div style="border-left:3px solid #ff5a1f;background:#ffede4;padding:12px 16px;margin:0 0 16px;">
       <p style="margin:0;">
         Masih ada sisa <strong>{{ rupiah($order->sisa_tagihan) }}</strong>. Paket berangkat
-        setelah pelunasannya kami terima.
+        setelah pelunasannya kami terima. Rekening resmi dan tempat mengunggah buktinya
+        ada di halaman pesanan.
       </p>
     </div>
   @endif

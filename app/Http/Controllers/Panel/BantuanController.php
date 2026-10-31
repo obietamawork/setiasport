@@ -91,7 +91,11 @@ class BantuanController extends Controller
                             .'ada orang yang melihatnya di mutasi rekening atau riwayat QRIS. Buka '
                             .'pesanannya, di bagian Pembayaran tekan verifikasi, centang pernyataan bahwa '
                             .'Anda sudah mengeceknya, baru pesanannya jalan. Tangkapan layar transfer bisa '
-                            .'dibuat siapa saja dalam semenit; mutasi rekening tidak.',
+                            .'dibuat siapa saja dalam semenit; mutasi rekening tidak. Isi nominal yang '
+                            .'benar-benar masuk: kalau pelanggan mentransfer kurang, catat yang masuk dan '
+                            .'sisanya ditagih saat pelunasan. Pesanan yang buktinya sudah dikirim tidak '
+                            .'dibatalkan otomatis walau batas bayarnya lewat, jadi bukti yang masuk malam '
+                            .'hari aman diperiksa besok pagi.',
                     ],
                     [
                         't' => 'Kenapa ada DP dan pelunasan, bukan bayar sekali saja',
@@ -107,7 +111,17 @@ class BantuanController extends Controller
                             .'panel untuk Anda putuskan. Selama belum diputuskan, pekerjaan tetap jalan, '
                             .'jadi jangan digantung berhari-hari. Sistem menghitung usulan pengembalian '
                             .'uangnya berdasarkan sejauh mana pekerjaan sudah berjalan, tapi angka itu '
-                            .'usulan; Anda yang memutuskan berapa yang benar.',
+                            .'usulan; Anda yang memutuskan berapa yang benar. Kalau pelanggan minta batal '
+                            .'lewat telepon, pakai Batalkan pesanan di bagian bawah halaman pesanan. Untuk '
+                            .'pesanan yang sudah dibayar, isi berapa yang dikembalikan; pelanggan membaca '
+                            .'angka itu di halaman pesanannya.',
+                    ],
+                    [
+                        't' => 'Email ke pelanggan tidak sampai',
+                        'j' => 'Biasanya alamatnya salah ketik. Betulkan di bagian Pelanggan pada halaman '
+                            .'pesanan, lalu tekan Kirim ulang di daftar email. Kalau pelanggannya sudah '
+                            .'Anda kabari lewat WhatsApp, tandai sudah dikabari supaya peringatannya '
+                            .'hilang dari dashboard.',
                     ],
                     [
                         't' => 'Barang sudah lama tidak diambil',
@@ -145,6 +159,13 @@ class BantuanController extends Controller
                             .'berikutnya langsung melihat barang itu masuk antriannya.',
                     ],
                     [
+                        't' => 'Salah tandai, atau barang harus dikerjakan ulang',
+                        'j' => 'Buka pesanannya, lalu di barang itu pilih Kembalikan ke tahap sebelumnya '
+                            .'dan tulis alasannya, misalnya sablon luntur. Barangnya kembali ke meja '
+                            .'sebelumnya, dan alasannya hanya dibaca staf. Tombol Selesai yang tertekan '
+                            .'dua kali tidak lagi melompati tahap.',
+                    ],
+                    [
                         't' => 'Satu roll kertas isinya beberapa pesanan',
                         'j' => 'Di antrian Printing, centang pesanan yang masuk satu roll, lalu buat roll. '
                             .'QR-nya satu untuk seluruh roll: sekali pindai, semua pesanan di dalamnya '
@@ -157,7 +178,10 @@ class BantuanController extends Controller
                             .'lalu pesanan berpindah ke menunggu persetujuan pelanggan. Hanya pelanggan '
                             .'yang boleh menyetujui desain, dan itu tidak bisa diwakilkan dari panel. '
                             .'Kalau tidak begitu, jersey satu tim bisa tercetak dengan logo yang belum '
-                            .'disepakati, dan yang menanggung kainnya toko.',
+                            .'disepakati, dan yang menanggung kainnya toko. Pelanggan dikabari lewat email '
+                            .'begitu mockup terkirim. Kalau perlu mengganti mockup sebelum disetujui, '
+                            .'misalnya ada nama yang salah ketik, pakai Kirim mockup versi baru di halaman '
+                            .'pesanan.',
                     ],
                 ],
             ],

@@ -2,9 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
+use App\Enums\PaymentType;
 use App\Models\OptionValue;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductPrice;
 use App\Models\ProductVariant;
 use App\Models\User;
 use App\Services\AlurPesanan;
@@ -102,7 +106,7 @@ class UbahIsiPesananTest extends TestCase
         $order = $this->pesananKustom();
         $item = $order->items->first();
 
-        \App\Models\ProductPrice::where('product_id', $item->product_id)->update(['harga_satuan' => 99_000]);
+        ProductPrice::where('product_id', $item->product_id)->update(['harga_satuan' => 99_000]);
 
         $this->actingAs($this->owner())
             ->post(route('panel.pesanan.item.jumlah', [$order, $item]), [
@@ -142,9 +146,9 @@ class UbahIsiPesananTest extends TestCase
 
         // Pelunasan penuh dulu, supaya pengurangan menghasilkan kelebihan bayar.
         $order->payments()->create([
-            'jenis' => \App\Enums\PaymentType::PELUNASAN,
-            'metode' => \App\Enums\PaymentMethod::TRANSFER,
-            'status' => \App\Enums\PaymentStatus::LUNAS,
+            'jenis' => PaymentType::PELUNASAN,
+            'metode' => PaymentMethod::TRANSFER,
+            'status' => PaymentStatus::LUNAS,
             'jumlah' => $order->sisa_tagihan,
             'dibayar_pada' => now(),
         ]);
@@ -236,6 +240,6 @@ class UbahIsiPesananTest extends TestCase
             ->post(route('panel.pesanan.item.jumlah', [$order, $item]), [
                 'baris' => [['kategori' => 'SD', 'ukuran' => 'L', 'jumlah' => 10]],
             ])
-            ->assertStatus(422);
+            ->assertSessionHasErrors('alur');
     }
 }

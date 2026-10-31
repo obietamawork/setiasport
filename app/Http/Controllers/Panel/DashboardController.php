@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Enums\FulfillmentType;
+use App\Enums\MetodeAmbil;
+use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
@@ -11,6 +13,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Setting;
 use App\Services\KesehatanSistem;
 use Illuminate\Contracts\View\View;
 
@@ -26,7 +29,7 @@ class DashboardController extends Controller
     {
         $jalurKustom = [FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value];
 
-        $peringatanHari = (int) \App\Models\Setting::ambil('ambil_peringatan_hari', 7);
+        $peringatanHari = (int) Setting::ambil('ambil_peringatan_hari', 7);
 
         $hariIni = now()->startOfDay();
 
@@ -42,7 +45,9 @@ class DashboardController extends Controller
             'uangHariIni' => (int) Payment::where('status', PaymentStatus::LUNAS)
                 ->whereDate('dibayar_pada', $hariIni)
                 ->sum('jumlah'),
-            'siapDiambil' => Order::where('status', OrderStatus::SIAP_DIAMBIL)->count(),
+            'siapDiambil' => Order::where('status', OrderStatus::SIAP_DIAMBIL)
+                ->where('metode_ambil', '!=', MetodeAmbil::KIRIM->value)
+                ->count(),
             'sedangDikerjakan' => Order::where('status', OrderStatus::DIPROSES)->count(),
             'menungguPelunasan' => Order::where('status', OrderStatus::MENUNGGU_PELUNASAN)->count(),
             /*
@@ -64,10 +69,12 @@ class DashboardController extends Controller
                 ->get(),
 
             // Barang siap tapi tak kunjung diambil memakan rak toko dan
-            // paling sering terlupakan (docs/04).
+            // paling sering terlupakan (docs/04). Pesanan yang dikirim punya
+            // daftarnya sendiri di bawah: yang belum bergerak di sana toko.
             'lamaBelumDiambil' => Order::query()
                 ->with('customer')
                 ->where('status', OrderStatus::SIAP_DIAMBIL)
+                ->where('metode_ambil', '!=', MetodeAmbil::KIRIM->value)
                 ->where('siap_pada', '<', now()->subDays($peringatanHari))
                 ->orderBy('siap_pada')
                 ->get(),
@@ -81,17 +88,60 @@ class DashboardController extends Controller
             'bolehHangus' => Order::query()
                 ->with('customer')
                 ->where('status', OrderStatus::SIAP_DIAMBIL)
+                ->where('metode_ambil', '!=', MetodeAmbil::KIRIM->value)
                 ->whereNotNull('siap_pada')
-                ->where('siap_pada', '<', now()->subDays((int) \App\Models\Setting::ambil('hangus_hari', 30)))
+                ->where('siap_pada', '<', now()->subDays((int) Setting::ambil('hangus_hari', 30)))
                 ->orderBy('siap_pada')
                 ->get(),
-            'hangusHari' => (int) \App\Models\Setting::ambil('hangus_hari', 30),
+            'hangusHari' => (int) Setting::ambil('hangus_hari', 30),
 
+            /*
+             * Tiga hal yang dulu tidak punya tempat di sini (KEP-098):
+             *
+             * - Desain yang lebih dari dua hari menunggu persetujuan. Hanya
+             *   pelanggan yang bisa menyetujuinya, dan docs/04 sudah menyebutnya
+             *   titik yang paling sering nyangkut.
+             * - Barang siap yang menunggu dikirim. Bolanya di toko, bukan di
+             *   pelanggan, jadi tidak boleh tercampur dengan "belum diambil".
+             * - Paket yang menurut kurir sudah sampai, atau sudah dua minggu di
+             *   jalan. Pesanan dikirim baru tertutup kalau ada yang menandai.
+             */
+            'persetujuanLama' => Order::query()
+                ->with('customer')
+                ->aktif()
+                ->whereHas('items', fn ($i) => $i
+                    ->where('status_item', OrderItemStatus::MENUNGGU_PERSETUJUAN->value)
+                    ->whereDoesntHave('designAssets', fn ($d) => $d
+                        ->where('created_at', '>=', now()->subDays(2))))
+                ->oldest('updated_at')
+                ->get(),
+
+            'siapDikirim' => Order::query()
+                ->with(['customer', 'items.options', 'items.rosters', 'payments', 'adjustments'])
+                ->where('status', OrderStatus::SIAP_DIAMBIL)
+                ->where('metode_ambil', MetodeAmbil::KIRIM->value)
+                ->orderBy('siap_pada')
+                ->get(),
+
+            'paketPerluDitutup' => Order::query()
+                ->with('customer')
+                ->where('status', OrderStatus::DIKIRIM)
+                ->where(fn ($q) => $q
+                    ->whereIn('lacak_status', ['delivered', 'received', 'DELIVERED', 'RECEIVED'])
+                    ->orWhere('dikirim_pada', '<', now()->subDays(14)))
+                ->orderBy('dikirim_pada')
+                ->get(),
+
+            // Satu baris per pesanan (KEP-098): tindak lanjutnya memang per
+            // pesanan, dan lima email gagal ke alamat yang sama dulu memakan
+            // lima baris.
             'emailBermasalah' => EmailLog::perluTindakLanjut()
                 ->with('order.customer')
                 ->latest()
-                ->limit(10)
-                ->get(),
+                ->limit(50)
+                ->get()
+                ->unique(fn (EmailLog $log) => $log->order_id ?? 'log-'.$log->id)
+                ->take(10),
 
             /*
              * Produk kustom tanpa harga tidak bisa dihitung sendiri oleh

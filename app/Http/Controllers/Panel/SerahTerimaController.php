@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Panel;
 
+use App\Enums\MetodeAmbil;
 use App\Enums\OrderStatus;
+use App\Enums\StatusPembatalan;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Order;
@@ -36,6 +38,7 @@ class SerahTerimaController extends Controller
             'tidakKetemu' => $kode !== '' && ! $order,
             'siapHariIni' => Order::with('customer')
                 ->where('status', OrderStatus::SIAP_DIAMBIL)
+                ->where('metode_ambil', '!=', MetodeAmbil::KIRIM->value)
                 ->orderBy('siap_pada')
                 ->limit(15)
                 ->get(),
@@ -57,6 +60,13 @@ class SerahTerimaController extends Controller
                 'Pesanan ini disetel untuk dikirim, bukan diambil. Catat jasa kirim dan '
                 .'nomor resinya di halaman pesanan.'
             );
+        }
+
+        // Pengajuan pembatalan diputuskan dulu (KEP-098). Barang yang sudah
+        // keluar dari toko membuat pengajuannya tidak mungkin dikabulkan lagi.
+        if ($pesanan->pembatalans()->where('status', StatusPembatalan::DIAJUKAN->value)->exists()) {
+            return back()->withErrors('Pelanggan mengajukan pembatalan pesanan ini. Putuskan dulu lewat '
+                .'kotak Pengajuan pembatalan di halaman pesanan, baru barangnya diserahkan.');
         }
 
         if ($pesanan->sisa_tagihan > 0) {

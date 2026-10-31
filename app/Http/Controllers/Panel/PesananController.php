@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Panel;
 
+use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\AlurPesanan;
+use App\Services\KebijakanPembatalan;
+use App\Services\LangkahBerikut;
 use App\Services\PengirimEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -89,7 +93,7 @@ class PesananController extends Controller
             'statusLogs.pelaku', 'statusLogs.orderItem', 'emailLogs',
         ]);
 
-        $kebijakan = app(\App\Services\KebijakanPembatalan::class);
+        $kebijakan = app(KebijakanPembatalan::class);
 
         return view('panel.pesanan.show', [
             'pesanan' => $pesanan,
@@ -99,15 +103,11 @@ class PesananController extends Controller
             // pekerjaan tetap berjalan, jadi ia ditaruh paling atas di layar.
             'pembatalan' => $kebijakan->pengajuanTertunda($pesanan),
             'biayaSetup' => $kebijakan->biayaSetup($pesanan),
+            'refundUsulan' => $kebijakan->refundUsulan($pesanan),
 
             // Satu kalimat yang menjawab "sekarang saya harus apa", supaya
             // halaman sepanjang ini tidak perlu dibaca seluruhnya lebih dulu.
-            'langkah' => app(\App\Services\LangkahBerikut::class)->untuk($pesanan),
-
-
-            // Satu kalimat yang menjawab "sekarang saya harus apa", supaya
-            // halaman sepanjang ini tidak perlu dibaca seluruhnya lebih dulu.
-            'langkah' => app(\App\Services\LangkahBerikut::class)->untuk($pesanan),
+            'langkah' => app(LangkahBerikut::class)->untuk($pesanan),
         ]);
     }
 
@@ -151,26 +151,113 @@ class PesananController extends Controller
             : 'Penanda reseller dilepas.');
     }
 
-    public function majukanItem(Order $pesanan, OrderItem $item): RedirectResponse
+    public function majukanItem(Request $request, Order $pesanan, OrderItem $item): RedirectResponse
     {
         abort_unless($item->order_id === $pesanan->id, 404);
 
+        if ($sudah = $this->sudahBerpindah($request, $item)) {
+            return $sudah;
+        }
+
         $baru = $this->alur->majukanItem($item, auth('web')->id());
 
-        return back()->with('sukses', "{$item->nama_produk} sekarang: {$baru->label()}.");
+        return back()->with('sukses', "{$item->nama_produk} sekarang: {$baru->labelStaf()}.");
     }
 
-    public function batalkan(Request $request, Order $pesanan): RedirectResponse
+    /**
+     * Barang dikembalikan satu tahap untuk dikerjakan ulang (KEP-098), misalnya
+     * sablon luntur yang ketahuan di Finishing atau Selesai yang tertekan untuk
+     * barang yang salah.
+     */
+    public function mundurkanItem(Request $request, Order $pesanan, OrderItem $item): RedirectResponse
     {
+        abort_unless($item->order_id === $pesanan->id, 404);
+
+        if ($sudah = $this->sudahBerpindah($request, $item)) {
+            return $sudah;
+        }
+
         $data = $request->validate([
             'alasan' => ['required', 'string', 'max:200'],
         ], [
+            'alasan.required' => 'Tulis alasannya, misalnya "sablon luntur, cetak ulang". Ini jadi catatan orang produksi.',
+        ], ['alasan' => 'alasan']);
+
+        $dari = $item->status_item;
+        $baru = $this->alur->mundurkanItem($item, $data['alasan'], auth('web')->id());
+
+        ActivityLog::catat('pesanan.tahap-dimundurkan', $pesanan, [
+            'item' => $item->nama_produk,
+            'dari' => $dari->value,
+            'ke' => $baru->value,
+            'alasan' => $data['alasan'],
+        ]);
+
+        return back()->with('sukses', "{$item->nama_produk} dikembalikan ke {$baru->labelStaf()}.");
+    }
+
+    /**
+     * Pembatalan langsung dari toko, misalnya pelanggan menelepon.
+     *
+     * Pesanan yang sudah dibayar wajib disertai keputusan pengembaliannya
+     * (KEP-098), dicatat di tempat yang sama dengan pengajuan dari pelanggan
+     * (KEP-041) supaya pelanggan membacanya di halaman pesanan. Dulu uangnya
+     * tetap tercatat lunas di pesanan batal tanpa jejak dikembalikan atau
+     * tidak, dan pengajuan pelanggan yang belum diputuskan tertinggal selamanya.
+     */
+    public function batalkan(Request $request, Order $pesanan, KebijakanPembatalan $kebijakan): RedirectResponse
+    {
+        $pesanan->load(['items.options', 'items.rosters', 'payments', 'adjustments']);
+
+        if ($kebijakan->pengajuanTertunda($pesanan)) {
+            return back()->withErrors('Pelanggan sudah mengajukan pembatalan pesanan ini. Putuskan lewat kotak '
+                .'Pengajuan pembatalan di bagian atas, supaya pengembaliannya tercatat.');
+        }
+
+        $dibayar = $pesanan->sudah_dibayar;
+
+        $data = $request->validate([
+            'alasan' => ['required', 'string', 'max:200'],
+            'refund_jumlah' => [$dibayar > 0 ? 'required' : 'nullable', 'integer', 'min:0', 'max:'.$dibayar],
+            'refund_metode' => ['nullable', 'in:TRANSFER,TUNAI'],
+        ], [
             'alasan.required' => 'Tulis alasan pembatalan: pelanggan berhak tahu, dan ini masuk riwayat pesanan.',
-        ], ['alasan' => 'alasan pembatalan']);
+            'refund_jumlah.required' => 'Pelanggan sudah membayar '.rupiah($dibayar).'. Isi berapa yang dikembalikan, 0 kalau tidak ada.',
+            'refund_jumlah.max' => 'Pengembalian tidak boleh melebihi '.rupiah($dibayar).' yang sudah dibayar.',
+        ], ['alasan' => 'alasan pembatalan', 'refund_jumlah' => 'pengembalian']);
+
+        if ($dibayar > 0) {
+            $kebijakan->batalkanOlehToko(
+                $pesanan,
+                $data['alasan'],
+                (int) $data['refund_jumlah'],
+                $data['refund_metode'] ?? null,
+                auth('web')->id(),
+            );
+
+            return back()->with('sukses', (int) $data['refund_jumlah'] > 0
+                ? 'Pesanan dibatalkan. Kirim pengembalian '.rupiah((int) $data['refund_jumlah'])
+                    .' ke pelanggan; nominalnya sudah tampil di halaman pesanannya.'
+                : 'Pesanan dibatalkan tanpa pengembalian uang. Keputusannya tampil di halaman pesanan pelanggan.');
+        }
 
         $this->alur->batalkan($pesanan, $data['alasan'], auth('web')->id());
 
         return back()->with('sukses', 'Pesanan dibatalkan dan reservasi stoknya dilepas.');
+    }
+
+    /** Pembanding tahap di tombol, sama seperti di Antrian (KEP-098). */
+    private function sudahBerpindah(Request $request, OrderItem $item): ?RedirectResponse
+    {
+        $dari = OrderItemStatus::tryFrom($request->string('dari')->toString());
+
+        if ($dari === null || $dari === $item->status_item) {
+            return null;
+        }
+
+        return back()->with('peringatan', $item->nama_produk.' sudah berada di tahap '
+            .$item->status_item->labelStaf().'. Tidak ada yang diubah: mungkin tombolnya tertekan '
+            .'dua kali, atau orang lain lebih dulu menandainya.');
     }
 
     /**
@@ -179,7 +266,18 @@ class PesananController extends Controller
      */
     private function pesanWhatsApp(Order $order): array
     {
-        $template = match ($order->status) {
+        // Desain yang menunggu persetujuan dan bukti yang baru ditolak punya
+        // pesannya sendiri (KEP-098); dulu yang tersalin "pembayaran sudah
+        // kami terima" untuk keduanya.
+        $ditolak = $order->status === OrderStatus::MENUNGGU_PEMBAYARAN
+            && $this->email->alasanTolakTerakhir($order) !== null
+            && ! $order->payments->contains(fn ($p) => $p->status === PaymentStatus::MENUNGGU && filled($p->bukti_path));
+
+        $template = match (true) {
+            $ditolak => 'pembayaran-ditolak',
+            $order->items->contains('status_item', OrderItemStatus::MENUNGGU_PERSETUJUAN) => 'mockup-siap',
+            default => null,
+        } ?? match ($order->status) {
             OrderStatus::MENUNGGU_PEMBAYARAN => 'order-dibuat',
             OrderStatus::MENUNGGU_PELUNASAN => 'menunggu-pelunasan',
             OrderStatus::SIAP_DIAMBIL => 'pesanan-siap',

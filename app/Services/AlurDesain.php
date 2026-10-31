@@ -7,6 +7,7 @@ use App\Enums\OrderItemStatus;
 use App\Enums\ProductionStage;
 use App\Enums\ProductionStatus;
 use App\Models\DesignAsset;
+use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusLog;
 use App\Models\Setting;
@@ -22,7 +23,10 @@ use Illuminate\Support\Facades\DB;
  */
 class AlurDesain
 {
-    public function __construct(private OrderStatusResolver $resolver) {}
+    public function __construct(
+        private OrderStatusResolver $resolver,
+        private PengirimEmail $email,
+    ) {}
 
     /** Desainer mengunggah mockup baru; pelanggan diminta menyetujuinya. */
     public function unggahMockup(
@@ -32,7 +36,7 @@ class AlurDesain
         ?string $catatan,
         int $olehUserId,
     ): DesignAsset {
-        return DB::transaction(function () use ($item, $path, $externalUrl, $catatan, $olehUserId) {
+        $aset = DB::transaction(function () use ($item, $path, $externalUrl, $catatan, $olehUserId) {
             $versi = (int) $item->designAssets()
                 ->where('tipe', DesignAssetType::MOCKUP->value)
                 ->max('versi') + 1;
@@ -61,6 +65,15 @@ class AlurDesain
 
             return $aset;
         });
+
+        /*
+         * Pelanggan dikabari (KEP-098). Dulu tidak ada email sama sekali di
+         * titik ini, padahal hanya pelanggan yang bisa menyetujui: desain
+         * menunggu berhari-hari sampai ada yang ingat mengirim WhatsApp.
+         */
+        $this->email->kirim(Order::findOrFail($item->order_id), 'mockup-siap');
+
+        return $aset;
     }
 
     /**

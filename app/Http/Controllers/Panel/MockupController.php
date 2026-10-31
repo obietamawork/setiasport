@@ -24,10 +24,19 @@ class MockupController extends Controller
     public function store(Request $request, OrderItem $item): RedirectResponse
     {
         abort_unless(auth('web')->user()->punyaIzin('produksi.desain'), 403);
+        /*
+         * Versi baru juga boleh dikirim selama pelanggan belum menyetujui
+         * (KEP-098): desainer menemukan salah ketik nama, atau toko setuju
+         * memberi satu revisi lagi setelah jatah revisi pelanggan habis. Dulu
+         * keduanya buntu, karena hanya pelanggan yang bisa mengembalikan
+         * desain ke meja desainer.
+         */
         abort_unless(
-            in_array($item->status_item, [OrderItemStatus::ANTRIAN_DESAIN, OrderItemStatus::PROSES_DESAIN], true),
+            in_array($item->status_item, [
+                OrderItemStatus::ANTRIAN_DESAIN, OrderItemStatus::PROSES_DESAIN, OrderItemStatus::MENUNGGU_PERSETUJUAN,
+            ], true),
             422,
-            'Item ini sedang tidak berada di antrian desain.'
+            'Desain barang ini sudah disetujui pelanggan, jadi mockupnya tidak bisa diganti lagi.'
         );
 
         $maks = (int) setting('upload_maks_mb', 10) * 1024;

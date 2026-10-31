@@ -143,6 +143,46 @@ class KebijakanPembatalan
         });
     }
 
+    /**
+     * Toko yang membatalkan, misalnya pelanggan menelepon (KEP-098).
+     *
+     * Dicatat sebagai pembatalan yang langsung disetujui, dengan pengembalian
+     * yang diketik admin, supaya pesanan berbayar yang batal selalu punya
+     * jejak uangnya dan pelanggan membaca keputusan yang sama di halaman
+     * pesanannya.
+     */
+    public function batalkanOlehToko(
+        Order $order,
+        string $alasan,
+        int $refund,
+        ?string $metode,
+        ?int $olehUserId,
+    ): Pembatalan {
+        $order->loadMissing(['items.options', 'items.rosters', 'payments', 'adjustments']);
+        $dibayar = $order->sudah_dibayar;
+        $refund = max(0, min($refund, $dibayar));
+
+        return DB::transaction(function () use ($order, $alasan, $refund, $metode, $olehUserId, $dibayar) {
+            /** @var Pembatalan $pembatalan */
+            $pembatalan = $order->pembatalans()->create([
+                'status' => StatusPembatalan::DISETUJUI,
+                'tahap' => $this->tahap($order),
+                'alasan' => $alasan,
+                'sudah_dibayar' => $dibayar,
+                'refund_usulan' => $this->refundUsulan($order),
+                'refund_jumlah' => $refund,
+                'refund_metode' => $refund > 0 ? ($metode ?? 'TRANSFER') : null,
+                'catatan_admin' => 'Dibatalkan oleh toko: '.$alasan,
+                'diputuskan_oleh' => $olehUserId,
+                'diputuskan_pada' => now(),
+            ]);
+
+            $this->alur->batalkan($order, $alasan, $olehUserId);
+
+            return $pembatalan;
+        });
+    }
+
     public function tolak(Pembatalan $pembatalan, string $catatan, ?int $olehUserId): void
     {
         abort_unless($pembatalan->menunggu(), 422, 'Pengajuan ini sudah diputuskan.');

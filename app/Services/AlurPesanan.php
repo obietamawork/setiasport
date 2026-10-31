@@ -10,6 +10,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
 use App\Enums\ProductionStage;
 use App\Enums\ProductionStatus;
+use App\Enums\StatusPembatalan;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusLog;
@@ -58,6 +59,21 @@ class AlurPesanan
             $order = Order::whereKey($payment->order_id)->lockForUpdate()->firstOrFail()
                 ->load(['items.options', 'payments', 'adjustments']);
 
+            /*
+             * Dibaca ulang SETELAH pesanan terkunci (KEP-098). Halaman panel
+             * yang terbuka sejak pagi masih menampilkan tombol Verifikasi untuk
+             * tagihan yang sudah dibatalkan penjadwal, dan menekannya dulu
+             * mencatat uang lunas di pesanan yang stoknya sudah dilepas.
+             */
+            $payment->refresh();
+
+            abort_unless($payment->status === PaymentStatus::MENUNGGU, 422,
+                'Tagihan ini sudah tidak menunggu pembayaran. Muat ulang halaman pesanannya.');
+
+            abort_if($order->status->final(), 422,
+                'Pesanan ini sudah '.mb_strtolower($order->status->label()).', jadi pembayarannya tidak bisa '
+                .'dicatat lagi. Kalau uangnya memang masuk, kembalikan ke pelanggan atau buatkan pesanan baru.');
+
             // Kalau $tambahan menetapkan jumlah baru (pembayaran manual
             // kasir), itulah yang diperiksa -- bukan jumlah lama di memori.
             $jumlah = $tambahan['jumlah'] ?? $payment->jumlah;
@@ -95,11 +111,11 @@ class AlurPesanan
             // Batas waktu bayar tidak lagi berlaku begitu uangnya masuk.
             $order->update(['kadaluarsa_pada' => null]);
 
-            $order = $order->fresh(['items.options', 'payments', 'adjustments']);
-
-            $this->kadaluarsakanTagihanBerlebih($order, $payment->id);
-
             $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']));
+
+            // Sesudah status disinkronkan: tagihan awal yang lain baru bisa
+            // dikenali basi setelah pesanan keluar dari Menunggu Pembayaran.
+            $this->rapikanTagihan($order->fresh(['items.options', 'payments', 'adjustments']));
         });
 
         // Pelunasan yang membuat pesanan siap sudah diwakili email "pesanan
@@ -155,6 +171,10 @@ class AlurPesanan
                     'jumlah' => $payment->jumlah,
                     'kadaluarsa_pada' => $batas,
                 ]);
+
+                // Nominal lama bisa sudah basi kalau tagihannya berubah selama
+                // bukti itu menunggu diperiksa.
+                $this->rapikanTagihan($order->fresh(['items.options', 'payments', 'adjustments']));
             }
         });
 
@@ -162,25 +182,75 @@ class AlurPesanan
     }
 
     /**
-     * Tagihan yang masih Menunggu padahal pesanan sudah tidak punya sisa
-     * tagihan lagi (KEP-067 lanjutan) — tercapai lewat pembayaran dari jalur
-     * lain, ATAU lewat penyesuaian harga yang menurunkan total. Dibiarkan
-     * menggantung, baris itu tetap bisa diklik "verifikasi" dan terlihat
-     * seolah masih butuh tindakan. `terimaPembayaran()` sendiri sudah
-     * menolak nominal yang melebihi sisa tagihan (dengan baris pesanan
-     * terkunci, jadi aman dari dua verifikasi hampir bersamaan); fungsi ini
-     * murni kerapian tampilan, bukan penjaga keuangannya.
+     * Tagihan yang masih Menunggu diselaraskan dengan pesanan saat ini
+     * (KEP-067 lanjutan, KEP-098). Halaman pesanan pelanggan menampilkan
+     * nominal tagihan apa adanya, jadi angka yang basi langsung berubah jadi
+     * transfer yang salah:
+     *
+     * - Begitu sisa tagihan nol, semua tagihan ditutup.
+     * - Tagihan awal yang tujuannya sudah tercapai lewat jalur lain, misalnya
+     *   DP yang dibayar tunai di kasir, ditutup. Dulu halaman pesanan tetap
+     *   meminta DP yang sudah dibayar, lengkap dengan rekening dan QRIS.
+     * - Nominalnya mengikuti tagihan terkini: potongan reseller, ongkir yang
+     *   menyusul, atau jumlah yang diubah. Dulu potongan sebelum pelanggan
+     *   membayar membuat tagihan lebih besar dari sisa tagihan, dan
+     *   verifikasinya ditolak selamanya.
+     *
+     * Tagihan yang buktinya sudah diunggah tidak diubah nominalnya: pelanggan
+     * sudah mentransfer angka yang tertulis, dan admin mencatat nominal yang
+     * benar-benar masuk saat memverifikasi.
      */
-    public function kadaluarsakanTagihanBerlebih(Order $order, ?int $kecuali = null): void
+    public function rapikanTagihan(Order $order): void
     {
-        if ($order->sisa_tagihan > 0) {
-            return;
-        }
+        $order->loadMissing(['items.options', 'items.rosters', 'payments', 'adjustments']);
 
-        $order->payments()
-            ->when($kecuali, fn ($q) => $q->where('id', '!=', $kecuali))
-            ->where('status', PaymentStatus::MENUNGGU->value)
-            ->update(['status' => PaymentStatus::KADALUARSA->value]);
+        /** @var Payment $tagihan */
+        foreach ($order->payments->where('status', PaymentStatus::MENUNGGU) as $tagihan) {
+            $adaBukti = filled($tagihan->bukti_path);
+
+            $basi = $order->sisa_tagihan < 1
+                || (! $adaBukti
+                    && $tagihan->jenis !== PaymentType::PELUNASAN
+                    && $order->status !== OrderStatus::MENUNGGU_PEMBAYARAN);
+
+            if ($basi) {
+                $tagihan->update(['status' => PaymentStatus::KADALUARSA]);
+
+                continue;
+            }
+
+            if ($adaBukti) {
+                continue;
+            }
+
+            $seharusnya = $tagihan->jenis === PaymentType::DP
+                ? min($order->dpMinimum(), $order->sisa_tagihan)
+                : $order->sisa_tagihan;
+
+            if ($seharusnya !== (int) $tagihan->jumlah) {
+                $tagihan->update(['jumlah' => $seharusnya]);
+            }
+        }
+    }
+
+    /**
+     * Total pesanan berubah setelah dibuat: penyesuaian biaya, jumlah barang,
+     * atau ongkir (KEP-098).
+     *
+     * Gerbang pelunasan ikut diperiksa, karena potongan yang membuat sisa
+     * tagihan nol juga melunasi pesanan. Dulu barang yang menunggu pelunasan
+     * tertahan selamanya: gerbangnya hanya terbuka lewat pembayaran, dan
+     * pembayaran nol rupiah tidak bisa dicatat.
+     */
+    public function totalBerubah(Order $order, ?int $olehUserId = null): void
+    {
+        DB::transaction(function () use ($order, $olehUserId) {
+            $order = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+            $this->lepaskanPelunasan($order->fresh(['items.options', 'payments', 'adjustments']), $olehUserId);
+            $this->sinkronkan($order->fresh(['items.options', 'payments', 'adjustments']));
+            $this->rapikanTagihan($order->fresh(['items.options', 'payments', 'adjustments']));
+        });
     }
 
     /**
@@ -201,9 +271,22 @@ class AlurPesanan
         }
     }
 
-    /** Operator menyelesaikan satu tahap; status pelanggan naik sebagai akibatnya. */
-    public function majukanItem(OrderItem $item, ?int $olehUserId = null, ?int $pekerjaId = null): OrderItemStatus
-    {
+    /**
+     * Operator menyelesaikan satu tahap; status pelanggan naik sebagai akibatnya.
+     *
+     * $dari adalah tahap yang dilihat orang itu di layarnya saat menekan
+     * tombol (KEP-098). Tanpa pembanding ini, ketukan kedua pada tombol
+     * Selesai, atau dua orang yang menandai barang yang sama, menaikkan barang
+     * satu tahap lagi: dari Printing langsung ke Potong, melompati Press.
+     */
+    public function majukanItem(
+        OrderItem $item,
+        ?int $olehUserId = null,
+        ?int $pekerjaId = null,
+        ?OrderItemStatus $dari = null,
+    ): OrderItemStatus {
+        abort_if($dari !== null && $item->status_item !== $dari, 409, $this->sudahBerpindah($item));
+
         $berikutnya = $item->status_item->berikutnya($item->fulfillment_type);
 
         abort_if($berikutnya === null, 422, 'Item ini sudah berada di tahap terakhir.');
@@ -272,6 +355,11 @@ class AlurPesanan
         }
 
         DB::transaction(function () use ($item, $berikutnya, $olehUserId, $pekerjaId) {
+            // Dua ketukan yang tiba bersamaan sama-sama lolos pembanding di
+            // atas; baris yang terkunci membuat yang kedua melihat hasil yang
+            // pertama.
+            $this->pastikanMasihDi($item);
+
             // Tahap yang DITINGGALKAN-lah yang selesai; tahap yang dimasuki baru dimulai.
             $this->selesaikanJob($item, $item->status_item->tahapProduksi(), $olehUserId, $pekerjaId);
             $this->setStatusItem($item, $berikutnya, null, $olehUserId);
@@ -281,6 +369,84 @@ class AlurPesanan
         });
 
         return $berikutnya;
+    }
+
+    /**
+     * Barang dikembalikan satu tahap (KEP-098): sablon luntur ketahuan di
+     * Finishing, kain salah potong, atau tombol Selesai yang tertekan untuk
+     * barang yang salah. Dulu tidak ada jalan mundur sama sekali, jadi barang
+     * yang dikerjakan ulang tercatat sudah lewat tahap yang sedang diulang.
+     *
+     * Tidak pernah melintasi gerbang: desain yang sudah disetujui pelanggan
+     * tidak dibuka lagi dari sini, dan gerbang pelunasan dilewati karena
+     * yang diulang adalah pekerjaannya, bukan pembayarannya. Alasannya
+     * disimpan untuk staf; pelanggan hanya melihat tahapnya kembali.
+     */
+    public function mundurkanItem(
+        OrderItem $item,
+        string $alasan,
+        ?int $olehUserId = null,
+        ?OrderItemStatus $dari = null,
+    ): OrderItemStatus {
+        abort_if($dari !== null && $item->status_item !== $dari, 409, $this->sudahBerpindah($item));
+        abort_if($item->order->status->final() || $item->order->status === OrderStatus::DIKIRIM, 422,
+            'Pesanan ini sudah keluar dari toko atau dibatalkan.');
+
+        $sebelumnya = $item->status_item->sebelumnya($item->fulfillment_type);
+
+        abort_if($sebelumnya === null, 422, 'Barang di tahap '.$item->status_item->labelStaf()
+            .' tidak bisa dikembalikan dari sini.');
+
+        DB::transaction(function () use ($item, $sebelumnya, $alasan, $olehUserId) {
+            $this->pastikanMasihDi($item);
+
+            // Tahap yang ditinggalkan belum dikerjakan; tahap tujuan dibuka lagi.
+            if ($kini = $item->status_item->tahapProduksi()) {
+                $item->productionJobs()->where('tahap', $kini->value)->update([
+                    'status' => ProductionStatus::ANTRI->value,
+                    'ditugaskan_ke' => null,
+                    'dimulai_pada' => null,
+                ]);
+            }
+
+            if ($tujuan = $sebelumnya->tahapProduksi()) {
+                $item->productionJobs()->where('tahap', $tujuan->value)->update([
+                    'status' => ProductionStatus::DIKERJAKAN->value,
+                    'diselesaikan_oleh' => null,
+                    'pekerja_id' => null,
+                    'selesai_pada' => null,
+                ]);
+            }
+
+            $this->setStatusItem($item, $sebelumnya, 'Dikembalikan: '.$alasan, $olehUserId);
+
+            // Barang yang ditarik dari rak siap tidak boleh membawa tanggal
+            // siapnya yang lama: pengingat ambil dan batas hangus dihitung
+            // dari situ, dan email "pesanan siap" harus terkirim lagi.
+            $order = Order::with(['items.options', 'payments', 'adjustments'])->findOrFail($item->order_id);
+
+            if ($order->status === OrderStatus::SIAP_DIAMBIL) {
+                $order->siap_pada = null;
+            }
+
+            $this->sinkronkan($order);
+        });
+
+        return $sebelumnya;
+    }
+
+    /** Pembanding $dari di majukanItem() dan mundurkanItem(). */
+    private function sudahBerpindah(OrderItem $item): string
+    {
+        return $item->nama_produk.' sudah berada di tahap '.$item->status_item->labelStaf()
+            .'. Mungkin tombolnya tertekan dua kali, atau orang lain lebih dulu menandainya.';
+    }
+
+    private function pastikanMasihDi(OrderItem $item): void
+    {
+        $diDb = OrderItem::whereKey($item->id)->lockForUpdate()->firstOrFail();
+
+        abort_if($diDb->status_item !== $item->status_item, 409, $this->sudahBerpindah($diDb));
     }
 
     /**
@@ -311,6 +477,9 @@ class AlurPesanan
         );
 
         DB::transaction(function () use ($order, $diambilOleh, $olehUserId) {
+            $this->kunci($order, fn (Order $o) => $o->status === OrderStatus::SIAP_DIAMBIL,
+                'Pesanan ini sudah diserahkan. Muat ulang halamannya.');
+
             foreach ($order->items as $item) {
                 if ($item->status_item === OrderItemStatus::SIAP) {
                     $this->setStatusItem($item, OrderItemStatus::SELESAI, 'Diserahkan ke pelanggan.', $olehUserId);
@@ -349,6 +518,9 @@ class AlurPesanan
         );
 
         DB::transaction(function () use ($order, $jasaKirim, $noResi, $olehUserId) {
+            $this->kunci($order, fn (Order $o) => $o->status === OrderStatus::SIAP_DIAMBIL,
+                'Resi pesanan ini sudah dicatat. Muat ulang halamannya.');
+
             foreach ($order->items as $item) {
                 if ($item->status_item === OrderItemStatus::SIAP) {
                     $this->setStatusItem($item, OrderItemStatus::SELESAI, 'Diserahkan ke jasa kirim.', $olehUserId);
@@ -395,6 +567,9 @@ class AlurPesanan
         abort_if($order->status->final(), 422, 'Pesanan ini sudah selesai atau dibatalkan.');
 
         DB::transaction(function () use ($order, $alasan, $olehUserId) {
+            $this->kunci($order, fn (Order $o) => ! $o->status->final(),
+                'Pesanan ini sudah selesai atau dibatalkan.');
+
             $order->load('items');
 
             foreach ($order->items as $item) {
@@ -414,6 +589,77 @@ class AlurPesanan
     }
 
     /**
+     * Pesanan yang tidak dibayar sampai batas waktunya (dipanggil penjadwal).
+     *
+     * Pesanan yang buktinya sudah diunggah TIDAK dibatalkan (KEP-098): uangnya
+     * sudah dikirim tepat waktu, yang belum hanya pemeriksaan dari toko. Dulu
+     * pelanggan yang membayar Sabtu malam kehilangan pesanannya Minggu malam
+     * karena toko tutup, dan stoknya ikut dilepas ke pembeli lain. Kalau
+     * buktinya kemudian ditolak, batas bayarnya dimulai ulang
+     * (tolakPembayaran()).
+     *
+     * Semua syaratnya dibaca ulang di bawah kunci: verifikasi yang ditekan
+     * admin tepat saat penjadwal berjalan tidak boleh berakhir dengan pesanan
+     * lunas yang dibatalkan.
+     *
+     * @return bool apakah pesanan ini benar-benar dikadaluarsakan
+     */
+    public function kadaluarsakan(Order $order): bool
+    {
+        return DB::transaction(function () use ($order) {
+            $terkini = Order::whereKey($order->id)->lockForUpdate()->with('payments')->firstOrFail();
+
+            $masihBerlaku = $terkini->status !== OrderStatus::MENUNGGU_PEMBAYARAN
+                || $terkini->kadaluarsa_pada === null
+                || $terkini->kadaluarsa_pada->isFuture()
+                || $terkini->payments->contains(fn (Payment $p) => $p->status === PaymentStatus::MENUNGGU
+                    && filled($p->bukti_path));
+
+            if ($masihBerlaku) {
+                return false;
+            }
+
+            $this->batalkan($terkini, 'Kadaluarsa: tidak dibayar sampai batas waktu.');
+            $this->tutupPengajuanPembatalan($terkini, 'Pesanan dibatalkan otomatis karena tidak dibayar.');
+            $terkini->update(['status' => OrderStatus::KADALUARSA]);
+
+            return true;
+        });
+    }
+
+    /**
+     * Pengajuan pembatalan yang tidak sempat diputuskan karena pesanannya
+     * berakhir lewat jalan lain. Dulu ia tertinggal berstatus Diajukan dan
+     * tampil di dashboard selamanya, padahal tombol Setujui-nya pasti gagal.
+     */
+    private function tutupPengajuanPembatalan(Order $order, string $catatan): void
+    {
+        $order->pembatalans()
+            ->where('status', StatusPembatalan::DIAJUKAN->value)
+            ->update([
+                'status' => StatusPembatalan::DISETUJUI->value,
+                'refund_jumlah' => 0,
+                'catatan_admin' => $catatan,
+                'diputuskan_pada' => now(),
+            ]);
+    }
+
+    /**
+     * Baris pesanan dikunci lalu keadaannya dibaca ulang (KEP-098). Dua kasir
+     * yang menekan Serahkan untuk pesanan yang sama hampir bersamaan dulu
+     * sama-sama lolos pemeriksaan yang dibaca sebelum transaksi, dan stoknya
+     * keluar dua kali.
+     *
+     * @param  callable(Order): bool  $syarat
+     */
+    private function kunci(Order $order, callable $syarat, string $pesan): void
+    {
+        $terkini = Order::whereKey($order->id)->lockForUpdate()->firstOrFail();
+
+        abort_unless($syarat($terkini), 409, $pesan);
+    }
+
+    /**
      * Barang yang tidak pernah diambil (KEP-043).
      *
      * Sengaja BUKAN pekerjaan penjadwal: menghanguskan uang pelanggan secara
@@ -423,8 +669,8 @@ class AlurPesanan
      */
     public function hanguskan(Order $order, ?int $olehUserId = null): void
     {
-        abort_unless($order->status === OrderStatus::SIAP_DIAMBIL, 422,
-            'Hanya pesanan yang sudah siap diambil yang bisa dihanguskan.');
+        abort_unless($order->status === OrderStatus::SIAP_DIAMBIL && ! $order->dikirim(), 422,
+            'Hanya pesanan yang sudah siap diambil di toko yang bisa dihanguskan.');
 
         $hari = (int) Setting::ambil('hangus_hari', 30);
 
@@ -433,6 +679,8 @@ class AlurPesanan
             "Barang tidak diambil lebih dari {$hari} hari, dinyatakan hangus.",
             $olehUserId,
         );
+
+        $this->tutupPengajuanPembatalan($order, 'Barang tidak diambil dan dinyatakan hangus.');
 
         $order->update(['status' => OrderStatus::KADALUARSA]);
     }

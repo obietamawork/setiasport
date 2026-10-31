@@ -67,7 +67,9 @@ class Pekerja extends Model
     {
         $kunci = 'pin-lembar:'.$lembar;
 
-        if (RateLimiter::tooManyAttempts($kunci, self::BATAS_SALAH_PIN)) {
+        // Dipesan sebelum PIN diperiksa (KEP-098): tebakan yang dikirim
+        // bersamaan tidak boleh lolos sebelum hitungannya sempat naik.
+        if (RateLimiter::hit($kunci, 900) > self::BATAS_SALAH_PIN) {
             throw ValidationException::withMessages([
                 'pin' => 'Terlalu banyak PIN salah di lembar ini. Coba lagi dalam '
                     .ceil(RateLimiter::availableIn($kunci) / 60).' menit, atau minta admin menandainya dari panel.',
@@ -77,8 +79,6 @@ class Pekerja extends Model
         $pekerja = static::cariLewatPin($pin);
 
         if (! $pekerja) {
-            RateLimiter::hit($kunci, 900);
-
             throw ValidationException::withMessages([
                 'pin' => 'PIN tidak dikenali. Pastikan Anda memakai PIN Anda sendiri.',
             ]);

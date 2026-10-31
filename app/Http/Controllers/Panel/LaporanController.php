@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Panel;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\StatusPembatalan;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\Pembatalan;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -51,6 +53,14 @@ class LaporanController extends Controller
             'pilihan' => $request->string('periode', '30hari')->toString(),
 
             'uangMasuk' => (int) $pembayaran->sum('jumlah'),
+
+            // Uang yang keluar lagi lewat pembatalan (KEP-098). Tanpa ini,
+            // angka di atas lebih besar dari isi rekening setiap kali ada
+            // pesanan berbayar yang dibatalkan.
+            'dikembalikan' => (int) Pembatalan::query()
+                ->where('status', StatusPembatalan::DISETUJUI->value)
+                ->whereBetween('diputuskan_pada', [$dari, $sampai])
+                ->sum('refund_jumlah'),
             'perMetode' => $pembayaran->groupBy(fn (Payment $p) => $p->metode->label())
                 ->map(fn ($g) => ['jumlah' => (int) $g->sum('jumlah'), 'transaksi' => $g->count()])
                 ->sortByDesc('jumlah'),

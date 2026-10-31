@@ -34,7 +34,10 @@ class AuthController extends Controller
          */
         $kunci = 'masuk-staf:'.Str::lower($kredensial['email']).'|'.$request->ip();
 
-        if (RateLimiter::tooManyAttempts($kunci, 5)) {
+        // Jatah dipesan SEBELUM sandi diperiksa (KEP-098), sama seperti login
+        // pelanggan (KEP-096): kalau dicatat sesudahnya, puluhan tebakan yang
+        // dikirim bersamaan lolos semua sebelum hitungannya sempat naik.
+        if (RateLimiter::hit($kunci, 300) > 5) {
             throw ValidationException::withMessages([
                 'email' => 'Terlalu banyak percobaan masuk. Coba lagi dalam '
                     .ceil(RateLimiter::availableIn($kunci) / 60).' menit.',
@@ -42,8 +45,6 @@ class AuthController extends Controller
         }
 
         if (! Auth::attempt($kredensial, $request->boolean('ingat'))) {
-            RateLimiter::hit($kunci, 300);
-
             throw ValidationException::withMessages([
                 'email' => 'Email atau kata sandi tidak cocok.',
             ]);

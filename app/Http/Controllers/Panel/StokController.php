@@ -84,6 +84,23 @@ class StokController extends Controller
             'perubahan' => $perubahan,
         ]);
 
-        return back()->with('sukses', count($perubahan).' varian diperbarui dan dicatat.');
+        /*
+         * Stok fisik yang turun di bawah jumlah yang sudah dipesan (KEP-098),
+         * misalnya barang rusak saat opname. Pesanan yang memegangnya tetap
+         * berjalan, jadi orang toko harus tahu sekarang, bukan saat pelanggan
+         * datang mengambil barang yang ternyata tidak ada.
+         */
+        $kurang = ProductVariant::with('product')
+            ->whereIn('sku', array_column($perubahan, 'sku'))
+            ->whereColumn('stok', '<', 'stok_dipesan')
+            ->get();
+
+        $redirect = back()->with('sukses', count($perubahan).' varian diperbarui dan dicatat.');
+
+        return $kurang->isEmpty() ? $redirect : $redirect->with('peringatan',
+            'Stok di bawah jumlah yang sudah dipesan pelanggan: '
+            .$kurang->map(fn (ProductVariant $v) => $v->product->nama.' '.$v->label
+                .' (ada '.$v->stok.', dipesan '.$v->stok_dipesan.')')->implode(', ')
+            .'. Cari pesanannya di daftar pesanan dan kabari pelanggannya.');
     }
 }

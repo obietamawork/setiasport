@@ -3487,6 +3487,101 @@ ada pekerja konveksi terdaftar (halaman Kesiapan tayang).
 
 ---
 
+## KEP-098 — Audit alur internal: tagihan yang mengikuti pesanan, tahap yang bisa diulang, pesan galat yang terbaca
+**Status:** TERKUNCI · 2026-10-31
+
+Diminta klien: audit alur internal setelah login, dari mulai bekerja sampai pesanan
+selesai, termasuk skenario pembayaran, kendala produksi, masalah dengan pelanggan,
+dan masalah sistem. Setiap dugaan dibuktikan dulu dengan tes yang gagal sebelum
+diperbaiki. Yang ditemukan:
+
+**Pembayaran**
+
+- **Pesanan yang buktinya sudah dikirim tetap dibatalkan penjadwal.** Pelanggan yang
+  membayar Sabtu malam kehilangan pesanannya Minggu malam karena toko tutup, dan
+  stoknya dilepas ke pembeli lain. Kini `AlurPesanan::kadaluarsakan()` melewati
+  pesanan yang tagihannya sudah berbukti, dan membaca ulang semua syaratnya di bawah
+  kunci baris. Halaman pesanan menenangkan pelanggan alih-alih menampilkan batas yang
+  sudah lewat.
+- **Tagihan tidak mengikuti pesanan.** DP yang dibayar tunai di kasir meninggalkan
+  tagihan DP online, sehingga halaman pesanan tetap meminta DP lengkap dengan
+  rekening dan QRIS. Potongan reseller sebelum pelanggan membayar membuat tagihan
+  lebih besar dari sisa tagihan, dan verifikasinya ditolak selamanya. Kini
+  `rapikanTagihan()` menutup tagihan awal yang tujuannya sudah tercapai dan
+  menyesuaikan nominal tagihan yang belum berbukti setiap kali total berubah.
+  Tagihan berbukti tidak diubah: admin mencatat nominal yang benar-benar terlihat di
+  mutasi saat verifikasi, paling banyak sebesar sisa tagihan.
+- **Potongan yang melunasi tidak membuka gerbang pelunasan.** Gerbangnya hanya
+  terbuka lewat pembayaran, jadi barang tertahan di Menunggu Pelunasan selamanya.
+  Kini `totalBerubah()` dipanggil setelah penyesuaian biaya, perubahan jumlah, dan
+  ongkir.
+- **Pesanan dikirim yang masih bersisa tidak bisa dilunasi.** Ongkir yang diketik
+  setelah paket ditimbang membuat pesanan siap dengan sisa tagihan, tetapi unggah
+  bukti hanya dibuka saat Menunggu Pelunasan. Kini juga saat Siap.
+- **Verifikasi di pesanan yang sudah batal.** Tab panel yang terbuka sejak pagi bisa
+  mencatat uang lunas di pesanan yang stoknya sudah dilepas. Kini ditolak, dan alasan
+  penolakan bukti tampil di daftar pembayaran panel.
+
+**Produksi dan desain**
+
+- **Ketukan kedua melompati tahap.** Bagi yang memegang beberapa divisi, menekan
+  Selesai dua kali memindahkan barang dari Printing langsung ke Potong. Kini setiap
+  tombol (antrian, halaman pesanan, lembar kerja QR) membawa tahap yang dilihat
+  orangnya, dan barisnya dikunci saat dipindah.
+- **Tidak ada jalan mundur.** Sablon luntur atau salah tandai tidak bisa dikembalikan.
+  Kini ada "Kembalikan ke tahap sebelumnya" dengan alasan wajib, tanpa melintasi
+  gerbang pembayaran atau persetujuan desain. Barang siap yang ditarik lagi
+  kehilangan tanggal siapnya.
+- **Pelanggan tidak dikabari saat mockup siap.** Tidak ada email sama sekali di titik
+  yang paling sering nyangkut. Kini ada email `mockup-siap` dan teks WhatsApp-nya.
+  Mockup versi baru juga bisa dikirim selama pelanggan belum menyetujui, untuk salah
+  ketik yang ketahuan desainer atau revisi tambahan yang disepakati.
+
+**Pembatalan dan pengiriman**
+
+- **Pembatalan dari toko tanpa jejak uang.** Pesanan berbayar yang dibatalkan admin
+  tetap tercatat lunas tanpa keputusan pengembalian. Kini pengembalian wajib diisi
+  dan dicatat di tabel pembatalan (KEP-041), sehingga pelanggan membacanya di halaman
+  pesanan dan laporan mengurangkannya dari uang diterima. Pengajuan pelanggan yang
+  belum diputuskan menahan pembatalan langsung, serah terima, dan pengiriman, dan
+  tertutup sendiri bila pesanannya kedaluwarsa atau hangus.
+- **Pesanan dikirim diperlakukan seperti ambil di toko.** Ia menerima email "segera
+  ambil di toko", masuk daftar belum diambil, dan bisa dihanguskan, padahal yang
+  belum memberangkatkannya toko sendiri. Kini dikecualikan, dan dashboard punya
+  daftar "Siap dikirim".
+
+**Sistem dan pelanggan**
+
+- **Pesan penjaga alur tidak pernah terbaca di produksi.** Puluhan `abort(422)`
+  berisi kalimat penjelasan tampil sebagai halaman Inggris "Unprocessable Content"
+  tanpa jalan kembali. Kini tombol dikembalikan ke halamannya dengan kalimat itu di
+  atasnya, dan tautan memakai halaman galat `4xx` yang menampilkannya.
+- **Email gagal tidak bisa ditindaklanjuti.** Alamat yang salah ketik tidak bisa
+  dibetulkan, email tidak bisa dikirim ulang, dan peringatannya menyala selamanya.
+  Kini kontak pelanggan bisa dibetulkan (email akun aktif tidak), email bisa dikirim
+  ulang atau ditandai sudah dikabari, dan peringatan tugas latar hanya menghitung
+  seminggu terakhir.
+- **Dashboard** kini juga menampilkan desain yang lebih dari dua hari menunggu
+  persetujuan dan paket yang menurut kurir sudah sampai atau sudah dua minggu di
+  jalan. Stok yang dikoreksi di bawah jumlah yang sudah dipesan langsung
+  diperingatkan.
+- Form kasir mengisi jenis dan nominal sesuai tahap pesanan (uang muka untuk
+  pesanan DP yang belum dibayar), dan form resi memilih lebih dulu kurir yang
+  dipilih pelanggan saat checkout.
+- Login staf dan PIN pekerja kini memesan jatah sebelum memeriksa (sama seperti
+  KEP-096). Varian di pesanan manual dicari di produk yang dipilih.
+
+Diperiksa dan sudah benar: gerbang pembayaran, persetujuan, dan pelunasan tidak
+punya jalan pintas dari panel; serah terima menolak sisa tagihan; pengiriman hanya
+setelah lunas; peran dan izin diperiksa per tombol; akun nonaktif langsung
+terputus.
+
+Belum diubah: nomor pesanan dihitung dari nomor terbesar bulan itu, sehingga dua
+checkout dalam milidetik yang sama bisa berebut nomor (satu gagal dan harus
+diulang). Sangat jarang untuk lalu lintas toko ini.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3588,3 +3683,4 @@ ada pekerja konveksi terdaftar (halaman Kesiapan tayang).
 | KEP-095 | File desain pelanggan hanya lewat WhatsApp, dijelaskan sejak langkah desain | TERKUNCI |
 | KEP-096 | Audit pemesanan dan keamanan: opsi ganda, pembatas laju, konfirmasi akun | TERKUNCI |
 | KEP-097 | Audit pelanggan sampai pembayaran: pembatas bersama, bukti ditolak, kurir wajib | TERKUNCI |
+| KEP-098 | Audit alur internal: tagihan mengikuti pesanan, tahap bisa diulang, pesan galat terbaca | TERKUNCI |

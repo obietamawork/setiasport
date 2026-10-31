@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Publik;
 
-use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
 use App\Http\Controllers\Controller;
@@ -121,7 +120,7 @@ class LacakController extends Controller
                 'batas' => $order->kadaluarsa_pada,
                 'pembayaran' => $menunggu,
             ],
-            $order->status === OrderStatus::MENUNGGU_PELUNASAN && $order->sisa_tagihan > 0 => [
+            $order->bolehBayarPelunasan() => [
                 'jenis' => 'pelunasan',
                 'jumlah' => $order->sisa_tagihan,
                 'batas' => null,

@@ -34,9 +34,15 @@ class KesehatanSistem
         return $denyut !== null && $denyut->gt(now()->subMinutes(self::BATAS_DENYUT_MENIT));
     }
 
+    /**
+     * Hanya seminggu terakhir (KEP-098). Baris failed_jobs tidak pernah
+     * terhapus dari panel, jadi tanpa batas ini satu email yang gagal saat
+     * penyedia email sempat mati membuat peringatannya menyala selamanya.
+     * Emailnya sendiri tetap tercatat gagal di pesanan terkait.
+     */
     public function pekerjaanGagal(): int
     {
-        return DB::table('failed_jobs')->count();
+        return DB::table('failed_jobs')->where('failed_at', '>=', now()->subDays(7))->count();
     }
 
     public function emailGagal(): int
@@ -86,9 +92,9 @@ class KesehatanSistem
 
         if (($n = $this->pekerjaanGagal()) > 0) {
             $masalah[] = [
-                'judul' => $n.' tugas latar gagal dijalankan',
-                'isi' => 'Umumnya email yang gagal terkirim. Periksa daftar email di detail '
-                    .'pesanan terkait, lalu kabari pelanggannya lewat WhatsApp.',
+                'judul' => $n.' tugas latar gagal dijalankan minggu ini',
+                'isi' => 'Umumnya email yang gagal terkirim. Daftarnya ada di bagian "Email tidak sampai" '
+                    .'di bawah: kirim ulang dari halaman pesanannya, atau kabari pelanggannya lewat WhatsApp.',
             ];
         }
 

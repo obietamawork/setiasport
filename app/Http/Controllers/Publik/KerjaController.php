@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Publik;
 
+use App\Enums\OrderItemStatus;
+use App\Enums\ProductionStage;
 use App\Http\Controllers\Controller;
 use App\Models\OrderItem;
 use App\Models\Pekerja;
@@ -43,6 +45,19 @@ class KerjaController extends Controller
             'pin.required' => 'Masukkan PIN Anda dulu.',
         ]);
 
+        /*
+         * Halaman yang dibuka sejak pagi masih menampilkan tahap lama. Tanpa
+         * pembanding ini, PIN yang diketik sore hari menandai tahap yang
+         * sedang berjalan sekarang, yang mungkin bukan pekerjaan orang itu
+         * sama sekali (KEP-098).
+         */
+        $dari = OrderItemStatus::tryFrom($request->string('dari')->toString());
+
+        if ($dari !== null && $dari !== $item->status_item) {
+            return back()->withErrors(['pin' => 'Barang ini sudah berada di tahap '.$item->status_item->labelStaf()
+                .'. Tidak ada yang diubah. Halaman ini sudah dimuat ulang.']);
+        }
+
         $tahap = $item->status_item->tahapProduksi();
 
         abort_if($tahap === null, 422,
@@ -71,7 +86,7 @@ class KerjaController extends Controller
          * galat inline biasa di sebelah kotak PIN, bukan halaman debug.
          */
         try {
-            $this->alur->majukanItem($item, null, $pekerja->id);
+            $this->alur->majukanItem($item, null, $pekerja->id, $item->status_item);
         } catch (HttpExceptionInterface $e) {
             throw ValidationException::withMessages(['pin' => $e->getMessage()]);
         }
@@ -86,7 +101,7 @@ class KerjaController extends Controller
             ->firstOrFail();
     }
 
-    private function pemegang(\App\Enums\ProductionStage $tahap): string
+    private function pemegang(ProductionStage $tahap): string
     {
         $nama = Pekerja::aktif()->get()
             ->filter(fn (Pekerja $p) => $p->bolehMenandai($tahap))

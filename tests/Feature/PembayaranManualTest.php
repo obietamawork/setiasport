@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrderItemStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
@@ -9,6 +10,7 @@ use App\Models\OrderAdjustment;
 use App\Models\ProductVariant;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\OrderStatusResolver;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SettingSeeder;
@@ -271,8 +273,14 @@ class PembayaranManualTest extends TestCase
         $this->assertSame(1, $order->payments()->where('status', PaymentStatus::LUNAS)->count());
     }
 
-    /** DP yang belum lunas tidak boleh kehilangan tagihan pelunasannya begitu saja. */
-    public function test_dp_tidak_mengadaluarsakan_tagihan_lain_selama_belum_lunas_penuh(): void
+    /**
+     * Sebagian dibayar tunai di kasir: tagihan lunas penuh dari checkout
+     * ditutup (KEP-098), karena nominalnya kini lebih besar dari sisa tagihan
+     * dan halaman pesanan akan meminta pelanggan mentransfer angka yang salah.
+     * Sisanya tidak hilang: tetap tercatat sebagai sisa tagihan, dan ditagih
+     * lagi sebagai pelunasan begitu barangnya siap.
+     */
+    public function test_dp_tunai_menutup_tagihan_lama_tapi_sisanya_tetap_ditagih(): void
     {
         $order = $this->buatPesanan();
         $tagihanLama = $order->payments->first();
@@ -289,9 +297,19 @@ class PembayaranManualTest extends TestCase
             ->assertSessionHas('sukses');
 
         $tagihanLama->refresh();
+        $order = $order->fresh(['items.options', 'payments', 'adjustments']);
 
-        $this->assertSame(PaymentStatus::MENUNGGU, $tagihanLama->status);
-        $this->assertGreaterThan(0, $order->fresh()->sisa_tagihan);
+        $this->assertSame(PaymentStatus::KADALUARSA, $tagihanLama->status);
+        $this->assertGreaterThan(0, $order->sisa_tagihan);
+
+        $order->items()->update(['status_item' => OrderItemStatus::SIAP->value]);
+        app(OrderStatusResolver::class)->sinkronkan($order->fresh('items'));
+        auth('web')->logout();
+
+        $this->get(route('lacak.token', $order->access_token))
+            ->assertOk()
+            ->assertSee('Pelunasan')
+            ->assertSee(rupiah($order->sisa_tagihan));
     }
 
     /**
@@ -327,7 +345,7 @@ class PembayaranManualTest extends TestCase
                 'metode' => 'TRANSFER',
                 'cek_mutasi' => '1',
             ])
-            ->assertStatus(422);
+            ->assertSessionHasErrors('jumlah');
 
         $this->assertSame(PaymentStatus::MENUNGGU, $tagihanLama->fresh()->status,
             'Status tidak boleh berubah jadi Lunas -- itu berarti pembayaran ganda.');

@@ -94,6 +94,9 @@
                             @if ($order->dikirim())
                                 Barang Anda sudah selesai dikerjakan. Setelah sisa ini lunas,
                                 paketnya kami kirim ke alamat Anda.
+                            @elseif ($order->status === OrderStatus::SIAP_DIAMBIL)
+                                Barang Anda sudah siap diambil. Sisa ini bisa ditransfer sekarang,
+                                atau dibayar di kasir saat mengambil.
                             @else
                                 Barang Anda sudah selesai dikerjakan. Setelah sisa ini lunas,
                                 kode ambil terbit dan barang bisa diambil.
@@ -103,7 +106,15 @@
 
                     <p class="numeral text-4xl text-merah">{{ rupiah($tagihan['jumlah']) }}</p>
 
-                    @if ($tagihan['batas'])
+                    {{-- Bukti yang sudah terkirim menahan pembatalan otomatis
+                         (KEP-098), jadi batas yang lewat tidak boleh terbaca
+                         seperti ancaman bagi orang yang sudah membayar. --}}
+                    @if ($tagihan['batas'] && $buktiAda)
+                        <p class="mt-2 text-sm text-muted">
+                            Bukti transfer Anda sudah kami terima. Selama kami memeriksanya,
+                            pesanan ini tidak dibatalkan walau batas pembayarannya lewat.
+                        </p>
+                    @elseif ($tagihan['batas'])
                         <p class="mt-2 text-sm">
                             Batas pembayaran
                             <strong>{{ $tagihan['batas']->translatedFormat('l, j F Y H:i') }}</strong>.
@@ -354,9 +365,9 @@
                 </div>
                 <div>
                     @if ($order->sisa_tagihan > 0)
-                        <p class="text-sm text-muted">Dibayar saat mengambil</p>
+                        <p class="text-sm text-muted">Sisa pembayaran</p>
                         <p class="numeral mt-2 text-4xl text-merah">{{ rupiah($order->sisa_tagihan) }}</p>
-                        <p class="mt-3 text-sm text-muted">Tunai maupun non-tunai.</p>
+                        <p class="mt-3 text-sm text-muted">Bayar di kasir saat mengambil, atau transfer lewat bagian Pelunasan di atas.</p>
                     @else
                         <p class="text-sm text-muted">Pembayaran</p>
                         <p class="numeral mt-2 text-3xl text-ok">Lunas</p>
@@ -398,7 +409,8 @@
                 @if ($order->sisa_tagihan > 0)
                     <p class="border-l-2 border-merah bg-merah-50 p-4">
                         Masih ada sisa <strong>{{ rupiah($order->sisa_tagihan) }}</strong>.
-                        Paket berangkat setelah pelunasannya kami terima.
+                        Paket berangkat setelah pelunasannya kami terima. Rekening dan tempat
+                        mengunggah buktinya ada di bagian Pelunasan di atas.
                     </p>
                 @endif
                 @if ($order->alamat_kirim)

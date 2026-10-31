@@ -35,10 +35,9 @@ class PenyesuaianController extends Controller
 
         $penyesuaian = $pesanan->adjustments()->create($data + ['dibuat_oleh' => auth('web')->id()]);
 
-        // Potongan harga bisa menurunkan sisa tagihan sampai 0 tanpa lewat
-        // pembayaran sama sekali (KEP-067 lanjutan) — tagihan lama yang masih
-        // menunggu harus ikut dikadaluarsakan, bukan dibiarkan menggantung.
-        $this->alur->kadaluarsakanTagihanBerlebih($pesanan->fresh(['items.options', 'payments', 'adjustments']));
+        // Tagihan yang menunggu ikut menyesuaikan, dan potongan yang membuat
+        // sisa tagihan nol membuka gerbang pelunasan (KEP-067 lanjutan, KEP-098).
+        $this->alur->totalBerubah($pesanan, auth('web')->id());
 
         ActivityLog::catat('penyesuaian.dibuat', $pesanan, $data);
 
@@ -57,6 +56,8 @@ class PenyesuaianController extends Controller
         ]);
 
         $penyesuaian->delete();
+
+        $this->alur->totalBerubah($pesanan, auth('web')->id());
 
         return back()->with('sukses', 'Penyesuaian dihapus.');
     }

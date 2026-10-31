@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DesignAssetType;
 use App\Enums\OrderItemStatus;
 use App\Enums\ProductionStage;
 use App\Models\OptionValue;
@@ -229,7 +230,7 @@ class KerjaQrTest extends TestCase
         $item = $this->itemProduksi();
         $item->update(['status_item' => OrderItemStatus::PROSES_DESAIN]);
         $item->designAssets()->create([
-            'tipe' => \App\Enums\DesignAssetType::MOCKUP, 'versi' => 1, 'external_url' => 'https://drive.google.com/x',
+            'tipe' => DesignAssetType::MOCKUP, 'versi' => 1, 'external_url' => 'https://drive.google.com/x',
         ]);
         $this->pekerja('Budi', '1234', [ProductionStage::DESAIN->value]);
 
@@ -309,7 +310,7 @@ class KerjaQrTest extends TestCase
             ->post(route('panel.pekerja.simpan'), [
                 'nama' => 'Sri', 'pin' => '1234', 'tahap' => [ProductionStage::JAHIT->value],
             ])
-            ->assertStatus(422);
+            ->assertSessionHasErrors('alur');
 
         $this->assertSame(1, Pekerja::count());
     }

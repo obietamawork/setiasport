@@ -75,7 +75,7 @@ class BarangHangusTest extends TestCase
 
         $this->actingAs($this->owner())
             ->post(route('panel.pesanan.hangus', $order))
-            ->assertStatus(422);
+            ->assertSessionHasErrors('alur');
 
         $this->assertSame(OrderStatus::SIAP_DIAMBIL, $order->fresh()->status);
     }
@@ -148,6 +148,6 @@ class BarangHangusTest extends TestCase
 
         $this->actingAs($this->owner())
             ->post(route('panel.pesanan.hangus', $order))
-            ->assertStatus(422);
+            ->assertSessionHasErrors('alur');
     }
 }

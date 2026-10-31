@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Enums\MetodeAmbil;
+use App\Enums\StatusPembatalan;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Order;
@@ -77,6 +78,8 @@ class PengirimanController extends Controller
             'ongkir' => $metode === MetodeAmbil::KIRIM ? $ongkir : 0,
         ]);
 
+        $this->alur->totalBerubah($pesanan, auth('web')->id());
+
         ActivityLog::catat('pesanan.pengiriman-disetel', $pesanan, [
             'metode' => $metode->value,
             'ongkir' => $metode === MetodeAmbil::KIRIM ? $ongkir : 0,
@@ -98,6 +101,13 @@ class PengirimanController extends Controller
         ], [
             'no_resi.required' => 'Nomor resi wajib diisi: tanpa itu pelanggan tidak bisa melacak apa pun.',
         ], ['jasa_kirim' => 'jasa kirim', 'no_resi' => 'nomor resi']);
+
+        // Pengajuan pembatalan diputuskan dulu (KEP-098). Barang yang sudah
+        // keluar dari toko membuat pengajuannya tidak mungkin dikabulkan lagi.
+        if ($pesanan->pembatalans()->where('status', StatusPembatalan::DIAJUKAN->value)->exists()) {
+            return back()->withErrors('Pelanggan mengajukan pembatalan pesanan ini. Putuskan dulu lewat '
+                .'kotak Pengajuan pembatalan di halaman pesanan, baru paketnya dikirim.');
+        }
 
         if (! $pesanan->bolehDikirim()) {
             return back()->withErrors($pesanan->alasanBelumBisaDikirim() ?? 'Pesanan ini belum bisa dikirim.');

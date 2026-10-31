@@ -141,6 +141,59 @@
         </section>
     @endif
 
+    {{-- Siap, tetapi yang ditunggu resi dari toko sendiri (KEP-098). --}}
+    @if ($siapDikirim->isNotEmpty())
+        <section class="kartu overflow-hidden">
+            <div class="kartu-kop flex items-center gap-2">
+                <span class="tahap-titik tahap-titik-kini"></span>
+                Siap dikirim
+                <span class="chip chip-merah ml-auto">{{ $siapDikirim->count() }}</span>
+            </div>
+            <p class="border-b border-line px-5 py-2.5 text-sm text-muted">
+                Antar ke kurir, lalu catat resinya di halaman pesanan. Yang masih bersisa
+                menunggu pelanggan melunasi lewat halaman pesanannya.
+            </p>
+            <ul class="divide-y divide-line text-sm">
+                @foreach ($siapDikirim as $o)
+                    <li>
+                        <a href="{{ route('panel.pesanan.show', $o) }}#pengambilan"
+                           class="flex items-start justify-between gap-4 px-5 py-2.5 hover:bg-navy-50">
+                            <span class="tabular shrink-0 font-medium">{{ $o->kode }}</span>
+                            <span class="min-w-0 text-right text-muted">
+                                {{ $o->customer->nama }}{{ $o->sisa_tagihan > 0 ? ', sisa '.rupiah($o->sisa_tagihan) : '' }}
+                            </span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
+    {{-- Hanya pelanggan yang bisa menyetujui, jadi yang bisa dilakukan toko
+         cuma mengingatkan (KEP-098). --}}
+    @if ($persetujuanLama->isNotEmpty())
+        <section class="kartu overflow-hidden">
+            <div class="kartu-kop flex items-center gap-2">
+                Desain menunggu persetujuan lebih dari 2 hari
+                <span class="chip chip-kuning ml-auto">{{ $persetujuanLama->count() }}</span>
+            </div>
+            <p class="border-b border-line px-5 py-2.5 text-sm text-muted">
+                Produksi belum bisa mulai. Ingatkan pelanggannya lewat tombol WhatsApp di halaman pesanan.
+            </p>
+            <ul class="divide-y divide-line text-sm">
+                @foreach ($persetujuanLama as $o)
+                    <li>
+                        <a href="{{ route('panel.pesanan.show', $o) }}#pelanggan"
+                           class="flex items-center justify-between gap-4 px-5 py-2.5 hover:bg-navy-50">
+                            <span class="tabular font-medium">{{ $o->kode }}</span>
+                            <span class="text-muted">{{ $o->customer->nama }}</span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     @if ($lamaBelumDiambil->isNotEmpty())
         <section class="kartu overflow-hidden">
             <div class="kartu-kop flex items-center gap-2">
@@ -158,6 +211,33 @@
                             <span class="tabular shrink-0 font-medium">{{ $o->kode }}</span>
                             <span class="min-w-0 text-right text-muted">
                                 {{ $o->customer->nama }}, siap {{ $o->siap_pada?->diffForHumans(short: true) }}
+                            </span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
+    {{-- Pesanan dikirim baru tertutup kalau ada yang menandai (KEP-026). --}}
+    @if ($paketPerluDitutup->isNotEmpty())
+        <section class="kartu overflow-hidden">
+            <div class="kartu-kop flex items-center gap-2">
+                Paket perlu dipastikan
+                <span class="chip chip-kuning ml-auto">{{ $paketPerluDitutup->count() }}</span>
+            </div>
+            <p class="border-b border-line px-5 py-2.5 text-sm text-muted">
+                Menurut kurir sudah sampai, atau sudah dua minggu di jalan. Tanyakan ke pelanggan,
+                lalu tandai diterima.
+            </p>
+            <ul class="divide-y divide-line text-sm">
+                @foreach ($paketPerluDitutup as $o)
+                    <li>
+                        <a href="{{ route('panel.pesanan.show', $o) }}#pengambilan"
+                           class="flex items-start justify-between gap-4 px-5 py-2.5 hover:bg-navy-50">
+                            <span class="tabular shrink-0 font-medium">{{ $o->kode }}</span>
+                            <span class="min-w-0 text-right text-muted">
+                                {{ $o->customer->nama }}, {{ $o->paketSampai() ? 'kata kurir sudah sampai' : 'dikirim '.$o->dikirim_pada?->diffForHumans(short: true) }}
                             </span>
                         </a>
                     </li>
@@ -191,7 +271,8 @@
         <section class="kartu overflow-hidden">
             <div class="kartu-kop">Email tidak sampai</div>
             <p class="border-b border-line px-5 py-2.5 text-sm text-muted">
-                Tanpa WhatsApp otomatis, pesanan ini perlu ditindaklanjuti manual.
+                Kabari pelanggannya lewat WhatsApp, atau kirim ulang emailnya dari halaman pesanan.
+                Tandai sudah ditangani di sana supaya hilang dari daftar ini.
             </p>
             <ul class="divide-y divide-line text-sm">
                 @foreach ($emailBermasalah as $log)
@@ -238,7 +319,8 @@
 
     @if (empty($masalahSistem) && $tanpaTier->isEmpty() && $stokHabis->isEmpty() && $stokMenipis->isEmpty()
          && $perluVerifikasi->isEmpty() && $lamaBelumDiambil->isEmpty() && $emailBermasalah->isEmpty()
-         && $pembatalanMenunggu->isEmpty() && $bolehHangus->isEmpty())
+         && $pembatalanMenunggu->isEmpty() && $bolehHangus->isEmpty() && $siapDikirim->isEmpty()
+         && $persetujuanLama->isEmpty() && $paketPerluDitutup->isEmpty())
         <section class="kartu p-8 text-center">
             <x-ikon nama="centang" ukuran="size-9" class="mx-auto text-ok" />
             <p class="mt-3 text-lg font-bold">Tidak ada yang perlu ditangani</p>

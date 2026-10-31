@@ -208,7 +208,7 @@ class PembatalanTest extends TestCase
 
         $this->post(route('lacak.pembatalan', $order->access_token), [
             'alasan' => 'Sekali lagi mengajukan pembatalan yang sama.',
-        ])->assertStatus(422);
+        ])->assertSessionHasErrors('alur');
 
         $this->assertSame(1, Pembatalan::count());
     }
@@ -224,7 +224,7 @@ class PembatalanTest extends TestCase
             ->post(route('panel.pesanan.pembatalan.setujui', [$order, $pembatalan->fresh()]), [
                 'refund_jumlah' => 0,
             ])
-            ->assertStatus(422);
+            ->assertSessionHasErrors('alur');
 
         $this->assertSame(StatusPembatalan::DITOLAK, $pembatalan->fresh()->status);
     }
@@ -236,7 +236,7 @@ class PembatalanTest extends TestCase
 
         $this->post(route('lacak.pembatalan', $order->access_token), [
             'alasan' => 'Paketnya ternyata tidak jadi dibutuhkan.',
-        ])->assertStatus(422);
+        ])->assertSessionHasErrors('alur');
 
         $this->assertSame(0, Pembatalan::count());
     }

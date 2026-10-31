@@ -15,7 +15,6 @@ use App\Models\ProductVariant;
 use App\Services\AlurPesanan;
 use App\Services\Checkout;
 use App\Services\PriceCalculator;
-use App\Services\RincianPerUkuran;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -201,7 +200,11 @@ class PesananManualController extends Controller
         $opsi = collect($data['opsi'] ?? [])->filter()->map(fn ($v) => (int) $v)->values()->all();
 
         if ($produk->punyaJalurReadyStock() && filled($data['variant_id'] ?? null)) {
-            $varian = ProductVariant::with('product')->findOrFail($data['variant_id']);
+            // Varian dicari di produk yang dipilih, bukan di seluruh katalog:
+            // kalau tidak, ukuran sepatu bisa tercatat sebagai bola.
+            $varian = ProductVariant::with('product')
+                ->where('product_id', $produk->id)
+                ->findOrFail($data['variant_id']);
             $qty = (int) ($data['qty'] ?? 1);
 
             return [

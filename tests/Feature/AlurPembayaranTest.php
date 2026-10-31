@@ -151,7 +151,7 @@ class AlurPembayaranTest extends TestCase
 
         $this->actingAs($this->owner())
             ->post(route('panel.pesanan.pembayaran.tolak', [$order, $bayar]), ['alasan' => 'Salah klik'])
-            ->assertStatus(422);
+            ->assertSessionHasErrors('alur');
 
         $this->assertSame(PaymentStatus::LUNAS, $bayar->fresh()->status);
     }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\EmailStatus;
+use App\Enums\MetodeAmbil;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Services\AlurPesanan;
@@ -46,28 +47,35 @@ Schedule::call(fn () => Artisan::call('queue:work', ['--stop-when-empty' => true
  * Order yang tidak dibayar sampai batas waktu dibatalkan, dan reservasi stoknya
  * dilepas. Tanpa ini, barang terkunci selamanya oleh pesanan yang tidak pernah
  * dibayar dan stok tersedia perlahan habis tanpa sebab yang terlihat.
+ *
+ * Pesanan yang buktinya sudah diunggah dilewati (KEP-098); syarat lengkapnya
+ * ada di AlurPesanan::kadaluarsakan(), dibaca ulang di bawah kunci.
  */
 Schedule::call(function (AlurPesanan $alur) {
     Order::query()
         ->where('status', OrderStatus::MENUNGGU_PEMBAYARAN)
         ->whereNotNull('kadaluarsa_pada')
         ->where('kadaluarsa_pada', '<', now())
-        ->with('items')
+        // Bukan arrow function: each() berhenti begitu callback mengembalikan
+        // false, dan kadaluarsakan() mengembalikan false untuk pesanan berbukti.
         ->each(function (Order $order) use ($alur) {
-            $alur->batalkan($order, 'Kadaluarsa: tidak dibayar sampai batas waktu.');
-            $order->update(['status' => OrderStatus::KADALUARSA]);
+            $alur->kadaluarsakan($order);
         });
 })->hourly()->name('kadaluarsa-order')->withoutOverlapping();
 
 /**
  * Pengingat barang yang sudah siap tapi belum diambil. Barang seperti ini
  * memakan rak toko dan paling sering terlupakan.
+ *
+ * Pesanan yang dikirim tidak ikut (KEP-098): yang ditunggu di sana resi dari
+ * toko sendiri, dan email "segera ambil di toko" hanya membingungkan.
  */
 Schedule::call(function (PengirimEmail $email) {
     $hari = (int) setting('pengingat_ambil_hari', 3);
 
     Order::query()
         ->where('status', OrderStatus::SIAP_DIAMBIL)
+        ->where('metode_ambil', '!=', MetodeAmbil::KIRIM->value)
         ->whereNotNull('siap_pada')
         ->where('siap_pada', '<', now()->subDays($hari))
         ->whereDoesntHave('emailLogs', fn ($q) => $q

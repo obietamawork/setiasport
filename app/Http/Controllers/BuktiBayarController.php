@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
@@ -103,7 +102,7 @@ class BuktiBayarController extends Controller
             return $menunggu;
         }
 
-        if ($order->status === OrderStatus::MENUNGGU_PELUNASAN && $order->sisa_tagihan > 0) {
+        if ($order->bolehBayarPelunasan()) {
             return $order->payments()->create([
                 'jenis' => PaymentType::PELUNASAN,
                 // Metode sebenarnya dipilih admin saat verifikasi.

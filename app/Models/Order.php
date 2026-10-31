@@ -124,12 +124,18 @@ class Order extends Model
         return (int) ceil(($this->total + $this->diskon - (int) $this->ongkir) * $persen / 100);
     }
 
-    /** Sudah melewati batas hari pengambilan (KEP-043). */
+    /**
+     * Sudah melewati batas hari pengambilan (KEP-043).
+     *
+     * Pesanan yang dikirim tidak pernah hangus (KEP-098): yang belum
+     * memberangkatkannya toko sendiri, bukan pelanggan yang lupa datang.
+     */
     public function bolehDihanguskan(): bool
     {
         $hari = (int) Setting::ambil('hangus_hari', 30);
 
         return $this->status === OrderStatus::SIAP_DIAMBIL
+            && ! $this->dikirim()
             && $this->siap_pada !== null
             && $this->siap_pada->lt(now()->subDays($hari));
     }
@@ -137,6 +143,20 @@ class Order extends Model
     public function lunas(): bool
     {
         return $this->sisa_tagihan === 0;
+    }
+
+    /**
+     * Pelanggan boleh mengunggah bukti pelunasan dari halaman pesanannya.
+     *
+     * Bukan hanya saat Menunggu Pelunasan (KEP-098): barang stok yang sudah
+     * siap juga bisa masih bersisa, misalnya ongkir yang baru diketik setelah
+     * paket ditimbang. Untuk pesanan yang dikirim, unggahan inilah
+     * satu-satunya jalan: tidak ada kasir di depan pintu pelanggan.
+     */
+    public function bolehBayarPelunasan(): bool
+    {
+        return $this->sisa_tagihan > 0
+            && in_array($this->status, [OrderStatus::MENUNGGU_PELUNASAN, OrderStatus::SIAP_DIAMBIL], true);
     }
 
     /**

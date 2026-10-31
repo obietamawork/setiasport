@@ -191,7 +191,7 @@ class RollPrintingTest extends TestCase
         $roll = RollCetak::latest('id')->firstOrFail();
 
         $this->post(route('roll.selesai', $roll->token), ['pin' => '1234']);
-        $this->post(route('roll.selesai', $roll->token), ['pin' => '1234'])->assertStatus(422);
+        $this->post(route('roll.selesai', $roll->token), ['pin' => '1234'])->assertSessionHasErrors('alur');
     }
 
     public function test_lembar_roll_memuat_qr_dan_isinya(): void

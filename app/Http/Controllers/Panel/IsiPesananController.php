@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Panel;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\AlurPesanan;
 use App\Services\UbahIsiPesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,10 @@ use Illuminate\Http\Request;
  */
 class IsiPesananController extends Controller
 {
-    public function __construct(private UbahIsiPesanan $ubah) {}
+    public function __construct(
+        private UbahIsiPesanan $ubah,
+        private AlurPesanan $alur,
+    ) {}
 
     public function ubah(Request $request, Order $pesanan, OrderItem $item): RedirectResponse
     {
@@ -41,6 +45,8 @@ class IsiPesananController extends Controller
 
             $this->ubah->ubahQtyStok($item, (int) $data['qty'], auth('web')->id());
         }
+
+        $this->alur->totalBerubah($pesanan, auth('web')->id());
 
         $pesanan->refresh()->load(['items.options', 'items.rosters', 'payments', 'adjustments']);
 

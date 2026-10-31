@@ -33,6 +33,7 @@
 
             <form method="POST" action="{{ route('kerja.selesai', $item->kerja_token) }}" class="mt-5 space-y-3">
                 @csrf
+                <input type="hidden" name="dari" value="{{ $item->status_item->value }}">
                 <div>
                     <label for="pin" class="label-form">PIN Anda</label>
                     <input type="password" id="pin" name="pin" inputmode="numeric" autocomplete="off"

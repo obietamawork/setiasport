@@ -131,6 +131,7 @@
                         @unless ($dikerjakan)
                             <form method="POST" action="{{ route('panel.antrian.mulai', $item) }}">
                                 @csrf
+                                <input type="hidden" name="dari" value="{{ $item->status_item->value }}">
                                 <button type="submit" class="tombol tombol-garis text-sm">
                                     <x-ikon nama="jam" ukuran="size-4" />
                                     Mulai kerjakan
@@ -141,6 +142,7 @@
                         @if ($stage !== ProductionStage::DESAIN)
                             <form method="POST" action="{{ route('panel.antrian.selesai', $item) }}">
                                 @csrf
+                                <input type="hidden" name="dari" value="{{ $item->status_item->value }}">
                                 <button type="submit" class="tombol tombol-navy text-sm">
                                     <x-ikon nama="centang" ukuran="size-4" />
                                     Selesai
