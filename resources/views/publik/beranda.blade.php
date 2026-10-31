@@ -3,6 +3,10 @@
      dan memulai buffer keluaran yang tidak pernah ditutup. Pengaturan yang
      belum diisi mengembalikan null, jadi cadangannya wajib ada. --}}
 @section('judul', setting('tentang_judul') ?: 'Toko olahraga dan konveksi jersey di Wonogiri')
+{{-- Nama toko di depan, hanya di halaman depan (KEP-101): orang yang mencari
+     tokonya mengetik namanya, dan tab PC yang sempit dulu hanya menampilkan
+     "Perlengkapan olahraga len..." tanpa nama toko sama sekali. --}}
+@section('judul_lengkap', setting('toko_nama', 'Setia Sport').' | '.(setting('tentang_judul') ?: 'Toko olahraga dan konveksi jersey di Wonogiri'))
 @section('deskripsi', setting('tentang_ringkas') ?: 'Perlengkapan olahraga lengkap dan layanan jersey custom di Wonogiri. Bisa diambil di toko atau dikirim.')
 
 {{-- Data toko untuk mesin pencari (KEP-089). JSON_HEX_TAG: isian pengaturan

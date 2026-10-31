@@ -1,5 +1,6 @@
 @extends('layouts.publik')
 @section('judul', 'Pesanan saya')
+@section('subjudul', 'Pesanan saya')
 
 @section('isi')
 @php use App\Enums\OrderStatus; @endphp

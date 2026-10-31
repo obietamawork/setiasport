@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\TemplateBalasan;
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -89,6 +91,68 @@ class JudulHalamanTest extends TestCase
         // Mengikuti label menu yang diklik pelanggan.
         $this->get(route('katalog', ['jalur' => 'kustom']))
             ->assertSee('<title>Custom jersey |', false);
+    }
+
+    /**
+     * Tab, judul besar, dan judul yang menempel di HP menyebut hal yang sama
+     * (KEP-101). Dulu bilah menempel di HP selalu "Katalog", judul besar
+     * kategori anak hanya "Futsal", dan jalur kustom berjudul besar "Pesan
+     * kustom" sementara tab dan menunya "Custom jersey".
+     */
+    public function test_judul_katalog_sama_di_tab_judul_besar_dan_bilah_hp(): void
+    {
+        $lekat = fn (string $judul) => '<p class="text-sm font-semibold">'.$judul.'</p>';
+
+        $this->get(route('katalog', ['kategori' => 'bola-futsal']))
+            ->assertSee('<title>Bola › Futsal |', false)
+            ->assertSee($lekat('Bola › Futsal'), false)
+            ->assertSee('aria-label="Remah roti"', false)
+            ->assertSee('<h1 class="text-3xl font-extrabold sm:text-4xl">Futsal</h1>', false)
+            ->assertDontSee($lekat('Katalog'), false);
+
+        $this->get(route('katalog', ['q' => 'jersey']))
+            ->assertSee($lekat('Hasil pencarian &quot;jersey&quot;'), false)
+            ->assertSee('<h1 class="text-3xl font-extrabold sm:text-4xl">Hasil pencarian &quot;jersey&quot;</h1>', false);
+
+        $this->get(route('katalog', ['jalur' => 'kustom']))
+            ->assertSee($lekat('Custom jersey'), false)
+            ->assertSee('<h1 class="text-3xl font-extrabold sm:text-4xl">Custom jersey</h1>', false);
+
+        $this->get(route('katalog'))
+            ->assertSee('<title>Katalog produk |', false)
+            ->assertSee('<h1 class="text-3xl font-extrabold sm:text-4xl">Katalog produk</h1>', false)
+            ->assertDontSee('aria-label="Remah roti"', false);
+    }
+
+    /** Tab PC yang sempit dulu hanya menampilkan "Perlengkapan olahraga len...". */
+    public function test_tab_halaman_depan_diawali_nama_toko(): void
+    {
+        $this->get(route('beranda'))
+            ->assertSee('<title>'.e(setting('toko_nama')).' | '.e(setting('tentang_judul')).'</title>', false);
+
+        // Halaman lain tetap diakhiri nama toko.
+        $this->get(route('lacak'))->assertSee('<title>Lacak pesanan | '.e(setting('toko_nama')).'</title>', false);
+    }
+
+    public function test_judul_panel_menyebut_yang_sedang_dibuka(): void
+    {
+        $this->actingAs($this->owner());
+        $toko = setting('toko_nama');
+        $kategori = Category::where('slug', 'bola-futsal')->firstOrFail();
+
+        $this->get(route('panel.kategori.edit', $kategori))
+            ->assertSee('<h1 class="kop-judul">Ubah kategori: Futsal</h1>', false);
+
+        $template = TemplateBalasan::create(['judul' => 'Jam buka', 'isi' => 'Buka setiap hari.']);
+        $this->get(route('panel.cs.template.edit', $template))
+            ->assertSee('<title>Ubah template: Jam buka | Panel '.$toko.'</title>', false);
+
+        $this->get(route('panel.pesanan.index'))
+            ->assertSee('<title>Pesanan | Panel '.$toko.'</title>', false);
+        $this->get(route('panel.pesanan.index', ['jalur' => 'kustom', 'status' => 'MENUNGGU_PEMBAYARAN']))
+            ->assertSee('<title>Pesanan: Kustom, Menunggu pembayaran | Panel '.$toko.'</title>', false);
+        $this->get(route('panel.pesanan.index', ['q' => 'budi']))
+            ->assertSee('<title>Pesanan: cari &quot;budi&quot; | Panel '.$toko.'</title>', false);
     }
 
     /** Judul lembar cetak menjadi nama berkas saat disimpan sebagai PDF. */

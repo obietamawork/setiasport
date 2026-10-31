@@ -1,16 +1,25 @@
 @extends('layouts.publik')
 @section('judul', $judulTab)
-@section('subjudul', 'Katalog')
+{{-- Bilah yang menempel di HP memakai judul yang sama dengan tab dan judul
+     besar (KEP-101), bukan "Katalog" untuk semua kategori dan pencarian. --}}
+@section('subjudul', $judul)
+@section('subcatatan', $produk->total() > 0 ? $produk->total().' produk' : 'Belum ada produk')
 {{-- Kategori, jalur, dan halaman memang halaman berbeda; kata pencarian bukan. --}}
 @section('kanonik', route('katalog', array_filter(request()->only('kategori', 'jalur', 'page'))))
-@section('subcatatan', 'Pilih produk, lihat harganya, lalu pesan dari halaman produknya.')
 
 @section('isi')
 <div class="mx-auto max-w-6xl px-5 py-10">
 
-    <h1 class="text-3xl font-extrabold sm:text-4xl">{{ $judul }}</h1>
-    @if ($subjudul)
-        <p class="kolom-baca mt-3 leading-relaxed text-muted">{{ $subjudul }}</p>
+    @if ($induk)
+        <nav class="mb-2 text-sm text-muted" aria-label="Remah roti">
+            <a href="{{ route('katalog') }}" class="tautan">Katalog</a>
+            <span class="mx-2 text-line-strong">/</span>
+            <a href="{{ route('katalog', ['kategori' => $induk->slug]) }}" class="tautan">{{ $induk->nama }}</a>
+        </nav>
+    @endif
+    <h1 class="text-3xl font-extrabold sm:text-4xl">{{ $judulBesar }}</h1>
+    @if ($keterangan)
+        <p class="kolom-baca mt-3 leading-relaxed text-muted">{{ $keterangan }}</p>
     @endif
 
     {{-- Perbedaan dua jalur belanja. Dulu satu bidang penuh setinggi layar, dan

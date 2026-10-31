@@ -2,7 +2,7 @@
 @section('judul', $banner->exists ? 'Ubah banner: '.$banner->judul : 'Tambah banner')
 
 @section('isi')
-<x-kop :judul="$banner->exists ? 'Ubah banner' : 'Tambah banner'" :kembali="route('panel.banner.index')" kembali-label="Daftar banner" />
+<x-kop :judul="$banner->exists ? 'Ubah banner: '.$banner->judul : 'Tambah banner'" :kembali="route('panel.banner.index')" kembali-label="Daftar banner" />
 
 <form method="POST" enctype="multipart/form-data"
       action="{{ $banner->exists ? route('panel.banner.update', $banner) : route('panel.banner.store') }}"

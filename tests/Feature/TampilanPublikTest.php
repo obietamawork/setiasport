@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -39,9 +40,12 @@ class TampilanPublikTest extends TestCase
 
     public function test_judul_halaman_menempel_di_tampilan_hp(): void
     {
+        // Bilahnya menyebut halaman yang sedang dibuka, bukan "Katalog" untuk
+        // semua kategori (KEP-101); lihat JudulHalamanTest.
         $this->get(route('katalog'))
             ->assertOk()
-            ->assertSee('Pilih produk, lihat harganya');
+            ->assertSee('sticky top-16', false)
+            ->assertSee('<p class="text-sm font-semibold">Katalog produk</p>', false);
 
         $this->get(route('beranda'))
             ->assertOk()
@@ -75,7 +79,7 @@ class TampilanPublikTest extends TestCase
      */
     public function test_ukuran_dipilih_lewat_kotak_bukan_dropdown(): void
     {
-        $produk = \App\Models\Product::where('sku', 'JRS-POLOS-01')->firstOrFail();
+        $produk = Product::where('sku', 'JRS-POLOS-01')->firstOrFail();
 
         $habis = $produk->variants()->where('ukuran', 'S')->first();
         $habis->update(['stok' => 0]);
@@ -94,7 +98,7 @@ class TampilanPublikTest extends TestCase
     /** Produk berharga per ukuran tidak punya tier, dan dulu tampil Rp 0. */
     public function test_produk_harga_per_ukuran_menampilkan_harga_terendah(): void
     {
-        $produk = \App\Models\Product::where('sku', 'CUST-JRS-ATASAN')->firstOrFail();
+        $produk = Product::where('sku', 'CUST-JRS-ATASAN')->firstOrFail();
 
         $this->get(route('produk', $produk))
             ->assertOk()

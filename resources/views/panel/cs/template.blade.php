@@ -1,5 +1,5 @@
 @extends('layouts.panel')
-@section('judul', 'Template balasan')
+@section('judul', $template->exists ? 'Ubah template: '.$template->judul : 'Template balasan')
 
 @section('isi')
 <x-kop judul="Template balasan" :kembali="route('panel.cs.index')" kembali-label="Chat"

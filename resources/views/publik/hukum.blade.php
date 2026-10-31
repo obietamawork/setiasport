@@ -1,6 +1,8 @@
 @extends('layouts.publik')
 @section('judul', $judul)
 @section('deskripsi', $ringkas)
+{{-- Halaman panjang: judulnya ikut menempel di HP seperti halaman lain (KEP-101). --}}
+@section('subjudul', $judul)
 
 @section('isi')
 <article class="mx-auto max-w-3xl px-5 py-12 sm:py-16">

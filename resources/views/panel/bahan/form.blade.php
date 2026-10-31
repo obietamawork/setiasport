@@ -2,7 +2,7 @@
 @section('judul', $bahan->exists ? 'Ubah bahan: '.$bahan->nama : 'Tambah bahan')
 
 @section('isi')
-<x-kop :judul="$bahan->exists ? 'Ubah bahan' : 'Tambah bahan'" :kembali="route('panel.bahan.index')" kembali-label="Daftar bahan" />
+<x-kop :judul="$bahan->exists ? 'Ubah bahan: '.$bahan->nama : 'Tambah bahan'" :kembali="route('panel.bahan.index')" kembali-label="Daftar bahan" />
 
 <form method="POST"
       action="{{ $bahan->exists ? route('panel.bahan.update', $bahan) : route('panel.bahan.store') }}"

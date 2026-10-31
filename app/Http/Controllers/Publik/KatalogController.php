@@ -43,13 +43,17 @@ class KatalogController extends Controller
             ->orderBy('nama')
             ->paginate(24);
 
-        [$judul, $subjudul] = $this->judul($kategoriTerpilih, $jalur);
+        [$judul, $keterangan] = $this->judul($request, $kategoriTerpilih, $jalur);
 
         return view('publik.katalog', [
             'produk' => $produk,
             'judul' => $judul,
-            'judulTab' => $this->judulTab($request, $kategoriTerpilih, $jalur, $produk->currentPage()),
-            'subjudul' => $subjudul,
+            // Judul besar kategori anak cukup namanya; induknya tampil sebagai
+            // jejak tepat di atasnya.
+            'judulBesar' => $request->filled('q') || ! $kategoriTerpilih ? $judul : $kategoriTerpilih->nama,
+            'induk' => $request->filled('q') ? null : $kategoriTerpilih?->parent,
+            'judulTab' => $produk->currentPage() > 1 ? $judul.' (halaman '.$produk->currentPage().')' : $judul,
+            'keterangan' => $keterangan,
             // Jumlah awal diambil dari MOQ terkecil, jadi angkanya masuk akal
             // sejak halaman dibuka dan tidak menampilkan peringatan minimum.
             'qtyAwal' => (int) (Product::query()
@@ -78,41 +82,37 @@ class KatalogController extends Controller
     }
 
     /**
-     * Judul tab dan hasil penelusuran, terpisah dari judul besar di halaman.
+     * Satu judul untuk tab, judul besar, dan judul yang menempel di HP
+     * (KEP-101). Dulu ketiganya berbeda: tab "Bola › Futsal" dengan judul
+     * besar "Futsal", tab "Custom jersey" dengan judul besar "Pesan kustom",
+     * dan bilah yang menempel di HP selalu "Katalog" apa pun yang dibuka.
      *
      * Nama kategori anak tidak unik ("Futsal" ada di bawah Bola dan di bawah
-     * Jersey), hasil pencarian tidak boleh berjudul "Katalog" yang sama dengan
-     * katalog tanpa pencarian, dan halaman 2 tidak boleh kembar dengan
-     * halaman 1. "Custom jersey" mengikuti label menu yang diklik pelanggan.
+     * Jersey, "Custom" di bawah Celana dan Jaket), jadi induknya ikut. Hasil
+     * pencarian tidak boleh berjudul sama dengan katalog tanpa pencarian.
+     * "Custom jersey" mengikuti label menu yang diklik pelanggan.
+     *
+     * @return array{0: string, 1: ?string} judul dan keterangan di bawahnya
      */
-    private function judulTab(Request $request, ?Category $kategori, string $jalur, int $halaman): string
+    private function judul(Request $request, ?Category $kategori, string $jalur): array
     {
-        $judul = match (true) {
-            $request->filled('q') => 'Hasil pencarian "'.$request->string('q')->squish()->limit(40).'"',
-            $kategori !== null => $kategori->parent
-                ? $kategori->parent->nama.' › '.$kategori->nama
-                : $kategori->nama,
-            $jalur === 'kustom' => 'Custom jersey',
-            $jalur === 'stok' => 'Stok toko',
-            default => 'Katalog produk',
-        };
+        if ($request->filled('q')) {
+            return ['Hasil pencarian "'.$request->string('q')->squish()->limit(40).'"', null];
+        }
 
-        return $halaman > 1 ? $judul.' (halaman '.$halaman.')' : $judul;
-    }
-
-    /** @return array{0: string, 1: ?string} */
-    private function judul(?Category $kategori, string $jalur): array
-    {
         if ($kategori) {
-            return [$kategori->nama, $kategori->deskripsi];
+            return [
+                $kategori->parent ? $kategori->parent->nama.' › '.$kategori->nama : $kategori->nama,
+                $kategori->deskripsi,
+            ];
         }
 
         return match ($jalur) {
             'stok' => ['Stok toko', 'Barang yang sudah ada di rak. '.(siap_stok() === 'hari ini'
                 ? 'Bayar dan ambil hari itu juga pada jam buka.'
                 : 'Bayar hari ini, ambil '.siap_stok().' pada jam buka.')],
-            'kustom' => ['Pesan kustom', 'Dibuat di workshop kami dengan desain, nama, dan nomor punggung tim Anda.'],
-            default => ['Katalog', null],
+            'kustom' => ['Custom jersey', 'Dibuat di workshop kami dengan desain, nama, dan nomor punggung tim Anda.'],
+            default => ['Katalog produk', null],
         };
     }
 }

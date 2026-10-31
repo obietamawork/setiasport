@@ -10,7 +10,8 @@
             <x-logo :terang="true" />
         </a>
         <span class="hidden h-5 w-px bg-white/20 sm:block"></span>
-        <span class="hidden text-sm font-semibold sm:block">Ruang CS</span>
+        {{-- Judul halaman; di HP disembunyikan dari mata saja, tidak dari pembaca layar. --}}
+        <h1 class="sr-only text-sm font-semibold sm:not-sr-only">Ruang CS</h1>
 
         <div class="ml-auto flex items-center gap-1 text-sm">
             {{-- Pelanggan melihat status ini di jendela chat mereka (KEP-031). --}}

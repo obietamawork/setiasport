@@ -3697,6 +3697,52 @@ lembar kerja, lembar roll, dan halaman kerja tidak bergeser ke samping di HP.
 
 ---
 
+## KEP-101 — Audit judul halaman: satu judul di tab, judul besar, dan bilah HP
+**Status:** TERKUNCI · 2026-11-01
+
+Diminta klien: perbaiki judul semua halaman, perhatikan PC dan HP. Diaudit dengan
+membuka setiap halaman etalase, akun pelanggan, panel, halaman QR, dan lembar cetak
+(lokal), ditambah seluruh halaman etalase di produksi, di Chromium, Firefox, dan
+WebKit pada lima ukuran (HP 360 dan 390, tablet 768, laptop 1366, desktop 1920).
+Yang dibaca: judul tab, `og:title`, judul besar (h1) beserta luapan, potongan, dan
+tabrakannya dengan tombol, serta judul yang menempel saat digulir.
+
+**Temuan**
+
+- **Bilah judul yang menempel di HP selalu "Katalog".** Di HP judul halaman ikut
+  menempel di bawah bilah atas, tetapi untuk katalog isinya tetap "Katalog" dan satu
+  kalimat petunjuk dua baris, apa pun kategori, pencarian, atau jalur yang dibuka.
+  Kini isinya judul halaman itu sendiri ditambah jumlah produknya.
+- **Tab, judul besar, dan bilah HP katalog menyebut hal berbeda.** Tab "Bola ›
+  Futsal" dengan judul besar "Futsal" (kategori anak "Custom" di bawah Celana dan
+  Jaket sama sekali tidak terbaca), tab "Custom jersey" dengan judul besar "Pesan
+  kustom", tab hasil pencarian dengan judul besar "Katalog". Kini satu judul untuk
+  ketiganya; kategori anak mendapat jejak induknya di atas judul besar, seperti
+  halaman produk.
+- **Tab halaman depan tanpa nama toko.** Judulnya 72 karakter dan nama toko di
+  ujung, jadi tab PC hanya menampilkan "Perlengkapan olahraga len...". Kini nama
+  toko di depan, hanya di halaman depan; halaman lain tetap diakhiri nama toko.
+- **Judul besar formulir ubah di panel tidak menyebut yang diubah**: "Ubah
+  kategori", "Ubah bahan", dan seterusnya, padahal judul itu yang menempel saat
+  menggulir formulir panjang. Kini "Ubah kategori: Volly", sama dengan tabnya.
+- **Tab kembar di panel**: ubah template balasan sama dengan daftarnya, dan daftar
+  pesanan yang disaring sama dengan daftar lengkapnya ("Pesanan: Kustom, Menunggu
+  pembayaran").
+- **Halaman panjang tanpa judul menempel di HP**: kebijakan privasi, syarat &
+  ketentuan, dan pesanan saya kini ikut punya.
+- **Ruang CS tanpa h1** sama sekali; judulnya kini h1 (di HP hanya untuk pembaca
+  layar, seperti sebelumnya).
+- **Daftar pesanan panel meluap di tablet**: tabel enam kolom tampil mulai 768 px
+  dan meluap 3 sampai 42 px (Chromium/Firefox). Kini kartu sampai 1024 px.
+
+**Bukan masalah, dicatat supaya tidak diselidiki ulang:** di WebKit versi Windows
+yang dipakai Playwright semua judul tampak tipis. Diukur: lebar teks pada ketebalan
+200, 400, dan 800 sama persis, juga dengan `font-variation-settings`; port itu tidak
+mendukung huruf variabel. Chromium dan Firefox menggambar ketebalan 800 dengan
+benar, dan Safari di iPhone, iPad, dan Mac mendukung huruf variabel sejak iOS 11.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3801,3 +3847,4 @@ lembar kerja, lembar roll, dan halaman kerja tidak bergeser ke samping di HP.
 | KEP-098 | Audit alur internal: tagihan mengikuti pesanan, tahap bisa diulang, pesan galat terbaca | TERKUNCI |
 | KEP-099 | Uji bagian Pesanan: pelanggan tanpa email, ukuran berkategori, isian tidak hilang | TERKUNCI |
 | KEP-100 | Uji lembar kerja dan QR: antrian printing bisa ditandai, cetakan panjang tidak kosong | TERKUNCI |
+| KEP-101 | Audit judul halaman: satu judul di tab, judul besar, dan bilah HP | TERKUNCI |

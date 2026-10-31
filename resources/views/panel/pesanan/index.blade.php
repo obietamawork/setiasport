@@ -1,8 +1,29 @@
 @extends('layouts.panel')
-@section('judul', 'Pesanan')
+@php
+    use App\Enums\OrderStatus;
+
+    $saringan = [
+        'tindakan' => 'Perlu tindakan',
+        '' => 'Semua',
+        'aktif' => 'Masih berjalan',
+        OrderStatus::MENUNGGU_PEMBAYARAN->value => 'Menunggu pembayaran',
+        OrderStatus::DIPROSES->value => 'Diproses',
+        OrderStatus::MENUNGGU_PELUNASAN->value => 'Menunggu pelunasan',
+        OrderStatus::SIAP_DIAMBIL->value => 'Siap diambil',
+        OrderStatus::DIKIRIM->value => 'Dalam pengiriman',
+    ];
+
+    // Tab daftar yang disaring tidak boleh kembar dengan daftar lengkapnya
+    // (KEP-101): staf membuka "menunggu pembayaran" berdampingan dengan semua.
+    $penyaring = array_filter([
+        ['kustom' => 'Kustom', 'stok' => 'Stok toko'][$jalur] ?? null,
+        $status !== '' ? ($saringan[$status] ?? null) : null,
+        request()->filled('q') ? 'cari "'.Str::limit(request()->string('q')->squish(), 30).'"' : null,
+    ]);
+@endphp
+@section('judul', 'Pesanan'.($penyaring ? ': '.implode(', ', $penyaring) : ''))
 
 @section('isi')
-@php use App\Enums\OrderStatus; @endphp
 
 <x-kop judul="Pesanan"
        catatan="Pesanan dari web maupun yang diketik admin untuk pembeli di toko, terbaru di atas.">
@@ -45,18 +66,6 @@
     @endforeach
 </div>
 
-@php
-    $saringan = [
-        'tindakan' => 'Perlu tindakan',
-        '' => 'Semua',
-        'aktif' => 'Masih berjalan',
-        OrderStatus::MENUNGGU_PEMBAYARAN->value => 'Menunggu pembayaran',
-        OrderStatus::DIPROSES->value => 'Diproses',
-        OrderStatus::MENUNGGU_PELUNASAN->value => 'Menunggu pelunasan',
-        OrderStatus::SIAP_DIAMBIL->value => 'Siap diambil',
-        OrderStatus::DIKIRIM->value => 'Dalam pengiriman',
-    ];
-@endphp
 
 {{-- Penyaring status menggeser ke samping di layar sempit, tidak melipat jadi
      empat baris yang mendorong datanya keluar layar. --}}
@@ -108,7 +117,7 @@
 @else
     {{-- Kartu di layar sempit, tabel di layar lebar. Admin memeriksa pesanan
          dari HP, dan tabel enam kolom yang digeser membuat itu menyiksa. --}}
-    <div class="mt-5 space-y-2.5 md:hidden">
+    <div class="mt-5 space-y-2.5 lg:hidden">
         @foreach ($pesanan as $o)
             <a href="{{ route('panel.pesanan.show', $o) }}" class="kartu kartu-tautan block p-4">
                 <div class="flex flex-wrap items-baseline justify-between gap-2">
@@ -148,10 +157,11 @@
         @endforeach
     </div>
 
-    {{-- Tanpa pembungkus yang bisa digulir: lihat .tabel-lekat. Di bawah 48rem
-         daftarnya memang sudah berganti jadi kartu, jadi tidak ada yang perlu
-         digeser ke samping. --}}
-    <div class="kartu mt-5 hidden md:block">
+    {{-- Tanpa pembungkus yang bisa digulir: lihat .tabel-lekat. Di bawah 64rem
+         daftarnya berganti jadi kartu, jadi tidak ada yang perlu digeser ke
+         samping. Dulu batasnya 48rem, dan di tablet 768 px tabel enam kolom
+         ini meluap 3 sampai 42 px (KEP-101). --}}
+    <div class="kartu mt-5 hidden lg:block">
         <table class="tabel tabel-lekat">
             <thead>
                 <tr>

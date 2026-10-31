@@ -2,7 +2,7 @@
 @section('judul', $portofolio->exists ? 'Ubah portofolio: '.$portofolio->judul : 'Tambah portofolio')
 
 @section('isi')
-<x-kop :judul="$portofolio->exists ? 'Ubah portofolio' : 'Tambah portofolio'" :kembali="route('panel.portofolio.index')" kembali-label="Daftar portofolio" />
+<x-kop :judul="$portofolio->exists ? 'Ubah portofolio: '.$portofolio->judul : 'Tambah portofolio'" :kembali="route('panel.portofolio.index')" kembali-label="Daftar portofolio" />
 
 <form method="POST" enctype="multipart/form-data"
       action="{{ $portofolio->exists ? route('panel.portofolio.update', $portofolio) : route('panel.portofolio.store') }}"
