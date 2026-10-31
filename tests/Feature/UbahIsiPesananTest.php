@@ -229,6 +229,80 @@ class UbahIsiPesananTest extends TestCase
         $this->assertSame(1, $order->fresh(['items'])->items->first()->qty);
     }
 
+    /** Kaos Oblong 4 L + 2 XL: produk yang harganya tidak dibedakan per jenjang. */
+    private function pesananTanpaKategori(): Order
+    {
+        $produk = Product::where('sku', 'CUST-KAOS-OBLONG')->with('options.values')->firstOrFail();
+
+        $this->post(route('kustom.simpan', $produk), [
+            'opsi' => $produk->options->mapWithKeys(fn ($o) => [$o->id => $o->values->first()->id])->all(),
+            'baris' => [
+                ['kategori' => '', 'ukuran' => 'L', 'jumlah' => 4],
+                ['kategori' => '', 'ukuran' => 'XL', 'jumlah' => 2],
+            ],
+            'desain_sumber' => 'katalog',
+        ])->assertSessionHasNoErrors();
+
+        $this->post('/checkout', [
+            'nama' => 'Budi Santoso', 'email' => 'budi@contoh.test',
+            'no_hp' => '081234567890', 'tipe_pembayaran' => 'DP', 'setuju' => '1',
+        ])->assertSessionHasNoErrors();
+
+        $order = Order::latest('id')->firstOrFail();
+        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
+
+        return $order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']);
+    }
+
+    /**
+     * Formulir ubah jumlah dulu selalu mengirim kategori pertama (SD) untuk
+     * produk tanpa kategori: ukuran di luar SD ditolak, dan L diam-diam berubah jadi "SD L"
+     * di lembar kerja dengan harga katalog hari ini (KEP-099).
+     */
+    public function test_produk_tanpa_kategori_ukuran_tidak_berubah_jadi_sd(): void
+    {
+        $order = $this->pesananTanpaKategori();
+        $item = $order->items->first();
+        $hargaAwal = $item->rosters->pluck('harga_satuan', 'ukuran')->all();
+
+        ProductPrice::where('product_id', $item->product_id)->update(['harga_satuan' => 99_000]);
+
+        $this->actingAs($this->owner())
+            ->post(route('panel.pesanan.item.jumlah', [$order, $item]), [
+                'baris' => [
+                    ['kategori' => 'SD', 'ukuran' => 'L', 'jumlah' => 5],
+                    ['kategori' => 'SD', 'ukuran' => 'XL', 'jumlah' => 2],
+                ],
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('sukses');
+
+        $rosters = $item->fresh(['rosters'])->rosters;
+
+        $this->assertSame(7, $item->fresh()->qty);
+        $this->assertTrue($rosters->every(fn ($r) => $r->kategori === null));
+        $this->assertSame($hargaAwal, $rosters->pluck('harga_satuan', 'ukuran')->all());
+    }
+
+    /** Ukuran baru dicocokkan dengan panduan ukuran produk, seperti saat memesan. */
+    public function test_ukuran_baru_di_luar_panduan_produk_ditolak(): void
+    {
+        $order = $this->pesananTanpaKategori();
+        $item = $order->items->first();
+
+        $this->actingAs($this->owner())
+            ->post(route('panel.pesanan.item.jumlah', [$order, $item]), [
+                'baris' => [
+                    ['ukuran' => 'L', 'jumlah' => 4],
+                    ['ukuran' => 'XL', 'jumlah' => 2],
+                    ['ukuran' => '9XL', 'jumlah' => 1],
+                ],
+            ])
+            ->assertSessionHasErrors('baris.2.ukuran');
+
+        $this->assertSame(6, $item->fresh()->qty);
+    }
+
     public function test_pesanan_yang_sudah_final_tidak_bisa_diubah(): void
     {
         $order = $this->pesananKustom();

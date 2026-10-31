@@ -8,6 +8,7 @@ use App\Enums\PriceBasis;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 /**
  * Nilai fulfillment_type, nama_produk, dan harga_satuan di-SNAPSHOT saat
@@ -40,6 +41,7 @@ class OrderItem extends Model
         return $this->belongsTo(Order::class);
     }
 
+    /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
@@ -55,6 +57,7 @@ class OrderItem extends Model
         return $this->hasMany(OrderItemOption::class);
     }
 
+    /** @return HasMany<OrderItemRoster, $this> */
     public function rosters(): HasMany
     {
         return $this->hasMany(OrderItemRoster::class)->orderBy('urutan');
@@ -114,7 +117,7 @@ class OrderItem extends Model
     public function tokenKerja(): string
     {
         if (! $this->kerja_token) {
-            $this->forceFill(['kerja_token' => \Illuminate\Support\Str::random(48)])->save();
+            $this->forceFill(['kerja_token' => Str::random(48)])->save();
         }
 
         return $this->kerja_token;
@@ -137,6 +140,18 @@ class OrderItem extends Model
     }
 
     /**
+     * Potong yang sudah bernama punggung. Bukan jumlah baris (KEP-099): baris
+     * ukuran tanpa nama juga roster, dan dulu "2 dari 12 nama terisi" muncul
+     * untuk pesanan yang baru satu namanya.
+     */
+    public function jumlahBernama(): int
+    {
+        return (int) $this->rosters
+            ->filter(fn (OrderItemRoster $r) => filled($r->nama_punggung))
+            ->sum('jumlah');
+    }
+
+    /**
      * Ringkasan "S:3, M:8, L:5" untuk pelanggan sekaligus untuk gudang.
      *
      * Dijumlah dari `jumlah` tiap baris, BUKAN dihitung jumlah barisnya --
@@ -144,12 +159,16 @@ class OrderItem extends Model
      * Excel, atau jumlah diketik langsung di formulir pesanan manual), dan
      * menghitung baris akan melaporkan potongan jauh lebih sedikit dari yang
      * sebenarnya dikerjakan.
+     *
+     * Dikelompokkan per kategori sekaligus ukuran (KEP-099): SD L dan dewasa
+     * L berbeda 14 cm di lebar dada, dan "L:9" membuat konveksi memotong
+     * ukuran dewasa untuk anak.
      */
     public function ringkasanUkuran(): string
     {
         return $this->rosters
-            ->groupBy('ukuran')
-            ->map(fn ($grup, $ukuran) => $ukuran.':'.$grup->sum('jumlah'))
+            ->groupBy(fn (OrderItemRoster $r) => $r->labelUkuran())
+            ->map(fn ($grup, $label) => $label.':'.$grup->sum('jumlah'))
             ->implode(', ');
     }
 }

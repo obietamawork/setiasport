@@ -2,18 +2,20 @@
 
 namespace App\Services;
 
-use App\Enums\FulfillmentType;
 use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
+use App\Enums\PriceBasis;
 use App\Enums\ProductionStage;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\OrderStatusLog;
 use App\Models\Setting;
 use App\Services\Ongkir\PilihanKirim;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -56,8 +58,11 @@ class Checkout
      * potongan borongan. Dua jalur pembuatan pesanan yang ditulis terpisah pasti
      * berselisih suatu hari.
      *
-     * @param  \Illuminate\Support\Collection<int, array<string, mixed>>  $isi
-     * @param  array{nama:string, email:string, no_hp:string, catatan:?string}  $pelanggan
+     * Pesanan manual membawa kartu pelanggannya sendiri ($customer), yang sudah
+     * dicari formulir panel lewat email atau nomor HP.
+     *
+     * @param  Collection<int, array<string, mixed>>  $isi
+     * @param  array{nama:string, email:?string, no_hp:string, catatan:?string}  $pelanggan
      */
     public function buat(
         $isi,
@@ -65,20 +70,10 @@ class Checkout
         string $tipePembayaran,
         bool $manual = false,
         ?PilihanKirim $kirim = null,
+        ?Customer $customer = null,
     ): Order {
-        return DB::transaction(function () use ($isi, $pelanggan, $tipePembayaran, $manual, $kirim) {
-            $customer = Customer::firstOrNew(['email' => $pelanggan['email']]);
-
-            // Profil pelanggan yang akunnya sudah aktif tidak boleh ditimpa oleh
-            // pemesan tamu yang kebetulan memakai alamat email yang sama (KEP-021).
-            if (! $customer->exists || ! $customer->akunAktif()) {
-                $customer->fill([
-                    'nama' => $pelanggan['nama'],
-                    'no_hp' => $pelanggan['no_hp'],
-                ]);
-            }
-
-            $customer->save();
+        return DB::transaction(function () use ($isi, $pelanggan, $tipePembayaran, $manual, $kirim, $customer) {
+            $customer ??= $this->pelanggan($pelanggan);
 
             $order = Order::create([
                 'kode' => Order::kodeBaru(),
@@ -134,7 +129,7 @@ class Checkout
                         'option_nama' => $k['label'],
                         'option_value' => $k['nilai'],
                         'tambahan_harga' => $k['jumlah'],
-                        'basis' => \App\Enums\PriceBasis::PER_PCS,
+                        'basis' => PriceBasis::PER_PCS,
                     ]);
                 }
 
@@ -143,7 +138,7 @@ class Checkout
                         'option_nama' => 'Biaya sekali',
                         'option_value' => $k['label'],
                         'tambahan_harga' => $k['jumlah'],
-                        'basis' => \App\Enums\PriceBasis::PER_ITEM,
+                        'basis' => PriceBasis::PER_ITEM,
                     ]);
                 }
 
@@ -189,7 +184,34 @@ class Checkout
      * dokumen historis: daftar harga boleh naik tahun depan tanpa mengubah
      * tagihan yang sudah disepakati hari ini.
      */
-    private function simpanDaftarUkuran(\App\Models\OrderItem $item, array $baris): void
+    /**
+     * Pelanggan dicari lewat emailnya. Email kosong tidak pernah dipakai mencari
+     * (KEP-099): "email is null" mengembalikan pelanggan tanpa email yang
+     * PERTAMA, dan pesanan orang lain lalu menimpa nama serta nomor HP-nya.
+     *
+     * @param  array{nama:string, email:?string, no_hp:string, catatan:?string}  $pelanggan
+     */
+    private function pelanggan(array $pelanggan): Customer
+    {
+        $customer = filled($pelanggan['email'] ?? null)
+            ? Customer::firstOrNew(['email' => $pelanggan['email']])
+            : new Customer;
+
+        // Profil pelanggan yang akunnya sudah aktif tidak boleh ditimpa oleh
+        // pemesan tamu yang kebetulan memakai alamat email yang sama (KEP-021).
+        if (! $customer->exists || ! $customer->akunAktif()) {
+            $customer->fill([
+                'nama' => $pelanggan['nama'],
+                'no_hp' => $pelanggan['no_hp'],
+            ]);
+        }
+
+        $customer->save();
+
+        return $customer;
+    }
+
+    private function simpanDaftarUkuran(OrderItem $item, array $baris): void
     {
         if (($baris['ukuran'] ?? null) === null) {
             return;
@@ -218,7 +240,7 @@ class Checkout
      * kustom mendapat potong dan press (KEP-028), daftar tulisan tangan di sini
      * masih menyiapkan packing yang tidak lagi dilewati.
      */
-    private function siapkanJobProduksi(\App\Models\OrderItem $item): void
+    private function siapkanJobProduksi(OrderItem $item): void
     {
         $tahap = collect(OrderItemStatus::alur($item->fulfillment_type))
             ->map(fn (OrderItemStatus $s) => $s->tahapProduksi())

@@ -205,7 +205,7 @@
                             <p class="tabular mt-3 rounded-[7px] bg-navy-50 px-3 py-2 text-sm font-semibold">
                                 {{ $item->ringkasanUkuran() }}
                                 <span class="font-normal text-muted">
-                                    ({{ $item->rosters->count() }} dari {{ $item->qty }} nama terisi)
+                                    ({{ $item->jumlahBernama() }} dari {{ $item->qty }} nama terisi)
                                 </span>
                             </p>
                         @elseif ($item->product->roster_wajib)
@@ -267,19 +267,50 @@
                                 <summary class="cursor-pointer text-sm text-muted">Ubah jumlah pesanan</summary>
 
                                 @if ($item->hargaPerUkuran())
+                                    @php
+                                        // Pilihannya mengikuti panduan ukuran produk, sama seperti saat
+                                        // memesan (KEP-099). Dulu kategorinya daftar tetap SD/SMP/dewasa:
+                                        // produk tanpa kategori ikut terkirim sebagai "SD".
+                                        $pakaiKategori = $item->product->pakaiKategoriUkuran();
+                                        $pilihanUkuran = $pakaiKategori
+                                            ? collect(\App\Enums\KategoriUkuran::cases())->map(fn ($k) => [
+                                                'value' => $k->value,
+                                                'ukuran' => $item->product->ukuranTersedia($k),
+                                            ])->values()
+                                            : collect([['value' => '', 'ukuran' => $item->product->ukuranTersedia(null)]]);
+                                    @endphp
                                     <form method="POST" action="{{ route('panel.pesanan.item.jumlah', [$pesanan, $item]) }}"
                                           class="mt-3 space-y-3"
-                                          x-data="{ baris: {{ Js::from($item->rosters->map(fn ($r) => [
-                                              'kategori' => $r->kategori?->value ?? '',
-                                              'ukuran' => $r->ukuran,
-                                              'jumlah' => $r->jumlah,
-                                              'nama_punggung' => $r->nama_punggung ?? '',
-                                              'nomor' => $r->nomor ?? '',
-                                          ])->values()) }} }">
+                                          x-data="{
+                                              baris: {{ Js::from($item->rosters->map(fn ($r) => [
+                                                  'kategori' => $pakaiKategori ? ($r->kategori?->value ?? '') : '',
+                                                  'ukuran' => $r->ukuran,
+                                                  'jumlah' => $r->jumlah,
+                                                  'nama_punggung' => $r->nama_punggung ?? '',
+                                                  'nomor' => $r->nomor ?? '',
+                                              ])->values()) }},
+                                              pilihan: {{ Js::from($pilihanUkuran) }},
+                                              ukuranUntuk(b) {
+                                                  const ada = this.pilihan.find(p => p.value === b.kategori)?.ukuran ?? [];
+                                                  {{-- Ukuran lama yang sudah tidak ada di panduan tetap tampil,
+                                                       supaya tidak diam-diam berganti saat disimpan. --}}
+                                                  return b.ukuran && !ada.includes(b.ukuran) ? [b.ukuran, ...ada] : ada;
+                                              },
+                                              betulkan(b) {
+                                                  const ada = this.ukuranUntuk({ kategori: b.kategori });
+                                                  if (!ada.includes(b.ukuran)) b.ukuran = ada[0] ?? '';
+                                              },
+                                              tambah() {
+                                                  const k = this.pilihan.at(-1);
+                                                  this.baris.push({ kategori: k.value, ukuran: k.ukuran.includes('L') ? 'L' : (k.ukuran[0] ?? ''),
+                                                      jumlah: 1, nama_punggung: '', nomor: '' });
+                                              },
+                                          }">
                                         @csrf
 
                                         <template x-for="(b, i) in baris" :key="i">
-                                            <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_4.5rem_8rem_5rem_4.5rem_auto] sm:items-end">
+                                            <div class="grid gap-2 sm:items-end
+                                                        {{ $pakaiKategori ? 'sm:grid-cols-[minmax(0,1fr)_4.5rem_8rem_5rem_4.5rem_auto]' : 'sm:grid-cols-[minmax(0,1fr)_4.5rem_5rem_4.5rem_auto]' }}">
                                                 <label class="block">
                                                     <span class="label-form">Nama</span>
                                                     <input type="text" x-model="b.nama_punggung" :name="`baris[${i}][nama_punggung]`"
@@ -290,18 +321,24 @@
                                                     <input type="text" x-model="b.nomor" :name="`baris[${i}][nomor]`"
                                                            maxlength="5" class="kotak-input tabular">
                                                 </label>
-                                                <label class="block">
-                                                    <span class="label-form">Kategori</span>
-                                                    <select x-model="b.kategori" :name="`baris[${i}][kategori]`" class="kotak-input">
-                                                        @foreach (\App\Enums\KategoriUkuran::cases() as $kat)
-                                                            <option value="{{ $kat->value }}">{{ $kat->label() }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </label>
+                                                @if ($pakaiKategori)
+                                                    <label class="block">
+                                                        <span class="label-form">Kategori</span>
+                                                        <select x-model="b.kategori" :name="`baris[${i}][kategori]`"
+                                                                @change="betulkan(b)" class="kotak-input">
+                                                            @foreach (\App\Enums\KategoriUkuran::cases() as $kat)
+                                                                <option value="{{ $kat->value }}">{{ $kat->label() }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </label>
+                                                @endif
                                                 <label class="block">
                                                     <span class="label-form">Ukuran</span>
-                                                    <input type="text" x-model="b.ukuran" :name="`baris[${i}][ukuran]`"
-                                                           maxlength="10" class="kotak-input" required>
+                                                    <select x-model="b.ukuran" :name="`baris[${i}][ukuran]`" class="kotak-input" required>
+                                                        <template x-for="u in ukuranUntuk(b)" :key="u">
+                                                            <option :value="u" x-text="u" :selected="u === b.ukuran"></option>
+                                                        </template>
+                                                    </select>
                                                 </label>
                                                 <div>
                                                     <span class="label-form" aria-hidden="true">Jumlah</span>
@@ -314,8 +351,7 @@
                                         </template>
 
                                         <div class="flex flex-wrap items-center gap-3">
-                                            <button type="button"
-                                                    @click="baris.push({ kategori: 'DEWASA', ukuran: 'L', jumlah: 1, nama_punggung: '', nomor: '' })"
+                                            <button type="button" @click="tambah()"
                                                     class="tombol tombol-garis tombol-sm">+ Tambah baris</button>
                                             <button type="submit" class="tombol tombol-navy tombol-sm">Simpan jumlah</button>
                                         </div>
@@ -805,7 +841,9 @@
                             </div>
                             <div>
                                 <label for="ongkir" class="label-form">Ongkos kirim (Rp)</label>
-                                <input type="number" id="ongkir" name="ongkir" min="0" step="1000"
+                                {{-- Tanpa step="1000" (KEP-099): tarif kurir sering Rp12.500,
+                                     dan browser menolaknya sebelum formulir terkirim. --}}
+                                <input type="number" id="ongkir" name="ongkir" min="0"
                                        value="{{ old('ongkir', $pesanan->ongkir) }}" class="kotak-input tabular">
                                 <p class="mt-1 text-xs leading-relaxed text-muted">
                                     Masuk tagihan sebagai barisnya sendiri, bukan penyesuaian biaya. Kalau pelanggan
@@ -1054,7 +1092,12 @@
         <div class="kartu p-5" x-data="{ tersalin: false }">
             <h2 class="font-semibold">Kabari lewat WhatsApp</h2>
             <p class="mt-1 text-xs leading-relaxed text-muted">
-                Email otomatis sudah dikirim. Pakai ini kalau pelanggan belum merespons.
+                {{-- Pembeli di toko sering hanya punya nomor WhatsApp (KEP-054). --}}
+                @if ($pesanan->customer->email)
+                    Email otomatis sudah dikirim. Pakai ini kalau pelanggan belum merespons.
+                @else
+                    Pelanggan ini tidak punya email, jadi tidak ada kabar otomatis. Kabari lewat WhatsApp.
+                @endif
             </p>
 
             <p class="mt-3 max-h-24 overflow-y-auto rounded-[7px] bg-navy-50 p-3 text-xs leading-relaxed"

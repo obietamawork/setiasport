@@ -53,11 +53,29 @@ class PesananController extends Controller
                 ->when($status && ! in_array($status, ['aktif', 'tindakan'], true),
                     fn ($q) => $q->where('status', $status))
                 ->when($request->filled('q'), function ($q) use ($request) {
-                    $cari = '%'.$request->string('q').'%';
+                    $kata = trim($request->string('q')->toString());
+                    // "%" dan "_" diketik sebagai karakter biasa, bukan pola.
+                    $cari = '%'.addcslashes($kata, '%_\\').'%';
+
+                    /*
+                     * Nomor HP (KEP-099) disalin dari WhatsApp sebagai
+                     * "+62 812-3456-7890", padahal pelanggan mengetiknya dengan
+                     * cara masing-masing saat memesan. Yang dicocokkan hanya
+                     * angkanya, tanpa 0 atau 62 di depan.
+                     */
+                    $angka = preg_replace('/\D/', '', $kata);
+                    $hp = preg_match('/^[\d\s()+.\-]+$/', $kata) && strlen($angka) >= 6
+                        ? preg_replace('/^(62|0)/', '', $angka)
+                        : null;
+
                     $q->where(fn ($w) => $w->where('kode', 'like', $cari)
                         ->orWhereHas('customer', fn ($c) => $c->where('nama', 'like', $cari)
                             ->orWhere('email', 'like', $cari)
-                            ->orWhere('no_hp', 'like', $cari)));
+                            ->orWhere('no_hp', 'like', $cari)
+                            ->when($hp, fn ($c) => $c->orWhereRaw(
+                                "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_hp, ' ', ''), '-', ''), '+', ''), '.', ''), '(', ''), ')', '') like ?",
+                                ['%'.$hp.'%']
+                            ))));
                 })
                 ->latest('id')
                 ->paginate(20)
@@ -89,6 +107,7 @@ class PesananController extends Controller
     {
         $pesanan->load([
             'customer', 'items.options', 'items.rosters', 'items.productionJobs',
+            'items.product.prices', 'items.product.sizeCharts',
             'adjustments.pembuat', 'payments.pencatat', 'payments.verifikator',
             'statusLogs.pelaku', 'statusLogs.orderItem', 'emailLogs',
         ]);

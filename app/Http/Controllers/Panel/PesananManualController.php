@@ -113,6 +113,7 @@ class PesananManualController extends Controller
             ],
             $data['tipe_pembayaran'] === 'DP' ? 'DP' : 'LUNAS',
             manual: true,
+            customer: $pelanggan,
         );
 
         $order->update([

@@ -3590,6 +3590,61 @@ diulang). Sangat jarang untuk lalu lintas toko ini.
 
 ---
 
+## KEP-099 — Uji bagian Pesanan di panel: pelanggan tanpa email, ukuran berkategori, isian yang tidak hilang
+**Status:** TERKUNCI · 2026-10-31
+
+Diminta klien: uji bagian Pesanan di panel. Daftar, pencarian, pesanan manual,
+halaman detail beserta semua aksinya, lembar kerja, dan invoice dijalankan di browser
+(HP 360/390 px dan desktop) di aplikasi lokal. Setiap temuan dibuktikan dengan tes
+yang gagal sebelum diperbaiki.
+
+**Data pelanggan dan produksi**
+
+- **Pembeli tanpa email saling menimpa.** `Checkout::buat()` mencari pelanggan lewat
+  `email`, dan email kosong menjadi `where email is null`: setiap pesanan manual untuk
+  pembeli tanpa email menempel ke pelanggan tanpa email yang pertama dan menimpa nama
+  serta nomor HP-nya. Pesanan lama ikut menampilkan nomor orang terakhir. Kini
+  pesanan manual membawa kartu pelanggan yang sudah dicari formulirnya (lewat email
+  atau nomor HP), dan email kosong tidak pernah dipakai mencari.
+- **Lembar kerja tidak membedakan SD L dan dewasa L.** Ringkasan ukuran dan kolom
+  ukuran lembar kerja hanya menulis "L", padahal lebar dada keduanya 36 dan 50 cm.
+  Kini keduanya memakai label berkategori ("SD L:6, SMA / Dewasa L:3"), juga di
+  antrian, roll printing, halaman detail, dan halaman pelanggan.
+- **Ubah jumlah mengubah produk tanpa kategori jadi SD.** Formulirnya menawarkan
+  kategori SD/SMP/dewasa untuk semua produk; Kaos Oblong dan sejenisnya terkirim
+  sebagai SD, sehingga 2XL ditolak dan L diam-diam jadi "SD L" berharga katalog.
+  Kini kategori hanya tampil untuk produk yang memakainya, ukuran dipilih dari
+  panduan ukuran produk, dan server mengabaikan kategori untuk produk tanpa kategori
+  serta mencocokkan ukuran baru dengan panduannya.
+- **Daftar pemain dari halaman pesanan tidak pernah tersimpan** untuk pesanan per
+  ukuran: formulirnya tidak mengirim kategori maupun jumlah, dan 2XL tidak ada di
+  pilihannya. Kini satu baris per potong dengan ukuran tetap; pelanggan hanya
+  mengisi nama dan nomor, dan isian kembali utuh setelah galat. Penghitung "nama
+  terisi" menghitung potong yang bernama, bukan baris.
+
+**Formulir dan daftar**
+
+- Pesanan manual mengembalikan produk, opsi, daftar ukuran, cara bayar, dan pilihan
+  "Dikirim" setelah galat validasi. Dulu semuanya kosong lagi, sementara pesannya
+  meminta alamat yang kolomnya ikut tersembunyi.
+- Produk stok yang juga bisa dipesan kustom (Jersey Polos) kini bisa dibuat lewat
+  jalur kustom dari pesanan manual.
+- Pencarian mencocokkan angka nomor HP saja (+62 812-3456-7890 menemukan
+  081234567890), dan "%" atau "_" dibaca sebagai karakter biasa.
+- Ongkir tidak lagi harus kelipatan Rp1.000 (browser menolak Rp12.500).
+- Kartu WhatsApp tidak lagi berkata "email otomatis sudah dikirim" untuk pelanggan
+  tanpa email, dan jenis pembayaran "Pembayaran Lunas" menjadi "Bayar penuh" supaya
+  tidak terbaca lunas di sebelah chip Kedaluwarsa.
+
+Diperiksa dan sudah benar: angka di setiap tab dan penyaring sama dengan isi
+daftarnya; ongkir, jumlah, dan penyesuaian ikut mengubah tagihan yang menunggu;
+nominal kasir di atas sisa ditolak; pesanan stok berjalan dari bayar, packing, resi,
+sampai diterima; kontak bentrok ditolak dengan lipatan terbuka; pembatalan berbayar
+mencatat pengembalian; lembar kerja, invoice, dan detail tidak bergeser ke samping
+di 360 px.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3692,3 +3747,4 @@ diulang). Sangat jarang untuk lalu lintas toko ini.
 | KEP-096 | Audit pemesanan dan keamanan: opsi ganda, pembatas laju, konfirmasi akun | TERKUNCI |
 | KEP-097 | Audit pelanggan sampai pembayaran: pembatas bersama, bukti ditolak, kurir wajib | TERKUNCI |
 | KEP-098 | Audit alur internal: tagihan mengikuti pesanan, tahap bisa diulang, pesan galat terbaca | TERKUNCI |
+| KEP-099 | Uji bagian Pesanan: pelanggan tanpa email, ukuran berkategori, isian tidak hilang | TERKUNCI |

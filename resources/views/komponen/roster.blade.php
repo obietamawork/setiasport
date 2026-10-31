@@ -14,7 +14,7 @@
     <div class="flex flex-wrap items-baseline justify-between gap-2">
         <h3 class="font-semibold">Nama &amp; nomor punggung</h3>
         <span class="text-sm text-muted tabular">
-            {{ $item->rosters->count() }} dari {{ $item->qty }} terisi
+            {{ $item->jumlahBernama() }} dari {{ $item->qty }} bernama
         </span>
     </div>
 
@@ -31,11 +31,64 @@
                         <span class="w-6 text-muted tabular">{{ $r->urutan }}</span>
                         <span class="flex-1">{{ $r->nama_punggung ?: '-' }}</span>
                         <span class="w-10 tabular">{{ $r->nomor ?: '-' }}</span>
-                        <span class="w-12 text-muted">{{ $r->ukuran }}</span>
+                        <span class="shrink-0 text-muted">{{ $r->labelUkuran() }}</span>
                     </li>
                 @endforeach
             </ol>
         @endif
+    @elseif ($item->hargaPerUkuran())
+        {{-- Pesanan per ukuran (KEP-039): ukurannya sudah ditagihkan, jadi yang
+             diisi di sini hanya nama dan nomor, satu baris per potong. Dulu
+             editornya sama dengan pesanan lama: kategori dan jumlah tidak ikut
+             terkirim, dan setiap simpanan ditolak (KEP-099). Dirender server,
+             bukan Alpine, supaya isian kembali utuh setelah galat. --}}
+        @php
+            $potong = $item->rosters->flatMap(fn ($r) => collect(range(1, max(1, $r->jumlah)))
+                ->map(fn ($ke) => ['r' => $r, 'nomor' => $ke === 1 ? $r->nomor : null]))->values();
+        @endphp
+
+        <p class="kolom-baca mt-2 text-sm leading-relaxed text-muted">
+            Isi nama dan nomor punggung tiap potong; boleh sebagian dulu. Ukurannya mengikuti
+            pesanan, jadi untuk mengubah ukuran atau jumlah, hubungi toko. Daftar ini terkunci
+            begitu desain disetujui.
+        </p>
+
+        <form method="POST" action="{{ route('lacak.item.roster', [$order->access_token, $item]) }}" class="mt-4">
+            @csrf
+
+            <div class="mt-4 divide-y divide-line border-y border-line">
+                @foreach ($potong as $i => $p)
+                    <div class="py-2.5">
+                        <input type="hidden" name="roster[{{ $i }}][kategori]" value="{{ $p['r']->kategori?->value }}">
+                        <input type="hidden" name="roster[{{ $i }}][ukuran]" value="{{ $p['r']->ukuran }}">
+                        <input type="hidden" name="roster[{{ $i }}][jumlah]" value="1">
+
+                        {{-- Ukurannya keterangan, bukan isian: di HP ia di atas, bukan
+                             terlipat sendirian di bawah kotak nama. --}}
+                        <p class="text-xs text-muted">
+                            <span class="tabular">{{ $i + 1 }}</span> &middot;
+                            <span class="font-semibold text-ink">{{ $p['r']->labelUkuran() }}</span>
+                        </p>
+
+                        <div class="mt-1 flex gap-2">
+                            <input type="text" name="roster[{{ $i }}][nama_punggung]"
+                                   value="{{ old("roster.{$i}.nama_punggung", $p['r']->nama_punggung) }}"
+                                   class="kotak-input min-w-0 flex-1" maxlength="60"
+                                   placeholder="Nama punggung" aria-label="Nama punggung potong {{ $i + 1 }}">
+
+                            <input type="text" name="roster[{{ $i }}][nomor]" value="{{ old("roster.{$i}.nomor", $p['nomor']) }}"
+                                   inputmode="numeric" class="kotak-input tabular w-16 shrink-0 text-center" maxlength="3"
+                                   placeholder="No" aria-label="Nomor punggung potong {{ $i + 1 }}">
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="mt-3 flex flex-wrap items-center gap-3">
+                <span class="text-sm text-muted tabular">{{ $item->ringkasanUkuran() }}</span>
+                <button type="submit" class="tombol tombol-navy ml-auto text-sm">Simpan daftar</button>
+            </div>
+        </form>
     @else
         <p class="kolom-baca mt-2 text-sm leading-relaxed text-muted">
             Isi sebisanya sekarang, sisanya menyusul: daftar ini bisa Anda ubah sampai

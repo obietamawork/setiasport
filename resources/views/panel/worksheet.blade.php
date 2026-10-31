@@ -32,7 +32,7 @@
         th { background: #eee; }
         .no { width: 30px; text-align: center; }
         .nomor { width: 60px; text-align: center; font-weight: bold; font-size: 14px; }
-        .ukuran { width: 70px; text-align: center; font-weight: bold; }
+        .ukuran { width: 110px; text-align: center; font-weight: bold; }
         .ringkas { padding: 8px 10px; font-weight: bold; }
         .catatan { border: 1px solid #000; padding: 8px 10px; margin-top: 4px; min-height: 40px; }
         .cetak { margin-bottom: 14px; }
@@ -155,7 +155,8 @@
                             <td class="no">{{ $r->urutan }}</td>
                             <td>{{ $r->nama_punggung ?: '-' }}</td>
                             <td class="nomor">{{ $r->nomor ?: '-' }}</td>
-                            <td class="ukuran">{{ $r->ukuran }}</td>
+                            {{-- Dengan kategorinya (KEP-099): SD L dan dewasa L dua pola berbeda. --}}
+                            <td class="ukuran">{{ $r->labelUkuran() }}</td>
                             {{-- Satu baris boleh mewakili banyak potong sekaligus (tempel dari
                                  Excel, atau pesanan manual): jumlahnya WAJIB terlihat, atau
                                  potongan tanpa nama bisa kepotong cuma satu lalu dianggap selesai. --}}

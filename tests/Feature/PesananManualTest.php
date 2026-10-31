@@ -250,7 +250,7 @@ class PesananManualTest extends TestCase
             ])
             ->assertSessionDoesntHaveErrors();
 
-        $order = \App\Models\Order::latest('id')->firstOrFail();
+        $order = Order::latest('id')->firstOrFail();
 
         $this->assertSame('https://maps.app.goo.gl/contoh123', $order->tautan_lokasi);
     }
@@ -276,6 +276,46 @@ class PesananManualTest extends TestCase
 
         $this->assertSame(1, Customer::where('email', 'alim@contoh.test')->count());
         $this->assertSame(2, Order::count());
+    }
+
+    /**
+     * Dua pembeli tanpa email adalah dua orang (KEP-099). Dulu Checkout
+     * mencari pelanggan lewat email kosong, jadi setiap pesanan seperti ini
+     * menempel ke pelanggan tanpa email yang PERTAMA dan menimpa nama serta
+     * nomor HP-nya: pesanan lama ikut menampilkan nomor orang lain.
+     */
+    public function test_pembeli_tanpa_email_tidak_saling_menimpa(): void
+    {
+        $produk = $this->produk();
+
+        $pesan = fn (string $nama, string $hp) => $this->actingAs($this->owner())
+            ->post(route('panel.pesanan.baru.simpan'), [
+                'nama' => $nama,
+                'no_hp' => $hp,
+                'product_id' => $produk->id,
+                'opsi' => $this->opsi($produk, ['Serena', 'Oblong', 'Pendek', 'Tanpa Saku']),
+                'baris' => [['kategori' => 'SD', 'ukuran' => 'L', 'jumlah' => 6]],
+                'tipe_pembayaran' => 'DP',
+                'metode_ambil' => 'AMBIL',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $pesan('Pak Slamet', '081299998888');
+        $pertama = Order::latest('id')->firstOrFail();
+
+        $pesan('Bu Rina', '081311112222');
+        $kedua = Order::latest('id')->firstOrFail();
+
+        $this->assertNotSame($pertama->customer_id, $kedua->customer_id);
+        $this->assertSame('Pak Slamet', $pertama->fresh()->customer->nama);
+        $this->assertSame('081299998888', $pertama->fresh()->customer->no_hp);
+        $this->assertSame('Bu Rina', $kedua->customer->nama);
+
+        // Pembeli yang sama datang lagi: kartunya dipakai ulang.
+        $pesan('Pak Slamet', '081299998888');
+
+        $this->assertSame($pertama->customer_id, Order::latest('id')->firstOrFail()->customer_id);
+        $this->assertSame(2, Customer::whereNull('email')->count());
     }
 
     public function test_staf_tanpa_izin_kelola_tidak_bisa_membuka_formulirnya(): void

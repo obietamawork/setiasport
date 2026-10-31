@@ -13,6 +13,8 @@
         'perUkuran' => $p->prices->isNotEmpty(),
         'pakaiKategori' => $p->pakaiKategoriUkuran(),
         'stok' => $p->punyaJalurReadyStock(),
+        // Stok toko yang juga bisa dipesan kustom (KEP-099): admin memilih jalurnya.
+        'keduanya' => $p->fulfillment_type === \App\Enums\FulfillmentType::BOTH,
         'kategori' => $p->pakaiKategoriUkuran()
             ? collect($kategori)->map(fn ($k) => [
                 'value' => $k->value,
@@ -38,13 +40,34 @@
             'stok' => $v->stok_tersedia,
         ])->values(),
     ])->values();
+
+    /*
+     * Isian yang dikembalikan setelah galat validasi (KEP-099). Dulu produk,
+     * daftar ukuran, dan pilihan "Dikirim" kosong lagi, sementara pesannya
+     * meminta alamat yang kolomnya ikut tersembunyi.
+     */
+    $awal = [
+        'produkId' => old('product_id') ? (int) old('product_id') : '',
+        'jalur' => old('product_id') && ! old('variant_id') ? 'kustom' : 'stok',
+        'varianId' => old('variant_id') ? (int) old('variant_id') : null,
+        'qty' => old('qty') ? (int) old('qty') : null,
+        'opsi' => (object) collect(old('opsi', []))->map(fn ($v) => (string) $v)->all(),
+        'baris' => collect(old('baris', []))->values()->map(fn ($b) => [
+            'nama_punggung' => (string) ($b['nama_punggung'] ?? ''),
+            'nomor' => (string) ($b['nomor'] ?? ''),
+            'kategori' => (string) ($b['kategori'] ?? ''),
+            'ukuran' => (string) ($b['ukuran'] ?? ''),
+            'jumlah' => (int) ($b['jumlah'] ?? 1),
+        ])->all(),
+        'metodeAmbil' => old('metode_ambil', 'AMBIL'),
+    ];
 @endphp
 
 <x-kop judul="Pesanan baru" :kembali="route('panel.pesanan.index')" kembali-label="Daftar pesanan"
        catatan="Untuk pesanan yang datang langsung ke toko atau lewat WhatsApp. Pesanannya mendapat nomor, halaman lacak, lembar kerja, dan QR produksi seperti pesanan dari web, jadi pelanggan bisa memantau sendiri." />
 
 <form method="POST" action="{{ route('panel.pesanan.baru.simpan') }}" class="mt-6 max-w-4xl space-y-6"
-      x-data="pesananManual(@js($dataProduk), {{ $persenDp }})">
+      x-data="pesananManual(@js($dataProduk), {{ $persenDp }}, @js($awal))">
     @csrf
 
     <section class="kartu p-5">
@@ -87,14 +110,33 @@
             </select>
         </div>
 
+        <template x-if="pilih && pilih.keduanya">
+            <fieldset class="mt-4">
+                <legend class="label-form">Jalur</legend>
+                <div class="space-y-2">
+                    <label class="flex items-start gap-2 text-sm">
+                        <input type="radio" value="stok" x-model="jalur" class="mt-0.5 size-4 accent-navy">
+                        <span><strong>Ambil dari stok toko</strong>
+                            <span class="block text-muted">Barang jadi yang ada di rak.</span></span>
+                    </label>
+                    <label class="flex items-start gap-2 text-sm">
+                        <input type="radio" value="kustom" x-model="jalur" class="mt-0.5 size-4 accent-navy">
+                        <span><strong>Pesan kustom</strong>
+                            <span class="block text-muted">Dibuat konveksi, memakai harga dan minimal pesanan kustom.</span></span>
+                    </label>
+                </div>
+            </fieldset>
+        </template>
+
         {{-- Barang stok: cukup varian dan jumlah. --}}
-        <template x-if="pilih && pilih.stok && pilih.varian.length > 0">
+        <template x-if="pakaiStok && pilih.varian.length > 0">
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
                 <div>
                     <label for="variant_id" class="label-form">Varian</label>
                     <select id="variant_id" name="variant_id" class="kotak-input">
                         <template x-for="v in pilih.varian" :key="v.id">
-                            <option :value="v.id" x-text="v.label + ' (' + v.stok + ' tersedia)'"></option>
+                            <option :value="v.id" x-text="v.label + ' (' + v.stok + ' tersedia)'"
+                                    :selected="v.id === varianId"></option>
                         </template>
                     </select>
                 </div>
@@ -106,7 +148,7 @@
         </template>
 
         {{-- Barang kustom: opsi dan daftar ukuran. --}}
-        <template x-if="pilih && !pilih.stok">
+        <template x-if="pilih && !pakaiStok">
             <div class="mt-4 space-y-4">
                 <template x-for="o in pilih.opsi" :key="o.id">
                     <div>
@@ -118,7 +160,7 @@
                                 <option value="">Tidak dipakai</option>
                             </template>
                             <template x-for="v in o.values" :key="v.id">
-                                <option :value="v.id"
+                                <option :value="v.id" :selected="String(v.id) === opsiAwal[o.id]"
                                         x-text="v.label + (v.harga ? ' (' + (v.harga > 0 ? '+' : '−') + rp(Math.abs(v.harga)) + ')' : '')"></option>
                             </template>
                         </select>
@@ -154,7 +196,7 @@
                                     <span class="label-form">Ukuran</span>
                                     <select x-model="b.ukuran" :name="`baris[${i}][ukuran]`" class="kotak-input">
                                         <template x-for="u in ukuranUntuk(b.kategori)" :key="u">
-                                            <option :value="u" x-text="u"></option>
+                                            <option :value="u" x-text="u" :selected="u === b.ukuran"></option>
                                         </template>
                                     </select>
                                 </label>
@@ -197,7 +239,7 @@
                 <label for="tipe_pembayaran" class="label-form">Cara bayar</label>
                 <select id="tipe_pembayaran" name="tipe_pembayaran" class="kotak-input">
                     <option value="DP">Uang muka {{ $persenDp }}%</option>
-                    <option value="LUNAS">Lunas di muka</option>
+                    <option value="LUNAS" @selected(old('tipe_pembayaran') === 'LUNAS')>Lunas di muka</option>
                 </select>
             </div>
             <div>
@@ -233,7 +275,7 @@
                 <label for="metode_bayar" class="label-form">Diterima lewat</label>
                 <select id="metode_bayar" name="metode_bayar" class="kotak-input">
                     <option value="TUNAI">Tunai</option>
-                    <option value="TRANSFER">Transfer</option>
+                    <option value="TRANSFER" @selected(old('metode_bayar') === 'TRANSFER')>Transfer</option>
                 </select>
             </div>
         </div>
@@ -255,13 +297,16 @@
 
 @push('skrip')
 <script nonce="{{ Vite::cspNonce() }}">
-    function pesananManual(produk, persenDp) {
+    function pesananManual(produk, persenDp, awal) {
         return {
             produk, persenDp,
-            produkId: '',
-            qty: 1,
-            baris: [],
-            metodeAmbil: 'AMBIL',
+            produkId: awal.produkId,
+            jalur: awal.jalur,
+            varianId: awal.varianId,
+            opsiAwal: awal.opsi,
+            qty: awal.qty ?? 1,
+            baris: awal.baris,
+            metodeAmbil: awal.metodeAmbil,
 
             rp(n) {
                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n || 0));
@@ -269,6 +314,11 @@
 
             get pilih() {
                 return this.produk.find(p => p.id === this.produkId) ?? null;
+            },
+
+            // Barangnya diambil dari rak, bukan dibuat konveksi.
+            get pakaiStok() {
+                return !!this.pilih?.stok && (!this.pilih.keduanya || this.jalur === 'stok');
             },
 
             ukuranUntuk(nilai) {
@@ -294,13 +344,18 @@
                 return this.baris.reduce((s, b) => s + (parseInt(b.jumlah, 10) || 0), 0);
             },
 
+            // Produk atau jalur diganti berarti isian barang yang lama tidak berlaku lagi.
+            siapkan() {
+                this.baris = [];
+                this.varianId = null;
+                this.opsiAwal = {};
+                this.qty = this.pakaiStok ? 1 : (this.pilih?.moq ?? 1);
+                if (!this.pakaiStok && this.pilih?.perUkuran) this.tambahBaris();
+            },
+
             init() {
-                // Produk diganti berarti daftar ukuran lama tidak berlaku lagi.
-                this.$watch('produkId', () => {
-                    this.baris = [];
-                    this.qty = this.pilih?.moq ?? 1;
-                    if (this.pilih?.perUkuran) this.tambahBaris();
-                });
+                this.$watch('produkId', () => { this.jalur = 'stok'; this.siapkan(); });
+                this.$watch('jalur', () => this.siapkan());
             },
         };
     }

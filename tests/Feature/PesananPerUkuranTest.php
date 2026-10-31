@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\ProductOption;
 use App\Models\ProductPrice;
 use App\Models\ProductSizeSurcharge;
+use App\Models\User;
 use App\Services\Checkout;
 use App\Services\Keranjang;
 use App\Services\RosterPemain;
@@ -146,7 +147,9 @@ class PesananPerUkuranTest extends TestCase
             ['kategori' => 'DEWASA', 'ukuran' => 'L', 'jumlah' => 3, 'nama_punggung' => null, 'nomor' => null],
         ]);
 
-        $this->assertSame('L:9', $order->items->first()->ringkasanUkuran());
+        // SD L dan dewasa L dua ukuran badan yang berbeda (KEP-099): dulu
+        // keduanya digabung jadi "L:9" di lembar kerja.
+        $this->assertSame('SD L:6, SMA / Dewasa L:3', $order->items->first()->ringkasanUkuran());
     }
 
     /**
@@ -285,5 +288,64 @@ class PesananPerUkuranTest extends TestCase
 
         $this->assertSame(270_000, $order->fresh()->load('items.rosters', 'items.options')->total);
         $this->assertSame(45_000, OrderItemRoster::first()->harga_satuan);
+    }
+
+    /**
+     * SD L lebar dadanya 36 cm, dewasa L 50 cm. Lembar kerja yang hanya
+     * menulis "L" membuat konveksi memotong ukuran dewasa untuk anak (KEP-099).
+     */
+    public function test_lembar_kerja_membedakan_ukuran_sd_dan_dewasa(): void
+    {
+        $order = $this->pesan([
+            ['kategori' => 'SD', 'ukuran' => 'L', 'jumlah' => 6],
+            ['kategori' => 'DEWASA', 'ukuran' => 'L', 'jumlah' => 3, 'nama_punggung' => 'PELATIH'],
+        ]);
+
+        $owner = User::where('email', 'owner@setiasport.test')->firstOrFail();
+
+        $this->actingAs($owner)
+            ->get(route('panel.pesanan.worksheet', $order))
+            ->assertOk()
+            ->assertSee('SD L:6, SMA / Dewasa L:3')
+            ->assertSeeInOrder(['PELATIH', 'SMA / Dewasa L']);
+    }
+
+    /**
+     * Daftar pemain diisi dari halaman pesanan setelah memesan (KEP-099).
+     * Formulirnya dulu tidak mengirim kategori maupun jumlah, jadi setiap
+     * simpanan untuk pesanan per ukuran ditolak "ukuran tidak ada dalam
+     * pesanan ini". Yang dikirim di sini persis isi formulir di halaman itu.
+     */
+    public function test_daftar_pemain_dari_halaman_pesanan_tersimpan(): void
+    {
+        $order = $this->pesan([
+            ['kategori' => 'SD', 'ukuran' => 'L', 'jumlah' => 4],
+            ['kategori' => 'DEWASA', 'ukuran' => 'XL', 'jumlah' => 2],
+        ]);
+        $item = $order->items->first();
+
+        $html = $this->get(route('lacak.token', $order->access_token))->assertOk()->getContent();
+
+        preg_match_all('/name="(roster\[\d+\]\[\w+\])"[^>]*?value="([^"]*)"/', $html, $m, PREG_SET_ORDER);
+        parse_str(implode('&', array_map(
+            fn ($x) => urlencode($x[1]).'='.urlencode(html_entity_decode($x[2])),
+            $m,
+        )), $isi);
+
+        $this->assertCount(6, $isi['roster'] ?? [], 'Satu baris per potong.');
+
+        $isi['roster'][0]['nama_punggung'] = 'ANDI';
+        $isi['roster'][0]['nomor'] = '7';
+        $isi['roster'][5]['nama_punggung'] = 'PELATIH';
+
+        $this->post(route('lacak.item.roster', [$order->access_token, $item]), $isi)
+            ->assertSessionHasNoErrors();
+
+        $item->refresh()->load('rosters');
+
+        $this->assertSame('SD L', $item->rosters->firstWhere('nama_punggung', 'ANDI')->labelUkuran());
+        $this->assertSame('SMA / Dewasa XL', $item->rosters->firstWhere('nama_punggung', 'PELATIH')->labelUkuran());
+        $this->assertSame(6, (int) $item->rosters->sum('jumlah'));
+        $this->assertSame(4 * 45_000 + 2 * 60_000, $item->subtotal);
     }
 }

@@ -91,12 +91,6 @@ parameters:
 			path: app/Http/Controllers/Panel/LaporanController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$roster_wajib\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Panel/MockupController.php
-
-		-
 			message: '#^Call to function abort_unless\(\) with arguments false, 422 and ''Desain barang ini…'' will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 1
@@ -403,12 +397,6 @@ parameters:
 			path: app/Http/Controllers/Publik/LacakController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$roster_wajib\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Publik/PesananItemController.php
-
-		-
 			message: '#^Parameter \#1 \$status of method App\\Http\\Controllers\\Webhook\\ResendController\:\:peringkat\(\) expects App\\Enums\\EmailStatus, string given\.$#'
 			identifier: argument.type
 			count: 1
@@ -479,12 +467,6 @@ parameters:
 			identifier: identical.alwaysFalse
 			count: 3
 			path: app/Models/Order.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sum\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model\)\: int\<0, max\>\)\|string\|null, Closure\(App\\Models\\OrderItemRoster\)\: int\<0, max\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Models/OrderItem.php
 
 		-
 			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\FulfillmentType\:\:PREORDER will always evaluate to false\.$#'
@@ -665,12 +647,6 @@ parameters:
 			identifier: method.notFound
 			count: 1
 			path: app/Providers/PanelServiceProvider.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$lead_time_hari\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/AlurDesain.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$target_siap_pada\.$#'
@@ -1369,27 +1345,9 @@ parameters:
 			path: app/Services/RollPrinting.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$roster_wajib\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/RosterPemain.php
-
-		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
 			count: 2
-			path: app/Services/RosterPemain.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{kunci\: string, jumlah\: int\<0, max\>\}, Closure\(App\\Models\\OrderItemRoster\)\: array\{kunci\: string, jumlah\: int\<0, max\>\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Services/RosterPemain.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:mapWithKeys\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\<string, int\<0, max\>\|null\>, Closure\(App\\Models\\OrderItemRoster\)\: non\-empty\-array\<string, int\<0, max\>\|null\> given\.$#'
-			identifier: argument.type
-			count: 1
 			path: app/Services/RosterPemain.php
 
 		-
@@ -1405,13 +1363,7 @@ parameters:
 			path: app/Services/UbahIsiPesanan.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$options\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/UbahIsiPesanan.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prices\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$option_value_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Services/UbahIsiPesanan.php
@@ -1423,14 +1375,8 @@ parameters:
 			path: app/Services/UbahIsiPesanan.php
 
 		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:hargaPerPotong\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Services/UbahIsiPesanan.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:tambahanUkuran\(\)\.$#'
-			identifier: method.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$values\.$#'
+			identifier: property.notFound
 			count: 1
 			path: app/Services/UbahIsiPesanan.php
 
@@ -1449,12 +1395,6 @@ parameters:
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
-			count: 1
-			path: app/Services/UbahIsiPesanan.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:mapWithKeys\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\<string, int\<0, max\>\|null\>, Closure\(App\\Models\\OrderItemRoster\)\: non\-empty\-array\<string, int\<0, max\>\|null\> given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Services/UbahIsiPesanan.php
 

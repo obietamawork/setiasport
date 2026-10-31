@@ -49,6 +49,13 @@ class UbahIsiPesanan
             $this->kunci($r->kategori?->value, $r->ukuran) => $r->harga_satuan,
         ]);
 
+        $produk = $item->product->loadMissing(['prices', 'sizeCharts']);
+
+        // Produk yang harganya tidak dibedakan per jenjang tidak punya
+        // kategori sama sekali (KEP-099). Formulir lama mengirim "SD" untuk
+        // produk seperti ini, dan lembar kerja lalu menyebut ukuran anak.
+        $pakaiKategori = $produk->pakaiKategoriUkuran();
+
         $bersih = [];
 
         foreach (array_values($baris) as $i => $b) {
@@ -58,13 +65,23 @@ class UbahIsiPesanan
                 continue;
             }
 
-            $kategori = KategoriUkuran::tryFrom(trim((string) ($b['kategori'] ?? '')));
+            $kategori = $pakaiKategori ? KategoriUkuran::tryFrom(trim((string) ($b['kategori'] ?? ''))) : null;
             $ukuran = strtoupper(trim((string) ($b['ukuran'] ?? '')));
             $kunci = $this->kunci($kategori?->value, $ukuran);
 
-            if ($kategori !== null && ! $kategori->punyaUkuran($ukuran)) {
+            if ($pakaiKategori && $kategori === null) {
                 throw ValidationException::withMessages([
-                    "baris.{$i}.ukuran" => "Ukuran {$ukuran} tidak tersedia untuk {$kategori->label()}.",
+                    "baris.{$i}.kategori" => 'Pilih kategori ukurannya (SD, SMP, atau dewasa).',
+                ]);
+            }
+
+            // Ukuran baru dicocokkan dengan panduan ukuran produk, sama seperti
+            // saat memesan. Ukuran yang sudah ada di pesanan tidak diperiksa
+            // ulang: ia sudah disepakati walau panduannya berubah sesudahnya.
+            if (! isset($hargaLama[$kunci]) && ! in_array($ukuran, $produk->ukuranTersedia($kategori), true)) {
+                throw ValidationException::withMessages([
+                    "baris.{$i}.ukuran" => "Ukuran {$ukuran} tidak ada di panduan ukuran {$produk->nama}"
+                        .($kategori ? ' untuk '.$kategori->label() : '').'.',
                 ]);
             }
 

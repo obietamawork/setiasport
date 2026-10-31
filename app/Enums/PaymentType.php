@@ -13,7 +13,9 @@ enum PaymentType: string
         return match ($this) {
             self::DP => 'Uang Muka (DP)',
             self::PELUNASAN => 'Pelunasan',
-            self::FULL => 'Pembayaran Lunas',
+            // Bukan "Pembayaran Lunas": di panel ia bersebelahan dengan chip
+            // status, dan "Pembayaran Lunas · Kedaluwarsa" membingungkan (KEP-099).
+            self::FULL => 'Bayar penuh',
         };
     }
 }
