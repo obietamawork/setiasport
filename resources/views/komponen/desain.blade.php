@@ -58,6 +58,9 @@
             <form method="POST" action="{{ route('lacak.item.setujui', [$order->access_token, $item]) }}"
                   class="mt-4 space-y-3 border-t border-line pt-4">
                 @csrf
+                {{-- Versi yang sedang dilihat (KEP-098): kalau toko mengirim versi
+                     baru sebelum tombol ini ditekan, persetujuannya ditolak. --}}
+                <input type="hidden" name="mockup_versi" value="{{ $mockup->first()?->versi }}">
                 <div>
                     <label for="setuju-nama-{{ $item->id }}" class="label-form">Ketik nama Anda</label>
                     <input type="text" id="setuju-nama-{{ $item->id }}" name="nama" class="kotak-input max-w-xs"
@@ -66,7 +69,7 @@
                 <label class="flex items-start gap-2 text-sm">
                     <input type="checkbox" name="paham" value="1" class="mt-0.5 size-4 accent-navy" required>
                     <span>
-                        Saya menyetujui desain ini dan memahami bahwa setelah disetujui,
+                        Saya menyetujui desain ini (mockup v{{ $mockup->first()?->versi }}) dan memahami bahwa setelah disetujui,
                         desain serta daftar pemain tidak dapat diubah.
                     </span>
                 </label>
@@ -84,6 +87,7 @@
                     <form method="POST" action="{{ route('lacak.item.revisi', [$order->access_token, $item]) }}"
                           class="mt-3 space-y-3">
                         @csrf
+                        <input type="hidden" name="mockup_versi" value="{{ $mockup->first()?->versi }}">
                         <div>
                             <label for="revisi-{{ $item->id }}" class="label-form">Bagian mana yang perlu diubah?</label>
                             <textarea id="revisi-{{ $item->id }}" name="catatan" rows="3" class="kotak-input"

@@ -138,7 +138,13 @@ class AlurInternalTest extends TestCase
 
         $this->get(route('lacak.token', $dibayar->access_token))
             ->assertOk()
-            ->assertSee('pesanan ini tidak dibatalkan walau batas pembayarannya lewat');
+            ->assertSee('pesanan Anda tetap kami simpan walau batas pembayarannya');
+
+        // Tenggangnya berbatas: bukti asal-asalan tidak boleh menahan stok selamanya.
+        $this->travel(AlurPesanan::TENGGANG_BUKTI_JAM)->hours();
+        $this->jalankan('kadaluarsa-order');
+
+        $this->assertSame(OrderStatus::KADALUARSA, $dibayar->fresh()->status);
     }
 
     /** DP yang dibayar tunai di kasir dulu meninggalkan tagihan DP online. */
@@ -414,6 +420,40 @@ class AlurInternalTest extends TestCase
         $this->keTahap($item, OrderItemStatus::ANTRIAN_PRODUKSI);
         $this->post(route('panel.mockup.simpan', $item), ['tautan' => 'https://contoh.test/v3'])
             ->assertSessionHasErrors('alur');
+    }
+
+    /**
+     * Pelanggan yang membuka v1 lalu menekan Setujui setelah toko mengirim v2
+     * tidak boleh tercatat menyetujui desain yang belum pernah ia lihat.
+     */
+    public function test_persetujuan_atas_versi_lama_ditolak(): void
+    {
+        $order = $this->pesananDp();
+        $this->bayarAwal($order);
+        $item = $this->keTahap($order->items()->firstOrFail(), OrderItemStatus::PROSES_DESAIN);
+
+        $this->actingAs($this->owner());
+        $this->post(route('panel.mockup.simpan', $item), ['tautan' => 'https://contoh.test/v1']);
+        $this->post(route('panel.mockup.simpan', $item), ['tautan' => 'https://contoh.test/v2']);
+        auth('web')->logout();
+
+        $this->post(route('lacak.item.setujui', [$order->access_token, $item]), [
+            'nama' => 'Kapten Tim', 'paham' => '1', 'mockup_versi' => 1,
+        ])->assertSessionHasErrors('alur');
+        $this->post(route('lacak.item.revisi', [$order->access_token, $item]), [
+            'catatan' => 'Logonya kurang besar.', 'mockup_versi' => 1,
+        ])->assertSessionHasErrors('alur');
+
+        $this->assertSame(OrderItemStatus::MENUNGGU_PERSETUJUAN, $item->fresh()->status_item);
+        $this->assertSame(0, $item->fresh()->jumlah_revisi);
+
+        $this->post(route('lacak.item.setujui', [$order->access_token, $item]), [
+            'nama' => 'Kapten Tim', 'paham' => '1', 'mockup_versi' => 2,
+        ])->assertSessionHas('sukses');
+
+        $item = $item->fresh('approvedDesign');
+        $this->assertSame(OrderItemStatus::ANTRIAN_PRODUKSI, $item->status_item);
+        $this->assertEquals(2, $item->approvedDesign->versi);
     }
 
     // ── Pembatalan ───────────────────────────────────────────────────────

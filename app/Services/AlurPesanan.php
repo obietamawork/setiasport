@@ -24,6 +24,13 @@ use Illuminate\Support\Facades\DB;
  */
 class AlurPesanan
 {
+    /**
+     * Berapa lama bukti yang belum diperiksa menahan pembatalan otomatis
+     * setelah batas bayar (KEP-098). Cukup untuk akhir pekan dan libur
+     * pendek; tanpa batas, gambar asal-asalan bisa mengunci stok selamanya.
+     */
+    public const TENGGANG_BUKTI_JAM = 72;
+
     public function __construct(
         private OrderStatusResolver $resolver,
         private PengirimEmail $email,
@@ -591,12 +598,13 @@ class AlurPesanan
     /**
      * Pesanan yang tidak dibayar sampai batas waktunya (dipanggil penjadwal).
      *
-     * Pesanan yang buktinya sudah diunggah TIDAK dibatalkan (KEP-098): uangnya
-     * sudah dikirim tepat waktu, yang belum hanya pemeriksaan dari toko. Dulu
-     * pelanggan yang membayar Sabtu malam kehilangan pesanannya Minggu malam
-     * karena toko tutup, dan stoknya ikut dilepas ke pembeli lain. Kalau
-     * buktinya kemudian ditolak, batas bayarnya dimulai ulang
-     * (tolakPembayaran()).
+     * Pesanan yang buktinya sudah diunggah diberi tenggang TENGGANG_BUKTI_JAM
+     * (KEP-098): uangnya sudah dikirim tepat waktu, yang belum hanya
+     * pemeriksaan dari toko. Dulu pelanggan yang membayar Sabtu malam
+     * kehilangan pesanannya Minggu malam karena toko tutup, dan stoknya ikut
+     * dilepas ke pembeli lain. Tenggangnya berbatas supaya bukti palsu tidak
+     * menahan stok selamanya. Kalau buktinya ditolak, batas bayarnya dimulai
+     * ulang (tolakPembayaran()).
      *
      * Semua syaratnya dibaca ulang di bawah kunci: verifikasi yang ditekan
      * admin tepat saat penjadwal berjalan tidak boleh berakhir dengan pesanan
@@ -609,11 +617,13 @@ class AlurPesanan
         return DB::transaction(function () use ($order) {
             $terkini = Order::whereKey($order->id)->lockForUpdate()->with('payments')->firstOrFail();
 
+            $buktiMenunggu = $terkini->payments->contains(fn (Payment $p) => $p->status === PaymentStatus::MENUNGGU
+                && filled($p->bukti_path));
+
             $masihBerlaku = $terkini->status !== OrderStatus::MENUNGGU_PEMBAYARAN
                 || $terkini->kadaluarsa_pada === null
                 || $terkini->kadaluarsa_pada->isFuture()
-                || $terkini->payments->contains(fn (Payment $p) => $p->status === PaymentStatus::MENUNGGU
-                    && filled($p->bukti_path));
+                || ($buktiMenunggu && $terkini->kadaluarsa_pada->copy()->addHours(self::TENGGANG_BUKTI_JAM)->isFuture());
 
             if ($masihBerlaku) {
                 return false;

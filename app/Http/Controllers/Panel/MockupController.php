@@ -12,6 +12,7 @@ use App\Services\RosterPemain;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class MockupController extends Controller
 {
@@ -78,13 +79,21 @@ class MockupController extends Controller
             }
         }
 
-        $aset = $this->desain->unggahMockup(
-            $item,
-            $path,
-            $request->input('tautan'),
-            $request->input('catatan'),
-            auth('web')->id(),
-        );
+        try {
+            $aset = $this->desain->unggahMockup(
+                $item,
+                $path,
+                $request->input('tautan'),
+                $request->input('catatan'),
+                auth('web')->id(),
+            );
+        } catch (HttpExceptionInterface $e) {
+            // Pelanggan menyetujui tepat saat versi ini diunggah: berkasnya
+            // tidak dipakai, jadi tidak ditinggal di disk.
+            $this->pengunggah->hapusDari('public', $path);
+
+            throw $e;
+        }
 
         ActivityLog::catat('mockup.diunggah', $item, ['versi' => $aset->versi]);
 

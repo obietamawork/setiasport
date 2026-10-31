@@ -667,12 +667,6 @@ parameters:
 			path: app/Providers/PanelServiceProvider.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/AlurDesain.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$lead_time_hari\.$#'
 			identifier: property.notFound
 			count: 1
@@ -685,9 +679,27 @@ parameters:
 			path: app/Services/AlurDesain.php
 
 		-
+			message: '#^Call to function abort_unless\(\) with arguments false, 409 and ''Desain barang ini…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/AlurDesain.php
+
+		-
+			message: '#^Call to function abort_unless\(\) with arguments false, 409 and ''Item ini sedang…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/AlurDesain.php
+
+		-
 			message: '#^Call to function abort_unless\(\) with arguments false, 422 and ''Item ini sedang…'' will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 2
+			path: app/Services/AlurDesain.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Enums\\OrderItemStatus\:\:ANTRIAN_DESAIN, App\\Enums\\OrderItemStatus\:\:PROSES_DESAIN, App\\Enums\\OrderItemStatus\:\:MENUNGGU_PERSETUJUAN\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
 			path: app/Services/AlurDesain.php
 
 		-
@@ -711,7 +723,7 @@ parameters:
 		-
 			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:MENUNGGU_PERSETUJUAN will always evaluate to false\.$#'
 			identifier: identical.alwaysFalse
-			count: 2
+			count: 3
 			path: app/Services/AlurDesain.php
 
 		-
@@ -794,6 +806,12 @@ parameters:
 
 		-
 			message: '#^Cannot call method berikutnya\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/AlurPesanan.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: app/Services/AlurPesanan.php
@@ -1101,6 +1119,12 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$bukti_path\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Services/LangkahBerikut.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
 			count: 1
 			path: app/Services/LangkahBerikut.php
 

@@ -292,7 +292,7 @@ class KustomFlowTest extends TestCase
         $item = $this->siapkanMenungguPersetujuan();
 
         $this->post(route('lacak.item.revisi', [$item->order->access_token, $item]), [
-            'catatan' => 'Warna kerah terlalu gelap, tolong diterangkan.',
+            'catatan' => 'Warna kerah terlalu gelap, tolong diterangkan.', 'mockup_versi' => 1,
         ])->assertSessionHas('sukses');
 
         $item->refresh();
@@ -313,7 +313,7 @@ class KustomFlowTest extends TestCase
         $item->update(['jumlah_revisi' => (int) setting('revisi_gratis_maks', 3)]);
 
         $this->post(route('lacak.item.revisi', [$item->order->access_token, $item]), [
-            'catatan' => 'Sekali lagi tolong warnanya diubah.',
+            'catatan' => 'Sekali lagi tolong warnanya diubah.', 'mockup_versi' => 1,
         ])->assertSessionHasErrors('alur');
 
         $item->refresh();
@@ -363,7 +363,7 @@ class KustomFlowTest extends TestCase
         $order = $item->order;
 
         $this->post(route('lacak.item.setujui', [$order->access_token, $item]), [
-            'nama' => 'Budi Santoso', 'paham' => '1',
+            'nama' => 'Budi Santoso', 'paham' => '1', 'mockup_versi' => 1,
         ])->assertSessionHas('sukses');
 
         $item->refresh();
@@ -466,7 +466,7 @@ class KustomFlowTest extends TestCase
     private function setujui(OrderItem $item): void
     {
         $this->post(route('lacak.item.setujui', [$item->order->access_token, $item]), [
-            'nama' => 'Budi Santoso', 'paham' => '1',
+            'nama' => 'Budi Santoso', 'paham' => '1', 'mockup_versi' => 1,
         ])->assertSessionHas('sukses');
     }
 

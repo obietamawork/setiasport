@@ -37,6 +37,14 @@ class AlurDesain
         int $olehUserId,
     ): DesignAsset {
         $aset = DB::transaction(function () use ($item, $path, $externalUrl, $catatan, $olehUserId) {
+            // Dikunci sama seperti saat pelanggan menyetujui, supaya unggahan
+            // dan persetujuan tidak bisa bersilangan (KEP-098).
+            $terkunci = OrderItem::whereKey($item->id)->lockForUpdate()->firstOrFail();
+
+            abort_unless(in_array($terkunci->status_item, [
+                OrderItemStatus::ANTRIAN_DESAIN, OrderItemStatus::PROSES_DESAIN, OrderItemStatus::MENUNGGU_PERSETUJUAN,
+            ], true), 409, 'Desain barang ini baru saja disetujui pelanggan, jadi mockupnya tidak bisa diganti lagi.');
+
             $versi = (int) $item->designAssets()
                 ->where('tipe', DesignAssetType::MOCKUP->value)
                 ->max('versi') + 1;
@@ -81,7 +89,7 @@ class AlurDesain
      * versi mockup yang disetujui, inilah yang menyelesaikan sengketa
      * "saya menyetujui yang mana" berbulan-bulan kemudian.
      */
-    public function setujui(OrderItem $item, string $namaDiketik, ?string $ip): void
+    public function setujui(OrderItem $item, string $namaDiketik, ?string $ip, ?int $versiDilihat = null): void
     {
         abort_unless(
             $item->status_item === OrderItemStatus::MENUNGGU_PERSETUJUAN,
@@ -89,11 +97,8 @@ class AlurDesain
             'Item ini sedang tidak menunggu persetujuan.'
         );
 
-        DB::transaction(function () use ($item, $namaDiketik, $ip) {
-            $mockup = $item->designAssets()
-                ->where('tipe', DesignAssetType::MOCKUP->value)
-                ->orderByDesc('versi')
-                ->first();
+        DB::transaction(function () use ($item, $namaDiketik, $ip, $versiDilihat) {
+            $mockup = $this->pastikanVersiTerbaru($item, $versiDilihat);
 
             $item->update([
                 'approved_design_asset_id' => $mockup?->id,
@@ -118,7 +123,7 @@ class AlurDesain
         });
     }
 
-    public function mintaRevisi(OrderItem $item, string $catatan): void
+    public function mintaRevisi(OrderItem $item, string $catatan, ?int $versiDilihat = null): void
     {
         abort_unless(
             $item->status_item === OrderItemStatus::MENUNGGU_PERSETUJUAN,
@@ -135,7 +140,9 @@ class AlurDesain
             'Batas revisi desain sudah tercapai. Hubungi kami untuk membicarakannya.'
         );
 
-        DB::transaction(function () use ($item, $catatan) {
+        DB::transaction(function () use ($item, $catatan, $versiDilihat) {
+            $this->pastikanVersiTerbaru($item, $versiDilihat);
+
             $item->increment('jumlah_revisi');
 
             // Pekerjaan desain dibuka kembali.
@@ -149,6 +156,39 @@ class AlurDesain
             $this->pindah($item, OrderItemStatus::PROSES_DESAIN,
                 'Pelanggan meminta revisi: '.$catatan, null);
         });
+    }
+
+    /**
+     * Versi yang dilihat pelanggan harus versi terbaru (KEP-098).
+     *
+     * Sejak toko boleh mengirim mockup baru selama persetujuan menunggu,
+     * pelanggan yang membuka v1 lalu menekan Setujui setelah v2 terkirim akan
+     * tercatat menyetujui v2: desain yang belum pernah ia lihat, padahal
+     * catatan versi inilah yang menyelesaikan sengketa. Baris item dikunci,
+     * sama seperti saat mockup diunggah, jadi keduanya tidak bisa bersilangan.
+     */
+    private function pastikanVersiTerbaru(OrderItem $item, ?int $versiDilihat): ?DesignAsset
+    {
+        $terkunci = OrderItem::whereKey($item->id)->lockForUpdate()->firstOrFail();
+
+        abort_unless($terkunci->status_item === OrderItemStatus::MENUNGGU_PERSETUJUAN, 409,
+            'Item ini sedang tidak menunggu persetujuan.');
+
+        // reorder(), bukan orderByDesc(): relasinya sudah mengurutkan versi
+        // naik, dan urutan kedua tidak mengalahkan yang pertama. Dulu inilah
+        // sebabnya persetujuan selalu tercatat untuk mockup v1, berapa pun
+        // revisi yang sudah lewat (KEP-098).
+        /** @var DesignAsset|null $terbaru */
+        $terbaru = $item->designAssets()
+            ->where('tipe', DesignAssetType::MOCKUP->value)
+            ->reorder('versi', 'desc')
+            ->first();
+
+        abort_if($versiDilihat !== null && $terbaru !== null && $terbaru->versi !== $versiDilihat, 409,
+            'Toko baru saja mengirim mockup versi baru (v'.$terbaru?->versi.'). Periksa versi itu dulu, '
+            .'lalu setujui atau minta revisi lagi.');
+
+        return $terbaru;
     }
 
     /** Sisa jatah revisi. Nol berarti tidak ada revisi lagi (KEP-038). */

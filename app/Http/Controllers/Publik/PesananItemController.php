@@ -53,6 +53,8 @@ class PesananItemController extends Controller
         $request->validate([
             'nama' => ['required', 'string', 'min:3', 'max:100'],
             'paham' => ['accepted'],
+            // Versi mockup yang tampil saat tombolnya ditekan (KEP-098).
+            'mockup_versi' => ['required', 'integer', 'min:1'],
         ], [
             'nama.required' => 'Ketik nama Anda sebagai tanda persetujuan.',
             'nama.min' => 'Tulis nama lengkap Anda, bukan singkatan.',
@@ -66,7 +68,12 @@ class PesananItemController extends Controller
             );
         }
 
-        $this->desain->setujui($item, $request->string('nama')->trim()->toString(), $request->ip());
+        $this->desain->setujui(
+            $item,
+            $request->string('nama')->trim()->toString(),
+            $request->ip(),
+            $request->integer('mockup_versi'),
+        );
 
         return back()->with('sukses',
             'Desain disetujui dan pesanan masuk antrian produksi. Desain dan daftar pemain sekarang terkunci.');
@@ -78,12 +85,13 @@ class PesananItemController extends Controller
 
         $data = $request->validate([
             'catatan' => ['required', 'string', 'min:5', 'max:500'],
+            'mockup_versi' => ['required', 'integer', 'min:1'],
         ], [
             'catatan.required' => 'Tulis bagian mana yang perlu diubah agar desainer tidak menebak.',
             'catatan.min' => 'Tulis lebih rinci supaya revisinya tepat sasaran.',
         ], ['catatan' => 'catatan revisi']);
 
-        $this->desain->mintaRevisi($item, $data['catatan']);
+        $this->desain->mintaRevisi($item, $data['catatan'], (int) $data['mockup_versi']);
 
         return back()->with('sukses', 'Permintaan revisi terkirim ke desainer.');
     }

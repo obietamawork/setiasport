@@ -73,7 +73,13 @@ class LangkahBerikut
             return [
                 'nada' => 'mendesak',
                 'judul' => 'Bukti transfer menunggu diperiksa',
-                'isi' => 'Pesanan ini belum dikerjakan sampai pembayarannya Anda verifikasi.',
+                'isi' => 'Pesanan ini belum dikerjakan sampai pembayarannya Anda verifikasi.'
+                    .($order->kadaluarsa_pada
+                        ? ' Kalau belum diperiksa sampai '
+                            .$order->kadaluarsa_pada->copy()->addHours(AlurPesanan::TENGGANG_BUKTI_JAM)
+                                ->translatedFormat('j M Y, H:i')
+                            .', pesanan dibatalkan otomatis.'
+                        : ''),
                 'tuju' => '#pembayaran',
                 'label' => 'Periksa bukti',
             ];

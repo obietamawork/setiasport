@@ -3499,10 +3499,11 @@ diperbaiki. Yang ditemukan:
 
 - **Pesanan yang buktinya sudah dikirim tetap dibatalkan penjadwal.** Pelanggan yang
   membayar Sabtu malam kehilangan pesanannya Minggu malam karena toko tutup, dan
-  stoknya dilepas ke pembeli lain. Kini `AlurPesanan::kadaluarsakan()` melewati
-  pesanan yang tagihannya sudah berbukti, dan membaca ulang semua syaratnya di bawah
-  kunci baris. Halaman pesanan menenangkan pelanggan alih-alih menampilkan batas yang
-  sudah lewat.
+  stoknya dilepas ke pembeli lain. Kini `AlurPesanan::kadaluarsakan()` memberi
+  pesanan berbukti tenggang 72 jam setelah batas bayar, dan membaca ulang semua
+  syaratnya di bawah kunci baris. Tenggangnya sengaja berbatas: tanpa batas, gambar
+  asal-asalan bisa menahan stok selamanya. Halaman pesanan menyebut sampai kapan
+  pesanannya disimpan, dan halaman panel kapan pesanan itu batal sendiri.
 - **Tagihan tidak mengikuti pesanan.** DP yang dibayar tunai di kasir meninggalkan
   tagihan DP online, sehingga halaman pesanan tetap meminta DP lengkap dengan
   rekening dan QRIS. Potongan reseller sebelum pelanggan membayar membuat tagihan
@@ -3535,7 +3536,14 @@ diperbaiki. Yang ditemukan:
 - **Pelanggan tidak dikabari saat mockup siap.** Tidak ada email sama sekali di titik
   yang paling sering nyangkut. Kini ada email `mockup-siap` dan teks WhatsApp-nya.
   Mockup versi baru juga bisa dikirim selama pelanggan belum menyetujui, untuk salah
-  ketik yang ketahuan desainer atau revisi tambahan yang disepakati.
+  ketik yang ketahuan desainer atau revisi tambahan yang disepakati. Formulir
+  persetujuan dan revisi membawa versi yang sedang dilihat pelanggan, dan ditolak
+  kalau toko sudah mengirim versi yang lebih baru; baris item dikunci di kedua sisi.
+- **Persetujuan selalu tercatat untuk mockup v1.** Relasi `designAssets()` sudah
+  mengurutkan versi naik, sehingga `orderByDesc('versi')` sesudahnya tidak berpengaruh
+  dan yang diambil selalu versi pertama. Setiap pesanan yang pernah direvisi tercatat
+  menyetujui v1, padahal catatan inilah yang menyelesaikan sengketa. Kini memakai
+  `reorder()`. Bug ini sudah ada sejak awal, dan ketahuan saat menguji versi baru.
 
 **Pembatalan dan pengiriman**
 

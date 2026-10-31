@@ -111,8 +111,10 @@
                          seperti ancaman bagi orang yang sudah membayar. --}}
                     @if ($tagihan['batas'] && $buktiAda)
                         <p class="mt-2 text-sm text-muted">
-                            Bukti transfer Anda sudah kami terima. Selama kami memeriksanya,
-                            pesanan ini tidak dibatalkan walau batas pembayarannya lewat.
+                            Bukti transfer Anda sudah kami terima dan sedang dicocokkan dengan mutasi
+                            rekening. Selama itu pesanan Anda tetap kami simpan walau batas pembayarannya
+                            lewat, sampai
+                            {{ $tagihan['batas']->copy()->addHours(\App\Services\AlurPesanan::TENGGANG_BUKTI_JAM)->translatedFormat('l, j F Y H:i') }}.
                         </p>
                     @elseif ($tagihan['batas'])
                         <p class="mt-2 text-sm">
