@@ -155,7 +155,13 @@ class PengaturanController extends Controller
         $diubah = [];
 
         foreach ($baris as $b) {
-            $nilai = $masuk[$b->key];
+            /*
+             * Browser mengirim isi textarea dengan akhir baris CRLF (KEP-103).
+             * Tanpa disamakan, setiap simpan di tab mana pun menghitung Kebijakan
+             * Privasi, Syarat & Ketentuan, dan teks Tentang sebagai "diubah",
+             * lalu menyalin seluruh isinya ke riwayat aktivitas.
+             */
+            $nilai = is_string($masuk[$b->key]) ? str_replace("\r\n", "\n", $masuk[$b->key]) : $masuk[$b->key];
 
             if ((string) $b->value !== (string) $nilai) {
                 $diubah[$b->key] = ['dari' => $b->value, 'ke' => $nilai];

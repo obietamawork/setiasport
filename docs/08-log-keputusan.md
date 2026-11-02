@@ -3765,6 +3765,34 @@ gambar rancangan klien itu sendiri bukan foto dan terlalu kecil untuk dijadikan 
 
 ---
 
+## KEP-103 — Kalimat pembuka dari klien; teks halaman depan diubah lewat Pengaturan
+**Status:** TERKUNCI · 2026-11-02
+
+Diminta klien: kalimat di bawah judul besar halaman depan diganti "Tersedia berbagai
+kebutuhan olahraga mulai dari sepatu, bola, jersey, pakaian olahraga, aksesoris,
+hingga layanan custom jersey sesuai dengan desainmu.", dan bagian "Tentang Setia
+Sport" harus bisa diubah dari panel.
+
+- **Teks halaman depan sudah bisa diubah dari panel**: Pengaturan › Halaman depan ›
+  Teks, berisi Judul Halaman Depan, Kalimat Pembuka, dan Tentang Usaha (bagian
+  "Tentang Setia Sport"). Hanya peran Pemilik yang memegang Pengaturan; Admin
+  memegang banner, portofolio, dan testimoni. Diuji di browser: mengubahnya dari
+  panel langsung mengubah halaman depan. Ketiga isiannya kini diberi keterangan di
+  mana teksnya tampil, karena "Tentang Usaha" tidak terbaca sebagai bagian "Tentang
+  Setia Sport".
+- **Kalimat pembuka diganti lewat migrasi**, bukan seeder: seeder tidak pernah
+  menimpa nilai yang tersimpan. Migrasinya hanya mengganti kalimat bawaan lama;
+  kalimat yang sudah diubah pemilik toko dibiarkan. Nilai bawaan seeder dan cadangan
+  di tampilan ikut diganti.
+- **Ditemukan saat menguji: teks panjang selalu tercatat "diubah"**. Browser
+  mengirim isi textarea dengan akhir baris CRLF, jadi setiap simpan di tab mana pun
+  menghitung Kebijakan Privasi, Syarat & Ketentuan, dan Tentang Usaha sebagai
+  perubahan ("4 pengaturan disimpan" untuk dua isian) dan menyalin seluruh isinya ke
+  riwayat aktivitas. Kini akhir baris disamakan sebelum dibandingkan. Pemeriksaan
+  Kesiapan tayang tidak terkecoh, karena sudah menyamakannya sendiri.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3871,3 +3899,4 @@ gambar rancangan klien itu sendiri bukan foto dan terlalu kecil untuk dijadikan 
 | KEP-100 | Uji lembar kerja dan QR: antrian printing bisa ditandai, cetakan panjang tidak kosong | TERKUNCI |
 | KEP-101 | Audit judul halaman: satu judul di tab, judul besar, dan bilah HP | TERKUNCI |
 | KEP-102 | Hero beranda: tombol Hubungi Kami, strip keunggulan ringkas seperti contoh klien | TERKUNCI |
+| KEP-103 | Kalimat pembuka dari klien; teks halaman depan diubah lewat Pengaturan | TERKUNCI |

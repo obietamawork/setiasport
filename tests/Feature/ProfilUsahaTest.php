@@ -132,6 +132,63 @@ class ProfilUsahaTest extends TestCase
     }
 
     /** Pemilik toko mengisinya lewat panel, di tab Halaman depan. */
+    /**
+     * Kalimat pembuka dan bagian "Tentang Setia Sport" diubah dari panel,
+     * Pengaturan > Halaman depan (KEP-103), dan langsung tampil di beranda.
+     */
+    public function test_owner_mengubah_teks_halaman_depan_lewat_pengaturan(): void
+    {
+        $this->actingAs($this->owner())->put(route('panel.pengaturan.update'), [
+            'setting' => [
+                'tentang_judul' => 'Perlengkapan Olahraga Lengkap & Berkualitas',
+                'tentang_ringkas' => 'Kalimat pembuka baru.',
+                'tentang_lengkap' => "Paragraf pertama.\r\n\r\nParagraf kedua.",
+            ],
+        ])->assertSessionHas('sukses', '3 pengaturan disimpan.');
+
+        auth()->logout();
+
+        $this->get(route('beranda'))
+            ->assertSee('Perlengkapan Olahraga Lengkap &amp; Berkualitas', false)
+            ->assertSee('Kalimat pembuka baru.')
+            ->assertSee('Tentang '.setting('toko_nama'))
+            ->assertSee('<p>Paragraf pertama.</p>', false)
+            ->assertSee('<p>Paragraf kedua.</p>', false);
+    }
+
+    /**
+     * Textarea dikirim browser dengan akhir baris CRLF. Dulu setiap simpan di
+     * tab mana pun menghitung teks panjang yang tidak disentuh sebagai
+     * "diubah" dan menyalin seluruh isinya ke riwayat aktivitas (KEP-103).
+     */
+    public function test_teks_yang_tidak_disentuh_tidak_dihitung_berubah(): void
+    {
+        $kirim = fn () => $this->actingAs($this->owner())->put(route('panel.pengaturan.update'), [
+            'setting' => [
+                'tentang_lengkap' => str_replace("\n", "\r\n", (string) setting('tentang_lengkap')),
+                'kebijakan_privasi' => str_replace("\n", "\r\n", (string) setting('kebijakan_privasi')),
+            ],
+        ]);
+
+        $kirim()->assertSessionHas('sukses', 'Tidak ada pengaturan yang berubah.');
+        $this->assertStringNotContainsString("\r\n", (string) setting('tentang_lengkap'));
+    }
+
+    /** Teks bawaan lama diganti teks klien; isian pemilik toko tidak disentuh. */
+    public function test_migrasi_kalimat_pembuka_hanya_mengganti_teks_bawaan(): void
+    {
+        $migrasi = require database_path('migrations/2026_11_02_010000_perbarui_kalimat_pembuka_beranda.php');
+        $lama = 'Bola, sepatu, kaos, dan aksesoris olahraga dari merek yang jelas, ditambah layanan konveksi jersey yang dikerjakan sendiri di workshop kami. Melayani ecer maupun tim.';
+
+        Setting::simpan('tentang_ringkas', $lama);
+        $migrasi->up();
+        $this->assertStringStartsWith('Tersedia berbagai kebutuhan olahraga', setting('tentang_ringkas'));
+
+        Setting::simpan('tentang_ringkas', 'Tulisan pemilik toko sendiri.');
+        $migrasi->up();
+        $this->assertSame('Tulisan pemilik toko sendiri.', setting('tentang_ringkas'));
+    }
+
     public function test_owner_mengisi_media_sosial_lewat_pengaturan(): void
     {
         $this->actingAs($this->owner())->put(route('panel.pengaturan.update'), [

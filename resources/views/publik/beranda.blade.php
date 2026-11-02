@@ -61,8 +61,8 @@
 
             <p class="kolom-baca mt-5 text-base leading-relaxed text-white/75 sm:text-lg">
                 {{ setting('tentang_ringkas')
-                    ?: 'Bola, sepatu, kaos, dan aksesoris olahraga, ditambah layanan konveksi jersey
-                        yang dikerjakan sendiri di Wonogiri. Bisa diambil di toko atau dikirim.' }}
+                    ?: 'Tersedia berbagai kebutuhan olahraga mulai dari sepatu, bola, jersey, pakaian olahraga,
+                        aksesoris, hingga layanan custom jersey sesuai dengan desainmu.' }}
             </p>
 
             <div class="kelompok-tombol mt-8">
