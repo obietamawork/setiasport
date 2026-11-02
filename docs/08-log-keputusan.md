@@ -3743,6 +3743,28 @@ benar, dan Safari di iPhone, iPad, dan Mac mendukung huruf variabel sejak iOS 11
 
 ---
 
+## KEP-102 — Hero beranda: tombol Hubungi Kami, strip keunggulan ringkas seperti contoh klien
+**Status:** TERKUNCI · 2026-11-02
+
+Diminta klien, dengan rancangan beranda mereka sebagai acuan:
+
+- **Tombol kedua di hero menjadi "Hubungi Kami"**, menggantikan "Buat jersey custom"
+  (jalan ke kustom sudah ada di menu "Custom jersey"). Ia membuka chat CS kalau CS
+  sedang dibuka, dan WhatsApp toko kalau tidak, sama seperti ajakan konsultasi di
+  bagian bawah beranda. Diperiksa di Chromium, Firefox, dan WebKit pada HP, tablet,
+  laptop, dan desktop: tombolnya tidak tertutup lapisan lain, dan mengekliknya
+  membuka WhatsApp di tab baru.
+- **Strip keunggulan di kaki hero diringkas**: ikon dan satu label sebaris, tanpa
+  kalimat penjelas, dengan label dari rancangan klien ("Produk original &
+  berkualitas", "Harga terjangkau", "Bisa custom jersey sesuai desain", "Melayani
+  ecer & grosir"). Dulu empat kotak bergaris selebar layar dengan keterangan dua
+  baris, yang terbaca sebagai bagian terpisah dari hero. Di HP tetap kisi 2×2.
+
+Latar hero tetap bidang warna sampai klien mengirim foto toko yang bisa dipakai;
+gambar rancangan klien itu sendiri bukan foto dan terlalu kecil untuk dijadikan latar.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3848,3 +3870,4 @@ benar, dan Safari di iPhone, iPad, dan Mac mendukung huruf variabel sejak iOS 11
 | KEP-099 | Uji bagian Pesanan: pelanggan tanpa email, ukuran berkategori, isian tidak hilang | TERKUNCI |
 | KEP-100 | Uji lembar kerja dan QR: antrian printing bisa ditandai, cetakan panjang tidak kosong | TERKUNCI |
 | KEP-101 | Audit judul halaman: satu judul di tab, judul besar, dan bilah HP | TERKUNCI |
+| KEP-102 | Hero beranda: tombol Hubungi Kami, strip keunggulan ringkas seperti contoh klien | TERKUNCI |

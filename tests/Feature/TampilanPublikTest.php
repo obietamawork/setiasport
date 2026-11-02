@@ -5,12 +5,14 @@ namespace Tests\Feature;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Setting;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SettingSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -36,6 +38,28 @@ class TampilanPublikTest extends TestCase
             // Namanya tetap terbaca pembaca layar walau yang tampil ikon.
             ->assertSee('<span class="sr-only">Keranjang</span>', false)
             ->assertSeeInOrder(['<span class="sr-only">Keranjang</span>', 'Masuk'], false);
+    }
+
+    /**
+     * Permintaan klien (KEP-102): tombol kedua di hero "Hubungi Kami", bukan
+     * "Buat jersey custom", dan strip keunggulan tanpa kalimat penjelas.
+     */
+    public function test_hero_beranda_mengajak_menghubungi_toko(): void
+    {
+        $html = $this->get(route('beranda'))->assertOk()->getContent();
+        $hero = Str::before($html, 'Kategori produk');
+
+        // CS mati (bawaan instalasi): tautan WhatsApp toko yang benar-benar terbuka.
+        $this->assertMatchesRegularExpression('#<a href="https://wa\.me/6285160025810[^"]*" target="_blank"[^>]*>\s*<svg[\s\S]*?</svg>\s*Hubungi Kami#', $hero);
+        $this->assertStringContainsString('Melayani ecer &amp; grosir', $hero);
+        $this->assertStringNotContainsString('Buat jersey custom', $html);
+        $this->assertStringNotContainsString('dipertanggungjawabkan', $html);
+
+        config(['fitur.cs' => true]);
+        Setting::simpan('cs_aktif', '1');
+
+        $hero = Str::before($this->get(route('beranda'))->getContent(), 'Kategori produk');
+        $this->assertMatchesRegularExpression('#\$dispatch\(\'buka-cs\', \{\}\)"[^>]*>\s*<svg[\s\S]*?</svg>\s*Hubungi Kami#', $hero);
     }
 
     public function test_judul_halaman_menempel_di_tampilan_hp(): void

@@ -49,7 +49,7 @@
         <h1 class="sr-only">{{ setting('tentang_judul') ?: 'Perlengkapan olahraga lengkap & jersey custom' }}</h1>
         @include('komponen.banner-beranda', ['banner' => $banner])
     @else
-    <div class="relative mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pt-14 pb-10 sm:pt-20 sm:pb-12 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div>
             <p class="text-xs font-semibold tracking-[0.18em] text-white/55 uppercase">
                 {{ setting('toko_nama', 'Setia Sport') }} Wonogiri
@@ -70,10 +70,22 @@
                     Lihat produk
                     <x-ikon nama="lanjut" ukuran="size-4" />
                 </a>
-                <a href="{{ route('katalog', ['jalur' => 'kustom']) }}"
-                   class="tombol border-white/25 bg-white/10 text-white hover:bg-white/20">
-                    Buat jersey custom
-                </a>
+                {{-- Permintaan klien (KEP-102): jalan ke kustom sudah ada di menu
+                     "Custom jersey", jadi tombol kedua dipakai untuk bertanya.
+                     Chat CS kalau sedang dibuka, selain itu WhatsApp toko. --}}
+                @if ($csAktif)
+                    <button type="button" x-data @click="$dispatch('buka-cs', {})"
+                            class="tombol border-white/25 bg-white/10 text-white hover:bg-white/20">
+                        <x-ikon nama="chat" ukuran="size-4" />
+                        Hubungi Kami
+                    </button>
+                @elseif ($waKonsultasi)
+                    <a href="{{ $waKonsultasi }}" target="_blank" rel="noopener"
+                       class="tombol border-white/25 bg-white/10 text-white hover:bg-white/20">
+                        <x-ikon nama="whatsapp" ukuran="size-4" />
+                        Hubungi Kami
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -88,30 +100,24 @@
     </div>
     @endif
 
-    {{-- Empat hal yang paling sering ditanyakan sebelum orang mau memulai.
-         Di HP berupa kisi 2×2 ringkas (ikon + judul): dua baris pendek, tidak
-         mendorong isi halaman turun satu layar penuh. Versi geser-ke-samping
-         sebelumnya memotong kartu kedua di tengah kata, dan terlihat seperti
-         tata letak yang salah, bukan carousel yang disengaja. --}}
-    <div class="relative border-t border-white/10">
-        <ul class="mx-auto grid max-w-6xl grid-cols-2 gap-4 px-5 py-5 text-sm sm:gap-0 sm:px-0 sm:py-0 lg:grid-cols-4">
+    {{-- Empat alasan singkat di kaki hero, mengikuti contoh klien (KEP-102):
+         ikon dan satu label, sebaris di layar lebar, tanpa kalimat penjelas.
+         Versi sebelumnya berupa empat kotak bergaris selebar layar dengan
+         keterangan dua baris, dan terbaca sebagai bagian terpisah dari hero.
+         Di HP kisi 2×2 yang pendek. --}}
+    <div class="relative mx-auto max-w-6xl px-5 pb-8 sm:pb-10">
+        <ul class="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-white/10 pt-6 text-sm lg:grid-cols-4 lg:gap-x-0">
             @foreach ([
-                ['produk', 'Produk original', 'Dari merek yang bisa dipertanggungjawabkan'],
-                ['uang', 'Harga bersaing', 'Ecer maupun grosir, harganya terbuka di web'],
-                ['kategori', 'Bisa custom', 'Desain, nama, dan nomor sesuai keinginan tim'],
-                ['toko', 'Ambil atau kirim', 'Diambil di toko, atau dikirim ke alamat Anda'],
-            ] as $i => [$ikon, $judul, $isi])
-                <li class="sm:px-5 sm:py-5
-                           {{ $i % 2 === 1 ? 'sm:border-l sm:border-white/10' : '' }}
-                           {{ $i >= 2 ? 'sm:border-t sm:border-white/10 lg:border-t-0' : '' }}
-                           {{ $i === 2 ? 'lg:border-l lg:border-white/10' : '' }}">
-                    <div class="flex items-start gap-2.5 sm:gap-3">
-                        <x-ikon :nama="$ikon" class="mt-0.5 shrink-0 text-kuning" />
-                        <div class="min-w-0">
-                            <p class="leading-snug font-semibold">{{ $judul }}</p>
-                            <p class="mt-0.5 hidden leading-relaxed text-white/60 sm:block">{{ $isi }}</p>
-                        </div>
-                    </div>
+                ['produk', 'Produk original & berkualitas'],
+                ['uang', 'Harga terjangkau'],
+                ['kategori', 'Bisa custom jersey sesuai desain'],
+                ['toko', 'Melayani ecer & grosir'],
+            ] as $i => [$ikon, $label])
+                <li class="flex items-center gap-2.5 leading-snug font-medium text-white/85
+                           {{ $i === 0 ? '' : 'lg:border-l lg:border-white/15' }} {{ $i === 0 ? 'lg:pr-5' : 'lg:px-5' }}">
+                    <x-ikon :nama="$ikon" class="shrink-0 text-white/80" />
+                    {{-- Seimbang, bukan "Bisa custom jersey sesuai" lalu "desain" sendirian. --}}
+                    <span class="text-balance">{{ $label }}</span>
                 </li>
             @endforeach
         </ul>
