@@ -1131,7 +1131,7 @@
                                  alamatnya dibetulkan, atau tandai sudah dikabari lewat
                                  WhatsApp supaya hilang dari dashboard. --}}
                             @if ($log->masihPerluDitangani() && $izin->punyaIzin('order.kelola'))
-                                <span class="mt-1 flex flex-wrap gap-3">
+                                <div class="mt-1 flex flex-wrap gap-3">
                                     <form method="POST" action="{{ route('panel.pesanan.email.ulang', [$pesanan, $log]) }}">
                                         @csrf
                                         <button type="submit" class="tautan">Kirim ulang</button>
@@ -1140,7 +1140,7 @@
                                         @csrf
                                         <button type="submit" class="tautan text-muted">Sudah dikabari lewat WhatsApp</button>
                                     </form>
-                                </span>
+                                </div>
                             @endif
                         </li>
                     @endforeach

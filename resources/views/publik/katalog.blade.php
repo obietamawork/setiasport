@@ -61,17 +61,19 @@
     {{-- Stok toko dan Kustom adalah dua cara belanja yang berbeda, bukan
          sekadar dua nilai filter. Dipisah sebagai tab supaya perbedaannya
          terlihat sebelum pelanggan mulai menjelajah. --}}
-    <div class="mt-6 flex gap-1 border-b border-line" role="tablist">
+    {{-- Tautan berpindah halaman, jadi nav dengan aria-current, bukan role="tab"
+         yang menjanjikan panel tab yang tidak ada (KEP-104). --}}
+    <nav class="mt-6 flex gap-1 border-b border-line" aria-label="Cara belanja">
         @foreach ([['', 'Semua'], ['stok', 'Stok toko'], ['kustom', 'Kustom']] as [$nilai, $label])
             @php $aktifTab = request('jalur', '') === $nilai; @endphp
             <a href="{{ route('katalog', array_filter(['jalur' => $nilai, 'kategori' => request('kategori'), 'q' => request('q')])) }}"
-               role="tab" aria-selected="{{ $aktifTab ? 'true' : 'false' }}"
+               @if ($aktifTab) aria-current="page" @endif
                class="-mb-px px-4 py-2.5 text-sm font-semibold transition-colors
                       {{ $aktifTab ? 'garis-aktif text-navy' : 'text-muted hover:text-ink' }}">
                 {{ $label }}
             </a>
         @endforeach
-    </div>
+    </nav>
 
     {{-- Satu baris penyaring, bukan dua formulir bertumpuk. Kategori mengirim
          formulirnya sendiri saat dipilih: tombol "Terapkan" yang berdiri
@@ -144,6 +146,8 @@
             </div>
         </div>
     @else
+        {{-- Nama di tiap kartu berupa h3; tanpa h2 ini urutan judulnya melompat dari h1. --}}
+        <h2 class="sr-only">Daftar produk</h2>
         <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
             @foreach ($produk as $p)
                 @include('komponen.kartu-produk', ['produk' => $p, 'modeJumlah' => $modeJumlah])

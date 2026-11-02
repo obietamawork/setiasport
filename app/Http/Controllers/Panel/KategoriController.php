@@ -90,7 +90,8 @@ class KategoriController extends Controller
      */
     public function pindah(Request $request, Category $kategori): RedirectResponse
     {
-        $arah = $request->string('arah')->toString();
+        // input(), bukan string(): arah[]=x dulu berakhir galat 500 (KEP-104).
+        $arah = $request->input('arah');
 
         abort_unless(in_array($arah, ['naik', 'turun'], true), 422);
 

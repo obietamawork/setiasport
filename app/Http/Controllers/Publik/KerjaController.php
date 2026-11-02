@@ -51,7 +51,7 @@ class KerjaController extends Controller
          * sedang berjalan sekarang, yang mungkin bukan pekerjaan orang itu
          * sama sekali (KEP-098).
          */
-        $dari = OrderItemStatus::tryFrom($request->string('dari')->toString());
+        $dari = OrderItemStatus::dariIsian($request->input('dari'));
 
         if ($dari !== null && $dari !== $item->status_item) {
             return back()->withErrors(['pin' => 'Barang ini sudah berada di tahap '.$item->status_item->labelStaf()

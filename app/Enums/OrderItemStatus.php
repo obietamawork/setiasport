@@ -162,6 +162,16 @@ enum OrderItemStatus: string
     }
 
     /**
+     * Tahap yang dibawa formulir sebagai pembanding "dari" (KEP-098). Isian
+     * yang bukan teks, misalnya dari[]=x, dianggap tidak ada, bukan galat 500
+     * "Array to string conversion" (KEP-104).
+     */
+    public static function dariIsian(mixed $nilai): ?self
+    {
+        return is_string($nilai) ? self::tryFrom($nilai) : null;
+    }
+
+    /**
      * Meja yang memegang barang ini bagi pekerja yang memindai QR (KEP-100).
      *
      * Sama dengan tahapProduksi(), ditambah barang yang baru disetujui dan

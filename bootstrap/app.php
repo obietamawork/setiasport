@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsurePermission;
 use App\Http\Middleware\HeaderKeamanan;
 use App\Http\Middleware\PastikanAkunLayak;
+use App\Http\Middleware\TolakParameterArray;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -23,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Header keamanan di setiap respons, termasuk halaman galat (KEP-086).
         $middleware->append(HeaderKeamanan::class);
+
+        // ?q[]=x dulu menjatuhkan sepuluh halaman dengan galat 500 (KEP-104).
+        $middleware->append(TolakParameterArray::class);
 
         // Staf dan pelanggan punya halaman masuk sendiri; jangan saling melempar.
         $middleware->redirectGuestsTo(

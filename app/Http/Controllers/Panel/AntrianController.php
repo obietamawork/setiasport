@@ -121,7 +121,7 @@ class AntrianController extends Controller
      */
     private function sudahBerpindah(Request $request, OrderItem $item): ?RedirectResponse
     {
-        $dari = OrderItemStatus::tryFrom($request->string('dari')->toString());
+        $dari = OrderItemStatus::dariIsian($request->input('dari'));
 
         if ($dari === null || $dari === $item->status_item) {
             return null;

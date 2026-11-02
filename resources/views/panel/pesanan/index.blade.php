@@ -51,11 +51,11 @@
      bukan sekadar filter, supaya perbedaannya terlihat sebelum dipilih. --}}
 {{-- Label tab tidak boleh patah: di HP "Kustom / konveksi" dulu terpecah dua
      baris dan deretan tabnya tampak acak. Di layar sempit cukup "Kustom". --}}
-<div class="mt-2 flex gap-1 border-b border-line" role="tablist">
+<nav class="mt-2 flex gap-1 border-b border-line" aria-label="Jenis pesanan">
     @foreach ([['', 'Semua', 'Semua'], ['kustom', 'Kustom / konveksi', 'Kustom'], ['stok', 'Stok toko', 'Stok toko']] as [$nilai, $label, $labelPendek])
         @php $aktifJalur = $jalur === $nilai; @endphp
         <a href="{{ route('panel.pesanan.index', array_filter(['jalur' => $nilai, 'status' => $status, 'q' => request('q')])) }}"
-           role="tab" aria-selected="{{ $aktifJalur ? 'true' : 'false' }}"
+           @if ($aktifJalur) aria-current="page" @endif
            class="-mb-px px-3 py-2.5 text-sm font-semibold whitespace-nowrap transition-colors sm:px-4
                   {{ $aktifJalur ? 'garis-aktif text-navy' : 'text-muted hover:text-ink' }}">
             <span class="sm:hidden">{{ $labelPendek }}</span><span class="hidden sm:inline">{{ $label }}</span>
@@ -64,7 +64,7 @@
             @endif
         </a>
     @endforeach
-</div>
+</nav>
 
 
 {{-- Penyaring status menggeser ke samping di layar sempit, tidak melipat jadi

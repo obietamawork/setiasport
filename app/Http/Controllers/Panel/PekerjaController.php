@@ -85,7 +85,8 @@ class PekerjaController extends Controller
     {
         $data = $request->validate([
             'nama' => ['required', 'string', 'max:100'],
-            'pin' => [$pekerja ? 'nullable' : 'required', 'digits_between:4,8'],
+            // bail + string: digits_between pada isian array berakhir galat 500 (KEP-104).
+            'pin' => ['bail', $pekerja ? 'nullable' : 'required', 'string', 'digits_between:4,8'],
             'tahap' => ['required', 'array', 'min:1'],
             'tahap.*' => [Rule::in(array_column(ProductionStage::cases(), 'value'))],
             'catatan' => ['nullable', 'string', 'max:200'],

@@ -3793,6 +3793,59 @@ Sport" harus bisa diubah dari panel.
 
 ---
 
+## KEP-104 — Perburuan bug: isian array, CI, dependensi, markup
+**Status:** TERKUNCI · 2026-11-02
+
+Diminta klien: cari bug sebanyak-banyaknya dengan alat apa pun, lewat Docker. Yang
+dijalankan:
+
+- **Pemburu galat otomatis** (Playwright): menjelajah 411 halaman sebagai tamu,
+  pelanggan, dan Pemilik, lalu mengirim setiap parameter alamat dan 367 formulir unik
+  dengan lima jenis isian (bawaan, array, teks 6.000 karakter dan angka raksasa,
+  karakter khusus dengan berkas gambar palsu, kosong), sambil membaca log Laravel.
+  Database lokal dicadangkan sebelumnya dan dipulihkan sesudahnya.
+- **Replika CI di Docker**: seluruh tes di MariaDB 10.11 (sama dengan hosting),
+  `composer audit`, dan `npm audit`.
+- **gitleaks** atas seluruh riwayat git, **W3C Nu Validator** atas halaman yang
+  dirender, render semua email pesanan untuk 15 jenis pesanan, uji jumlah aneh di
+  keranjang, dan pemeriksaan otorisasi rute serta tautan bertoken.
+
+**Temuan dan perbaikan**
+
+- **Isian array menjatuhkan halaman dengan galat 500.** PHP mengubah `?q[]=x` menjadi
+  array, dan `$request->string()`, `(string) $request->query()`, serta aturan
+  validasi `current_password` dan `digits_between` berhenti dengan "Array to string
+  conversion". Yang terkena: katalog, daftar akun, ongkir, dan delapan halaman panel
+  lewat alamatnya; serta maju/mundur tahap, antrian, halaman QR pekerja, urutan
+  kategori, simpan produk, pekerja, Akun saya, dan hapus keranjang lewat kirimannya.
+  Parameter alamat berupa array kini ditolak 400 oleh satu middleware untuk seluruh
+  aplikasi (tidak ada halaman yang memakainya); isian formulir dibaca dengan
+  pemeriksaan jenis, dan aturan validasi yang rawan diberi `bail` + `string`.
+  Diulang dengan pemburu yang sama: 0 temuan.
+- **CI gagal sejak 30 Oktober bukan karena kode**: GitHub menolak menjalankan job
+  karena akun pemilik repo terkunci masalah tagihan. Replika lokalnya lulus (592 tes
+  di MariaDB 10.11, PHPStan, build sinkron), kecuali `npm audit`: `follow-redirects`
+  1.16.1 punya kerentanan tingkat tinggi, kini 1.16.2. Paket itu hanya dipakai saat
+  build, tidak ikut ke browser.
+- **Markup**: formulir di dalam `<span>` di kartu email pesanan; tab katalog dan tab
+  daftar pesanan memakai `role="tab"` tanpa panel tab padahal berupa tautan (kini
+  `nav` dengan `aria-current`); judul katalog melompat dari h1 ke h3.
+
+**Diperiksa dan sudah benar**: tidak ada rahasia di riwayat git (satu temuan gitleaks
+adalah sandi contoh di tes); tautan bertoken memeriksa kepemilikan barang, bukti
+bayar, dan lampiran CS; reservasi stok mengunci baris varian; Markdown kebijakan
+dibuang tag HTML-nya; tidak ada SQL mentah yang menyisipkan variabel; teks panjang,
+karakter khusus, isian kosong, dan berkas palsu tidak memicu galat di formulir mana
+pun; keranjang menolak jumlah negatif, nol, pecahan, dan raksasa; 120 email ter-render
+tanpa galat.
+
+**Perlu tindakan pemilik**: repo GitHub ini publik. Sandi bawaan seeder (`password`)
+ikut terbaca siapa saja; dokumentasi deploy mencatat kedua akun bawaan sudah diberi
+sandi sementara di rilis pertama, dan itu perlu dipastikan. Pertimbangkan menjadikan
+repo privat.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3900,3 +3953,4 @@ Sport" harus bisa diubah dari panel.
 | KEP-101 | Audit judul halaman: satu judul di tab, judul besar, dan bilah HP | TERKUNCI |
 | KEP-102 | Hero beranda: tombol Hubungi Kami, strip keunggulan ringkas seperti contoh klien | TERKUNCI |
 | KEP-103 | Kalimat pembuka dari klien; teks halaman depan diubah lewat Pengaturan | TERKUNCI |
+| KEP-104 | Perburuan bug: isian array, CI, dependensi, markup | TERKUNCI |

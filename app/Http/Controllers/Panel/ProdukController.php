@@ -130,7 +130,9 @@ class ProdukController extends Controller
 
     private function validasi(Request $request, ?Product $produk = null): array
     {
-        $jalur = $request->string('fulfillment_type')->toString();
+        // Dibaca sebelum divalidasi, jadi isian array tidak boleh sampai ke
+        // string() dan berakhir galat 500 (KEP-104); aturan di bawah menolaknya.
+        $jalur = is_string($request->input('fulfillment_type')) ? $request->input('fulfillment_type') : '';
         $adaStok = in_array($jalur, [FulfillmentType::READY_STOCK->value, FulfillmentType::BOTH->value], true);
         $adaKustom = in_array($jalur, [FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value], true);
 

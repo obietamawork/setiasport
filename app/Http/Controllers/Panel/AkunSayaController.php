@@ -34,7 +34,9 @@ class AkunSayaController extends Controller
             // Email adalah nama masuk: menggantinya butuh bukti pemilik akun.
             'password_sekarang' => [
                 Rule::requiredIf(fn () => $request->input('email') !== $user->email),
-                'nullable', 'current_password:web',
+                // bail + string: current_password memanggil password_verify(), yang
+                // berhenti dengan galat 500 kalau isiannya array (KEP-104).
+                'bail', 'nullable', 'string', 'current_password:web',
             ],
         ], [
             'password_sekarang.required' => 'Masukkan kata sandi sekarang untuk mengganti email.',
@@ -59,7 +61,7 @@ class AkunSayaController extends Controller
         // Bag sendiri: halaman ini punya dua formulir, dan galat kata sandi tidak
         // boleh ikut tampil di formulir profil (yang juga punya isian sandi).
         $request->validateWithBag('sandi', [
-            'password_sekarang' => ['required', 'current_password:web'],
+            'password_sekarang' => ['bail', 'required', 'string', 'current_password:web'],
             'password' => [
                 'required', 'confirmed', 'different:password_sekarang',
                 Password::min(10)->letters()->numbers(),

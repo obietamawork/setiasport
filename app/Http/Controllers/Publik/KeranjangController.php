@@ -98,7 +98,8 @@ class KeranjangController extends Controller
 
     public function hapus(Request $request): RedirectResponse
     {
-        $this->keranjang->hapus($request->string('kunci')->toString());
+        // kunci[]=x dulu berakhir galat 500 (KEP-104); kunci yang tidak ada diabaikan.
+        $this->keranjang->hapus(is_string($request->input('kunci')) ? $request->input('kunci') : '');
 
         return back()->with('sukses', 'Barang dikeluarkan dari keranjang.');
     }
