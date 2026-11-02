@@ -30,6 +30,16 @@
 }
 
 /*
+ * Elemen ber-x-cloak tersembunyi sampai Alpine siap (KEP-105). Aturan ini
+ * tidak pernah ada, jadi 67 x-cloak di 20 tampilan tidak berarti apa-apa:
+ * menu HP setinggi 209 px tampil sekilas di halaman depan lalu hilang, dan
+ * seluruh isi halaman melompat ke atas (CLS 0,23 di Lighthouse).
+ */
+[x-cloak] {
+    display: none !important;
+}
+
+/*
  * Setia Sport Wonogiri, sistem visual.
  *
  * Palet diambil langsung dari logo, dan logo itu pula yang menentukan cara
@@ -1217,7 +1227,9 @@
         white-space: nowrap;
         font-size: 0.75rem;
         font-weight: 600;
-        color: var(--color-navy-300);
+        /* Tahap yang belum dicapai. Dulu navy-300 (kontras 2,5:1, Lighthouse
+           menolaknya); muted tetap terbaca lebih redup dari tahap yang lewat. */
+        color: var(--color-muted);
     }
 
     .tangga-langkah::after {

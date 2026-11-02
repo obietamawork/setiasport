@@ -92,4 +92,21 @@ class IsianArrayTest extends TestCase
             'password_sekarang' => ['password'], 'password' => 'SandiBaru2026', 'password_confirmation' => 'SandiBaru2026',
         ])->assertSessionHasErrors('password_sekarang', null, 'sandi');
     }
+
+    /**
+     * "%" dan "_" di kotak pencarian dulu dibaca sebagai pola LIKE, jadi
+     * mencari "%" menampilkan seluruh katalog (KEP-105). Pesanan sudah
+     * diperbaiki di KEP-099; katalog, produk, dan stok belum.
+     */
+    public function test_tanda_persen_di_pencarian_dibaca_sebagai_huruf(): void
+    {
+        $nama = fn ($r) => $r->viewData('produk')->getCollection()->pluck('nama');
+
+        $this->assertCount(0, $nama($this->get(route('katalog', ['q' => '%']))));
+        $this->assertNotEmpty($nama($this->get(route('katalog', ['q' => 'jersey']))));
+
+        $this->actingAs($this->owner());
+        $this->assertCount(0, $this->get(route('panel.produk.index', ['q' => '%']))->viewData('produk'));
+        $this->assertCount(0, $this->get(route('panel.stok.index', ['q' => '_']))->viewData('varian'));
+    }
 }

@@ -477,12 +477,12 @@
         <form method="POST" action="{{ route('panel.produk.tier.simpan', $produk) }}"
               class="flex flex-wrap items-end gap-3 border-t border-line bg-paper p-4">
             @csrf
-            <div class="w-32"><label class="label-form">Dari (pcs)</label>
-                <input type="number" name="min_qty" class="kotak-input tabular" min="1" required></div>
-            <div class="w-36"><label class="label-form">Sampai (pcs)</label>
-                <input type="number" name="max_qty" class="kotak-input tabular" min="1" placeholder="tak terbatas"></div>
-            <div class="w-40"><label class="label-form">Harga per pcs</label>
-                <input type="number" name="harga_satuan" class="kotak-input tabular" min="1" required></div>
+            <div class="w-32"><label for="tier-min" class="label-form">Dari (pcs)</label>
+                <input type="number" id="tier-min" name="min_qty" class="kotak-input tabular" min="1" required></div>
+            <div class="w-36"><label for="tier-max" class="label-form">Sampai (pcs)</label>
+                <input type="number" id="tier-max" name="max_qty" class="kotak-input tabular" min="1" placeholder="tak terbatas"></div>
+            <div class="w-40"><label for="tier-harga" class="label-form">Harga per pcs</label>
+                <input type="number" id="tier-harga" name="harga_satuan" class="kotak-input tabular" min="1" required></div>
             <button type="submit" class="tombol tombol-garis">Tambah tier</button>
         </form>
     </div>
@@ -568,8 +568,8 @@
         <form method="POST" action="{{ route('panel.produk.opsi.simpan', $produk) }}"
               class="kartu flex flex-wrap items-end gap-3 p-4">
             @csrf
-            <div class="w-56"><label class="label-form">Nama opsi baru</label>
-                <input type="text" name="nama" class="kotak-input" required placeholder="Bahan"></div>
+            <div class="w-56"><label for="opsi-baru" class="label-form">Nama opsi baru</label>
+                <input type="text" id="opsi-baru" name="nama" class="kotak-input" required placeholder="Bahan"></div>
             <label class="flex items-center gap-2 pb-2.5 text-sm">
                 <input type="checkbox" name="wajib" value="1" class="size-4 accent-navy" checked>
                 Wajib dipilih

@@ -157,10 +157,10 @@
                           enctype="multipart/form-data"
                           class="flex flex-wrap items-end gap-3 border-t border-line bg-paper p-4">
                         @csrf
-                        <div class="w-56"><label class="label-form">Preview mockup</label>
-                            <input type="file" name="preview" accept=".jpg,.jpeg,.png,.webp" class="kotak-input"></div>
-                        <div class="min-w-56 flex-1"><label class="label-form">Tautan file siap cetak</label>
-                            <input type="url" name="tautan" class="kotak-input"
+                        <div class="w-56"><label for="mockup-{{ $item->id }}" class="label-form">Preview mockup</label>
+                            <input type="file" id="mockup-{{ $item->id }}" name="preview" accept=".jpg,.jpeg,.png,.webp" class="kotak-input"></div>
+                        <div class="min-w-56 flex-1"><label for="tautan-{{ $item->id }}" class="label-form">Tautan file siap cetak</label>
+                            <input type="url" id="tautan-{{ $item->id }}" name="tautan" class="kotak-input"
                                    placeholder="https://drive.google.com/..."></div>
                         <button type="submit" class="tombol tombol-utama">Kirim untuk disetujui</button>
                         <p class="w-full text-xs text-muted">

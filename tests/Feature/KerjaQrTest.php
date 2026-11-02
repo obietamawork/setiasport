@@ -183,6 +183,24 @@ class KerjaQrTest extends TestCase
             ->orderBy('id')->pluck('ke')->all());
     }
 
+    /**
+     * Halaman yang dibuka saat barang masih antri, dikirim lagi sesudah
+     * printing ditandai: tidak boleh melompatkan barang dari Press ke Potong.
+     */
+    public function test_halaman_lama_dari_antrian_produksi_tidak_memajukan_lagi(): void
+    {
+        $item = $this->itemProduksi();
+        $item->update(['status_item' => OrderItemStatus::ANTRIAN_PRODUKSI]);
+        $this->pekerja('Budi', '1234', [ProductionStage::PRINT->value, ProductionStage::PRESS->value]);
+
+        $kirim = fn () => $this->post(route('kerja.selesai', $item->tokenKerja()), ['pin' => '1234', 'dari' => 'ANTRIAN_PRODUKSI']);
+
+        $kirim()->assertSessionHas('sukses');
+        $kirim()->assertSessionHasErrors('pin');
+
+        $this->assertSame(OrderItemStatus::PRESS, $item->fresh()->status_item);
+    }
+
     /** Bagian lain tetap tidak boleh menandai printing dari antrian. */
     public function test_antrian_produksi_tetap_hanya_untuk_operator_printing(): void
     {

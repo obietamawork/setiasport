@@ -3846,6 +3846,42 @@ repo privat.
 
 ---
 
+## KEP-105 — Pengujian dengan skill baru: x-cloak, sandi bawaan produksi, aksesibilitas
+**Status:** TERKUNCI · 2026-11-03
+
+Dijalankan dengan skill yang baru dipasang: audit pengaturan bawaan yang tidak aman
+(Trail of Bits insecure-defaults, manual dengan korpusnya karena pipeline Workflow tidak
+tersedia), differential-review atas `1537e4c..HEAD` (laporannya di luar repo),
+Lighthouse dan jejak performa lewat Chrome DevTools MCP untuk halaman publik di produksi
+dan halaman panel di lokal, serta skema dan log lewat Laravel Boost.
+
+**Temuan dan perbaikan**
+
+- **`[x-cloak] { display: none }` tidak pernah ada di CSS.** 67 `x-cloak` di 20 tampilan
+  tidak berarti apa-apa sampai Alpine selesai dimuat. Di HP, menu navigasi setinggi
+  209 px tampil sekilas di bawah header lalu hilang, dan seluruh isi halaman melompat:
+  Lighthouse mencatat CLS 0,23 di halaman depan, 0,21 di katalog dan produk, dan 0,85 di
+  pesan kustom. Aturannya ditambahkan; di 69 halaman tidak ada `x-cloak` yang tertinggal
+  setelah Alpine siap, dan CLS halaman depan kembali 0.
+- **Sandi bawaan di produksi.** Seeder membuat Pemilik dan Admin bersandi `password`
+  pada instalasi baru, termasuk di produksi, padahal repo ini publik. Di produksi kini
+  sandinya acak dan wajib diganti; pemilik toko mengaturnya lewat `staf:sandi`.
+- **Mode debug di produksi tidak terdeteksi.** Kini muncul sebagai masalah di dashboard.
+- **Pencarian katalog, produk, dan stok** membaca `%` dan `_` sebagai pola LIKE ("%"
+  menampilkan seluruh katalog); kini huruf biasa, seperti pesanan di KEP-099.
+- **Aksesibilitas panel**: label isian tier harga, opsi baru, unggah mockup, dan pelunasan
+  di serah terima tidak terhubung ke isiannya; label tahap yang belum dicapai di halaman
+  pesanan berkontras 2,5:1 (kini 5,6:1).
+
+**Diperiksa dan sudah benar**: aksesibilitas, praktik terbaik, dan SEO 100 di halaman
+publik produksi (HP dan desktop); LCP halaman depan 1,8 detik dengan 4G lambat dan CPU
+4× lebih lambat; webhook Resend dan middleware izin menolak bila konfigurasi kosong
+(fail-closed); tidak ada rahasia dengan nilai cadangan atau kriptografi lemah; seluruh
+token, kode, dan PIN berindeks unik; isian pencarian yang dipantulkan ke judul halaman
+ter-escape.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -3954,3 +3990,4 @@ repo privat.
 | KEP-102 | Hero beranda: tombol Hubungi Kami, strip keunggulan ringkas seperti contoh klien | TERKUNCI |
 | KEP-103 | Kalimat pembuka dari klien; teks halaman depan diubah lewat Pengaturan | TERKUNCI |
 | KEP-104 | Perburuan bug: isian array, CI, dependensi, markup | TERKUNCI |
+| KEP-105 | Pengujian dengan skill baru: x-cloak, sandi bawaan produksi, aksesibilitas | TERKUNCI |

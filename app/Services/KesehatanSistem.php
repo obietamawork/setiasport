@@ -57,6 +57,19 @@ class KesehatanSistem
     {
         $masalah = [];
 
+        /*
+         * Mode debug di produksi menampilkan jejak kode dan isi konfigurasi di
+         * setiap halaman galat (KEP-105). Hanya terjadi kalau .env di hosting
+         * salah salin dari .env.example, dan tidak ada gejala lain yang terlihat.
+         */
+        if (app()->isProduction() && config('app.debug')) {
+            $masalah[] = [
+                'judul' => 'Mode debug menyala di website yang sudah tayang',
+                'isi' => 'Halaman galat menampilkan isi teknis website kepada siapa saja. '
+                    .'Minta developer mengubah APP_DEBUG menjadi false di berkas .env hosting.',
+            ];
+        }
+
         if (! $this->penjadwalHidup()) {
             $denyut = $this->denyutPenjadwal();
 

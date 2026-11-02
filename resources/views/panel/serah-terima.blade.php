@@ -76,11 +76,11 @@
             <form method="POST" action="{{ route('panel.pesanan.pembayaran.catat', $order) }}"
                   class="flex flex-wrap items-end gap-3 border-t border-line bg-paper p-4">
                 @csrf
-                <div class="w-40"><label class="label-form">Nominal diterima</label>
-                    <input type="number" name="jumlah" value="{{ $order->sisa_tagihan }}"
+                <div class="w-40"><label for="lunas-jumlah" class="label-form">Nominal diterima</label>
+                    <input type="number" id="lunas-jumlah" name="jumlah" value="{{ $order->sisa_tagihan }}"
                            class="kotak-input tabular" min="1" required></div>
-                <div class="w-40"><label class="label-form">Metode</label>
-                    <select name="metode" class="kotak-input">
+                <div class="w-40"><label for="lunas-metode" class="label-form">Metode</label>
+                    <select id="lunas-metode" name="metode" class="kotak-input">
                         <option value="TUNAI">Tunai</option>
                         <option value="QRIS">QRIS</option>
                         <option value="TRANSFER">Transfer bank</option>

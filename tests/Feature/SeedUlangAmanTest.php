@@ -50,6 +50,25 @@ class SeedUlangAmanTest extends TestCase
      * sudah diganti, dihapus, atau perannya diubah tidak boleh kembali: akun
      * owner@setiasport.test bersandi "password" adalah pintu belakang.
      */
+    /**
+     * Repo ini publik, jadi "password" bisa dibaca siapa saja (KEP-105). Di
+     * produksi akun bawaan dibuat dengan sandi acak yang wajib diganti, dan
+     * pemilik toko mengaturnya lewat `php artisan staf:sandi`.
+     */
+    public function test_instalasi_produksi_tidak_memakai_sandi_bawaan(): void
+    {
+        $this->app->detectEnvironment(fn () => 'production');
+
+        // Seperti deploy/pasang.sh: di produksi db:seed meminta konfirmasi tanpa --force.
+        $this->artisan('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true])->assertSuccessful();
+
+        foreach (['owner@setiasport.test', 'admin@setiasport.test'] as $email) {
+            $user = User::where('email', $email)->firstOrFail();
+            $this->assertFalse(Hash::check('password', $user->password), $email);
+            $this->assertTrue($user->wajib_ganti_sandi, $email);
+        }
+    }
+
     public function test_seed_ulang_tidak_menghidupkan_lagi_akun_bawaan(): void
     {
         $this->seed(DatabaseSeeder::class);

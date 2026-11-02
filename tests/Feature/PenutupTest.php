@@ -50,6 +50,21 @@ class PenutupTest extends TestCase
         $this->assertStringContainsString('hosting', $masalah[0]['isi']);
     }
 
+    /** .env hosting yang tersalin dari .env.example menyalakan debug (KEP-105). */
+    public function test_mode_debug_di_produksi_muncul_sebagai_masalah(): void
+    {
+        Cache::forever('denyut_penjadwal', now()->toIso8601String());
+        config(['app.debug' => true]);
+
+        $this->assertSame([], app(KesehatanSistem::class)->masalah());
+
+        $this->app->detectEnvironment(fn () => 'production');
+        $masalah = app(KesehatanSistem::class)->masalah();
+
+        $this->assertStringContainsString('Mode debug menyala', $masalah[0]['judul']);
+        $this->assertStringContainsString('APP_DEBUG', $masalah[0]['isi']);
+    }
+
     public function test_penjadwal_yang_hidup_tidak_memunculkan_masalah(): void
     {
         Cache::forever('denyut_penjadwal', now()->toIso8601String());

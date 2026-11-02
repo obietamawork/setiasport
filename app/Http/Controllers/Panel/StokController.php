@@ -19,7 +19,8 @@ class StokController extends Controller
                 FulfillmentType::READY_STOCK->value, FulfillmentType::BOTH->value,
             ]))
             ->when($request->filled('q'), function ($q) use ($request) {
-                $cari = '%'.$request->string('q').'%';
+                // % dan _ dibaca sebagai huruf biasa, bukan pola (KEP-105, seperti pesanan di KEP-099).
+                $cari = '%'.addcslashes($request->string('q')->toString(), '%_\\').'%';
                 $q->where(fn ($w) => $w->where('sku', 'like', $cari)
                     ->orWhereHas('product', fn ($p) => $p->where('nama', 'like', $cari)));
             })

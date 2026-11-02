@@ -21,7 +21,8 @@ class ProdukController extends Controller
 
         $dasar = fn () => Product::query()
             ->when($request->filled('q'), function ($q) use ($request) {
-                $cari = '%'.$request->string('q').'%';
+                // % dan _ dibaca sebagai huruf biasa, bukan pola (KEP-105, seperti pesanan di KEP-099).
+                $cari = '%'.addcslashes($request->string('q')->toString(), '%_\\').'%';
                 $q->where(fn ($w) => $w->where('nama', 'like', $cari)->orWhere('sku', 'like', $cari));
             });
 
