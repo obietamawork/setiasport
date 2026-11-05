@@ -3961,6 +3961,10 @@ formulir checkout dan akun memakai `autocomplete` dan jenis isian yang benar; ta
   dibiarkan: lolos lewat pengecualian jarak, dan panel dipakai staf yang sudah hafal letaknya.
 - **Gambar tanpa ukuran** di daftar portofolio panel dan QRIS di Pengaturan diberi
   `width`/`height`, supaya tata letaknya tidak melompat saat gambar dimuat.
+- **CLS 0,094 di pesan kustom** (Lighthouse di produksi, HP). Label pola di kartu
+  "Gambaran bentuk" sebaris dengan judulnya lewat `flex-wrap`: muat dengan font cadangan,
+  lalu turun ke baris kedua begitu font web dimuat dan mendorong sketsa 20 px. Labelnya
+  kini selalu di baris sendiri; CLS 0,001 dengan Slow 4G dan CPU 4x lebih lambat.
 
 ---
 

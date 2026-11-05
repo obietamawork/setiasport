@@ -132,10 +132,11 @@
                      langkah 2, jadi yang dilihat adalah yang akan dipesan. --}}
                 @if ($produk->pola)
                     <div class="kartu p-5">
-                        <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                            <p class="font-semibold">Gambaran bentuk</p>
-                            <p class="text-xs text-muted">{{ $produk->pola->label() }}</p>
-                        </div>
+                        {{-- Labelnya selalu di baris sendiri. Sebaris dengan flex-wrap,
+                             ia muat dengan font cadangan lalu turun begitu font web
+                             dimuat, dan sketsa di bawahnya melompat 20 px (CLS 0,09). --}}
+                        <p class="font-semibold">Gambaran bentuk</p>
+                        <p class="mt-0.5 text-xs text-muted">{{ $produk->pola->label() }}</p>
                         <x-pola :pola="$produk->pola" reaktif :celana-opsional="$adaOpsiCelana" class="mx-auto mt-4 max-w-md" />
                         <p class="mt-4 text-sm leading-relaxed text-muted">
                             Sketsa tanpa desain. Warna, motif, logo, dan nomor mengikuti desain di langkah 2;
