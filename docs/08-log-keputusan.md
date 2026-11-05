@@ -3966,6 +3966,47 @@ formulir checkout dan akun memakai `autocomplete` dan jenis isian yang benar; ta
   lalu turun ke baris kedua begitu font web dimuat dan mendorong sketsa 20 px. Labelnya
   kini selalu di baris sendiri; CLS 0,001 dengan Slow 4G dan CPU 4x lebih lambat.
 
+## KEP-108 — Audit performa: pengaturan satu kali baca, cache aset setahun, OPcache
+**Status:** TERKUNCI · 2026-11-06
+
+Diukur di produksi (Rumahweb, LiteSpeed, PHP 8.3, MariaDB 10.11) dan di lokal.
+Waktu proses server, diukur dari server itu sendiri tanpa jarak jaringan: halaman
+depan 248 ms, katalog 202 ms, sitemap 156 ms, dan rute `/up` yang hampir tidak
+mengerjakan apa-apa 130 ms.
+
+**Diperiksa dan sudah benar**: HTTP/2 dan HTTP/3, kompresi Brotli untuk CSS dan JS;
+halaman publik hanya memuat satu CSS (14 KB) dan satu JS (25 KB), sambungan realtime
+chat dimuat terpisah; font di-host sendiri; gambar produk berukuran kecil dan dimuat
+malas; konfigurasi, rute, event, dan tampilan di-cache setiap deploy; autoloader
+Composer dioptimalkan; indeks database mencakup semua kolom yang disaring dan
+diurutkan; antrian dan cron berjalan; tidak ada galat aplikasi sejak 1 November
+(galat hari itu berasal dari server database hosting yang sempat tidak terjangkau).
+
+**Temuan dan perbaikan**
+
+- **Pengaturan dibaca satu per satu.** Tiap kunci punya entri cache sendiri, dan dengan
+  cache database di hosting itu berarti satu kueri per panggilan `setting()`: halaman
+  depan 78 kueri, 59 di antaranya membaca pengaturan; kunci yang tidak ada malah dua
+  kueri, karena null tidak pernah tersimpan di cache. Kini seluruh pengaturan satu
+  entri cache, dibaca sekali per permintaan lewat binding `scoped` (disegarkan
+  antarpermintaan, antarjob antrian, dan antartes). Halaman depan kini 14 kueri,
+  katalog dan halaman produk 41 jadi 11, keranjang dan lacak 27 jadi 2 sampai 3. Deploy membuang cache ini setelah migrasi, karena
+  migrasi yang menulis lewat `DB::table` tidak memicu event model.
+- **Gambar kategori halaman depan** diambil dengan satu kueri per kategori; kini dua
+  kueri untuk semua kategori.
+- **Cache peramban.** Berkas build Vite (CSS, JS, font) dan gambar unggahan bernama
+  ber-hash atau acak, tetapi hanya disimpan 7 hari (bawaan server). Kini setahun dengan
+  `immutable`, lewat `public/.htaccess`; logo dan favicon tetap 7 hari.
+- **OPcache tidak aktif di PHP web.** Akun memakai PHP "native" cPanel yang tidak
+  memuat modul opcache, jadi setiap permintaan mengurai ulang ribuan berkas Laravel;
+  itulah 130 ms di `/up`. Ini pengaturan server, bukan kode. Kesehatan Sistem di
+  dashboard kini memperingatkannya bila website tayang tanpa OPcache.
+- **Batas kueri** halaman publik dijaga tes (`AnggaranKueriTest`), supaya kueri per
+  pengaturan atau per kategori tidak kembali tanpa ketahuan.
+
+**Tidak dipakai**: cache halaman penuh LiteSpeed. Setiap halaman membawa token CSRF
+dan sesi keranjang, jadi halaman yang di-cache akan menyajikan token pengunjung lain.
+
 ---
 
 ## Ringkasan keputusan
@@ -4079,3 +4120,4 @@ formulir checkout dan akun memakai `autocomplete` dan jenis isian yang benar; ta
 | KEP-105 | Pengujian dengan skill baru: x-cloak, sandi bawaan produksi, aksesibilitas | TERKUNCI |
 | KEP-106 | Gambar pola hitam putih, nama jalur dari klien, galeri dan testimoni | TERKUNCI |
 | KEP-107 | Audit UI/UX menyeluruh: bilah judul HP, target sentuh, tombol beli | TERKUNCI |
+| KEP-108 | Audit performa: pengaturan satu kali baca, cache aset setahun, OPcache | TERKUNCI |

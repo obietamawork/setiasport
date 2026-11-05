@@ -65,6 +65,30 @@ class PenutupTest extends TestCase
         $this->assertStringContainsString('APP_DEBUG', $masalah[0]['isi']);
     }
 
+    /** OPcache bisa terlepas saat versi PHP diganti di cPanel (KEP-108). */
+    public function test_opcache_mati_di_produksi_muncul_sebagai_masalah(): void
+    {
+        Cache::forever('denyut_penjadwal', now()->toIso8601String());
+        config(['app.debug' => false]);
+        $aktif = false;
+        $this->partialMock(KesehatanSistem::class, function ($mock) use (&$aktif) {
+            $mock->shouldReceive('opcacheAktif')->andReturnUsing(function () use (&$aktif) {
+                return $aktif;
+            });
+        });
+
+        // Lokal dan tes berjalan di CLI tanpa OPcache; itu bukan masalah.
+        $this->assertSame([], app(KesehatanSistem::class)->masalah());
+
+        $this->app->detectEnvironment(fn () => 'production');
+        $masalah = app(KesehatanSistem::class)->masalah();
+        $this->assertSame('Website berjalan tanpa OPcache', $masalah[0]['judul']);
+        $this->assertStringContainsString('Select PHP Version', $masalah[0]['isi']);
+
+        $aktif = true;
+        $this->assertSame([], app(KesehatanSistem::class)->masalah());
+    }
+
     public function test_penjadwal_yang_hidup_tidak_memunculkan_masalah(): void
     {
         Cache::forever('denyut_penjadwal', now()->toIso8601String());

@@ -50,6 +50,17 @@ class KesehatanSistem
         return EmailLog::whereIn('status', [EmailStatus::BOUNCED->value, EmailStatus::GAGAL->value])->count();
     }
 
+    public function opcacheAktif(): bool
+    {
+        if (! function_exists('opcache_get_status')) {
+            return false;
+        }
+
+        $status = @opcache_get_status(false);
+
+        return is_array($status) && ($status['opcache_enabled'] ?? false) === true;
+    }
+
     /**
      * @return array<int, array{judul: string, isi: string}>
      */
@@ -67,6 +78,22 @@ class KesehatanSistem
                 'judul' => 'Mode debug menyala di website yang sudah tayang',
                 'isi' => 'Halaman galat menampilkan isi teknis website kepada siapa saja. '
                     .'Minta developer mengubah APP_DEBUG menjadi false di berkas .env hosting.',
+            ];
+        }
+
+        /*
+         * Tanpa OPcache, PHP mengurai ulang ribuan berkas Laravel di setiap
+         * permintaan (KEP-108): di hosting ini 130 ms habis sebelum satu baris
+         * kode toko berjalan. Nyala-matinya diatur di cPanel, bukan di kode,
+         * jadi diperiksa di sini supaya ketahuan bila terlepas saat versi PHP
+         * diganti. Hanya dipanggil dashboard, yang berjalan di PHP web, bukan CLI.
+         */
+        if (app()->isProduction() && ! $this->opcacheAktif()) {
+            $masalah[] = [
+                'judul' => 'Website berjalan tanpa OPcache',
+                'isi' => 'Setiap halaman jadi dua sampai tiga kali lebih lambat dari semestinya. '
+                    .'Aktifkan ekstensi opcache di cPanel, menu Select PHP Version, '
+                    .'atau minta penyedia hosting menyalakannya.',
             ];
         }
 

@@ -5,11 +5,11 @@ namespace App\Providers;
 use App\Listeners\CatatIdPesanEmail;
 use App\Mail\Transport\ResendTransport;
 use App\Models\Setting;
-use Illuminate\Mail\Events\MessageSent;
 use App\Services\Ongkir\Biteship;
 use App\Services\Ongkir\OngkirMati;
 use App\Services\Ongkir\PenyediaOngkir;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
@@ -18,6 +18,9 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Seluruh pengaturan toko, satu kali baca cache per permintaan (KEP-108).
+        $this->app->scoped(Setting::CACHE, fn () => Setting::muatSemua());
+
         /*
          * Penyedia ongkir dipilih dari konfigurasi (KEP-057). Selama kuncinya
          * belum ada, yang terpasang penyedia mati: checkout tetap jalan dan

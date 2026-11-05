@@ -23,3 +23,14 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Cache peramban (KEP-108). Berkas build Vite dan gambar unggahan bernama acak
+# atau ber-hash: alamat yang sama tidak pernah berisi berkas lain, jadi boleh
+# disimpan setahun tanpa ditanyakan ulang. Rilis baru memakai nama baru.
+# Berkas lain (logo, favicon) tetap mengikuti bawaan server, 7 hari.
+<IfModule mod_headers.c>
+    <FilesMatch "(-[A-Za-z0-9_-]{8}\.(css|js|woff2)|^[A-Za-z0-9]{24}(-kecil)?\.(webp|jpe?g|png))$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+        Header unset Expires
+    </FilesMatch>
+</IfModule>

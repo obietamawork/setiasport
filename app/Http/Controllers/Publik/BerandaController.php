@@ -64,16 +64,22 @@ class BerandaController extends Controller
             ->take(6)
             ->get();
 
-        $idAnak = Category::whereIn('parent_id', $kategori->pluck('id'))->pluck('id', 'parent_id');
+        // Gambar kategori diambil dari produk bergambar pertama di kategori itu
+        // atau anaknya. Dua kueri untuk semua kategori sekaligus, bukan satu
+        // kueri per kategori (KEP-108).
+        $induk = Category::whereIn('parent_id', $kategori->pluck('id'))->pluck('parent_id', 'id');
+        $produk = Product::query()
+            ->aktif()
+            ->whereHas('images')
+            ->whereIn('category_id', $kategori->pluck('id')->merge($induk->keys()))
+            ->with('images')
+            ->orderBy('id')
+            ->get();
 
         foreach ($kategori as $k) {
-            $k->setAttribute('gambar', Product::query()
-                ->aktif()
-                ->whereHas('images')
-                ->where(fn ($q) => $q->where('category_id', $k->id)
-                    ->orWhereIn('category_id', Category::where('parent_id', $k->id)->select('id')))
-                ->with('images')
-                ->first()?->images->first());
+            $k->setAttribute('gambar', $produk
+                ->first(fn (Product $p) => $p->category_id === $k->id || ($induk[$p->category_id] ?? null) === $k->id)
+                ?->images->first());
         }
 
         return $kategori;

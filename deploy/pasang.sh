@@ -34,6 +34,9 @@ ln -sfn "$BERSAMA/.env" .env
 php artisan package:discover --ansi
 php artisan migrate --force
 php artisan db:seed --force
+# Migrasi yang menulis pengaturan lewat DB::table tidak memicu event model,
+# jadi cache pengaturan dibuang setiap rilis (KEP-108).
+php artisan cache:forget setting.semua
 php artisan optimize
 
 # Aset statis. Document root domain utama cPanel tidak bisa dipindah ke public/,
