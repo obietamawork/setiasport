@@ -58,6 +58,9 @@
     $dataTambahan = $produk->sizeSurcharges->mapWithKeys(fn ($t) => [$t->ukuran => $t->tambahan_harga]);
 
     $langkah = ['Pilih Produk', 'Desain & Detail', 'Data Pemain', 'Cek Pesanan'];
+
+    // Jersey yang celananya opsi tambahan menggambar celana begitu dipilih (KEP-106).
+    $adaOpsiCelana = $produk->options->contains(fn ($o) => Str::contains(Str::lower($o->nama), 'celana'));
 @endphp
 
 <div class="mx-auto max-w-6xl px-5 py-6"
@@ -70,6 +73,7 @@
         dpPersen: {{ (int) setting('dp_minimum_persen', 50) }},
         diskonMinQty: {{ $produk->diskon_min_qty }},
         diskonPerPcs: {{ $produk->diskon_per_pcs }},
+        leherBawaan: @js($produk->pola?->leherBawaan() ?? 'bulat'),
      })">
 
     <nav class="text-sm text-muted" aria-label="Remah roti">
@@ -123,6 +127,23 @@
                     @endif
                 </div>
 
+                {{-- Gambar pola (KEP-106): pemesan awam melihat bentuk barangnya
+                     sebelum ada desain. Model leher dan lengannya ikut pilihan di
+                     langkah 2, jadi yang dilihat adalah yang akan dipesan. --}}
+                @if ($produk->pola)
+                    <div class="kartu p-5">
+                        <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                            <p class="font-semibold">Gambaran bentuk</p>
+                            <p class="text-xs text-muted">{{ $produk->pola->label() }}</p>
+                        </div>
+                        <x-pola :pola="$produk->pola" reaktif :celana-opsional="$adaOpsiCelana" class="mx-auto mt-4 max-w-md" />
+                        <p class="mt-4 text-sm leading-relaxed text-muted">
+                            Sketsa tanpa desain. Warna, motif, logo, dan nomor mengikuti desain di langkah 2;
+                            model leher dan lengan ikut berubah sesuai pilihan Anda.
+                        </p>
+                    </div>
+                @endif
+
                 <div class="kartu p-5">
                     <p class="font-semibold">Yang akan dipesan</p>
                     <p class="mt-1 text-sm text-muted">
@@ -131,13 +152,17 @@
 
                     @if ($produkLain->isNotEmpty())
                         <p class="mt-5 text-sm font-medium">Mau memesan yang lain?</p>
-                        {{-- Di HP kisi dua kolom yang sama lebar: pil selebar namanya
-                             masing-masing dulu patah tak beraturan (satu, satu, satu,
-                             dua, satu) dan terlihat berantakan. --}}
-                        <div class="mt-2 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                        {{-- Kisi sama lebar: pil selebar namanya masing-masing dulu
+                             patah tak beraturan di HP. Tiap ubin membawa sketsa
+                             polanya (KEP-106), jadi setelan, atasan, dan celana
+                             terbedakan sekilas tanpa membaca namanya. --}}
+                        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
                             @foreach ($produkLain as $lain)
                                 <a href="{{ route('kustom.buat', $lain) }}"
-                                   class="flex items-center rounded-[8px] border border-line px-3 py-2 text-sm leading-snug hover:border-navy hover:bg-navy-50">
+                                   class="flex flex-col items-center gap-1.5 rounded-[8px] border border-line px-2 py-2.5 text-center text-sm leading-snug hover:border-navy hover:bg-navy-50">
+                                    @if ($lain->pola)
+                                        <span class="block h-12 w-full"><x-pola :pola="$lain->pola" tampak="ringkas" /></span>
+                                    @endif
                                     {{ $lain->nama }}
                                 </a>
                             @endforeach
@@ -149,6 +174,13 @@
             {{-- LANGKAH 2 --------------------------------------------------- --}}
             <section x-show="langkah === 2" x-cloak class="space-y-4">
                 <h2 class="text-xl font-bold">Desain & detail</h2>
+
+                @if ($produk->pola)
+                    <div class="kartu p-5">
+                        <p class="text-sm text-muted">Bentuknya ikut berubah begitu model dipilih di bawah.</p>
+                        <x-pola :pola="$produk->pola" reaktif :celana-opsional="$adaOpsiCelana" class="mx-auto mt-3 max-w-xs" />
+                    </div>
+                @endif
 
                 @foreach ($produk->options as $opsi)
                     <div class="kartu p-5">
@@ -711,6 +743,33 @@
                     const v = o.values.find(v => v.id === Number(this.pilihan[o.id]));
                     return v ? [{ ...v, opsiNama: o.nama }] : [];
                 });
+            },
+
+            // ------------------------------------------- gambar pola (KEP-106)
+            // Dibaca dari label pilihan, karena opsi tiap produk diisi pemilik
+            // toko sendiri: "Model Baju: Pakai Kerah", "Kerah: V-neck", dst.
+
+            get polaLeher() {
+                for (const v of this.terpilih) {
+                    const l = v.label.toLowerCase();
+                    if (/tanpa|tidak/.test(l)) continue;
+                    if (/v-?neck|leher v/.test(l)) return 'v';
+                    if (/kerah|polo/.test(l)) return 'kerah';
+                    if (/o-?neck|oblong|bulat/.test(l)) return 'bulat';
+                }
+                return this.leherBawaan;
+            },
+
+            get polaLenganPanjang() {
+                return this.terpilih.some(v => /lengan/i.test(v.opsiNama) && /panjang/i.test(v.label));
+            },
+
+            get polaSaku() {
+                return this.terpilih.some(v => /saku/i.test(v.opsiNama) && !/tanpa|tidak/i.test(v.label));
+            },
+
+            get polaCelana() {
+                return this.terpilih.some(v => /celana/i.test(v.opsiNama) && !/tanpa|tidak/i.test(v.label));
             },
 
             get bahanId() {

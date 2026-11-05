@@ -112,6 +112,14 @@
                         </div>
                     @endif
                 </div>
+            @elseif ($produk->pola)
+                {{-- Sketsa pola (KEP-106) selama produk belum punya foto. --}}
+                <div class="kartu p-5 sm:p-8">
+                    <x-pola :pola="$produk->pola" class="mx-auto max-w-lg" />
+                    <p class="mt-5 text-center text-xs text-muted">
+                        Sketsa pola tanpa desain. Warna, motif, dan logo mengikuti pesanan Anda.
+                    </p>
+                </div>
             @else
                 <div class="kartu flex aspect-4/3 items-center justify-center bg-navy-50">
                     <span aria-hidden="true" class="text-6xl font-extrabold tracking-tight text-navy-400">
@@ -131,7 +139,9 @@
                      keputusan: ukuran mana yang masih ada. --}}
                 <section class="mt-10">
                     <h2 class="text-xl font-extrabold">Stok per ukuran</h2>
-                    <div class="mt-4 overflow-x-auto">
+                    {{-- tabindex: tabel yang lebih lebar dari layar HP harus bisa
+                         digeser dengan papan ketik juga, bukan hanya jari (KEP-107). --}}
+                    <div class="mt-4 overflow-x-auto" tabindex="0" role="region" aria-label="Stok per ukuran, bisa digeser">
                         <table class="w-full min-w-100 border-collapse border border-line bg-field text-sm">
                             <thead>
                                 <tr>
@@ -233,15 +243,20 @@
                          Harga kustom pada jumlah besar bisa LEBIH MURAH daripada stok
                          satuan, dan itu memang wajar. --}}
                     <div class="grid grid-cols-2 border-b border-line">
-                        <button type="button" @click="jalur = 'stok'"
+                        {{-- Label dua baris (KEP-107): "Custom (Pre-Order)" sebaris patah
+                             di tengah kata pada HP 360 px. aria-pressed membawa
+                             pilihan yang aktif, yang dulu hanya terlihat dari warna. --}}
+                        <button type="button" @click="jalur = 'stok'" :aria-pressed="(jalur === 'stok').toString()"
                                 :class="jalur === 'stok' ? 'bg-navy text-white' : 'bg-field hover:bg-navy-50'"
-                                class="px-4 py-3 text-sm font-semibold">
-                            Ambil dari stok
+                                class="px-4 py-2.5 text-sm leading-tight font-semibold">
+                            Ready Stock
+                            <span class="block text-xs font-normal">Siap kirim</span>
                         </button>
-                        <button type="button" @click="jalur = 'kustom'"
+                        <button type="button" @click="jalur = 'kustom'" :aria-pressed="(jalur === 'kustom').toString()"
                                 :class="jalur === 'kustom' ? 'bg-navy text-white' : 'bg-field hover:bg-navy-50'"
-                                class="border-l border-line px-4 py-3 text-sm font-semibold">
-                            Pesan kustom
+                                class="border-l border-line px-4 py-2.5 text-sm leading-tight font-semibold">
+                            Custom
+                            <span class="block text-xs font-normal">Pre-Order</span>
                         </button>
                     </div>
                 @endif
@@ -341,6 +356,13 @@
                                         <x-ikon nama="tambah" ukuran="size-4" />
                                         Masukkan ke keranjang
                                     </button>
+                                    {{-- Tombol yang mati tanpa alasan membuat pembeli mengira
+                                         halamannya rusak (KEP-107). --}}
+                                    @if ($tersedia->count() !== 1 || $matriks)
+                                        <p x-show="!varianId" class="text-center text-xs text-muted" aria-live="polite">
+                                            Pilih ukuran dulu untuk melanjutkan.
+                                        </p>
+                                    @endif
                                 </div>
                             </form>
                         @endif

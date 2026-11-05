@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Publik;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Portofolio;
 use App\Models\Product;
+use App\Models\Testimoni;
 use Illuminate\Http\Response;
 
 /**
@@ -37,6 +39,14 @@ class SitemapController extends Controller
 
         foreach (['kebijakan-privasi', 'syarat-ketentuan'] as $rute) {
             $alamat->push(['loc' => route($rute)]);
+        }
+
+        // Halaman galeri 404 selama kosong, jadi hanya didaftarkan kalau berisi.
+        if (Portofolio::aktif()->exists()) {
+            $alamat->push(['loc' => route('portofolio')]);
+        }
+        if (Testimoni::aktif()->exists()) {
+            $alamat->push(['loc' => route('testimoni')]);
         }
 
         return response()

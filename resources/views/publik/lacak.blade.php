@@ -441,7 +441,7 @@
                 'items' => $kelompok[0],
             ],
             [
-                'judul' => 'Stok toko',
+                'judul' => 'Ready Stock',
                 'catatan' => $order->dikirim()
                     ? 'Barang yang sudah ada di rak. Pesanan ini dikirim ke alamat Anda.'
                     : 'Barang yang sudah ada di rak, tinggal disiapkan.',

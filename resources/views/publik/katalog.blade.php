@@ -34,9 +34,9 @@
                     <x-ikon nama="toko" />
                 </span>
                 <span class="min-w-0 flex-1">
-                    <span class="block font-semibold">Stok toko &middot; siap {{ siap_stok() }}</span>
+                    <span class="block font-semibold">Ready Stock (Siap Kirim)</span>
                     <span class="block text-sm text-muted">
-                        Sudah ada di rak, {{ siap_stok() === 'hari ini' ? 'bayar dan ambil hari itu juga' : 'bayar hari ini, ambil '.siap_stok() }}.
+                        Sudah ada di rak, siap {{ siap_stok() }}. Diambil di toko atau dikirim.
                     </span>
                 </span>
                 <x-ikon nama="lanjut" ukuran="size-4" class="text-navy-300 group-hover:text-navy" />
@@ -48,9 +48,9 @@
                     <x-ikon nama="kategori" />
                 </span>
                 <span class="min-w-0 flex-1">
-                    <span class="block font-semibold">Kustom{{ $waktuKustom ? ' · '.$waktuKustom : '' }}</span>
+                    <span class="block font-semibold">Custom Pakaian Olahraga (Pre-Order)</span>
                     <span class="block text-sm text-muted">
-                        Dihitung sejak desain Anda setujui, bukan sejak pesanan masuk.
+                        Dikerjakan {{ $waktuKustom ? $waktuKustom.', ' : '' }}dihitung sejak desain Anda setujui.
                     </span>
                 </span>
                 <x-ikon nama="lanjut" ukuran="size-4" class="text-navy-300 group-hover:text-navy" />
@@ -58,13 +58,13 @@
         </div>
     @endunless
 
-    {{-- Stok toko dan Kustom adalah dua cara belanja yang berbeda, bukan
+    {{-- Ready Stock dan Custom adalah dua cara belanja yang berbeda, bukan
          sekadar dua nilai filter. Dipisah sebagai tab supaya perbedaannya
          terlihat sebelum pelanggan mulai menjelajah. --}}
     {{-- Tautan berpindah halaman, jadi nav dengan aria-current, bukan role="tab"
          yang menjanjikan panel tab yang tidak ada (KEP-104). --}}
     <nav class="mt-6 flex gap-1 border-b border-line" aria-label="Cara belanja">
-        @foreach ([['', 'Semua'], ['stok', 'Stok toko'], ['kustom', 'Kustom']] as [$nilai, $label])
+        @foreach ([['', 'Semua'], ['stok', 'Ready Stock'], ['kustom', 'Custom']] as [$nilai, $label])
             @php $aktifTab = request('jalur', '') === $nilai; @endphp
             <a href="{{ route('katalog', array_filter(['jalur' => $nilai, 'kategori' => request('kategori'), 'q' => request('q')])) }}"
                @if ($aktifTab) aria-current="page" @endif

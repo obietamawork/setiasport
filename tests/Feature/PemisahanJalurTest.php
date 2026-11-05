@@ -145,7 +145,7 @@ class PemisahanJalurTest extends TestCase
         $this->get(route('lacak.token', $campuran->access_token))
             ->assertOk()
             ->assertSee('Dibuat di workshop')
-            ->assertSee('Stok toko');
+            ->assertSee('Ready Stock');
     }
 
     public function test_judul_kelompok_disembunyikan_kalau_isinya_satu_jenis(): void

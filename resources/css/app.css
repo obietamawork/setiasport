@@ -1256,3 +1256,58 @@
         .sidebar-panel { transition: none; }
     }
 }
+
+/*
+ * Gambar pola hitam putih (KEP-106). Garisnya tidak ikut mengecil bersama
+ * gambarnya (non-scaling-stroke): sketsa yang sama dipakai di kartu katalog
+ * selebar 80px dan di langkah pesan kustom selebar 300px, dan garis 0,5px di
+ * kartu nyaris hilang. vector-effect tidak diwariskan, jadi dipasang per elemen.
+ */
+@layer components {
+    .pola :is(path, rect, circle) {
+        fill: #fff;
+        stroke: currentColor;
+        stroke-width: 1.5px;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .pola .g { fill: none; }
+    .pola .j { fill: none; stroke-width: 1px; stroke-dasharray: 3 2.5; }
+}
+
+/*
+ * Judul bagian beranda (KEP-106): batang kuning pendek di depannya, garis
+ * penanda yang sama dengan batang di bawah wordmark. Kuning tetap garis,
+ * tidak pernah bidang.
+ */
+@layer components {
+    .judul-bagian {
+        position: relative;
+        padding-left: 0.9rem;
+    }
+
+    .judul-bagian::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.2em;
+        bottom: 0.2em;
+        width: 4px;
+        border-radius: 2px;
+        background: var(--color-kuning);
+    }
+}
+
+/*
+ * Remah roti setinggi 18 px lolos WCAG 2.5.8 hanya berkat jarak antartautannya
+ * (KEP-107). Di HP itu tetap sasaran yang sempit untuk jempol; padding atas
+ * bawah menjadikannya 26 px tanpa mengubah susunan barisnya.
+ */
+@layer components {
+    nav[aria-label="Remah roti"] a {
+        display: inline-block;
+        padding-block: 0.25rem;
+    }
+}

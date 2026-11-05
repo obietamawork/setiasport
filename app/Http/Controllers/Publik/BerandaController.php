@@ -35,7 +35,7 @@ class BerandaController extends Controller
             'unggulan' => $this->unggulan(),
 
             // Bukti pekerjaan tetap ada, tetapi lebih ringkas dan lebih bawah.
-            'portofolio' => Portofolio::tampilan()->take(6)->get(),
+            'portofolio' => Portofolio::tampilan()->take(4)->get(),
             'testimoni' => Testimoni::tampilan()->take(3)->get(),
 
             'waktuKustom' => Product::rentangWaktuKustom(),

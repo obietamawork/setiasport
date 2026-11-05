@@ -98,7 +98,7 @@
                 @if (setting('toko_telepon'))
                     <a href="{{ tautan_wa('Halo '.setting('toko_nama', 'Setia Sport').', saya mau bertanya.') ?: '#' }}"
                        target="_blank" rel="noopener"
-                       class="flex items-center gap-1.5 text-white/75 hover:text-white">
+                       class="-my-1 flex items-center gap-1.5 py-1 text-white/75 hover:text-white">
                         <x-ikon nama="whatsapp" ukuran="size-4" />
                         <span class="tabular">{{ setting('toko_telepon') }}</span>
                     </a>
@@ -222,9 +222,21 @@
 {{-- Di HP, judul halaman ikut menempel di bawah bilah atas. Setelah menggulir
      beberapa layar, pelanggan kehilangan jejak sedang ada di halaman apa, dan
      bilah atas hanya berisi logo. Di layar lebar judulnya sudah terbaca utuh di
-     badan halaman, jadi bilah ini tidak dipasang di sana. --}}
+     badan halaman, jadi bilah ini tidak dipasang di sana.
+
+     Bilah baru muncul setelah judul besar halaman tergulir lewat (KEP-107):
+     dulu keduanya berdempetan di layar pertama dengan tulisan yang sama, dan
+     bilahnya memakan satu baris layar HP. Ia mengambang, jadi muncul dan
+     hilangnya tidak menggeser isi. Halaman yang judul besarnya tersembunyi
+     (langkah 2 sampai 4 pesan kustom) langsung memakainya. --}}
 @hasSection('subjudul')
-    <div class="sticky top-16 z-20 border-b border-line bg-field/95 backdrop-blur md:hidden">
+    <div x-data="{ tampak: false }" x-show="tampak" x-cloak x-transition.opacity.duration.150ms
+         x-init="const h = document.querySelector('#konten h1');
+                 if (! h) { tampak = true; return; }
+                 new IntersectionObserver(([e]) => {
+                     tampak = ! e.isIntersecting && (e.boundingClientRect.height === 0 || e.boundingClientRect.top < 64);
+                 }, { rootMargin: '-64px 0px 0px 0px' }).observe(h);"
+         class="fixed inset-x-0 top-16 z-20 border-b border-line bg-field/95 backdrop-blur md:hidden">
         <div class="mx-auto max-w-6xl px-5 py-2.5">
             <p class="text-sm font-semibold">@yield('subjudul')</p>
             @hasSection('subcatatan')

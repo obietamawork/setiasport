@@ -3880,6 +3880,88 @@ publik produksi (HP dan desktop); LCP halaman depan 1,8 detik dengan 4G lambat d
 token, kode, dan PIN berindeks unik; isian pencarian yang dipantulkan ke judul halaman
 ter-escape.
 
+## KEP-106 — Gambar pola hitam putih, nama jalur dari klien, galeri dan testimoni
+**Status:** TERKUNCI · 2026-11-06
+
+Tiga revisi dari klien, dengan tangkapan layar contoh.
+
+**Gambar pola.** "Misal cuma dikasih gambar pola kayak gitu aja, bisa enggak? Jadi kayak
+gambar mockup jersey tapi cuma hitam putih gitu. Yang tanpa desain." Pemesan awam perlu
+melihat bentuk barangnya sebelum ada desain.
+
+- Tiap produk punya kolom `pola` (enum `PolaPakaian`: kaos, kaos berkerah, setelan,
+  seragam, celana pendek, celana panjang, jaket), diatur di formulir produk. Migrasi
+  mengisinya untuk produk katalog awal menurut SKU; produk yang tidak dikenal dibiarkan
+  kosong, jadi tidak ada gambar yang menyesatkan. Bola dan sepatu tanpa pola.
+- Komponen `<x-pola>` menggambar sketsa garis sendiri, tampak depan dan belakang, dengan
+  sumbu tengah tetap supaya simetris. Setelan dan seragam terdiri dari dua bagian.
+- Di langkah 1 dan 2 pesan kustom, sketsanya mengikuti pilihan pelanggan: leher bulat, V,
+  atau kerah polo dengan plaket; lengan pendek atau panjang; saku dada; dan celana pendek
+  bila "Dengan Celana" dipilih. Dibaca dari label pilihannya, karena opsi tiap produk
+  diisi pemilik toko sendiri. Ubin "Mau memesan yang lain?" ikut membawa sketsa kecilnya,
+  jadi setelan, atasan, dan celana terbedakan sekilas.
+- Selama produk belum punya foto, sketsa menggantikan monogram di kartu katalog dan di
+  halaman produk: lebih jujur daripada foto contoh, dan bentuknya tetap terlihat.
+- Garisnya tidak ikut mengecil bersama gambarnya (`vector-effect: non-scaling-stroke`),
+  karena sketsa yang sama dipakai selebar 80 px di kartu dan 300 px di pesan kustom.
+
+**Nama jalur.** "Kalau yang ini sepertinya kurang pas": kartu jalur di katalog kini
+"Ready Stock (Siap Kirim)" dan "Custom Pakaian Olahraga (Pre-Order)". Tab, chip kartu
+produk, tombol pilihan di halaman produk hybrid, judul halaman jalur stok, dan kelompok
+barang di halaman lacak ikut memakai Ready Stock dan Custom. Judul halaman jalur kustom
+tetap "Custom jersey", karena sengaja disamakan dengan label menu (KEP-101).
+
+**Galeri dan testimoni** mengikuti contoh klien.
+
+- Beranda memajang empat foto portofolio dalam satu baris, dengan judul di atas bayangan
+  gelap di bawah foto, dan tiga kartu testimoni berlingkaran inisial, bernama, dan
+  berbintang. Inisial, bukan foto: testimoni ditulis ulang admin dari pesan WhatsApp.
+- Keduanya punya "Lihat semua" ke halaman baru `/portofolio` (dengan ringkasan pekerjaan)
+  dan `/testimoni`. Halaman yang kosong dijawab 404 dan baru masuk sitemap setelah berisi.
+- Nilai bintang kini selalu lima tempat (4 bintang terbaca 4 dari 5) dan diberi
+  `role="img"`; `aria-label` pada div biasa dulu diabaikan pembaca layar.
+- Semua judul bagian beranda diberi batang kuning pendek di depannya, garis penanda yang
+  sama dengan batang di bawah wordmark, supaya dua bagian baru tidak tampil berbeda
+  sendiri. Judulnya tetap huruf kalimat ("Galeri portofolio", "Testimoni pelanggan")
+  seperti judul bagian lain.
+
+Banner di bawah testimoni pada contoh klien dibahas terpisah, sesuai permintaannya.
+
+## KEP-107 — Audit UI/UX menyeluruh: bilah judul HP, target sentuh, tombol beli
+**Status:** TERKUNCI · 2026-11-06
+
+Audit ulang setelah KEP-106. Sapuan otomatis dengan Playwright dan axe-core (WCAG 2.2 AA)
+atas 21 halaman publik dan 24 halaman panel di tiga lebar (360, 768, 1366 px): luapan
+horizontal, target sentuh, galat konsol, gambar tanpa ukuran, jumlah h1, dan judul tab.
+Lalu Lighthouse dan tinjauan heuristik pada tangkapan layar HP.
+
+**Diperiksa dan sudah benar**: tidak ada luapan horizontal, galat JavaScript, atau galat
+server di 135 pemuatan; tiap halaman tepat satu h1 dan judul tab yang menyebut isinya;
+formulir checkout dan akun memakai `autocomplete` dan jenis isian yang benar; tautan
+"Lewati ke konten", `lang="id"`, dan cincin fokus `:focus-visible` ada di semua halaman.
+
+**Temuan dan perbaikan**
+
+- **Judul tampil dua kali di layar pertama HP.** Bilah judul yang menempel (KEP-101)
+  berisi tulisan yang sama dengan judul besar tepat di bawahnya, dan memakan satu baris
+  layar. Kini bilahnya mengambang dan baru muncul setelah judul besar tergulir lewat,
+  seperti judul besar di aplikasi HP, jadi muncul dan hilangnya tidak menggeser isi.
+  Langkah 2 sampai 4 pesan kustom, yang judul besarnya tersembunyi, langsung memakainya.
+- **Tombol beli mati tanpa alasan.** "Beli sekarang" dan "Masukkan ke keranjang" nonaktif
+  sampai ukuran dipilih, tanpa keterangan apa pun; pembeli mengira halamannya rusak.
+  Kini ada petunjuk "Pilih ukuran dulu untuk melanjutkan." selama tombolnya mati.
+- **Tombol jalur produk hybrid** "Custom (Pre-Order)" patah di tengah kata pada HP 360 px.
+  Kini dua baris (Ready Stock / Siap kirim, Custom / Pre-Order) dan membawa
+  `aria-pressed`; pilihan yang aktif dulu hanya terlihat dari warnanya.
+- **Tabel stok per ukuran** yang bisa digeser di HP tidak bisa dijangkau papan ketik
+  (axe `scrollable-region-focusable`); kini `tabindex="0"` dengan nama wilayahnya.
+- **Target sentuh.** Remah roti (18 px), "Lihat semua" (20 px), dan nomor WhatsApp di
+  bilah atas (16 px) lolos WCAG 2.5.8 hanya berkat jarak antartautannya; kini 24 sampai
+  28 px tanpa mengubah susunan baris. Tautan aksi di tabel panel ("Ubah", "Hapus")
+  dibiarkan: lolos lewat pengecualian jarak, dan panel dipakai staf yang sudah hafal letaknya.
+- **Gambar tanpa ukuran** di daftar portofolio panel dan QRIS di Pengaturan diberi
+  `width`/`height`, supaya tata letaknya tidak melompat saat gambar dimuat.
+
 ---
 
 ## Ringkasan keputusan
@@ -3991,3 +4073,5 @@ ter-escape.
 | KEP-103 | Kalimat pembuka dari klien; teks halaman depan diubah lewat Pengaturan | TERKUNCI |
 | KEP-104 | Perburuan bug: isian array, CI, dependensi, markup | TERKUNCI |
 | KEP-105 | Pengujian dengan skill baru: x-cloak, sandi bawaan produksi, aksesibilitas | TERKUNCI |
+| KEP-106 | Gambar pola hitam putih, nama jalur dari klien, galeri dan testimoni | TERKUNCI |
+| KEP-107 | Audit UI/UX menyeluruh: bilah judul HP, target sentuh, tombol beli | TERKUNCI |

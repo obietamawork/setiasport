@@ -67,13 +67,13 @@ class ProfilUsahaTest extends TestCase
         $isi = $halaman->getContent();
 
         $this->assertLessThan(
-            strpos($isi, 'Pernah kami kerjakan'),
+            strpos($isi, 'Galeri portofolio'),
             strpos($isi, 'Kategori produk'),
             'Kategori produk harus mendahului portofolio.',
         );
 
         $this->assertLessThan(
-            strpos($isi, 'Pernah kami kerjakan'),
+            strpos($isi, 'Galeri portofolio'),
             strpos($isi, 'Produk unggulan'),
             'Produk unggulan harus mendahului portofolio.',
         );
@@ -100,8 +100,8 @@ class ProfilUsahaTest extends TestCase
     {
         $halaman = $this->get(route('beranda'))->assertOk();
 
-        $halaman->assertDontSee('Pernah kami kerjakan');
-        $halaman->assertDontSee('Kata mereka yang sudah pesan');
+        $halaman->assertDontSee('Galeri portofolio');
+        $halaman->assertDontSee('Testimoni pelanggan');
         $halaman->assertDontSee('Tentang kami');
     }
 
@@ -263,7 +263,8 @@ class ProfilUsahaTest extends TestCase
     {
         $this->get(route('katalog'))
             ->assertOk()
-            ->assertSee('Stok toko')
+            ->assertSee('Ready Stock (Siap Kirim)')
+            ->assertSee('Custom Pakaian Olahraga (Pre-Order)')
             ->assertSee('siap besok')
             ->assertSee('hari kerja');
 

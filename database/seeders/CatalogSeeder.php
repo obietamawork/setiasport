@@ -10,11 +10,12 @@ use App\Models\OptionValue;
 use App\Models\Product;
 use App\Models\ProductOption;
 use App\Models\ProductPrice;
+use App\Models\ProductPriceTier;
 use App\Models\ProductSizeChart;
 use App\Models\ProductSizeSurcharge;
-use App\Models\ProductPriceTier;
 use App\Models\ProductVariant;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
@@ -38,7 +39,7 @@ class CatalogSeeder extends Seeder
     ];
 
     /** Dimuat sekali, bukan query baru tiap nilai opsi "Bahan" dibuat. */
-    private ?\Illuminate\Support\Collection $materialByName = null;
+    private ?Collection $materialByName = null;
 
     public function run(): void
     {
@@ -188,6 +189,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'CUST-JRS-ATASAN',
+            'pola' => 'kaos',
             'nama' => 'Custom Jersey Atasan',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'berat_gram' => 250,
@@ -226,6 +228,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'CUST-SETELAN',
+            'pola' => 'setelan',
             'nama' => 'Custom Setelan Jersey',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'berat_gram' => 280,
@@ -261,6 +264,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'CUST-CELANA-PENDEK',
+            'pola' => 'celana_pendek',
             'nama' => 'Custom Celana Pendek Fullprint',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'berat_gram' => 250,
@@ -292,6 +296,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'CUST-JAKET',
+            'pola' => 'jaket',
             'nama' => 'Custom Jaket Fullprint',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'berat_gram' => 280,
@@ -316,6 +321,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'CUST-TRAINING',
+            'pola' => 'celana_panjang',
             'nama' => 'Custom Celana Training Fullprint',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'berat_gram' => 280,
@@ -344,6 +350,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'CUST-SERAGAM',
+            'pola' => 'seragam',
             'nama' => 'Seragam Olahraga (Kaos + Training)',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'moq' => 24,
@@ -373,6 +380,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'CUST-KAOS-KERAH',
+            'pola' => 'kaos_kerah',
             'nama' => 'Kaos Berkrah',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'moq' => 6,
@@ -401,6 +409,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'CUST-KAOS-OBLONG',
+            'pola' => 'kaos',
             'nama' => 'Kaos Oblong',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'moq' => 6,
@@ -421,6 +430,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'CUST-KAOS-KATUN',
+            'pola' => 'kaos',
             'nama' => 'Kaos Katun',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'moq' => 6,
@@ -444,6 +454,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'JRS-FUTSAL-FP',
+            'pola' => 'kaos',
             'nama' => 'Jersey Futsal Full Printing',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'moq' => 12,
@@ -475,6 +486,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'KAOS-SEKOLAH-SB',
+            'pola' => 'kaos',
             'nama' => 'Kaos Olahraga Sekolah (Sablon)',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'moq' => 40,
@@ -500,6 +512,7 @@ class CatalogSeeder extends Seeder
     {
         $p = $this->produk($kategori, [
             'sku' => 'JRS-POLOS-01',
+            'pola' => 'kaos',
             'nama' => 'Jersey Polos',
             'fulfillment_type' => FulfillmentType::BOTH,
             'harga_dasar' => 65_000,

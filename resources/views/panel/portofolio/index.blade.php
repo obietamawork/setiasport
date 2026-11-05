@@ -26,7 +26,7 @@
         @foreach ($daftar as $p)
             <div class="flex items-center gap-4 px-4 py-3">
                 @if ($p->thumb_path)
-                    <img src="{{ asset('storage/'.$p->thumb_path) }}" alt=""
+                    <img src="{{ asset('storage/'.$p->thumb_path) }}" alt="" width="56" height="56"
                          class="size-14 shrink-0 border border-line object-cover">
                 @endif
 

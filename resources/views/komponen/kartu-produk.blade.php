@@ -40,13 +40,21 @@
 
     {{-- shrink-0 dan grow-0 wajib: sebagai anak flex, kotak berasio ini ikut
          meregang mengisi tinggi baris grid dan rasionya lepas. --}}
-    <div class="relative aspect-square w-full shrink-0 grow-0 bg-navy-50">
+    <div @class(['relative aspect-square w-full shrink-0 grow-0',
+                 'bg-white' => ! $gambar?->thumb_url && $produk->pola,
+                 'bg-navy-50' => $gambar?->thumb_url || ! $produk->pola])>
         @if ($gambar?->thumb_url)
             {{-- Diposisikan absolut, bukan h-full. Tinggi persen tidak bisa
                  dipecahkan terhadap induk yang tingginya berasal dari rasio,
                  sehingga gambar memakai tinggi aslinya dan kotaknya ikut melar. --}}
             <img src="{{ $gambar->thumb_url }}" alt="{{ $gambar->alt ?? $produk->nama }}"
                  class="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async">
+        @elseif ($produk->pola)
+            {{-- Sketsa pola hitam putih (KEP-106) selama belum ada foto: lebih
+                 jujur daripada foto contoh, dan tetap menunjukkan bentuknya. --}}
+            <div class="absolute inset-x-0 top-[12%] bottom-[4%]">
+                <x-pola :pola="$produk->pola" tampak="ringkas" />
+            </div>
         @else
             {{-- Monogram hiasan: namanya sudah tertulis di bawah, jadi disembunyikan
                  dari pembaca layar. navy-400 (4,2:1), bukan navy-300 (2,3:1). --}}
@@ -58,8 +66,8 @@
         {{-- Penanda jalur ditempel di gambar, bukan menempati baris teks
              sendiri: di kartu sesempit ini setiap baris berharga. --}}
         <div class="absolute top-2 left-2 flex flex-wrap gap-1">
-            @if ($stok) <span class="chip chip-navy shadow-sm">Stok</span> @endif
-            @if ($kustom) <span class="chip chip-merah shadow-sm">Kustom</span> @endif
+            @if ($stok) <span class="chip chip-navy shadow-sm">Ready Stock</span> @endif
+            @if ($kustom) <span class="chip chip-merah shadow-sm">Custom</span> @endif
         </div>
     </div>
 

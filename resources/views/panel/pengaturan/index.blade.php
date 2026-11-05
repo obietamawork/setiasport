@@ -101,7 +101,7 @@
                         <div class="mt-4 space-y-4">
                             @if (setting('qris_path'))
                                 <div class="flex flex-wrap items-start gap-5">
-                                    <img src="{{ asset('storage/'.setting('qris_path')) }}" alt="QRIS toko"
+                                    <img src="{{ asset('storage/'.setting('qris_path')) }}" alt="QRIS toko" width="160" height="160"
                                          class="w-40 border border-line bg-white p-2">
                                     <div class="min-w-48 flex-1 space-y-3">
                                         <p class="text-sm leading-relaxed">

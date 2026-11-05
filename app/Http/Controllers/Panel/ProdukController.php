@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Panel;
 
 use App\Enums\FulfillmentType;
+use App\Enums\PolaPakaian;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Category;
@@ -146,6 +147,7 @@ class ProdukController extends Controller
                 Rule::unique('products', 'slug')->ignore($produk?->id)],
             'deskripsi' => ['nullable', 'string', 'max:5000'],
             'fulfillment_type' => ['required', Rule::enum(FulfillmentType::class)],
+            'pola' => ['nullable', Rule::enum(PolaPakaian::class)],
 
             // Harga dasar hanya bermakna di jalur ready stock; tier mengurus jalur kustom.
             'harga_dasar' => [$adaStok ? 'required' : 'nullable', 'integer', 'min:0', 'max:999999999'],
@@ -164,6 +166,7 @@ class ProdukController extends Controller
         ], [
             'category_id' => 'kategori',
             'fulfillment_type' => 'cara beli',
+            'pola' => 'gambar pola',
             'harga_dasar' => 'harga dasar',
             'moq' => 'minimum pemesanan',
             'berat_gram' => 'berat satuan',

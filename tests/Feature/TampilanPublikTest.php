@@ -66,15 +66,32 @@ class TampilanPublikTest extends TestCase
     {
         // Bilahnya menyebut halaman yang sedang dibuka, bukan "Katalog" untuk
         // semua kategori (KEP-101); lihat JudulHalamanTest.
+        // Sejak KEP-107 bilahnya mengambang dan baru tampil setelah judul besar
+        // tergulir lewat, jadi tidak lagi berdempetan dengannya di layar pertama.
         $this->get(route('katalog'))
             ->assertOk()
-            ->assertSee('sticky top-16', false)
+            ->assertSee('fixed inset-x-0 top-16', false)
+            ->assertSee("document.querySelector('#konten h1')", false)
             ->assertSee('<p class="text-sm font-semibold">Katalog produk</p>', false);
 
         $this->get(route('beranda'))
             ->assertOk()
             // Halaman depan tidak punya judul kedua; bilahnya tidak boleh muncul kosong.
-            ->assertDontSee('sticky top-16', false);
+            ->assertDontSee('fixed inset-x-0 top-16', false);
+    }
+
+    /** Tombol beli yang mati menyebut alasannya; pilihan jalur membawa aria-pressed (KEP-107). */
+    public function test_tombol_beli_yang_mati_menyebut_alasannya(): void
+    {
+        $this->get(route('produk', 'jersey-polos'))
+            ->assertOk()
+            ->assertSee('Pilih ukuran dulu untuk melanjutkan.')
+            ->assertSee(':aria-pressed="(jalur === \'kustom\').toString()"', false);
+
+        // Produk satu varian langsung bisa dibeli, jadi petunjuknya tidak perlu.
+        $this->get(route('produk', 'bola-futsal-mitre-ultimatch'))
+            ->assertOk()
+            ->assertDontSee('Pilih ukuran dulu untuk melanjutkan.');
     }
 
     public function test_tautan_pesanan_bisa_disalin(): void

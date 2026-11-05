@@ -5,6 +5,7 @@ use App\Http\Controllers\Publik\AkunController;
 use App\Http\Controllers\Publik\BerandaController;
 use App\Http\Controllers\Publik\CheckoutController;
 use App\Http\Controllers\Publik\CsController;
+use App\Http\Controllers\Publik\GaleriController;
 use App\Http\Controllers\Publik\HalamanHukumController;
 use App\Http\Controllers\Publik\KatalogController;
 use App\Http\Controllers\Publik\KeranjangController;
@@ -31,6 +32,8 @@ Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 Route::get('/kebijakan-privasi', [HalamanHukumController::class, 'privasi'])->name('kebijakan-privasi');
 Route::get('/syarat-ketentuan', [HalamanHukumController::class, 'syarat'])->name('syarat-ketentuan');
 Route::get('/katalog', [KatalogController::class, 'index'])->name('katalog');
+Route::get('/portofolio', [GaleriController::class, 'portofolio'])->name('portofolio');
+Route::get('/testimoni', [GaleriController::class, 'testimoni'])->name('testimoni');
 Route::get('/produk/{produk:slug}', [KatalogController::class, 'show'])->name('produk');
 
 // Pemesanan kustom empat langkah (KEP-040).

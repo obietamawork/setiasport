@@ -51,9 +51,9 @@ class ContohProfilTest extends TestCase
 
         $this->get(route('beranda'))
             ->assertOk()
-            ->assertSee('Pernah kami kerjakan')
+            ->assertSee('Galeri portofolio')
             ->assertSee('Jersey futsal full printing')
-            ->assertSee('Kata mereka yang sudah pesan');
+            ->assertSee('Testimoni pelanggan');
     }
 
     public function test_menjalankan_dua_kali_tidak_menggandakan_isi(): void

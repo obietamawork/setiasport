@@ -126,7 +126,7 @@ class PemesananTombolTest extends TestCase
 
         Setting::simpan('stok_siap_hari', 0);
         $this->get(route('produk', 'bola-futsal-mitre-ultimatch'))->assertSee('Siap diambil hari ini pada jam buka.');
-        $this->get(route('katalog'))->assertSee('siap hari ini')->assertSee('bayar dan ambil hari itu juga');
+        $this->get(route('katalog'))->assertSee('siap hari ini. Diambil di toko atau dikirim.');
 
         Setting::simpan('stok_siap_hari', 3);
         $this->get(route('katalog', ['jalur' => 'stok']))->assertSee('Siap 3 hari lagi');
@@ -140,7 +140,7 @@ class PemesananTombolTest extends TestCase
         $this->jerseyTier()->update(['lead_time_hari' => 21]);
 
         $this->get(route('beranda'))->assertSee('Dikerjakan 10–21 hari kerja, lalu dilunasi');
-        $this->get(route('katalog'))->assertSee('Kustom · 10–21 hari kerja');
+        $this->get(route('katalog'))->assertSee('Dikerjakan 10–21 hari kerja, dihitung sejak desain Anda setujui.');
 
         // Tanpa produk kustom yang tayang: tidak ada angka karangan.
         (clone $kustom)->update(['aktif' => false]);

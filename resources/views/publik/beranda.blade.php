@@ -131,10 +131,10 @@
 <section class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
     <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h2 class="text-2xl font-extrabold sm:text-3xl">Kategori produk</h2>
+            <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Kategori produk</h2>
             <p class="mt-1.5 text-muted">Temukan perlengkapan olahraga favorit Anda di sini.</p>
         </div>
-        <a href="{{ route('katalog') }}" class="tautan text-sm font-medium">Lihat semua &rarr;</a>
+        <a href="{{ route('katalog') }}" class="tautan inline-block py-1 text-sm font-medium">Lihat semua<span class="sr-only"> produk</span> &rarr;</a>
     </div>
 
     {{-- Jumlah kolom mengikuti jumlah kategori, supaya setiap baris penuh.
@@ -178,10 +178,10 @@
     <div class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
         <div class="flex flex-wrap items-end justify-between gap-4">
             <div>
-                <h2 class="text-2xl font-extrabold sm:text-3xl">Produk unggulan</h2>
+                <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Produk unggulan</h2>
                 <p class="mt-1.5 text-muted">Yang paling sering dibawa pulang pelanggan.</p>
             </div>
-            <a href="{{ route('katalog') }}" class="tautan text-sm font-medium">Lihat semua &rarr;</a>
+            <a href="{{ route('katalog') }}" class="tautan inline-block py-1 text-sm font-medium">Lihat semua<span class="sr-only"> produk</span> &rarr;</a>
         </div>
 
         <div class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -264,7 +264,7 @@
      keunggulan tidak pernah dibaca sampai habis. --}}
 <section class="border-y border-line bg-field">
     <div class="mx-auto max-w-6xl px-5 py-12 sm:py-14">
-        <h2 class="text-2xl font-extrabold sm:text-3xl">Kenapa belanja di {{ setting('toko_nama', 'Setia Sport') }}?</h2>
+        <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Kenapa belanja di {{ setting('toko_nama', 'Setia Sport') }}?</h2>
 
         <div class="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             @foreach ([
@@ -287,75 +287,45 @@
     </div>
 </section>
 
-{{-- Bukti pekerjaan. Turun ke bawah dan gridnya dikecilkan (KEP-062): yang
-     mencari bukti akan menggulir sampai sini, yang mencari bola tidak perlu
-     melewati enam kartu besar lebih dulu. --}}
+{{-- Bukti pekerjaan, ditaruh di bawah (KEP-062): yang mencari bukti akan
+     menggulir sampai sini, yang mencari bola tidak perlu melewatinya. Bentuknya
+     mengikuti contoh klien (KEP-106): sebaris foto dengan judul di atasnya,
+     dan "Lihat semua" ke galeri lengkap. --}}
 @if ($portofolio->isNotEmpty())
 <section class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
     <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h2 class="text-2xl font-extrabold sm:text-3xl">Pernah kami kerjakan</h2>
+            <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Galeri portofolio</h2>
             <p class="mt-1.5 text-muted">Sekolah, instansi, dan komunitas di sekitar Wonogiri.</p>
         </div>
+        <a href="{{ route('portofolio') }}" class="tautan inline-block py-1 text-sm font-medium">Lihat semua<span class="sr-only"> portofolio</span> &rarr;</a>
     </div>
 
-    <div class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div class="mt-7 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         @foreach ($portofolio as $p)
-            <figure class="kartu overflow-hidden">
-                <div class="relative aspect-square bg-navy-50">
-                    @if ($p->gambar_path)
-                        <img src="{{ asset('storage/'.($p->thumb_path ?: $p->gambar_path)) }}"
-                             alt="{{ $p->judul }}" loading="lazy" decoding="async"
-                             class="absolute inset-0 size-full object-cover">
-                    @else
-                        <span aria-hidden="true" class="absolute inset-0 flex items-center justify-center px-2 text-center text-xs font-semibold text-muted">
-                            {{ $p->judul }}
-                        </span>
-                    @endif
-                </div>
-                <figcaption class="px-2.5 py-2.5">
-                    <p class="line-clamp-2 text-xs leading-snug font-semibold">{{ $p->judul }}</p>
-                    @if ($p->keterangan())
-                        <p class="mt-0.5 truncate text-xs text-muted">{{ $p->keterangan() }}</p>
-                    @endif
-                </figcaption>
-            </figure>
+            @include('komponen.ubin-portofolio', ['p' => $p])
         @endforeach
     </div>
 </section>
 @endif
 
 {{-- Testimoni menguatkan bukti di atasnya. Ditulis ulang toko dari pesan
-     WhatsApp pelanggan, jadi tidak ada antrian moderasi yang menumpuk. --}}
+     WhatsApp pelanggan, jadi tidak ada antrian moderasi yang menumpuk. Kartu
+     berinisial, bernama, dan berbintang mengikuti contoh klien (KEP-106). --}}
 @if ($testimoni->isNotEmpty())
 <section class="border-y border-line bg-field">
     <div class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
-        <h2 class="text-2xl font-extrabold sm:text-3xl">Kata mereka yang sudah pesan</h2>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+                <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Testimoni pelanggan</h2>
+                <p class="mt-1.5 text-muted">Kata mereka yang sudah memesan di kami.</p>
+            </div>
+            <a href="{{ route('testimoni') }}" class="tautan inline-block py-1 text-sm font-medium">Lihat semua<span class="sr-only"> testimoni</span> &rarr;</a>
+        </div>
 
         <div class="mt-7 grid gap-4 lg:grid-cols-3">
             @foreach ($testimoni as $t)
-                <figure class="kartu flex flex-col p-6">
-                    @if ($t->bintang)
-                        <div class="flex gap-0.5 text-kuning" aria-label="{{ $t->bintang }} dari 5 bintang">
-                            @for ($i = 0; $i < $t->bintang; $i++)
-                                {{-- fill="currentColor" menang atas default fill="none" ikon
-                                     (atribut pertama yang menang saat HTML di-parse), supaya
-                                     bintang terlihat penuh, bukan garis tipis yang di layar
-                                     kecil gampang terbaca sebagai kosong. --}}
-                                <x-ikon nama="testimoni" ukuran="size-4" fill="currentColor" />
-                            @endfor
-                        </div>
-                    @endif
-
-                    <blockquote class="mt-3 flex-1 leading-relaxed">&ldquo;{{ $t->isi }}&rdquo;</blockquote>
-
-                    <figcaption class="mt-4 border-t border-line pt-4 text-sm">
-                        <span class="font-semibold">{{ $t->nama }}</span>
-                        @if ($t->peran)
-                            <span class="block text-muted">{{ $t->peran }}</span>
-                        @endif
-                    </figcaption>
-                </figure>
+                @include('komponen.kartu-testimoni', ['t' => $t, 'ringkas' => true])
             @endforeach
         </div>
     </div>
@@ -369,7 +339,7 @@
 <section id="tentang" class="scroll-mt-20 border-y border-line bg-field">
     <div class="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:py-16 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
         <div>
-            <h2 class="text-2xl font-extrabold sm:text-3xl">Tentang {{ setting('toko_nama', 'kami') }}</h2>
+            <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Tentang {{ setting('toko_nama', 'kami') }}</h2>
             <div class="kolom-baca mt-4 space-y-4 leading-relaxed text-muted">
                 @foreach (preg_split('/\R{2,}/', (string) setting('tentang_lengkap')) as $paragraf)
                     <p>{{ $paragraf }}</p>
@@ -387,7 +357,7 @@
      Dua tempat dengan tugas berbeda: toko tempat pesanan diambil dan dilunasi,
      konveksi tempat jersey dikerjakan. --}}
 <section class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
-    <h2 class="text-2xl font-extrabold sm:text-3xl">Toko dan konveksi kami</h2>
+    <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Toko dan konveksi kami</h2>
 
     <div class="mt-7 grid gap-4 md:grid-cols-2">
         @foreach ([

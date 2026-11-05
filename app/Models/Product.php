@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\FulfillmentType;
 use App\Enums\KategoriUkuran;
+use App\Enums\PolaPakaian;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Product extends Model
 {
     protected $fillable = [
-        'category_id', 'sku', 'nama', 'slug', 'deskripsi', 'fulfillment_type',
+        'category_id', 'sku', 'nama', 'slug', 'deskripsi', 'fulfillment_type', 'pola',
         'harga_dasar', 'berat_gram', 'moq', 'diskon_min_qty', 'diskon_per_pcs',
         'lead_time_hari', 'roster_wajib', 'aktif',
     ];
@@ -21,6 +22,7 @@ class Product extends Model
     {
         return [
             'fulfillment_type' => FulfillmentType::class,
+            'pola' => PolaPakaian::class,
             'harga_dasar' => 'integer',
             'berat_gram' => 'integer',
             'moq' => 'integer',

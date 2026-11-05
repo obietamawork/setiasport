@@ -99,6 +99,22 @@
         </p>
     </div>
 
+    {{-- Gambar pola hitam putih (KEP-106): pengganti foto selama produk belum
+         punya foto, dan pratinjau bentuk di langkah awal pesan kustom. --}}
+    <div>
+        <label for="pola" class="label-form">Gambar pola</label>
+        <select id="pola" name="pola" class="kotak-input">
+            <option value="">Tanpa gambar pola (bukan pakaian)</option>
+            @foreach (\App\Enums\PolaPakaian::cases() as $p)
+                <option value="{{ $p->value }}" @selected(old('pola', $produk->pola?->value) === $p->value)>{{ $p->label() }}</option>
+            @endforeach
+        </select>
+        <p class="mt-1 text-xs leading-relaxed text-muted">
+            Sketsa garis depan dan belakang tanpa desain. Tampil di kartu produk selama belum
+            ada foto, dan di langkah pertama pesan kustom.
+        </p>
+    </div>
+
     {{-- Harga dasar hanya bermakna di jalur ready stock; jalur kustom memakai tier. --}}
     <div x-show="jalur !== 'PREORDER'" x-cloak>
         <label for="harga_dasar" class="label-form">Harga dasar (ready stock)</label>
