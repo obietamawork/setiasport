@@ -4031,6 +4031,14 @@ Actions sebenarnya gratis; yang menguncinya status tagihan akun, bukan pemakaian
 - `deploy/periksa.sh` menjalankan empat pemeriksaan yang sama di komputer developer:
   build dan sinkron `public/build`, Larastan, audit kerentanan Composer dan npm, lalu
   seluruh tes. Dijalankan sebelum deploy.
+- Pemeriksaan lokal pertama langsung menemukan 7 kerentanan yang diumumkan di
+  `symfony/http-foundation`, `http-kernel`, `routing`, dan `yaml` (yang terakhir hanya
+  paket pengembangan): Host dan header forwarded pilihan klien bisa masuk ke URL yang
+  dibuat, aturan jalur di depan PHP bisa dilewati, dan pengurai YAML bisa dibuat
+  lambat. Celah Host sudah tertutup di server, karena `.htaccess` mengalihkan setiap
+  host selain setiasport.com, tetapi semuanya diperbarui ke tambalan seri 7.4
+  (7.4.18–7.4.21 menjadi 7.4.23) tanpa mengubah `composer.json`. Selama CI GitHub
+  terkunci, audit dependensi tidak berjalan dan temuan ini tidak terlihat.
 - Push tidak bergantung pada CI. Galat `fatal error in commit_refs` yang sempat
   menolak push di hari yang sama ternyata gangguan sesaat di GitHub: push yang sama
   berhasil sejam kemudian tanpa perubahan apa pun.
