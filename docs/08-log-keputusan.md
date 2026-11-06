@@ -3999,13 +3999,41 @@ diurutkan; antrian dan cron berjalan; tidak ada galat aplikasi sejak 1 November
   `immutable`, lewat `public/.htaccess`; logo dan favicon tetap 7 hari.
 - **OPcache tidak aktif di PHP web.** Akun memakai PHP "native" cPanel yang tidak
   memuat modul opcache, jadi setiap permintaan mengurai ulang ribuan berkas Laravel;
-  itulah 130 ms di `/up`. Ini pengaturan server, bukan kode. Kesehatan Sistem di
-  dashboard kini memperingatkannya bila website tayang tanpa OPcache.
+  itulah 130 ms di `/up`. Ini pengaturan server, bukan kode: pemilik akun memindah
+  PHP dari "native (8.3)" ke PHP 8.3 CloudLinux di cPanel > Select PHP Version, yang
+  membawa opcache (128 MB, `validate_timestamps` menyala sehingga deploy tetap aman)
+  dan driver database mysqlnd. Kesehatan Sistem di dashboard kini memperingatkan bila
+  website tayang tanpa OPcache, misalnya setelah versi PHP diganti lagi.
+
+  | Waktu proses server | Awal | Setelah perbaikan kode | Setelah OPcache |
+  |---|---|---|---|
+  | Halaman depan | 222 ms | 171 ms | 27 ms |
+  | Katalog | 195 ms | 200 ms | 24 ms |
+  | Halaman produk | 184 ms | 188 ms | 27 ms |
+  | Pesan kustom | 188 ms | 179 ms | 23 ms |
+  | `/up` | 122 ms | 130 ms | 9 ms |
 - **Batas kueri** halaman publik dijaga tes (`AnggaranKueriTest`), supaya kueri per
   pengaturan atau per kategori tidak kembali tanpa ketahuan.
 
 **Tidak dipakai**: cache halaman penuh LiteSpeed. Setiap halaman membawa token CSRF
 dan sesi keranjang, jadi halaman yang di-cache akan menyajikan token pengunjung lain.
+
+## KEP-109 — CI dijalankan lokal; GitHub Actions hanya manual
+**Status:** TERKUNCI · 2026-11-06
+
+Merevisi bagian CI dari KEP-090. Akun GitHub terkunci tagihan, dan pemiliknya tidak
+memakai kartu pembayaran, jadi setiap push memicu Actions yang langsung gagal dan
+mengirim email "CI gagal" yang tidak ada hubungannya dengan kodenya. Untuk repo publik
+Actions sebenarnya gratis; yang menguncinya status tagihan akun, bukan pemakaian.
+
+- `.github/workflows/ci.yml` kini hanya `workflow_dispatch`: tidak berjalan di setiap
+  push, tetapi tetap bisa dijalankan manual dari tab Actions bila kuncinya sudah dibuka.
+- `deploy/periksa.sh` menjalankan empat pemeriksaan yang sama di komputer developer:
+  build dan sinkron `public/build`, Larastan, audit kerentanan Composer dan npm, lalu
+  seluruh tes. Dijalankan sebelum deploy.
+- Push tidak bergantung pada CI. Galat `fatal error in commit_refs` yang sempat
+  menolak push di hari yang sama ternyata gangguan sesaat di GitHub: push yang sama
+  berhasil sejam kemudian tanpa perubahan apa pun.
 
 ---
 
@@ -4121,3 +4149,4 @@ dan sesi keranjang, jadi halaman yang di-cache akan menyajikan token pengunjung 
 | KEP-106 | Gambar pola hitam putih, nama jalur dari klien, galeri dan testimoni | TERKUNCI |
 | KEP-107 | Audit UI/UX menyeluruh: bilah judul HP, target sentuh, tombol beli | TERKUNCI |
 | KEP-108 | Audit performa: pengaturan satu kali baca, cache aset setahun, OPcache | TERKUNCI |
+| KEP-109 | CI dijalankan lokal; GitHub Actions hanya manual | TERKUNCI |

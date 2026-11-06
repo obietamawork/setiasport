@@ -13,6 +13,8 @@ PHP, Composer, dan Artisan hanya ada di container Docker, tidak di Windows. Peri
 - Tes: `docker compose exec -T app php artisan test --compact tests/Feature/NamaTest.php`
 - Analisis statis: `docker compose exec -T app vendor/bin/phpstan analyse --no-progress --memory-limit=1G`
 - Format: `docker compose exec -T app vendor/bin/pint <berkas>`
+- CI lokal sebelum deploy (build, Larastan, audit dependensi, tes): `bash deploy/periksa.sh`.
+  GitHub Actions hanya manual (KEP-109).
 
 Jangan menjalankan dua `artisan test` sekaligus. Node berjalan di Windows: setelah
 mengubah `resources/css` atau `resources/js`, jalankan `npm run build` dan ikut

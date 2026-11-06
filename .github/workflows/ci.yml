@@ -1,4 +1,7 @@
-# Pemeriksaan otomatis di setiap push dan pull request (KEP-090).
+# Pemeriksaan yang dulu berjalan otomatis di setiap push dan pull request (KEP-090).
+# Sejak KEP-109 hanya dijalankan manual (tab Actions > CI > Run workflow): akun
+# GitHub terkunci tagihan, jadi setiap push berakhir dengan email "CI gagal".
+# Pemeriksaan yang sama dijalankan lokal dengan: bash deploy/periksa.sh
 #
 # Empat hal yang selama ini hanya bergantung pada ingatan developer:
 #   1. seluruh tes lulus,
@@ -9,9 +12,7 @@
 name: CI
 
 on:
-  push:
-    branches: [master]
-  pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
