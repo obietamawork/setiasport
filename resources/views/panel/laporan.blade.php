@@ -1,18 +1,11 @@
 @extends('layouts.panel')
-@section('judul', 'Laporan')
+@section('judul', 'Laporan penjualan')
 
 @section('isi')
-<x-kop judul="Laporan"
+<x-kop judul="Laporan penjualan"
        :catatan="$labelPeriode.': '.$dari->translatedFormat('j M Y').' sampai '.$sampai->translatedFormat('j M Y')" />
 
-<div class="segmen mt-1">
-    @foreach (['30hari' => '30 hari', 'bulan-ini' => 'Bulan ini', 'bulan-lalu' => 'Bulan lalu', 'tahun-ini' => 'Tahun ini'] as $nilai => $label)
-        <a href="{{ route('panel.laporan', ['periode' => $nilai]) }}"
-           class="segmen-item {{ $pilihan === $nilai ? 'segmen-item-aktif' : '' }}">
-            {{ $label }}
-        </a>
-    @endforeach
-</div>
+@include('panel.laporan.periode', ['rute' => 'panel.laporan'])
 
 {{-- Uang yang benar-benar diterima didahulukan, karena itulah satu-satunya
      angka yang bisa dicocokkan dengan rekening dan laci kasir. --}}
@@ -90,7 +83,12 @@
     </section>
 
     <section class="kartu overflow-hidden">
-        <h2 class="kartu-kop">Produk terlaris</h2>
+        <h2 class="kartu-kop flex items-center gap-2">
+            Produk terlaris
+            <a href="{{ route('panel.laporan.terlaris', ['periode' => $pilihan]) }}" class="tautan-lihat ml-auto">
+                Lihat semua <x-ikon nama="lanjut" ukuran="size-4" />
+            </a>
+        </h2>
         @if ($terlaris->isEmpty())
             <p class="p-5 text-sm text-muted">Belum ada pesanan pada periode ini.</p>
         @else

@@ -276,8 +276,12 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::put('stok', [StokController::class, 'update'])->name('stok.update');
         });
 
-        Route::get('laporan', LaporanController::class)
-            ->middleware('izin:laporan.lihat')->name('laporan');
+        // Tiga halaman laporan dengan periode yang sama (KEP-117).
+        Route::middleware('izin:laporan.lihat')->group(function () {
+            Route::get('laporan', [LaporanController::class, 'penjualan'])->name('laporan');
+            Route::get('laporan/stok', [LaporanController::class, 'stok'])->name('laporan.stok');
+            Route::get('laporan/terlaris', [LaporanController::class, 'terlaris'])->name('laporan.terlaris');
+        });
 
         Route::middleware('izin:pengaturan.kelola')->group(function () {
             Route::get('pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index');

@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\CatalogSeeder;
@@ -118,5 +119,57 @@ class LaporanTest extends TestCase
         $this->assertSame(0, $response->viewData('jumlahPesanan'));
 
         CarbonImmutable::setTestNow();
+    }
+
+    // --------------------------------------- tiga halaman laporan (KEP-117)
+
+    public function test_produk_terlaris_punya_halaman_sendiri(): void
+    {
+        $this->order('JRS-FUTSAL-FP', 5, 'Jersey Futsal FP');
+
+        $this->actingAs($this->owner())
+            ->get(route('panel.laporan.terlaris', ['periode' => 'tahun-ini']))
+            ->assertOk()
+            ->assertViewHas('terlaris', fn ($t) => $t->count() === 1 && (int) $t->first()->total_qty === 5)
+            ->assertSee(Product::where('sku', 'JRS-FUTSAL-FP')->value('nama'));
+    }
+
+    public function test_laporan_stok_menghitung_tersedia_dan_nilai_stok(): void
+    {
+        $varian = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();
+        $varian->update(['stok' => 10, 'stok_dipesan' => 2]);
+
+        $this->actingAs($this->owner())
+            ->get(route('panel.laporan.stok'))
+            ->assertOk()
+            ->assertViewHas('varian', fn ($v) => ($baris = $v->firstWhere('id', $varian->id))
+                && $baris->stok_tersedia === 8)
+            ->assertViewHas('nilaiStok', fn (int $nilai) => $nilai >= 10 * $varian->harga);
+    }
+
+    public function test_laporan_stok_memuat_riwayat_penyesuaian(): void
+    {
+        $varian = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();
+
+        $this->actingAs($this->owner())
+            ->put(route('panel.stok.update'), [
+                'stok' => [$varian->id => $varian->stok + 4],
+                'alasan' => 'Opname akhir bulan',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($this->owner())
+            ->get(route('panel.laporan.stok'))
+            ->assertOk()
+            ->assertSee('Opname akhir bulan')
+            ->assertSee('BOLA-MITRE-01');
+    }
+
+    public function test_halaman_laporan_baru_butuh_izin_laporan(): void
+    {
+        $tanpaIzin = User::create(['name' => 'Staf', 'email' => 'staf.laporan@setiasport.test', 'password' => bcrypt('rahasia-panjang')]);
+
+        $this->actingAs($tanpaIzin)->get(route('panel.laporan.stok'))->assertForbidden();
+        $this->actingAs($tanpaIzin)->get(route('panel.laporan.terlaris'))->assertForbidden();
     }
 }

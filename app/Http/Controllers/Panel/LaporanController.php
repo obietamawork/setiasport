@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Panel;
 
+use App\Enums\FulfillmentType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\StatusPembatalan;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Pembatalan;
+use App\Models\ProductVariant;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -20,10 +23,14 @@ use Illuminate\Support\Facades\DB;
  * Yang dibutuhkan pemilik toko adalah menjawab beberapa pertanyaan: berapa uang
  * yang benar-benar masuk, berapa yang masih tertahan, dan apa yang laku. Grafik
  * tidak menjawab satu pun dari itu lebih baik daripada angka.
+ *
+ * Sejak revisi klien (KEP-117) dipecah tiga halaman dengan periode yang sama:
+ * Penjualan (uang dan pesanan), Stok barang (isi rak dan nilainya), dan
+ * Produk terlaris.
  */
 class LaporanController extends Controller
 {
-    public function __invoke(Request $request): View
+    public function penjualan(Request $request): View
     {
         [$dari, $sampai, $labelPeriode] = $this->periode($request);
 
@@ -73,7 +80,77 @@ class LaporanController extends Controller
             'sisaTertahan' => (int) $berjalan->sum(fn (Order $o) => $o->sisa_tagihan),
             'pesananBerjalan' => $berjalan->count(),
 
-            'terlaris' => $this->terlaris($dari, $sampai),
+            'terlaris' => $this->kueriTerlaris($dari, $sampai, 5),
+        ]);
+    }
+
+    /**
+     * Isi rak barang ready stock saat ini dan nilainya menurut harga jual.
+     * Bukan laporan berperiode: stok adalah keadaan sekarang, dan riwayat
+     * penyesuaiannya sudah tercatat di log aktivitas (stok.disesuaikan).
+     */
+    public function stok(Request $request): View
+    {
+        $status = $request->string('status')->toString();
+        $status = in_array($status, ['aman', 'menipis', 'habis'], true) ? $status : '';
+        $kata = mb_strtolower($request->string('q')->squish()->toString());
+
+        $semua = ProductVariant::query()
+            ->with('product')
+            ->whereHas('product', fn ($q) => $q->whereIn('fulfillment_type', [
+                FulfillmentType::READY_STOCK->value, FulfillmentType::BOTH->value,
+            ]))
+            ->get()
+            ->sortBy(fn (ProductVariant $v) => mb_strtolower($v->product->nama.' '.$v->label))
+            ->values();
+
+        $keadaan = fn (ProductVariant $v) => match (true) {
+            $v->stok_tersedia <= 0 => 'habis',
+            $v->stok_tersedia <= 3 => 'menipis',
+            default => 'aman',
+        };
+
+        return view('panel.laporan.stok', [
+            'status' => $status,
+            'varian' => $semua
+                ->when($status !== '', fn ($c) => $c->filter(fn (ProductVariant $v) => $keadaan($v) === $status))
+                ->when($kata !== '', fn ($c) => $c->filter(fn (ProductVariant $v) => str_contains(
+                    mb_strtolower($v->product->nama.' '.$v->product->sku.' '.$v->sku), $kata)))
+                ->values(),
+            // Stok minus (salah ketik, barang rusak) tidak boleh mengurangi nilai rak.
+            'nilaiStok' => (int) $semua->sum(fn (ProductVariant $v) => max(0, $v->stok) * $v->harga),
+            'totalUnit' => (int) $semua->sum(fn (ProductVariant $v) => max(0, $v->stok)),
+            'jumlahHabis' => $semua->filter(fn (ProductVariant $v) => $keadaan($v) === 'habis')->count(),
+            'jumlahMenipis' => $semua->filter(fn (ProductVariant $v) => $keadaan($v) === 'menipis')->count(),
+            'riwayat' => ActivityLog::query()
+                ->with('user')
+                ->where('aksi', 'stok.disesuaikan')
+                ->latest('created_at')
+                ->limit(20)
+                ->get(),
+        ]);
+    }
+
+    public function terlaris(Request $request): View
+    {
+        [$dari, $sampai, $labelPeriode] = $this->periode($request);
+
+        $terlaris = $this->kueriTerlaris($dari, $sampai, 50);
+
+        return view('panel.laporan.terlaris', [
+            'dari' => $dari,
+            'sampai' => $sampai,
+            'labelPeriode' => $labelPeriode,
+            'pilihan' => $request->string('periode', '30hari')->toString(),
+            'terlaris' => $terlaris,
+            'totalQty' => (int) $terlaris->sum('total_qty'),
+            'totalPesanan' => (int) DB::table('order_items')
+                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                ->whereNotNull('order_items.product_id')
+                ->whereBetween('orders.created_at', [$dari, $sampai])
+                ->whereNotIn('orders.status', [OrderStatus::DIBATALKAN->value, OrderStatus::KADALUARSA->value])
+                ->distinct()
+                ->count('orders.id'),
         ]);
     }
 
@@ -113,7 +190,7 @@ class LaporanController extends Controller
      * MySQL 8 memahaminya, MariaDB di hosting tidak dan menolak kuerinya
      * (ONLY_FULL_GROUP_BY, KEP-093).
      */
-    private function terlaris(CarbonImmutable $dari, CarbonImmutable $sampai)
+    private function kueriTerlaris(CarbonImmutable $dari, CarbonImmutable $sampai, int $batas)
     {
         return DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
@@ -124,7 +201,7 @@ class LaporanController extends Controller
             ])
             ->groupBy('products.id', 'products.nama')
             ->orderByDesc(DB::raw('SUM(order_items.qty)'))
-            ->limit(10)
+            ->limit($batas)
             ->get([
                 'products.nama as nama_produk',
                 DB::raw('SUM(order_items.qty) as total_qty'),

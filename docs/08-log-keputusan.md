@@ -4068,6 +4068,29 @@ berbeda begitu diraba, dan kalimat di kamus bahan (KEP-072) tidak bisa menunjukk
 
 ---
 
+## KEP-117 — Laporan dipecah tiga: penjualan, stok barang, produk terlaris
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien: menu Laporan di gambar contoh berisi tiga entri, Penjualan, Stok Barang,
+dan Produk Terlaris. Ketiganya kini halaman sendiri dengan pemilih periode yang sama,
+supaya berpindah halaman tidak diam-diam mengganti periodenya.
+
+- **Penjualan** (`panel.laporan`, alamat lama tetap) memuat isi halaman Laporan
+  sebelumnya. Kotak produk terlarisnya dipangkas ke lima teratas dengan tautan
+  "Lihat semua".
+- **Produk terlaris** (`panel.laporan.terlaris`) memuat sampai 50 produk, jumlah potong,
+  jumlah pesanan, dan bagiannya dari total. Pesanan batal dan kedaluwarsa tidak
+  dihitung, sama seperti sebelumnya, dan tetap dikelompokkan per `product_id`.
+- **Stok barang** (`panel.laporan.stok`) baru: stok, dipesan, tersedia, harga jual,
+  dan nilai per varian barang ready stock, dengan ringkasan nilai stok, unit di rak,
+  yang menipis, dan yang habis. Bukan laporan berperiode, karena stok adalah keadaan
+  sekarang. Stok minus tidak mengurangi nilai rak.
+- Riwayat penyesuaian stok diambil dari log aktivitas (`stok.disesuaikan`), bukan
+  catatan kedua yang bisa berselisih dengan yang pertama.
+- Ketiganya memakai izin `laporan.lihat` yang sama.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4182,3 +4205,4 @@ berbeda begitu diraba, dan kalimat di kamus bahan (KEP-072) tidak bisa menunjukk
 | KEP-108 | Audit performa: pengaturan satu kali baca, cache aset setahun, OPcache | TERKUNCI |
 | KEP-109 | CI dijalankan lokal; GitHub Actions hanya manual | TERKUNCI |
 | KEP-110 | Foto bahan wajib, tampil di panel dan ke pelanggan | TERKUNCI |
+| KEP-117 | Laporan tiga halaman: penjualan, stok barang, produk terlaris | TERKUNCI |

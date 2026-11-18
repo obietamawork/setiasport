@@ -83,6 +83,30 @@
     --color-warn: #a16207;
     --color-warn-50: #fefaec;
 
+    /* Warna pembeda bagian panel (KEP-111). Hanya dipakai di panel internal;
+       etalase tetap navy, merah, dan kuning seperti logo. */
+    --color-biru: #2563eb;
+    --color-biru-terang: #3b82f6;
+    --color-biru-700: #1d4ed8;
+    --color-biru-100: #dbe7fe;
+    --color-biru-50: #eff5ff;
+    --color-hijau: #16a34a;
+    --color-hijau-100: #cdf3da;
+    --color-jingga: #ea7a0c;
+    --color-jingga-700: #b45309;
+    --color-jingga-100: #fde3c3;
+    --color-jingga-50: #fff6eb;
+    --color-ungu: #7c3aed;
+    --color-ungu-700: #6d28d9;
+    --color-ungu-100: #e6dcfd;
+    --color-ungu-50: #f6f2ff;
+    --color-pink: #e0336f;
+    --color-pink-700: #be185d;
+    --color-pink-100: #fcd5e2;
+    --color-pink-50: #fff1f5;
+    --color-kuning-100: #fdeab0;
+    --color-merah-100: #f9d3cf;
+
     --radius-kartu: 12px;
     --radius-kontrol: 8px;
 
@@ -1309,5 +1333,212 @@
     nav[aria-label="Remah roti"] a {
         display: inline-block;
         padding-block: 0.25rem;
+    }
+}
+
+/*
+ * Warna pembeda bagian (KEP-111). Satu bagian satu warna di seluruh panel,
+ * dan warna chip status sama dengan warna kartu tahapnya, supaya staf cukup
+ * menghafal sekali: biru pesanan, hijau uang dan selesai, jingga produksi,
+ * ungu pelunasan dan desain, pink siap diambil atau dikirim, kuning menunggu
+ * pembayaran, merah yang sudah tidak hidup.
+ */
+@layer components {
+    .warna-biru { --w: var(--color-biru); --w-tua: var(--color-biru-700); --w-50: var(--color-biru-50); --w-100: var(--color-biru-100); }
+    .warna-hijau { --w: var(--color-hijau); --w-tua: var(--color-ok); --w-50: var(--color-ok-50); --w-100: var(--color-hijau-100); }
+    .warna-jingga { --w: var(--color-jingga); --w-tua: var(--color-jingga-700); --w-50: var(--color-jingga-50); --w-100: var(--color-jingga-100); }
+    .warna-ungu { --w: var(--color-ungu); --w-tua: var(--color-ungu-700); --w-50: var(--color-ungu-50); --w-100: var(--color-ungu-100); }
+    .warna-pink { --w: var(--color-pink); --w-tua: var(--color-pink-700); --w-50: var(--color-pink-50); --w-100: var(--color-pink-100); }
+    .warna-kuning { --w: var(--color-kuning); --w-tua: var(--color-warn); --w-50: var(--color-kuning-50); --w-100: var(--color-kuning-100); }
+    .warna-merah { --w: var(--color-merah); --w-tua: var(--color-merah-tua); --w-50: var(--color-merah-50); --w-100: var(--color-merah-100); }
+    .warna-netral { --w: var(--color-navy-400); --w-tua: var(--color-muted); --w-50: var(--color-paper); --w-100: var(--color-navy-100); }
+
+    .chip-biru { background: var(--color-biru-50); color: var(--color-biru-700); }
+    .chip-jingga { background: var(--color-jingga-50); color: var(--color-jingga-700); }
+    .chip-ungu { background: var(--color-ungu-50); color: var(--color-ungu-700); }
+    .chip-pink { background: var(--color-pink-50); color: var(--color-pink-700); }
+
+    /* Kartu angka berwarna: latar pastel, ikon dalam ubin berwarna, angka besar. */
+    .kartu-angka {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        border: 1px solid var(--w-100);
+        border-radius: 14px;
+        background: linear-gradient(160deg, var(--w-50) 0%, color-mix(in srgb, var(--w-50) 45%, #fff) 100%);
+        padding: 1rem 1.1rem 1.1rem;
+        box-shadow: 0 1px 2px rgb(13 23 51 / 0.04), 0 4px 14px color-mix(in srgb, var(--w) 10%, transparent);
+    }
+
+    .kartu-angka-tautan {
+        transition: border-color 130ms, translate 130ms, box-shadow 130ms;
+    }
+
+    .kartu-angka-tautan:hover {
+        border-color: color-mix(in srgb, var(--w) 45%, transparent);
+        translate: 0 -1px;
+    }
+
+    .kartu-angka-aktif {
+        border-color: var(--w);
+        box-shadow: 0 0 0 1px var(--w), 0 4px 14px color-mix(in srgb, var(--w) 18%, transparent);
+    }
+
+    .kartu-angka-ikon,
+    .lencana-bagian {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: var(--w-100);
+        color: var(--w-tua);
+    }
+
+    .kartu-angka-ikon {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .lencana-bagian {
+        width: 2rem;
+        height: 2rem;
+        flex-shrink: 0;
+        border-radius: 8px;
+    }
+
+    .kartu-angka-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--color-ink);
+    }
+
+    .kartu-angka-nilai {
+        margin-top: auto;
+        font-size: 1.75rem;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+        color: var(--color-ink);
+    }
+
+    /* Tombol persegi untuk aksi baris (lihat, menu titik tiga). */
+    .tombol-ikon {
+        display: inline-flex;
+        width: 2.25rem;
+        height: 2.25rem;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--color-line-strong);
+        border-radius: 9px;
+        background: var(--color-field);
+        color: var(--color-navy);
+        cursor: pointer;
+        list-style: none;
+        transition: border-color 130ms, background-color 130ms;
+    }
+
+    .tombol-ikon::-webkit-details-marker { display: none; }
+    .tombol-ikon:hover { border-color: var(--color-navy-300); background: var(--color-navy-50); }
+
+    .menu-aksi-isi a,
+    .menu-aksi-isi button {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.55rem 0.9rem;
+        text-align: left;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+
+    .menu-aksi-isi a:hover,
+    .menu-aksi-isi button:hover { background: var(--color-navy-50); }
+}
+
+@layer components {
+    .chip-hijau { background: var(--color-ok-50); color: var(--color-ok); }
+
+    /* Tautan "Lihat semua" di kepala kartu dashboard. */
+    .tautan-lihat {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-biru-700);
+    }
+
+    .tautan-lihat:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    /* Versi kartu angka yang lebih rapat untuk ubin di dalam kartu lain. */
+    .kartu-angka-ringkas {
+        gap: 0.45rem;
+        padding: 0.85rem;
+        box-shadow: none;
+    }
+
+    .kartu-angka-ringkas .kartu-angka-ikon { width: 2.1rem; height: 2.1rem; }
+    .kartu-angka-ringkas .kartu-angka-nilai { font-size: 1.6rem; }
+
+    /* Ubin jalan pintas: ikon di atas label, warna mengikuti bagian. */
+    .pintas {
+        display: flex;
+        min-height: 4.75rem;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        border: 1px solid var(--w-100);
+        border-radius: 12px;
+        background: var(--w-50);
+        padding: 0.75rem;
+        text-align: center;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--color-ink);
+        transition: border-color 130ms, translate 130ms;
+    }
+
+    .pintas svg { color: var(--w-tua); }
+    .pintas:hover { border-color: color-mix(in srgb, var(--w) 45%, transparent); translate: 0 -1px; }
+
+    /* Tab berbentuk pil seperti gambar contoh: Semua (12), Kustom (6). */
+    .segmen-pil {
+        border-radius: 999px;
+        padding-inline: 1rem;
+        box-shadow: var(--bayang-kartu);
+    }
+
+    /* Ikon bagian di samping judul halaman (Pesanan, Produk, Serah terima). */
+    .kop-ikon {
+        display: inline-flex;
+        width: 2.75rem;
+        height: 2.75rem;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: var(--w-100);
+        color: var(--w-tua);
+    }
+
+    @media (width >= 40rem) {
+        .kop-lekat { margin-inline: -1.5rem; padding-inline: 1.5rem; }
+    }
+
+    @media (width >= 64rem) {
+        .kop-lekat { margin-inline: -2rem; padding-inline: 2rem; }
+    }
+}
+
+@layer components {
+    .kotak-centang {
+        width: 1.05rem;
+        height: 1.05rem;
+        accent-color: var(--color-navy);
+        cursor: pointer;
     }
 }
