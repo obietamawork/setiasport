@@ -4210,6 +4210,30 @@ Revisi klien pada tangkapan layar antrian: "Tambahi iki, dinggo pengingat pesana
 
 ---
 
+## KEP-115 — Layar serah terima lengkap seperti contoh klien
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien pada gambar contoh serah terima: "ada search dan lengkap". Layar kasir kini
+memuat detail pesanan selengkap gambar contoh, supaya kasir tidak perlu membuka halaman
+pesanan untuk tahu siapa pelanggannya, apa isinya, dan berapa sisanya.
+
+- Kotak cari dengan tombol silang untuk mengosongkannya bagi pelanggan berikutnya, dan
+  tombol **Cari pesanan**.
+- Kartu **Detail pesanan**: kode beserta jalurnya (Kustom / konveksi atau Stok toko),
+  status ("Siap diserahkan" bila lunas dan boleh diserahkan), lalu pelanggan, nomor HP
+  yang membuka WhatsApp, tanggal pesan, target selesai, dan **dikerjakan oleh**: nama
+  pekerja yang memindai QR atau staf yang menekan Selesai di antrian, dari tahap-tahap
+  yang sudah selesai.
+- **Rincian pesanan** per barang: mockup yang disetujui (atau foto produk), nama,
+  ringkasan ukuran dari roster atau varian, dan jumlah.
+- **Informasi pembayaran**: total, sudah dibayar, sisa, dan chip Lunas atau Belum lunas.
+- Bilah bawah: **Kembali** di kiri, tindakan di kanan. Tindakannya tetap mengikuti
+  KEP-006: catat pelunasan dulu bila masih ada sisa, lalu **Konfirmasi serah terima**
+  dengan nama pengambil. Pesanan yang dikirim dan bukti transfer yang belum diperiksa
+  tetap diarahkan ke halaman pesanan.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4329,3 +4353,4 @@ Revisi klien pada tangkapan layar antrian: "Tambahi iki, dinggo pengingat pesana
 | KEP-112 | Dashboard berwarna: pesanan terbaru, antrean jersey, jalan pintas | TERKUNCI |
 | KEP-113 | Daftar pesanan: kartu status, rentang tanggal, menu aksi | TERKUNCI |
 | KEP-114 | Daftar pekerjaan di antrian, urut target selesai | TERKUNCI |
+| KEP-115 | Serah terima: detail lengkap, pengerja, ringkasan bayar | TERKUNCI |

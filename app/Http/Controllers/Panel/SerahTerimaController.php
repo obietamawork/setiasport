@@ -26,7 +26,11 @@ class SerahTerimaController extends Controller
         $kode = $request->string('kode')->trim()->toString();
 
         if ($kode !== '') {
-            $order = Order::with(['customer', 'items.options', 'items.rosters', 'adjustments', 'payments'])
+            $order = Order::with([
+                'customer', 'items.options', 'items.rosters', 'adjustments', 'payments',
+                'items.product.images', 'items.variant', 'items.approvedDesign',
+                'items.productionJobs.pekerja', 'items.productionJobs.penyelesai',
+            ])
                 ->where('kode_ambil', strtoupper($kode))
                 ->orWhere('kode', strtoupper($kode))
                 ->first();
@@ -36,6 +40,20 @@ class SerahTerimaController extends Controller
             'order' => $order,
             'kode' => $kode,
             'tidakKetemu' => $kode !== '' && ! $order,
+            /*
+             * Siapa yang menyelesaikan tahap-tahapnya (KEP-115): pekerja yang
+             * memindai QR, atau staf yang menekan Selesai di antrian. Gambar
+             * contoh klien menyebutnya "Dikerjakan oleh".
+             */
+            'dikerjakanOleh' => $order
+                ? $order->items
+                    ->flatMap(fn ($item) => $item->productionJobs)
+                    ->filter(fn ($job) => $job->selesai_pada !== null)
+                    ->map(fn ($job) => $job->pekerja?->nama ?? $job->penyelesai?->name)
+                    ->filter()
+                    ->unique()
+                    ->values()
+                : collect(),
             'siapHariIni' => Order::with('customer')
                 ->where('status', OrderStatus::SIAP_DIAMBIL)
                 ->where('metode_ambil', '!=', MetodeAmbil::KIRIM->value)
