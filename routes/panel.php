@@ -102,6 +102,9 @@ Route::prefix('panel')->name('panel.')->group(function () {
         // karena satu orang bisa memegang beberapa divisi sekaligus (docs/04).
         Route::prefix('antrian')->name('antrian.')->group(function () {
             Route::get('/', [AntrianController::class, 'index'])->name('index');
+            // Didaftarkan sebelum {tahap}: kalau tidak, "daftar" dibaca sebagai
+            // nama divisi dan berakhir 404 (KEP-114).
+            Route::get('daftar', [AntrianController::class, 'daftar'])->name('daftar');
             Route::get('{tahap}', [AntrianController::class, 'tahap'])->name('tahap');
             Route::post('item/{item}/mulai', [AntrianController::class, 'mulai'])->name('mulai');
             Route::post('item/{item}/selesai', [AntrianController::class, 'selesai'])->name('selesai');

@@ -2,7 +2,7 @@
 @section('judul', 'Antrian kerja')
 
 @section('isi')
-<x-kop judul="Antrian kerja"
+<x-kop judul="Antrian kerja" ikon="antrian" warna="jingga"
        catatan="Divisi yang menjadi tanggung jawab Anda. Angka merah berarti ada yang menunggu dikerjakan." />
 
 @if (empty($tahap))
@@ -92,5 +92,24 @@
         @endforeach
     </div>
     @endforeach
+
+    {{-- Daftar pekerjaan (KEP-114), permintaan klien "dinggo pengingat
+         pesanan": kartu di atas menjawab "berapa", daftar ini menjawab "yang
+         mana dulu". --}}
+    <section class="kartu mt-8 overflow-hidden">
+        <div class="kartu-kop flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <span class="lencana-bagian warna-biru"><x-ikon nama="daftar" ukuran="size-4" /></span>
+            <h2>Daftar pekerjaan terbaru</h2>
+            <span class="text-xs font-normal text-muted">urut dari target selesai terdekat</span>
+            <a href="{{ route('panel.antrian.daftar') }}" class="tautan-lihat ml-auto">
+                Lihat semua <x-ikon nama="lanjut" ukuran="size-4" />
+            </a>
+        </div>
+        @if ($pekerjaan->isEmpty())
+            <p class="p-5 text-sm text-muted">Tidak ada pekerjaan yang berjalan di divisi Anda.</p>
+        @else
+            @include('panel.antrian.tabel-pekerjaan', ['pekerjaan' => $pekerjaan])
+        @endif
+    </section>
 @endif
 @endsection

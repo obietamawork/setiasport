@@ -7,6 +7,7 @@ use App\Enums\ProductionStage;
 use App\Http\Controllers\Controller;
 use App\Models\OrderItem;
 use App\Services\AlurPesanan;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -51,7 +52,47 @@ class AntrianController extends Controller
             'tahap' => $tahap,
             'ringkas' => $ringkas,
             'totalKerjaan' => $ringkas->sum('jumlah'),
+            'pekerjaan' => $this->kueriPekerjaan($tahap)->limit(8)->get(),
         ]);
+    }
+
+    /** Daftar lengkap pekerjaan yang berjalan di divisi pengguna ini (KEP-114). */
+    public function daftar()
+    {
+        return view('panel.antrian.daftar', [
+            'pekerjaan' => $this->kueriPekerjaan(auth('web')->user()->tahapProduksi())
+                ->paginate(30)
+                ->withQueryString(),
+        ]);
+    }
+
+    /**
+     * Pekerjaan yang sedang berjalan di divisi yang dipegang, dari target
+     * selesai yang paling dekat (KEP-114). Klien memintanya sebagai pengingat
+     * pesanan: yang hampir telat harus terlihat lebih dulu, dan yang belum
+     * punya target menyusul di paling bawah.
+     *
+     * @param  list<ProductionStage>  $tahap
+     * @return Builder<OrderItem>
+     */
+    private function kueriPekerjaan(array $tahap): Builder
+    {
+        $status = collect($tahap)
+            ->flatMap(fn (ProductionStage $t) => $t->statusDipegang())
+            ->map(fn (OrderItemStatus $s) => $s->value)
+            ->unique()
+            ->values()
+            ->all();
+
+        return OrderItem::query()
+            ->select('order_items.*')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->with('order.customer')
+            ->whereIn('order_items.status_item', $status)
+            ->whereHas('order', fn ($q) => $q->aktif())
+            ->orderByRaw('orders.target_siap_pada IS NULL')
+            ->orderBy('orders.target_siap_pada')
+            ->orderBy('order_items.id');
     }
 
     public function tahap(string $tahap)

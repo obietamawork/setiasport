@@ -4190,6 +4190,26 @@ Revisi klien: daftar pesanan mengikuti gambar contoh "Pesanan".
 
 ---
 
+## KEP-114 — Daftar pekerjaan di antrian kerja sebagai pengingat pesanan
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien pada tangkapan layar antrian: "Tambahi iki, dinggo pengingat pesanan."
+
+- Di bawah kartu divisi kini ada **Daftar pekerjaan terbaru**: kode pesanan, pelanggan,
+  produk, tahap saat ini (chip berikon, satu warna per meja), jumlah, dan target selesai.
+- Urutannya dari target selesai yang paling dekat, karena gunanya pengingat: yang
+  hampir telat harus terlihat lebih dulu. Pesanan tanpa target menyusul di bawah.
+- Target yang sudah lewat ditandai merah "Lewat target"; hari ini, besok, dan dua hari
+  lagi ditandai kuning.
+- Isinya hanya barang di divisi yang dipegang pengguna, sama seperti kartunya, dan hanya
+  pesanan yang masih berjalan.
+- Halaman ini memuat delapan teratas; "Lihat semua" membuka `/panel/antrian/daftar`
+  dengan seluruhnya, 30 per halaman. Rute itu didaftarkan sebelum `antrian/{tahap}`
+  supaya "daftar" tidak dibaca sebagai nama divisi.
+- Di HP daftarnya berupa kartu, di layar lebar tabel.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4308,3 +4328,4 @@ Revisi klien: daftar pesanan mengikuti gambar contoh "Pesanan".
 | KEP-111 | Kerangka panel baru: sidebar gelap, warna bagian, cari, lonceng | TERKUNCI |
 | KEP-112 | Dashboard berwarna: pesanan terbaru, antrean jersey, jalan pintas | TERKUNCI |
 | KEP-113 | Daftar pesanan: kartu status, rentang tanggal, menu aksi | TERKUNCI |
+| KEP-114 | Daftar pekerjaan di antrian, urut target selesai | TERKUNCI |
