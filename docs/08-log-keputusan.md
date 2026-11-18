@@ -4343,6 +4343,37 @@ supplier", dengan kartu ringkasan di atas tabel dicoret ("Sg iki gausah").
 
 ---
 
+## KEP-121 — Halaman menunggu pembayaran seperti contoh klien
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien: "Setelah checkout kan menunggu pembayaran. Nahh dibuat seperti ini",
+dengan gambar contoh halaman Menunggu Pembayaran.
+
+Bagian tagihan di halaman pesanan pelanggan (`publik/lacak/bayar.blade.php`) kini
+tersusun seperti gambar, untuk DP di awal maupun pelunasan (KEP-028):
+
+- Kalimat pembuka "Selesaikan pembayaran untuk melanjutkan proses pesanan Anda."
+- **Ringkasan pesanan**: gambar (mockup yang disetujui, atau foto produk), nama barang,
+  nomor pesanan dengan tombol salin, tanggal pesanan, dan jumlah pcs.
+- **Total pembayaran** berwarna merah, dan **batas pembayaran** beserta **sisa waktu**
+  yang berjalan mundur. Sisa waktu dihitung di server lebih dulu, lalu diperbarui
+  setiap 30 detik oleh Alpine; batas yang sudah lewat terbaca "Batas sudah lewat",
+  bukan angka negatif. Setelah bukti terkirim, kotak batas berganti keterangan masa
+  tenggang (KEP-098) seperti sebelumnya.
+- **Pilih metode pembayaran**: dua tombol besar QRIS dan Transfer bank bila keduanya
+  diatur (satu saja bila hanya satu yang ada). QRIS menampilkan gambar QRIS toko dan
+  "Cara bayar dengan QRIS"; transfer menampilkan rekening dengan tombol salin dan
+  "Cara bayar lewat transfer bank". Langkahnya menyebut nominal yang harus dibayar.
+- **Unggah bukti pembayaran** dengan tombol "Unggah bukti" (sebelumnya "Kirim bukti").
+- **Catatan penting**: bayar sesuai nominal dan batas waktu, pesanan diproses setelah
+  diverifikasi, kabar lewat email, dan peringatan hanya membayar ke rekening dan QRIS
+  di halaman ini (KEP-029).
+- Yang tetap: catatan bukti yang ditolak (KEP-097), tujuan transfer dilipat setelah
+  bukti terkirim, tidak ada tautan WhatsApp di blok pembayaran, dan jalur alternatif
+  bila toko belum mengisi QRIS maupun rekening.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4467,3 +4498,4 @@ supplier", dengan kartu ringkasan di atas tabel dicoret ("Sg iki gausah").
 | KEP-118 | Tambalan keamanan laravel/framework 12.73.0 | TERKUNCI |
 | KEP-119 | Hapus pesanan kedaluwarsa/dibatalkan tanpa uang, dengan konfirmasi | TERKUNCI |
 | KEP-120 | Stok per produk, barang masuk dari supplier, penyesuaian terpisah | TERKUNCI |
+| KEP-121 | Halaman menunggu pembayaran: ringkasan, sisa waktu, QRIS/transfer | TERKUNCI |

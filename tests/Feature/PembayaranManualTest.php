@@ -124,7 +124,7 @@ class PembayaranManualTest extends TestCase
                 ->getContent();
 
             $awal = strpos($html, 'Yang perlu dibayar sekarang');
-            $akhir = strpos($html, 'Kirim bukti', $awal);
+            $akhir = strpos($html, 'Unggah bukti', $awal);
             $this->assertNotFalse($awal);
             $this->assertNotFalse($akhir);
 

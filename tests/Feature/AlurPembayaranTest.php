@@ -106,7 +106,7 @@ class AlurPembayaranTest extends TestCase
             ->assertOk()
             ->assertSee('Bukti sebelumnya belum bisa kami terima:')
             ->assertSee('Nominal transfer kurang Rp 5.000.')
-            ->assertSee('Kirim bukti');
+            ->assertSee('Unggah bukti');
     }
 
     public function test_setelah_ditolak_pelanggan_bisa_membayar_ulang_sampai_lunas(): void

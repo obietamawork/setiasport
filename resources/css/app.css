@@ -1704,3 +1704,74 @@
         background: var(--color-merah-100);
     }
 }
+
+/* Halaman menunggu pembayaran (KEP-121): kartu putih membulat seperti gambar
+   contoh klien, pilihan metode sebagai dua tombol besar, langkah bernomor. */
+@layer components {
+    .kartu-bayar {
+        border: 1px solid var(--color-line);
+        border-radius: 16px;
+        background: var(--color-field);
+        padding: 1.25rem;
+        box-shadow: 0 1px 2px rgb(13 23 51 / 0.04), 0 6px 18px rgb(13 23 51 / 0.05);
+    }
+
+    @media (width >= 40rem) {
+        .kartu-bayar { padding: 1.5rem; }
+    }
+
+    .pilih-metode {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        border: 1px solid var(--color-line-strong);
+        border-radius: 12px;
+        background: var(--color-field);
+        padding: 0.9rem 1.1rem;
+        color: var(--color-ink);
+        transition: border-color 130ms, background-color 130ms;
+    }
+
+    .pilih-metode:hover { border-color: var(--color-navy-300); }
+
+    .pilih-metode-aktif,
+    .pilih-metode-aktif:hover {
+        border-color: var(--color-navy);
+        background: var(--color-navy);
+        color: #fff;
+    }
+
+    .langkah-bayar {
+        counter-reset: langkah;
+        display: grid;
+        gap: 0.85rem;
+        font-size: 0.9375rem;
+        line-height: 1.5;
+    }
+
+    /* Bukan grid: teks dan <strong> di dalamnya akan pecah jadi sel sendiri. */
+    .langkah-bayar li {
+        counter-increment: langkah;
+        position: relative;
+        min-height: 1.75rem;
+        padding-left: 2.5rem;
+        padding-top: 0.15rem;
+    }
+
+    .langkah-bayar li::before {
+        content: counter(langkah);
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: inline-flex;
+        width: 1.75rem;
+        height: 1.75rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: var(--color-biru-terang);
+        color: #fff;
+        font-size: 0.8125rem;
+        font-weight: 700;
+    }
+}
