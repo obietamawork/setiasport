@@ -4091,6 +4091,46 @@ supaya berpindah halaman tidak diam-diam mengganti periodenya.
 
 ---
 
+## KEP-111 — Kerangka panel dari contoh klien: sidebar gelap, warna per bagian, cari global, lonceng
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien: "untuk menu sidebar di bagian sebelah kiri, tolong gunakan skema warna
+seperti yang terlihat pada contoh gambar", dan "berikan warna atau penanda visual khusus
+yang mudah dikenali sebagai pembeda antarbagian". Klien juga memilih agar semua elemen
+di gambar contoh benar-benar berfungsi, bukan sekadar mirip.
+
+**Kerangka.** Sidebar navy gelap setinggi layar dengan logo dan tulisan "Panel Admin",
+menu aktif biru terang, dan bilah atas putih (tombol menu, cari, lonceng, Bantuan, akun).
+Menu dikelompokkan seperti gambar: pekerjaan harian tanpa judul, lalu Katalog, Laporan
+(Penjualan, Stok barang, Produk terlaris; KEP-117), dan Lainnya. Menu yang tidak ada di
+gambar (Pengguna, Pekerja konveksi, Kesiapan tayang, Riwayat aktivitas, Chat CS) tetap
+ada: membuangnya berarti fiturnya hilang. Rail ikon di layar lebar, laci dan bilah bawah
+di HP tetap seperti sebelumnya, hanya lacinya ikut gelap.
+
+**Warna pembeda bagian.** Token baru biru, hijau, jingga, ungu, dan pink, khusus panel.
+Satu bagian satu warna: biru pesanan, hijau uang dan selesai, jingga produksi, ungu
+pelunasan dan desain, pink siap diambil atau dikirim, kuning menunggu pembayaran, merah
+yang sudah tidak hidup. Dipakai lewat komponen `<x-kartu-angka>`, ikon di samping judul
+halaman (`<x-kop ikon warna>`), dan chip. Ini menggantikan aturan "garis, bukan
+bayangan" dan "tanpa hiasan" di docs/11 khusus untuk panel; etalase tidak berubah.
+
+**Cari global** (`/panel/cari`): satu kotak untuk kode pesanan, kode ambil, nama atau HP
+pelanggan, dan nama atau SKU produk. Kode yang tepat langsung membuka pesanannya. Selain
+itu hasilnya dikelompokkan Pesanan, Pelanggan (menuju daftar pesanannya), dan Produk,
+disaring menurut izin (`order.lihat`, `katalog.kelola`) supaya tidak ada tautan yang
+berujung 403. Logika pencocokan nomor HP dari KEP-099 dipindah ke `Customer::cari` dan
+dipakai bersama daftar pesanan. Di HP kotaknya diganti ikon menuju halaman cari.
+
+**Lonceng**: isinya daftar "perlu ditangani" yang sama dengan dashboard (bukti transfer,
+pembatalan, email gagal, stok, harga belum lengkap, dan seterusnya) sebagai jumlah per
+jenis, dengan titik merah bila ada isinya. Tanpa status "sudah dibaca": isinya hilang
+sendiri begitu urusannya ditangani. Kuerinya dipindah dari `DashboardController` ke
+`App\Services\DaftarTindakan`, supaya lonceng dan dashboard tidak bisa berselisih.
+Hitungannya disimpan 30 detik karena dimuat di setiap halaman panel; akibatnya urusan
+yang baru ditangani bisa masih terhitung paling lama setengah menit.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4206,3 +4246,4 @@ supaya berpindah halaman tidak diam-diam mengganti periodenya.
 | KEP-109 | CI dijalankan lokal; GitHub Actions hanya manual | TERKUNCI |
 | KEP-110 | Foto bahan wajib, tampil di panel dan ke pelanggan | TERKUNCI |
 | KEP-117 | Laporan tiga halaman: penjualan, stok barang, produk terlaris | TERKUNCI |
+| KEP-111 | Kerangka panel baru: sidebar gelap, warna bagian, cari, lonceng | TERKUNCI |

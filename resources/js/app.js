@@ -172,7 +172,7 @@ document.addEventListener('click', (e) => {
 
     if (!baris || e.button !== 0) return;
     // Tautan, tombol, dan isian di dalam baris tetap bekerja sendiri.
-    if (e.target.closest('a, button, input, select, textarea, label, summary')) return;
+    if (e.target.closest('a, button, input, select, textarea, label, summary, details')) return;
     // Sedang memblok teks (mis. menyalin kode pesanan), bukan membuka.
     if (String(window.getSelection())) return;
 
@@ -255,4 +255,13 @@ window.addEventListener('pageshow', (e) => {
             tombol.innerHTML = tombol.dataset.isiAsli;
         });
     });
+});
+
+// Penyaring daftar panel (KEP-113): pilihan status, kategori, dan tanggal
+// langsung menyaring; kotak cari tetap menunggu Enter supaya tidak memuat
+// ulang halaman di setiap huruf.
+document.addEventListener('change', (e) => {
+    const form = e.target.closest('form[data-saring-otomatis]');
+
+    if (form && e.target.matches('select, input[type="date"]')) form.requestSubmit();
 });

@@ -113,7 +113,7 @@
     /* Tinggi bilah atas panel. Dipakai sebagai patokan semua yang menempel:
        sidebar, kepala tabel, bilah aksi. Ditulis sekali supaya tidak ada
        elemen lekat yang meleset beberapa piksel dari yang lain. */
-    --bilah-atas: 3.5rem;
+    --bilah-atas: 4rem;
 
     /* Bayangan tipis. Struktur tetap dibentuk garis; bayangan hanya memberi
        tahu apa yang mengambang di atas apa. */
@@ -631,40 +631,6 @@
         color: var(--color-muted);
     }
 
-    /* Kelompok menu sidebar. Delapan tautan datar memaksa membaca semuanya
-       setiap kali; dikelompokkan, mata langsung ke bagian yang dituju. */
-    .grup-menu {
-        margin-top: 1.25rem;
-        margin-bottom: 0.35rem;
-        padding-inline: 0.75rem;
-        font-size: 0.6875rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        /* muted, bukan navy-300: tulisan 11px di latar terang dengan navy-300
-           kontrasnya cuma 2,3:1 (WCAG minta 4,5:1 untuk teks kecil). */
-        color: var(--color-muted);
-    }
-
-    .grup-menu:first-child {
-        margin-top: 0;
-    }
-
-    /* Penghitung di samping menu: yang menunggu ditangani harus terlihat
-       tanpa perlu membuka halamannya. */
-    .lencana-menu {
-        margin-left: auto;
-        display: inline-flex;
-        min-width: 1.25rem;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px;
-        padding-inline: 0.35rem;
-        font-size: 0.6875rem;
-        font-weight: 700;
-        font-variant-numeric: tabular-nums;
-    }
-
     /* ------------------------------------------------ bagian & aksi */
 
     /* Formulir yang jarang dipakai disembunyikan di balik ringkasan, supaya
@@ -719,71 +685,275 @@
 }
 
 /*
- * Kerangka navigasi panel.
+ * Kerangka navigasi panel (KEP-111, revisi klien).
  *
- * Tiga bentuk untuk tiga cara memegang alatnya, bukan tiga halaman berbeda:
+ * Sidebar navy gelap setinggi layar dan bilah atas putih, mengikuti gambar
+ * contoh klien. Tiga bentuk untuk tiga cara memegang alatnya:
  *
- * - Layar lebar: kolom menempel di bawah bilah atas. Boleh dikuncupkan jadi
- *   rail ikon (bukan disembunyikan sama sekali seperti dulu) supaya tabel lebar
- *   mendapat ruang tanpa membuat orang kehilangan jalan pulang.
- * - Tablet dan HP: laci dari kiri untuk menu lengkap, ditambah bilah bawah
- *   berisi empat tujuan tersering. Di layar sentuh, jempol berada di bawah,
- *   bukan di pojok kiri atas.
+ * - Layar lebar: kolom gelap yang diam di tempat. Boleh dikuncupkan jadi rail
+ *   ikon (bukan disembunyikan sama sekali) supaya tabel lebar mendapat ruang
+ *   tanpa membuat orang kehilangan jalan pulang.
+ * - Tablet dan HP: laci gelap dari kiri untuk menu lengkap, ditambah bilah
+ *   bawah berisi empat tujuan tersering. Di layar sentuh, jempol berada di
+ *   bawah, bukan di pojok kiri atas.
  */
 @layer components {
+    :root { --lebar-sidebar: 0px; }
+
+    @media (width >= 64rem) {
+        :root { --lebar-sidebar: 15.5rem; }
+        :root.sidebar-tutup { --lebar-sidebar: 4.75rem; }
+    }
+
     .sidebar-panel {
-        flex-shrink: 0;
+        position: fixed;
+        inset-block: 0;
+        left: 0;
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        width: var(--lebar-sidebar);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: rgb(255 255 255 / 0.18) transparent;
+        background: var(--color-navy-900);
+        color: rgb(255 255 255 / 0.82);
+    }
+
+    .sidebar-kepala {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.4rem 1rem 1rem;
+    }
+
+    .sidebar-merek {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.55rem;
+    }
+
+    .sidebar-sebutan {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: #fff;
+    }
+
+    .sidebar-merek-kecil {
+        display: none;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 8px;
+    }
+
+    .sidebar-tutup-laci {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        border-radius: var(--radius-kontrol);
+        padding: 0.45rem;
+        color: rgb(255 255 255 / 0.7);
+    }
+
+    .sidebar-tutup-laci:hover { background: rgb(255 255 255 / 0.08); color: #fff; }
+
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        padding: 0.25rem 0.85rem 1.5rem;
+        font-size: 0.9375rem;
+    }
+
+    /* Judul kelompok dengan garis tipis, seperti di gambar contoh. Putih 55%
+       di atas navy-900 masih 6,9:1, aman untuk tulisan 11px. */
+    .grup-menu {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-top: 1.1rem;
+        margin-bottom: 0.3rem;
+        padding-inline: 0.6rem;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgb(255 255 255 / 0.55);
+    }
+
+    .grup-menu::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgb(255 255 255 / 0.14);
     }
 
     .menu-panel {
+        position: relative;
         display: flex;
         align-items: center;
-        gap: 0.625rem;
-        border-radius: var(--radius-kontrol);
-        padding: 0.625rem 0.75rem;
+        gap: 0.75rem;
+        border-radius: 10px;
+        padding: 0.6rem 0.75rem;
         font-weight: 500;
-        color: var(--color-ink);
+        color: rgb(255 255 255 / 0.82);
         transition: background-color 130ms, color 130ms;
     }
 
     .menu-panel:hover {
-        background: var(--color-navy-50);
+        background: rgb(255 255 255 / 0.07);
+        color: #fff;
     }
 
-    .menu-panel svg {
-        color: var(--color-navy-400);
-        transition: color 130ms;
-    }
+    .menu-panel svg { color: rgb(255 255 255 / 0.7); }
 
-    .menu-panel-aktif {
-        background: var(--color-navy);
+    /* Biru terang pada menu aktif, persis gambar contoh. Satu-satunya bidang
+       terang di sidebar, jadi mata langsung tahu sedang di mana. */
+    .menu-panel-aktif,
+    .menu-panel-aktif:hover {
+        background: var(--color-biru-terang);
         color: #fff;
         font-weight: 600;
+        box-shadow: 0 6px 16px rgb(59 130 246 / 0.35);
     }
 
-    .menu-panel-aktif:hover {
-        background: var(--color-navy);
-    }
+    .menu-panel-aktif svg { color: #fff; }
 
-    .menu-panel-aktif svg {
+    /* Penghitung di samping menu: yang menunggu ditangani harus terlihat
+       tanpa perlu membuka halamannya. */
+    .lencana-menu {
+        margin-left: auto;
+        display: inline-flex;
+        min-width: 1.4rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0.05rem 0.4rem;
+        background: var(--color-merah);
         color: #fff;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
     }
+
+    .menu-panel-aktif .lencana-menu { background: rgb(255 255 255 / 0.25); }
 
     @media (pointer: coarse) {
         .menu-panel { padding-block: 0.8rem; }
     }
 
+    .panel-utama {
+        min-width: 0;
+        padding-left: var(--lebar-sidebar);
+        transition: padding-left 0.18s ease;
+    }
+
+    .bilah-atas {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        display: flex;
+        height: var(--bilah-atas);
+        align-items: center;
+        gap: 0.75rem;
+        border-bottom: 1px solid var(--color-line);
+        background: color-mix(in srgb, var(--color-field) 94%, transparent);
+        backdrop-filter: blur(8px);
+        padding-inline: 1rem;
+    }
+
+    .tombol-bilah {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        border-radius: var(--radius-kontrol);
+        padding: 0.5rem;
+        color: var(--color-ink);
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .tombol-bilah::-webkit-details-marker { display: none; }
+    .tombol-bilah:hover { background: var(--color-navy-50); }
+
+    .kotak-cari-atas {
+        border-radius: 10px;
+        background: var(--color-paper);
+        padding-block: 0.55rem;
+    }
+
+    .titik-lonceng {
+        position: absolute;
+        top: 0.4rem;
+        right: 0.45rem;
+        width: 0.55rem;
+        height: 0.55rem;
+        border-radius: 999px;
+        background: var(--color-merah);
+        box-shadow: 0 0 0 2px var(--color-field);
+    }
+
+    /* Menu tarik-turun (lonceng, akun, aksi baris). */
+    .menu-tarik {
+        position: absolute;
+        z-index: 40;
+        margin-top: 0.5rem;
+        overflow: hidden;
+        border: 1px solid var(--color-line);
+        border-radius: 12px;
+        background: var(--color-field);
+        color: var(--color-ink);
+        box-shadow: var(--bayang-laci);
+    }
+
+    .ruang-kerja {
+        padding: 1.5rem 1rem 6rem;
+    }
+
+    @media (width >= 40rem) {
+        .bilah-atas { padding-inline: 1.5rem; }
+        .ruang-kerja { padding-inline: 1.5rem; }
+    }
+
+    @media (width >= 64rem) {
+        .bilah-atas { padding-inline: 2rem; }
+        .ruang-kerja { padding: 1.75rem 2rem 2.5rem; }
+        .sidebar-tutup-laci { display: none; }
+
+        /*
+         * Rail ikon. Menyembunyikan menu sepenuhnya membuat orang harus
+         * mengingat isi menu untuk bisa membukanya lagi; rail menyisakan
+         * jangkar yang tetap bisa ditunjuk dan diklik.
+         */
+        .sidebar-tutup .sidebar-merek,
+        .sidebar-tutup .menu-teks,
+        .sidebar-tutup .grup-menu {
+            display: none;
+        }
+
+        .sidebar-tutup .sidebar-merek-kecil { display: block; }
+        .sidebar-tutup .sidebar-menu { padding-inline: 0.6rem; }
+        .sidebar-tutup .menu-panel { justify-content: center; padding-inline: 0; }
+
+        /* Di rail, penghitung tidak muat sebagai angka. Ia menyusut jadi titik
+           merah: "ada yang menunggu" tetap tersampaikan. */
+        .sidebar-tutup .lencana-menu {
+            position: absolute;
+            top: 0.35rem;
+            right: 0.55rem;
+            min-width: 0.5rem;
+            height: 0.5rem;
+            padding: 0;
+            font-size: 0;
+        }
+    }
+
     @media (width < 64rem) {
         .sidebar-panel {
-            position: fixed;
-            inset-block: 0;
-            left: 0;
-            z-index: 50;
-            width: min(18rem, 85vw);
-            overflow-y: auto;
-            overscroll-behavior: contain;
-            background: var(--color-field);
-            padding: 1rem;
+            width: min(17.5rem, 85vw);
             box-shadow: var(--bayang-laci);
             translate: -100% 0;
             visibility: hidden;
@@ -796,63 +966,9 @@
         }
     }
 
-    @media (width >= 64rem) {
-        .sidebar-panel {
-            position: sticky;
-            top: calc(var(--bilah-atas) + 1.5rem);
-            align-self: flex-start;
-            width: 13.5rem;
-            max-height: calc(100dvh - var(--bilah-atas) - 2.5rem);
-            overflow-y: auto;
-            /* Ruang untuk cincin fokus, supaya tidak terpotong oleh overflow. */
-            margin: -3px;
-            padding: 3px;
-            transition: width 0.18s ease;
-        }
-
-        /*
-         * Rail ikon. Menyembunyikan menu sepenuhnya membuat orang harus
-         * mengingat isi menu untuk bisa membukanya lagi; rail menyisakan
-         * jangkar yang tetap bisa ditunjuk dan diklik.
-         */
-        .sidebar-tutup .sidebar-panel {
-            width: 3.25rem;
-        }
-
-        .sidebar-tutup .menu-panel {
-            justify-content: center;
-            padding-inline: 0;
-        }
-
-        .sidebar-tutup .menu-teks,
-        .sidebar-tutup .grup-menu,
-        .sidebar-tutup .sidebar-kaki {
-            display: none;
-        }
-
-        /* Di rail, penghitung tidak muat sebagai angka. Ia menyusut jadi titik
-           merah: "ada yang menunggu" tetap tersampaikan, jumlahnya dibaca
-           setelah menu dibentangkan lagi. */
-        .sidebar-tutup .lencana-menu {
-            position: absolute;
-            top: 0.3rem;
-            right: 0.45rem;
-            min-width: 0.5rem;
-            height: 0.5rem;
-            padding: 0;
-            font-size: 0;
-            border-radius: 999px;
-        }
-
-        .sidebar-tutup .menu-panel {
-            position: relative;
-        }
-    }
-
     /*
      * Bilah bawah untuk layar sentuh. Hanya empat tujuan yang benar-benar
-     * dipakai berulang kali dalam sehari; sisanya lewat laci menu. Bilah yang
-     * memuat sepuluh ikon sama sulitnya dengan tidak ada bilah sama sekali.
+     * dipakai berulang kali dalam sehari; sisanya lewat laci menu.
      */
     /* Tinggi bilah bawah dibagi ke seluruh halaman: yang menempel di dasar
        layar perlu tahu ruang yang sudah dipakainya. */

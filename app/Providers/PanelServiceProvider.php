@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\PercakapanCs;
+use App\Services\DaftarTindakan;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -44,6 +45,10 @@ class PanelServiceProvider extends ServiceProvider
                 'csBelumDibaca' => cs_aktif() && $user->punyaIzin('cs.balas')
                     ? PercakapanCs::where('belum_dibaca_staf', '>', 0)->pluck('id')->all()
                     : null,
+
+                // Lonceng di bilah atas (KEP-111): daftar "perlu ditangani" yang
+                // sama dengan dashboard, disaring menurut izin pengguna ini.
+                'lonceng' => app(DaftarTindakan::class)->lonceng($user),
 
                 // Menu tetap ada selama masih ada arsip: log chat adalah catatan
                 // resmi komplain, jadi mematikan CS tidak boleh menyembunyikannya.

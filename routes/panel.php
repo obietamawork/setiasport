@@ -8,6 +8,7 @@ use App\Http\Controllers\Panel\AuthController;
 use App\Http\Controllers\Panel\BahanController;
 use App\Http\Controllers\Panel\BannerController;
 use App\Http\Controllers\Panel\BantuanController;
+use App\Http\Controllers\Panel\CariController;
 use App\Http\Controllers\Panel\ContohProfilController;
 use App\Http\Controllers\Panel\CsController;
 use App\Http\Controllers\Panel\DashboardController;
@@ -75,6 +76,10 @@ Route::prefix('panel')->name('panel.')->group(function () {
         // Bantuan dibuka semua orang yang boleh masuk panel, tanpa izin khusus:
         // yang paling butuh penjelasan justru yang perannya paling sempit.
         Route::get('/bantuan', BantuanController::class)->name('bantuan');
+
+        // Kotak cari di bilah atas (KEP-111). Hasilnya disaring izin di dalam
+        // controller, jadi siapa pun yang boleh masuk panel boleh mencari.
+        Route::get('/cari', CariController::class)->name('cari');
 
         // Kesiapan tayang menyebut pengaturan toko dan isi katalog, jadi hanya
         // untuk yang memang mengurusnya.

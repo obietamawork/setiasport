@@ -206,6 +206,14 @@ class Product extends Model
         );
     }
 
+    /** Cari dari nama atau SKU; % dan _ dibaca sebagai huruf biasa (KEP-105). */
+    public function scopeCari(Builder $q, string $kata): Builder
+    {
+        $pola = '%'.addcslashes(trim($kata), '%_\\').'%';
+
+        return $q->where(fn (Builder $w) => $w->where('nama', 'like', $pola)->orWhere('sku', 'like', $pola));
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';

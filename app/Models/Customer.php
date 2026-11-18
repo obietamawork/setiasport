@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
  * Pelanggan boleh punya akun, boleh juga tidak (KEP-020).
@@ -64,10 +67,10 @@ class Customer extends Authenticatable
      */
     public function siapkanKonfirmasi(string $password): string
     {
-        $token = \Illuminate\Support\Str::random(64);
+        $token = Str::random(64);
 
         $this->forceFill([
-            'password' => \Illuminate\Support\Facades\Hash::make($password),
+            'password' => Hash::make($password),
             'token_verifikasi' => hash('sha256', $token),
             'token_dibuat_pada' => now(),
         ])->save();
@@ -88,6 +91,34 @@ class Customer extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Cari pelanggan dari nama, email, atau nomor HP (KEP-099, KEP-111).
+     *
+     * Nomor HP disalin dari WhatsApp sebagai "+62 812-3456-7890", padahal
+     * pelanggan mengetiknya dengan cara masing-masing saat memesan. Yang
+     * dicocokkan hanya angkanya, tanpa 0 atau 62 di depan. "%" dan "_"
+     * diketik sebagai karakter biasa, bukan pola.
+     */
+    public function scopeCari(Builder $q, string $kata): Builder
+    {
+        $kata = trim($kata);
+        $pola = '%'.addcslashes($kata, '%_\\').'%';
+
+        $angka = preg_replace('/\D/', '', $kata);
+        $hp = preg_match('/^[\d\s()+.\-]+$/', $kata) && strlen($angka) >= 6
+            ? preg_replace('/^(62|0)/', '', $angka)
+            : null;
+
+        return $q->where(fn (Builder $w) => $w
+            ->where('nama', 'like', $pola)
+            ->orWhere('email', 'like', $pola)
+            ->orWhere('no_hp', 'like', $pola)
+            ->when($hp, fn (Builder $c) => $c->orWhereRaw(
+                "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(no_hp, ' ', ''), '-', ''), '+', ''), '.', ''), '(', ''), ')', '') like ?",
+                ['%'.$hp.'%']
+            )));
     }
 
     public function user(): BelongsTo

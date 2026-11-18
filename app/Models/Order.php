@@ -48,6 +48,7 @@ class Order extends Model
         ];
     }
 
+    /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
@@ -279,6 +280,16 @@ class Order extends Model
                 OrderStatus::MENUNGGU_PELUNASAN->value,
                 OrderStatus::SIAP_DIAMBIL->value,
             ]));
+    }
+
+    /** Cari dari kode pesanan atau data pelanggannya (lihat Customer::scopeCari). */
+    public function scopeCari(Builder $q, string $kata): Builder
+    {
+        $pola = '%'.addcslashes(trim($kata), '%_\\').'%';
+
+        return $q->where(fn (Builder $w) => $w
+            ->where('kode', 'like', $pola)
+            ->orWhereIn('customer_id', Customer::query()->cari($kata)->select('id')));
     }
 
     /** Pesanan yang memuat setidaknya satu barang kustom (KEP-027). */

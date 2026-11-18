@@ -1,4 +1,4 @@
-@props(['judul', 'catatan' => null, 'kembali' => null, 'kembaliLabel' => 'Kembali'])
+@props(['judul', 'catatan' => null, 'kembali' => null, 'kembaliLabel' => 'Kembali', 'ikon' => null, 'warna' => 'biru'])
 
 {{--
     Kepala halaman panel.
@@ -16,6 +16,12 @@
      @scroll.window.throttle.50ms="lepas = window.scrollY > 8"
      :class="{ 'melayang': lepas }">
     <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+        {{-- Ikon bagian di samping judul (KEP-111): warnanya sama dengan kartu
+             bagian itu di dashboard, jadi halaman langsung dikenali. --}}
+        <div class="flex min-w-0 items-start gap-3">
+        @if ($ikon)
+            <span class="kop-ikon warna-{{ $warna }}" :class="lepas && 'hidden'"><x-ikon :nama="$ikon" ukuran="size-6" /></span>
+        @endif
         <div class="min-w-0">
             @if ($kembali)
                 <a href="{{ $kembali }}"
@@ -34,6 +40,7 @@
             @isset($bawahJudul)
                 <div class="mt-1">{{ $bawahJudul }}</div>
             @endisset
+        </div>
         </div>
 
         @if (trim($slot) !== '')
