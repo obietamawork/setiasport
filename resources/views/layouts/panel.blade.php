@@ -267,7 +267,7 @@
             </a>
 
             {{-- Identitas, "lihat toko", dan keluar dirangkum ke satu menu. --}}
-            <div class="relative ml-1 border-l border-line pl-2" x-data="{ buka: false }" @keydown.escape="buka = false">
+            <div class="relative border-line sm:ml-1 sm:border-l sm:pl-2" x-data="{ buka: false }" @keydown.escape="buka = false">
                 <button type="button" @click="buka = ! buka" :aria-expanded="buka.toString()"
                         class="flex items-center gap-2 rounded-[8px] py-1 pr-1.5 pl-1 hover:bg-navy-50">
                     <span class="flex size-9 items-center justify-center rounded-full bg-navy-100 text-xs font-bold text-navy-800">
@@ -277,7 +277,7 @@
                         <span class="block font-semibold">{{ $u->name }}</span>
                         <span class="block text-xs text-muted">{{ $u->roles->pluck('nama')->implode(', ') }}</span>
                     </span>
-                    <x-ikon nama="turun" ukuran="size-4" class="text-muted" />
+                    <x-ikon nama="turun" ukuran="size-4" class="hidden text-muted sm:block" />
                 </button>
 
                 <div x-show="buka" x-cloak x-transition.opacity @click.outside="buka = false" class="menu-tarik right-0 w-60">

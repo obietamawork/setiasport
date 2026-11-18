@@ -1,45 +1,190 @@
 @extends('layouts.panel')
 @section('judul', 'Dashboard')
 
+@php
+    $u = auth('web')->user();
+    $bolehPesanan = $u->punyaIzin('order.lihat');
+    $stokPerluDiisi = $stokHabis->concat($stokMenipis)->take(5);
+@endphp
+
 @section('isi')
-<x-kop judul="Dashboard"
-       catatan="Daftar tindakan, bukan grafik. Kalau bagian bawah kosong, toko sedang sehat." />
-
-{{-- Pemilik toko membuka halaman ini tiap pagi. Pertanyaan pertamanya selalu
-     sama: apa yang terjadi hari ini, dan apa yang sedang menunggu.
-
-     Kartu yang bisa ditindaklanjuti dibuat menjadi tautan, yang sekadar kabar
-     tidak. Kartu yang terlihat bisa diklik tetapi diam adalah janji yang
-     tidak ditepati. --}}
-{{-- Bukan <dl>: <dt>/<dd> tidak boleh dibungkus <a>, dan pembaca layar
-     membaca daftar yang rusak itu sebagai potongan-potongan lepas. Dengan
-     <span> biasa, tiap kartu tautan terbaca utuh, misalnya "Sedang
-     dikerjakan 3". --}}
-{{-- Lima kartu sejajar mulai tablet. Dulu dua kolom sampai layar lebar, dan
-     kartu kelima merentang selebar layar hanya untuk satu angka. --}}
-<div class="grid grid-cols-2 gap-3 md:grid-cols-5">
-    <div class="kartu kartu-metrik">
-        <span class="metrik-label"><x-ikon nama="pesanan" ukuran="size-4" class="text-navy-400" /> Pesanan masuk hari ini</span>
-        <span class="metrik-angka">{{ $pesananHariIni }}</span>
+{{-- Tata letak dari revisi klien (KEP-112): sapaan, lima kartu berwarna,
+     pesanan terbaru, stok, antrean produksi, dan jalan pintas. Daftar "yang
+     perlu ditangani" tetap ada di bawahnya: dialah alasan dashboard ini
+     dibuka tiap pagi, hanya kini tidak lagi sendirian. --}}
+<header class="mb-6 flex flex-wrap items-start justify-between gap-4">
+    <div class="min-w-0">
+        <h1 class="kop-judul text-2xl sm:text-[1.75rem]">Selamat datang, {{ $u->name }} <span aria-hidden="true">👋</span></h1>
+        <p class="kop-catatan">Kelola pesanan, produksi, stok, dan penjualan {{ setting('toko_nama', 'Setia Sport') }} dengan mudah.</p>
     </div>
-    <div class="kartu kartu-metrik">
-        <span class="metrik-label"><x-ikon nama="uang" ukuran="size-4" class="text-navy-400" /> Uang diterima hari ini</span>
-        <span class="metrik-angka">{{ rupiah_ringkas($uangHariIni) }}</span>
-    </div>
-    <a href="{{ route('panel.pesanan.index', ['status' => 'DIPROSES']) }}" class="kartu kartu-tautan kartu-metrik">
-        <span class="metrik-label"><x-ikon nama="antrian" ukuran="size-4" class="text-navy-400" /> Sedang dikerjakan</span>
-        <span class="metrik-angka">{{ $sedangDikerjakan }}</span>
-    </a>
+    <p class="inline-flex items-center gap-2 rounded-[10px] border border-line bg-field px-4 py-2.5 text-sm font-semibold shadow-sm">
+        <x-ikon nama="kalender" ukuran="size-4" class="text-navy-400" />
+        <span class="tabular">{{ now()->translatedFormat('l, j F Y') }}</span>
+    </p>
+</header>
+
+{{-- Lima kartu sejajar mulai layar lebar. Kartu yang bisa ditindaklanjuti
+     menjadi tautan, yang sekadar kabar tidak. --}}
+<div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+    <x-kartu-angka warna="biru" ikon="keranjang" label="Pesanan masuk hari ini" :angka="$pesananHariIni"
+                   :href="$bolehPesanan ? route('panel.pesanan.index', ['dari' => now()->toDateString()]) : null" />
+    <x-kartu-angka warna="hijau" ikon="dompet" label="Uang diterima hari ini" :angka="rupiah_ringkas($uangHariIni)"
+                   :href="$u->punyaIzin('laporan.lihat') ? route('panel.laporan') : null" />
+    <x-kartu-angka warna="jingga" ikon="kunci-pas" label="Sedang dikerjakan" :angka="$sedangDikerjakan"
+                   :href="$bolehPesanan ? route('panel.pesanan.index', ['status' => 'DIPROSES']) : null" />
     {{-- Barang sudah jadi tapi uangnya belum (KEP-028). Ditaruh di antara
          "dikerjakan" dan "siap" karena memang di situlah ia berada. --}}
-    <a href="{{ route('panel.pesanan.index', ['status' => 'MENUNGGU_PELUNASAN']) }}" class="kartu kartu-tautan kartu-metrik">
-        <span class="metrik-label"><x-ikon nama="jam" ukuran="size-4" class="text-navy-400" /> Menunggu pelunasan</span>
-        <span class="metrik-angka {{ $menungguPelunasan > 0 ? 'text-warn' : '' }}">{{ $menungguPelunasan }}</span>
-    </a>
-    <a href="{{ route('panel.serah-terima') }}" class="kartu kartu-tautan kartu-metrik col-span-2 md:col-span-1">
-        <span class="metrik-label"><x-ikon nama="toko" ukuran="size-4" class="text-navy-400" /> Siap diambil</span>
-        <span class="metrik-angka {{ $siapDiambil > 0 ? 'text-merah' : '' }}">{{ $siapDiambil }}</span>
-    </a>
+    <x-kartu-angka warna="ungu" ikon="stok" label="Menunggu pelunasan" :angka="$menungguPelunasan"
+                   :href="$bolehPesanan ? route('panel.pesanan.index', ['status' => 'MENUNGGU_PELUNASAN']) : null" />
+    <x-kartu-angka warna="pink" ikon="kirim" label="Siap diambil/kirim" :angka="$siapDiambil"
+                   :href="$bolehPesanan ? route('panel.pesanan.index', ['status' => 'SIAP_DIAMBIL']) : null"
+                   class="col-span-2 md:col-span-1" />
+</div>
+
+<div class="mt-5 grid items-start gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+    @if ($bolehPesanan)
+        <section class="kartu min-w-0 overflow-hidden">
+            <div class="kartu-kop flex items-center gap-2.5">
+                <span class="lencana-bagian warna-biru"><x-ikon nama="pesanan" ukuran="size-4" /></span>
+                <h2>Pesanan terbaru</h2>
+                <a href="{{ route('panel.pesanan.index') }}" class="tautan-lihat ml-auto">Lihat semua <x-ikon nama="lanjut" ukuran="size-4" /></a>
+            </div>
+            @if ($pesananTerbaru->isEmpty())
+                <p class="p-5 text-sm text-muted">Belum ada pesanan. Pesanan dari web dan yang diketik admin muncul di sini.</p>
+            @else
+                <ul class="divide-y divide-line text-sm md:hidden">
+                    @foreach ($pesananTerbaru as $o)
+                        <li>
+                            <a href="{{ route('panel.pesanan.show', $o) }}" class="flex items-center justify-between gap-3 px-5 py-3 hover:bg-navy-50">
+                                <span class="min-w-0">
+                                    <span class="tabular block font-semibold text-navy-700">{{ $o->kode }}</span>
+                                    <span class="text-muted">{{ $o->customer->nama }}</span>
+                                </span>
+                                <span class="chip {{ $o->status->warna() }}">{{ $o->status->label() }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+                <table class="tabel hidden md:table">
+                    <thead>
+                        <tr>
+                            <th>No. pesanan</th>
+                            <th>Pelanggan</th>
+                            <th>Produk</th>
+                            <th>Status</th>
+                            <th>Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($pesananTerbaru as $o)
+                            @php $item = $o->items->first(); @endphp
+                            <tr class="hover:bg-navy-50" data-tautan="{{ route('panel.pesanan.show', $o) }}">
+                                <td class="whitespace-nowrap"><a href="{{ route('panel.pesanan.show', $o) }}" class="tabular font-semibold text-navy-700">{{ $o->kode }}</a></td>
+                                {{-- Nama dipotong satu baris: kartu ini berbagi lebar dengan
+                                     kartu stok, dan baris setinggi lima baris teks membuat lima
+                                     pesanan terbaru memakan satu layar penuh. --}}
+                                <td class="max-w-44"><span class="block truncate" title="{{ $o->customer->nama }}">{{ $o->customer->nama }}</span></td>
+                                <td class="max-w-52">
+                                    <span class="block truncate" title="{{ $item?->nama_produk }}">{{ $item?->nama_produk ?? '-' }}</span>
+                                    @if ($item)
+                                        <span class="tabular text-xs text-muted">{{ $o->items->sum('qty') }} pcs</span>
+                                    @endif
+                                </td>
+                                <td><span class="chip {{ $o->status->warna() }}">{{ $o->status->label() }}</span></td>
+                                <td class="tabular whitespace-nowrap text-muted">{{ $o->created_at->translatedFormat('j M Y') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </section>
+    @endif
+
+    <section class="kartu min-w-0 overflow-hidden">
+        <div class="kartu-kop flex items-center gap-2.5">
+            <span class="lencana-bagian warna-jingga"><x-ikon nama="stok" ukuran="size-4" /></span>
+            <h2>Stok perlu diisi</h2>
+            @if ($u->punyaIzin('stok.kelola'))
+                <a href="{{ route('panel.stok.index') }}" class="tautan-lihat ml-auto">Lihat semua <x-ikon nama="lanjut" ukuran="size-4" /></a>
+            @endif
+        </div>
+        @if ($stokPerluDiisi->isEmpty())
+            <p class="flex items-center gap-2 p-5 text-sm text-muted">
+                <x-ikon nama="centang" ukuran="size-4" class="text-ok" />
+                Stok aman. Tidak ada barang yang habis atau tinggal tiga.
+            </p>
+        @else
+            {{-- Status tetap di kanan: dulu flex-wrap menjatuhkannya ke bawah dan
+                 rata kiri di HP, sehingga satu baris barang pecah jadi tiga. --}}
+            <ul class="divide-y divide-line text-sm">
+                @foreach ($stokPerluDiisi as $v)
+                    @php $gambar = $v->product->images->first(); @endphp
+                    <li class="flex items-center gap-3 px-5 py-2.5">
+                        @if ($gambar)
+                            <img src="{{ $gambar->thumb_url }}" alt="" width="40" height="40" loading="lazy"
+                                 class="size-10 shrink-0 rounded-[8px] border border-line object-cover">
+                        @else
+                            <span class="flex size-10 shrink-0 items-center justify-center rounded-[8px] border border-dashed border-line-strong text-navy-300">
+                                <x-ikon nama="gambar" ukuran="size-4" />
+                            </span>
+                        @endif
+                        <span class="min-w-0 flex-1">{{ $v->product->nama }} <span class="text-muted">{{ $v->label }}</span></span>
+                        <span class="chip shrink-0 {{ $v->stok_tersedia <= 0 ? 'chip-merah' : 'chip-jingga' }}">
+                            Stok: <span class="tabular">{{ max(0, $v->stok_tersedia) }}</span>
+                        </span>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </section>
+</div>
+
+<div class="mt-4 grid items-start gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+    {{-- Antrean konveksi dihitung per pesanan, bukan per barang: pemilik toko
+         bertanya "berapa pesanan yang masih di desain", bukan berapa baris. --}}
+    <section class="kartu min-w-0 overflow-hidden">
+        <div class="kartu-kop flex items-center gap-2.5">
+            <span class="lencana-bagian warna-ungu"><x-ikon nama="kaos" ukuran="size-4" /></span>
+            <h2>Antrean produksi jersey</h2>
+            @if (! empty($u->tahapProduksi()))
+                <a href="{{ route('panel.antrian.index') }}" class="tautan-lihat ml-auto">Lihat semua <x-ikon nama="lanjut" ukuran="size-4" /></a>
+            @endif
+        </div>
+        <div class="grid grid-cols-3 gap-3 p-4">
+            @foreach ([
+                ['ungu', 'daftar', 'Menunggu desain', $antreanJersey['desain']],
+                ['jingga', 'pengaturan', 'Sedang produksi', $antreanJersey['produksi']],
+                ['pink', 'kirim', 'Siap diambil/kirim', $antreanJersey['siap']],
+            ] as [$warna, $ikon, $label, $angka])
+                <x-kartu-angka :warna="$warna" :ikon="$ikon" :label="$label" :angka="$angka" class="kartu-angka-ringkas" />
+            @endforeach
+        </div>
+    </section>
+
+    @php
+        $pintas = array_filter([
+            $u->punyaIzin('order.kelola') ? ['biru', 'keranjang', 'Tambah pesanan', route('panel.pesanan.baru')] : null,
+            $u->punyaIzin('katalog.kelola') ? ['hijau', 'tambah', 'Tambah produk', route('panel.produk.create')] : null,
+            $u->punyaIzin('stok.kelola') ? ['jingga', 'stok', 'Stok opname', route('panel.stok.index')] : null,
+            $u->punyaIzin('laporan.lihat') ? ['ungu', 'laporan', 'Laporan penjualan', route('panel.laporan')] : null,
+        ]);
+    @endphp
+    @if ($pintas)
+        <section class="kartu min-w-0 overflow-hidden">
+            <div class="kartu-kop flex items-center gap-2.5">
+                <span class="lencana-bagian warna-kuning"><x-ikon nama="petir" ukuran="size-4" /></span>
+                <h2>Jalan pintas</h2>
+            </div>
+            <div class="grid grid-cols-2 gap-3 p-4">
+                @foreach ($pintas as [$warna, $ikon, $label, $url])
+                    <a href="{{ $url }}" class="pintas warna-{{ $warna }}">
+                        <x-ikon :nama="$ikon" />
+                        {{ $label }}
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
 </div>
 
 <div class="mt-8 flex flex-wrap items-center justify-between gap-3">
@@ -48,12 +193,14 @@
     {{-- Jalan pintas ke daftar pesanan yang menunggu orang toko. Kartu-kartu di
          bawah menyebut masalahnya satu per satu; tautan ini untuk yang ingin
          mengerjakannya berurutan dalam satu daftar. --}}
-    <a href="{{ route('panel.pesanan.index', ['status' => 'tindakan']) }}"
-       class="tombol tombol-garis tombol-sm">
-        <x-ikon nama="pesanan" ukuran="size-4" />
-        Pesanan yang menunggu Anda
-        <x-ikon nama="lanjut" ukuran="size-4" />
-    </a>
+    @if ($bolehPesanan)
+        <a href="{{ route('panel.pesanan.index', ['status' => 'tindakan']) }}"
+           class="tombol tombol-garis tombol-sm">
+            <x-ikon nama="pesanan" ukuran="size-4" />
+            Pesanan yang menunggu Anda
+            <x-ikon nama="lanjut" ukuran="size-4" />
+        </a>
+    @endif
 </div>
 
 @foreach ($masalahSistem as $m)
@@ -66,7 +213,6 @@
 {{-- Dua kolom di layar lebar. Baris yang meregang sampai seribu piksel memaksa
      mata berjalan jauh dari nama barang ke angkanya. --}}
 <div class="mt-4 grid items-start gap-3 xl:grid-cols-2">
-
     {{-- Pengajuan pembatalan (KEP-041) didahulukan: selama menggantung,
          konveksi mengerjakan kain yang mungkin tidak jadi dipakai. --}}
     @if ($pembatalanMenunggu->isNotEmpty())
@@ -290,45 +436,20 @@
         </section>
     @endif
 
-    @if ($stokHabis->isNotEmpty() || $stokMenipis->isNotEmpty())
-        <section class="kartu overflow-hidden">
-            <div class="kartu-kop flex items-center gap-2">
-                Stok perlu diisi
-                <a href="{{ route('panel.stok.index') }}" class="tautan ml-auto text-sm font-normal">
-                    Buka halaman stok
-                </a>
-            </div>
-            <ul class="divide-y divide-line text-sm">
-                {{-- Status tetap di kanan: dulu flex-wrap menjatuhkannya ke bawah dan
-                     rata kiri di HP, sehingga satu baris barang pecah jadi tiga. --}}
-                @foreach ($stokHabis->take(6) as $v)
-                    <li class="flex items-start justify-between gap-4 px-5 py-2.5">
-                        <span class="min-w-0">{{ $v->product->nama }} <span class="text-muted">{{ $v->label }}</span></span>
-                        <span class="chip chip-merah shrink-0">Habis</span>
-                    </li>
-                @endforeach
-                @foreach ($stokMenipis->take(6) as $v)
-                    <li class="flex items-start justify-between gap-4 px-5 py-2.5">
-                        <span class="min-w-0">{{ $v->product->nama }} <span class="text-muted">{{ $v->label }}</span></span>
-                        <span class="tabular shrink-0 whitespace-nowrap text-muted">sisa {{ $v->stok_tersedia }}</span>
-                    </li>
-                @endforeach
-            </ul>
-        </section>
-    @endif
-
     @if (empty($masalahSistem) && $tanpaTier->isEmpty() && $stokHabis->isEmpty() && $stokMenipis->isEmpty()
          && $perluVerifikasi->isEmpty() && $lamaBelumDiambil->isEmpty() && $emailBermasalah->isEmpty()
          && $pembatalanMenunggu->isEmpty() && $bolehHangus->isEmpty() && $siapDikirim->isEmpty()
          && $persetujuanLama->isEmpty() && $paketPerluDitutup->isEmpty())
-        <section class="kartu p-8 text-center">
+        <section class="kartu p-8 text-center xl:col-span-2">
             <x-ikon nama="centang" ukuran="size-9" class="mx-auto text-ok" />
             <p class="mt-3 text-lg font-bold">Tidak ada yang perlu ditangani</p>
             <p class="kolom-baca mx-auto mt-2 text-sm text-muted">
                 Harga lengkap, stok aman, dan semua email sampai. Waktu yang baik untuk
                 menambah produk atau merapikan katalog.
             </p>
-            <a href="{{ route('panel.produk.create') }}" class="tombol tombol-navy mt-5">Tambah produk</a>
+            @if (auth('web')->user()->punyaIzin('katalog.kelola'))
+                <a href="{{ route('panel.produk.create') }}" class="tombol tombol-navy mt-5">Tambah produk</a>
+            @endif
         </section>
     @endif
 </div>

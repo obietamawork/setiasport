@@ -4131,6 +4131,33 @@ yang baru ditangani bisa masih terhitung paling lama setengah menit.
 
 ---
 
+## KEP-112 — Dashboard mengikuti tata letak contoh klien
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien: "Apakah tata letak dashboard-nya bisa dibuat seperti pada gambar
+referensi ini?" Susunannya kini mengikuti gambar contoh.
+
+- Sapaan dengan nama pengguna dan tanggal hari ini.
+- Lima kartu berwarna (KEP-111): pesanan masuk hari ini (biru), uang diterima hari ini
+  (hijau), sedang dikerjakan (jingga), menunggu pelunasan (ungu), siap diambil/kirim
+  (pink). Kartu terakhir kini menghitung yang dikirim juga, seperti labelnya di gambar;
+  dulu hanya yang diambil di toko. Kartu menjadi tautan hanya bila penggunanya boleh
+  membuka halaman tujuannya.
+- **Pesanan terbaru**: lima pesanan terakhir, untuk yang memegang `order.lihat`.
+- **Stok perlu diisi**: kini bergambar, dengan sisa stok sebagai chip.
+- **Antrean produksi jersey**: menunggu desain (termasuk menunggu persetujuan), sedang
+  produksi (antrian produksi sampai finishing), dan siap diambil/kirim. Dihitung per
+  pesanan, bukan per barang.
+- **Jalan pintas**: tambah pesanan, tambah produk, stok opname, laporan penjualan,
+  masing-masing hanya muncul bagi yang memegang izinnya. Tombol "Tambah produk" di
+  kartu "tidak ada yang perlu ditangani" ikut disaring izin.
+- Daftar "Yang perlu ditangani" tetap ada di bawahnya, tidak berubah isinya. Dialah
+  alasan dashboard dibuka tiap pagi (docs/04); gambar contoh tidak memuatnya, tetapi
+  membuangnya berarti peringatan bukti transfer, pembatalan, dan email gagal hilang.
+  Kuerinya kini dari `DaftarTindakan`, sumber yang sama dengan lonceng.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4247,3 +4274,4 @@ yang baru ditangani bisa masih terhitung paling lama setengah menit.
 | KEP-110 | Foto bahan wajib, tampil di panel dan ke pelanggan | TERKUNCI |
 | KEP-117 | Laporan tiga halaman: penjualan, stok barang, produk terlaris | TERKUNCI |
 | KEP-111 | Kerangka panel baru: sidebar gelap, warna bagian, cari, lonceng | TERKUNCI |
+| KEP-112 | Dashboard berwarna: pesanan terbaru, antrean jersey, jalan pintas | TERKUNCI |
