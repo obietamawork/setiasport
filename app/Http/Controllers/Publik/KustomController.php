@@ -55,6 +55,8 @@ class KustomController extends Controller
             'baris.*.jumlah' => ['required', 'integer', 'min:1', 'max:5000'],
             'baris.*.nama_punggung' => ['nullable', 'string', 'max:60'],
             'baris.*.nomor' => ['nullable', 'string', 'max:5'],
+            // Model baju per pemain (KEP-123); keabsahannya diperiksa PriceCalculator.
+            'baris.*.model' => ['nullable', 'integer'],
             'desain_sumber' => ['required', 'in:katalog,sendiri,admin'],
             'catatan_desain' => ['nullable', 'string', 'max:1000'],
         ], [], [

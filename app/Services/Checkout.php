@@ -226,6 +226,9 @@ class Checkout
                 'ukuran' => $r['ukuran'],
                 'jumlah' => $r['jumlah'],
                 'harga_satuan' => $r['harga_satuan'],
+                // Model baju per pemain (KEP-123).
+                'option_value_id' => $r['option_value_id'] ?? null,
+                'model' => $r['model'] ?? null,
             ]);
         }
     }

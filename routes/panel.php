@@ -238,6 +238,8 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
                 Route::post('opsi', [ProdukKomponenController::class, 'simpanOpsi'])->name('opsi.simpan');
                 Route::delete('opsi/{opsi}', [ProdukKomponenController::class, 'hapusOpsi'])->name('opsi.hapus');
+                // Opsi yang dipilih per pemain, misalnya Model Baju (KEP-123).
+                Route::post('opsi/{opsi}/per-pemain', [ProdukKomponenController::class, 'alihPerPemain'])->name('opsi.per-pemain');
 
                 // Matriks harga, panduan ukuran, dan tambahan ukuran besar (KEP-052).
                 Route::post('matriks', [ProdukHargaController::class, 'simpanMatriks'])->name('matriks.simpan');

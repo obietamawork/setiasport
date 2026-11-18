@@ -62,6 +62,9 @@
                         <input type="hidden" name="roster[{{ $i }}][kategori]" value="{{ $p['r']->kategori?->value }}">
                         <input type="hidden" name="roster[{{ $i }}][ukuran]" value="{{ $p['r']->ukuran }}">
                         <input type="hidden" name="roster[{{ $i }}][jumlah]" value="1">
+                        {{-- Model baju per pemain (KEP-123) ikut terkirim apa adanya:
+                             susunannya sudah ditagihkan, sama seperti ukuran. --}}
+                        <input type="hidden" name="roster[{{ $i }}][model]" value="{{ $p['r']->option_value_id }}">
 
                         {{-- Ukurannya keterangan, bukan isian: di HP ia di atas, bukan
                              terlipat sendirian di bawah kotak nama. --}}

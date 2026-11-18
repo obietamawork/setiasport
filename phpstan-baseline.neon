@@ -1033,7 +1033,7 @@ parameters:
 			path: app/Services/Keranjang.php
 
 		-
-			message: '#^Offset ''kategori'' on array\{kategori\: string, ukuran\: string, jumlah\: int, nama_punggung\?\: string\|null, nomor\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			message: '#^Offset ''kategori'' on array\{kategori\: string, ukuran\: string, jumlah\: int, nama_punggung\?\: string\|null, nomor\?\: string\|null, model\?\: int\|string\|null\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Services/Keranjang.php

@@ -4409,6 +4409,41 @@ Bagian progres di halaman pesanan pelanggan kini per barang (`publik/lacak/item`
 
 ---
 
+## KEP-123 — Model baju dipilih per pemain: satu pesanan boleh campuran kerah dan oblong
+**Status:** TERKUNCI · 2026-11-18
+
+Pertanyaan klien: "ketika ada pesanan yang ada kerah dan oblong, bisa ada yang kerah bisa
+ada yang oblong, bagaimana itu?" Sebelumnya "Model Baju" dipilih sekali per barang, jadi
+pesanan campuran harus dimasukkan dua kali ke keranjang, dan minimum pesanan serta
+potongan borongan dihitung per baris: 8 berkerah dan 6 oblong ditolak karena masing-masing
+di bawah 12. Pemilik proyek memilih model dipilih **per pemain**.
+
+- Opsi produk bisa ditandai **"Dipilih per pemain"** (`product_options.per_pemain`), paling
+  banyak satu per produk, lewat chip di kepala opsi pada halaman ubah produk
+  (`POST /panel/produk/{produk}/opsi/{opsi}/per-pemain`). Opsi bernama "Model Baju" yang
+  sudah ada langsung ditandai oleh migrasinya; seeder katalog ikut menandainya.
+- Di konfigurator, opsi itu keluar dari pilihan barang dan menjadi kolom **Model** di setiap
+  baris daftar ukuran dan pemain. Langkah Desain & Detail memberi tahu bahwa pilihannya
+  pindah ke Data Pemain. Baris baru mengikuti model baris sebelumnya, dan daftar yang
+  ditempel mengenali kata "kerah" atau "oblong" di kolomnya.
+- **Harga**: tambahan model masuk ke harga satuan baris itu saja, di layar maupun di
+  `PriceCalculator`. Minimum pesanan dan potongan borongan tetap dihitung dari total
+  potong satu barang. Nilai yang dikirim di tingkat barang (pesanan lama, permintaan dari
+  luar konfigurator) menjadi bawaan untuk baris yang tidak memilih, sehingga pesanan yang
+  semua barisnya sama harganya persis seperti sebelumnya. Nilai dari produk lain atau yang
+  nonaktif ditolak; opsi wajib menuntut model di setiap baris.
+- **Data**: `order_item_rosters.option_value_id` dan salinan labelnya di `model`, seperti
+  `nama_produk` di `order_items`. `OrderItemRoster::labelUkuran()` menambahkan model
+  ("L · Pakai Kerah"), jadi lembar kerja, invoice, halaman pekerja QR, serah terima, dan
+  halaman pelanggan ikut menyebutnya, dan ringkasan ukuran dikelompokkan per ukuran dan
+  model.
+- Setelah checkout, susunan model terkunci seperti ukuran (KEP-039): formulir daftar pemain
+  pelanggan mengirim model tiap baris apa adanya, dan `RosterPemain` menolak perubahan
+  jumlah per ukuran dan model, karena mengubah kerah menjadi oblong mengubah tagihan.
+  Nama dan nomor tetap bisa diubah.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4535,3 +4570,4 @@ Bagian progres di halaman pesanan pelanggan kini per barang (`publik/lacak/item`
 | KEP-120 | Stok per produk, barang masuk dari supplier, penyesuaian terpisah | TERKUNCI |
 | KEP-121 | Halaman menunggu pembayaran: ringkasan, sisa waktu, QRIS/transfer | TERKUNCI |
 | KEP-122 | Progres pesanan: tahap mendatar, pemain berpensil, ubah catatan | TERKUNCI |
+| KEP-123 | Model per pemain: kerah dan oblong dalam satu pesanan | TERKUNCI |

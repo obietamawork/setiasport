@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\FulfillmentType;
+use App\Models\OptionValue;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Setting;
@@ -120,7 +121,7 @@ class Keranjang
      * dan daftar itu pula yang nanti jadi daftar pemain di pesanan. Satu angka
      * jumlah yang berdiri sendiri pasti suatu saat berselisih dengan daftarnya.
      *
-     * @param  array<int, array{kategori:string, ukuran:string, jumlah:int, nama_punggung?:?string, nomor?:?string}>  $daftarUkuran
+     * @param  array<int, array{kategori:string, ukuran:string, jumlah:int, nama_punggung?:?string, nomor?:?string, model?:int|string|null}>  $daftarUkuran
      * @param  array<int, int>  $optionValueIds
      */
     public function tambahKustomPerUkuran(
@@ -132,6 +133,13 @@ class Keranjang
     ): void {
         $rincian = $this->kalkulator->kustomPerUkuran($produk, $daftarUkuran, $optionValueIds);
 
+        // Opsi per pemain (KEP-123) disimpan per baris, tidak ikut di opsi barang.
+        $idPemain = OptionValue::query()
+            ->whereHas('option', fn ($o) => $o->where('product_id', $produk->id)->where('per_pemain', true))
+            ->pluck('id')
+            ->all();
+        $optionValueIds = array_values(array_diff($optionValueIds, $idPemain));
+
         $baris = $this->baris();
         $this->pastikanMuat($baris);
 
@@ -140,16 +148,17 @@ class Keranjang
             'variant_id' => null,
             'qty' => $rincian->qty,
             'jalur' => FulfillmentType::PREORDER->value,
-            'opsi' => array_values($optionValueIds),
+            'opsi' => $optionValueIds,
             'catatan' => $catatan,
             'desain_sumber' => $desainSumber,
-            'ukuran' => array_map(fn (array $b) => [
+            'ukuran' => array_map(fn (array $b, array $r) => [
                 'kategori' => (string) ($b['kategori'] ?? ''),
                 'ukuran' => (string) $b['ukuran'],
                 'jumlah' => (int) $b['jumlah'],
                 'nama_punggung' => $b['nama_punggung'] ?? null,
                 'nomor' => $b['nomor'] ?? null,
-            ], $daftarUkuran),
+                'model' => $r['option_value_id'] ?? null,
+            ], $daftarUkuran, $rincian->baris),
         ];
 
         session([self::KUNCI => $baris]);

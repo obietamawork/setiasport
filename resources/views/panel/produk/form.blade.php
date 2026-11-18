@@ -515,6 +515,16 @@
             <div class="kartu overflow-hidden">
                 <div class="flex items-center gap-3 border-b border-line px-4 py-2.5">
                     <span class="font-semibold">{{ $opsi->nama }}</span>
+                    {{-- Dipilih per pemain (KEP-123): kolom pilihan di daftar ukuran,
+                         misalnya sebagian berkerah dan sebagian oblong. --}}
+                    <form method="POST" action="{{ route('panel.produk.opsi.per-pemain', [$produk, $opsi]) }}">
+                        @csrf
+                        <button type="submit" class="chip {{ $opsi->per_pemain ? 'chip-biru' : 'chip-netral border border-line' }}"
+                                title="{{ $opsi->per_pemain ? 'Klik untuk memilihnya sekali untuk seluruh pesanan' : 'Klik supaya pelanggan memilihnya per pemain' }}">
+                            <x-ikon nama="pekerja" ukuran="size-3.5" />
+                            {{ $opsi->per_pemain ? 'Dipilih per pemain' : 'Sekali per pesanan' }}
+                        </button>
+                    </form>
                     @unless ($opsi->wajib)
                         <span class="chip chip-netral">Opsional</span>
                     @endunless

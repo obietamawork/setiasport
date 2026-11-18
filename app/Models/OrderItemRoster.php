@@ -15,7 +15,7 @@ class OrderItemRoster extends Model
 {
     protected $fillable = [
         'order_item_id', 'urutan', 'kategori', 'nama_punggung', 'nomor',
-        'ukuran', 'jumlah', 'harga_satuan', 'catatan',
+        'ukuran', 'jumlah', 'harga_satuan', 'option_value_id', 'model', 'catatan',
     ];
 
     protected function casts(): array
@@ -28,10 +28,16 @@ class OrderItemRoster extends Model
         ];
     }
 
-    /** Label yang dibaca manusia, misalnya "SMP M". */
+    /**
+     * Label yang dibaca manusia, misalnya "SMP M", ditambah model baju bila
+     * dipilih per pemain (KEP-123): "SMP M · Pakai Kerah". Lembar kerja,
+     * invoice, dan serah terima ikut menyebutnya tanpa disentuh satu per satu.
+     */
     public function labelUkuran(): string
     {
-        return $this->kategori?->labelUkuran($this->ukuran) ?? $this->ukuran;
+        $ukuran = $this->kategori?->labelUkuran($this->ukuran) ?? $this->ukuran;
+
+        return $this->model ? $ukuran.' · '.$this->model : $ukuran;
     }
 
     public function orderItem(): BelongsTo

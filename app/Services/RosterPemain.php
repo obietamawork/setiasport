@@ -75,14 +75,23 @@ class RosterPemain
     {
         $lama = $item->rosters()->orderBy('urutan')->get();
 
-        $harga = $lama->mapWithKeys(fn (OrderItemRoster $r) => [
-            $this->kunciUkuran($r->kategori?->value, $r->ukuran) => $r->harga_satuan,
-        ]);
+        // Kunci baris memuat model baju per pemain (KEP-123): mengubah kerah
+        // jadi oblong mengubah tagihan, jadi susunannya harus tetap.
+        $harga = [];
+        $labelModel = [];
+
+        foreach ($lama as $r) {
+            $kunci = $this->kunciUkuran($r->kategori?->value, $r->ukuran, $r->option_value_id);
+            $harga[$kunci] = $r->harga_satuan;
+            $labelModel[$kunci] = $r->model;
+        }
+
+        $harga = collect($harga);
 
         $bersih = $this->validasiPerUkuran($baris, $harga->keys()->all());
 
         $sebelum = $this->susunan($lama->map(fn (OrderItemRoster $r) => [
-            'kunci' => $this->kunciUkuran($r->kategori?->value, $r->ukuran),
+            'kunci' => $this->kunciUkuran($r->kategori?->value, $r->ukuran, $r->option_value_id),
             'jumlah' => $r->jumlah,
         ])->all());
 
@@ -93,11 +102,11 @@ class RosterPemain
             ]);
         }
 
-        DB::transaction(function () use ($item, $bersih, $harga) {
+        DB::transaction(function () use ($item, $bersih, $harga, $labelModel) {
             $item->rosters()->delete();
 
             foreach ($bersih as $urutan => $b) {
-                [$kategori, $ukuran] = $this->pecahKunci($b['kunci']);
+                [$kategori, $ukuran, $model] = $this->pecahKunci($b['kunci']);
 
                 $item->rosters()->create([
                     'urutan' => $urutan + 1,
@@ -107,6 +116,8 @@ class RosterPemain
                     'ukuran' => $ukuran,
                     'jumlah' => $b['jumlah'],
                     'harga_satuan' => $harga[$b['kunci']],
+                    'option_value_id' => $model,
+                    'model' => $labelModel[$b['kunci']] ?? null,
                     'catatan' => $b['catatan'],
                 ]);
             }
@@ -133,17 +144,17 @@ class RosterPemain
         return $hasil;
     }
 
-    private function kunciUkuran(?string $kategori, string $ukuran): string
+    private function kunciUkuran(?string $kategori, string $ukuran, ?int $model = null): string
     {
-        return ($kategori ?? '').'|'.$ukuran;
+        return ($kategori ?? '').'|'.$ukuran.'|'.($model ?? '');
     }
 
-    /** @return array{0: ?string, 1: string} */
+    /** @return array{0: ?string, 1: string, 2: ?int} */
     private function pecahKunci(string $kunci): array
     {
-        [$kategori, $ukuran] = explode('|', $kunci, 2);
+        [$kategori, $ukuran, $model] = array_pad(explode('|', $kunci, 3), 3, '');
 
-        return [$kategori !== '' ? $kategori : null, $ukuran];
+        return [$kategori !== '' ? $kategori : null, $ukuran, $model !== '' ? (int) $model : null];
     }
 
     /**
@@ -163,6 +174,7 @@ class RosterPemain
             $kunci = $this->kunciUkuran(
                 trim((string) ($b['kategori'] ?? '')) ?: null,
                 trim((string) ($b['ukuran'] ?? '')),
+                (int) ($b['model'] ?? 0) ?: null,
             );
 
             if ($jumlah < 1) {

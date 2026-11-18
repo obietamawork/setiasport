@@ -10,7 +10,18 @@
 @section('isi')
 @php
     /** @var \App\Models\Product $produk */
-    $dataOpsi = $produk->options->map(fn ($o) => [
+    // Opsi yang dipilih per pemain (KEP-123), misalnya Model Baju, tampil
+    // sebagai kolom di daftar ukuran, bukan tombol pilihan barang.
+    $opsiPemain = $produk->options->firstWhere('per_pemain', true);
+    $dataPemain = $opsiPemain ? [
+        'id' => $opsiPemain->id,
+        'nama' => $opsiPemain->nama,
+        'values' => $opsiPemain->values->where('aktif', true)->map(fn ($v) => [
+            'id' => $v->id, 'label' => $v->label, 'harga' => $v->tambahan_harga,
+        ])->values(),
+    ] : null;
+
+    $dataOpsi = $produk->options->reject(fn ($o) => $o->per_pemain)->map(fn ($o) => [
         'id' => $o->id,
         'nama' => $o->nama,
         'wajib' => $o->wajib,
@@ -69,6 +80,7 @@
 <div class="mx-auto max-w-6xl px-5 py-6"
      x-data="pesanKustom({
         opsi: @js($dataOpsi),
+        opsiPemain: @js($dataPemain),
         harga: @js($dataHarga),
         kategori: @js($dataKategori),
         tambahanUkuran: @js($dataTambahan),
@@ -186,7 +198,16 @@
                     </div>
                 @endif
 
-                @foreach ($produk->options as $opsi)
+                @if ($opsiPemain)
+                    {{-- Opsi per pemain pindah ke daftar pemain (KEP-123); kalimat
+                         ini mencegah pelanggan mencarinya di sini. --}}
+                    <p class="rounded-[8px] border-l-2 border-navy-200 bg-navy-50 px-4 py-3 text-sm leading-relaxed">
+                        <strong>{{ $opsiPemain->nama }}</strong> ({{ $opsiPemain->values->where('aktif', true)->pluck('label')->implode(' atau ') }})
+                        dipilih per pemain di langkah Data Pemain, jadi satu pesanan boleh campuran.
+                    </p>
+                @endif
+
+                @foreach ($produk->options->reject(fn ($o) => $o->per_pemain) as $opsi)
                     <div class="kartu p-5">
                         <p class="font-semibold">
                             {{ $opsi->nama }}
@@ -329,6 +350,17 @@
                                         </template>
                                     </select>
                                 </label>
+                                <template x-if="opsiPemain">
+                                    <label class="block">
+                                        <span class="label-form" x-text="opsiPemain.nama"></span>
+                                        <select x-model.number="b.model" :name="`baris[${i}][model]`" class="kotak-input">
+                                            <template x-for="v in opsiPemain.values" :key="v.id">
+                                                <option :value="v.id" :selected="v.id === b.model"
+                                                        x-text="v.label + (v.harga > 0 ? ' (+' + rp(v.harga) + ')' : '')"></option>
+                                            </template>
+                                        </select>
+                                    </label>
+                                </template>
                                 <div>
                                     <span class="label-form" aria-hidden="true">Jumlah</span>
                                     <x-jumlah x-model.number="b.jumlah" ::name="`baris[${i}][jumlah]`" max="5000" />
@@ -675,6 +707,9 @@
                 this.baris.push({
                     nama_punggung: '', nomor: '',
                     kategori: k.value, ukuran: k.ukuran[1] ?? k.ukuran[0], jumlah: 1,
+                    // Baris baru mengikuti model baris terakhir: tim biasanya
+                    // mengetik yang berkerah dulu, lalu yang oblong.
+                    model: this.baris.at(-1)?.model ?? this.opsiPemain?.values[0]?.id ?? null,
                 });
             },
 
@@ -715,12 +750,18 @@
 
                     if (!daftar.includes(besar)) { ditolak++; continue; }
 
+                    // Model per pemain (KEP-123) dikenali dari kata terakhir labelnya,
+                    // misalnya "kerah" atau "oblong" di salah satu kolom.
+                    const modelTempel = this.opsiPemain?.values.find(v =>
+                        sel.some(s => s.toLowerCase().includes(v.label.toLowerCase().split(' ').pop())));
+
                     hasil.push({
                         nama_punggung: sel[0] && iUkuran > 0 ? sel[0] : '',
                         nomor: iUkuran > 1 && /^\d+$/.test(sel[1]) ? sel[1] : '',
                         kategori,
                         ukuran: besar,
                         jumlah: Math.max(1, parseInt(sel[iUkuran + 1], 10) || 1),
+                        model: modelTempel?.id ?? hasil.at(-1)?.model ?? this.baris.at(-1)?.model ?? this.opsiPemain?.values[0]?.id ?? null,
                     });
                 }
 
@@ -765,7 +806,8 @@
             // toko sendiri: "Model Baju: Pakai Kerah", "Kerah: V-neck", dst.
 
             get polaLeher() {
-                for (const v of this.terpilih) {
+                const modelPertama = this.opsiPemain?.values.find(v => v.id === Number(this.baris[0]?.model));
+                for (const v of [...(modelPertama ? [modelPertama] : []), ...this.terpilih]) {
                     const l = v.label.toLowerCase();
                     if (/tanpa|tidak/.test(l)) continue;
                     if (/v-?neck|leher v/.test(l)) return 'v';
@@ -823,7 +865,15 @@
             hargaPotong(b) {
                 return this.hargaDasar(b.kategori)
                     + this.komponenPerPcs.reduce((s, k) => s + k.harga, 0)
-                    + (this.tambahanUkuran[b.ukuran] ?? 0);
+                    + (this.tambahanUkuran[b.ukuran] ?? 0)
+                    + this.hargaModel(b);
+            },
+
+            /** Tambahan model baju per pemain (KEP-123), sama dengan PriceCalculator. */
+            hargaModel(b) {
+                if (!this.opsiPemain) return 0;
+
+                return this.opsiPemain.values.find(v => v.id === Number(b.model))?.harga ?? 0;
             },
 
             get qty() {

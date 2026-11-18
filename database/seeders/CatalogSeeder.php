@@ -697,7 +697,8 @@ class CatalogSeeder extends Seeder
 
         $opsi = ProductOption::updateOrCreate(
             ['product_id' => $p->id, 'nama' => $nama],
-            ['wajib' => $wajib, 'urutan' => $urutan]
+            // Kerah atau oblong dipilih per pemain (KEP-123).
+            ['wajib' => $wajib, 'urutan' => $urutan, 'per_pemain' => $nama === 'Model Baju']
         );
 
         // Hanya opsi "Bahan" yang ditautkan ke kamus (KEP-072): nama opsi lain

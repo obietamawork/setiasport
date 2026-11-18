@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProductOption extends Model
 {
-    protected $fillable = ['product_id', 'nama', 'wajib', 'urutan'];
+    protected $fillable = ['product_id', 'nama', 'wajib', 'per_pemain', 'urutan'];
 
     protected function casts(): array
     {
-        return ['wajib' => 'boolean'];
+        return ['wajib' => 'boolean', 'per_pemain' => 'boolean'];
     }
 
     public function product(): BelongsTo

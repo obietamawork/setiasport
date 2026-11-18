@@ -13,7 +13,7 @@ namespace App\Services;
 final readonly class RincianPerUkuran
 {
     /**
-     * @param  array<int, array{kategori: string, ukuran: string, jumlah: int, harga_satuan: int, subtotal: int}>  $baris
+     * @param  array<int, array{kategori: string, ukuran: string, jumlah: int, harga_satuan: int, subtotal: int, option_value_id?: ?int, model?: ?string}>  $baris
      * @param  array<int, array{label: string, nilai: string, jumlah: int}>  $komponenPerPcs
      * @param  array<int, array{label: string, jumlah: int}>  $komponenPerItem
      */

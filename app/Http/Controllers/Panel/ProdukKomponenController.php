@@ -12,6 +12,7 @@ use App\Models\ProductPriceTier;
 use App\Models\ProductVariant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
@@ -120,6 +121,32 @@ class ProdukKomponenController extends Controller
         ]);
 
         return back()->with('sukses', "Opsi \"{$opsi->nama}\" ditambahkan. Sekarang isi pilihannya.");
+    }
+
+    /**
+     * Tandai opsi yang dipilih per pemain (KEP-123), misalnya Model Baju:
+     * sebagian berkerah, sebagian oblong. Paling banyak satu per produk,
+     * karena daftar pemain hanya punya satu kolom pilihan.
+     */
+    public function alihPerPemain(Product $produk, ProductOption $opsi): RedirectResponse
+    {
+        abort_unless($opsi->product_id === $produk->id, 404);
+
+        $aktif = ! $opsi->per_pemain;
+
+        DB::transaction(function () use ($produk, $opsi, $aktif) {
+            if ($aktif) {
+                $produk->options()->whereKeyNot($opsi->id)->update(['per_pemain' => false]);
+            }
+
+            $opsi->update(['per_pemain' => $aktif]);
+        });
+
+        ActivityLog::catat('produk.opsi_per_pemain', $produk, ['opsi' => $opsi->nama, 'per_pemain' => $aktif]);
+
+        return back()->with('sukses', $aktif
+            ? "\"{$opsi->nama}\" kini dipilih per pemain di daftar ukuran."
+            : "\"{$opsi->nama}\" kembali dipilih sekali untuk seluruh pesanan.");
     }
 
     public function hapusOpsi(Product $produk, ProductOption $opsi): RedirectResponse

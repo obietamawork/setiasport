@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\KategoriUkuran;
 use App\Enums\PriceBasis;
 use App\Models\OptionValue;
+use App\Models\ProductOption;
 use App\Models\Product;
 use App\Models\ProductPrice;
 use App\Models\ProductVariant;
@@ -88,7 +89,7 @@ class PriceCalculator
      * ukuran, supaya angka yang dipakai menghitung harga selalu angka yang
      * sama dengan yang nanti dikerjakan konveksi.
      *
-     * @param  array<int, array{kategori: string|KategoriUkuran, ukuran: string, jumlah: int}>  $daftarUkuran
+     * @param  array<int, array{kategori: string|KategoriUkuran, ukuran: string, jumlah: int, model?: int|string|null}>  $daftarUkuran
      * @param  array<int, int>  $optionValueIds
      */
     public function kustomPerUkuran(Product $product, array $daftarUkuran, array $optionValueIds = []): RincianPerUkuran
@@ -102,6 +103,24 @@ class PriceCalculator
         }
 
         $values = $this->ambilOptionValues($product, $optionValueIds);
+
+        /*
+         * Opsi per pemain (KEP-123), misalnya Model Baju: dipilih per baris,
+         * jadi tambahannya masuk ke harga baris itu saja. Nilai yang dikirim
+         * di tingkat barang menjadi bawaan untuk baris yang tidak memilih.
+         */
+        $opsiPemain = ProductOption::query()
+            ->where('product_id', $product->id)
+            ->where('per_pemain', true)
+            ->with('values')
+            ->first();
+
+        /** @var OptionValue|null $bawaanModel */
+        $bawaanModel = $opsiPemain ? $values->firstWhere('product_option_id', $opsiPemain->id) : null;
+
+        if ($opsiPemain) {
+            $values = $values->reject(fn (OptionValue $v) => $v->product_option_id === $opsiPemain->id)->values();
+        }
 
         $perPcs = [];
         $perItem = [];
@@ -144,7 +163,7 @@ class PriceCalculator
         $qty = 0;
         $subtotal = 0;
 
-        foreach ($daftarUkuran as $b) {
+        foreach (array_values($daftarUkuran) as $n => $b) {
             $kategori = $b['kategori'] instanceof KategoriUkuran
                 ? $b['kategori']
                 : KategoriUkuran::tryFrom((string) $b['kategori']);
@@ -170,7 +189,29 @@ class PriceCalculator
                 );
             }
 
-            $hargaSatuan = $dasar + $tambahanPerPcs + $product->tambahanUkuran($b['ukuran']);
+            $model = null;
+
+            if ($opsiPemain) {
+                $idModel = ($b['model'] ?? null) !== null && $b['model'] !== '' ? (int) $b['model'] : $bawaanModel?->id;
+                /** @var OptionValue|null $model */
+                $model = $idModel ? $opsiPemain->values->firstWhere('id', $idModel) : null;
+
+                if ($model !== null && ! $model->aktif) {
+                    $model = null;
+                }
+
+                if ($idModel && ! $model) {
+                    throw new InvalidArgumentException(
+                        "Pilihan {$opsiPemain->nama} pada baris ke-".($n + 1).' tidak tersedia untuk produk ini.'
+                    );
+                }
+
+                if (! $model && $opsiPemain->wajib) {
+                    throw new InvalidArgumentException("Pilih {$opsiPemain->nama} untuk setiap pemain.");
+                }
+            }
+
+            $hargaSatuan = $dasar + $tambahanPerPcs + $product->tambahanUkuran($b['ukuran']) + ($model !== null ? $model->tambahan_harga : 0);
 
             $baris[] = [
                 'kategori' => $kategori?->value ?? '',
@@ -178,6 +219,8 @@ class PriceCalculator
                 'jumlah' => $jumlah,
                 'harga_satuan' => $hargaSatuan,
                 'subtotal' => $hargaSatuan * $jumlah,
+                'option_value_id' => $model?->id,
+                'model' => $model?->label,
             ];
 
             $qty += $jumlah;
@@ -273,8 +316,10 @@ class PriceCalculator
         // Opsi wajib harus terisi, kalau tidak lembar kerjanya sampai di
         // konveksi tanpa, misalnya, model kerah. Opsi wajib yang semua
         // nilainya sedang nonaktif tidak bisa dipilih siapa pun, jadi dilewati.
+        // Opsi per pemain (KEP-123) diperiksa per baris, bukan di sini.
         $belumDipilih = $product->options()
             ->where('wajib', true)
+            ->where('per_pemain', false)
             ->whereHas('values', fn ($q) => $q->where('aktif', true))
             ->whereNotIn('id', $values->pluck('product_option_id'))
             ->orderBy('urutan')
