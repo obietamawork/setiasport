@@ -28,6 +28,27 @@ Aturan itu dipakai apa adanya di seluruh antarmuka.
 | `line` / `line-strong` | `#E3E7F0` / `#C3CBDC` | garis pemisah dan tepi kendali |
 | `paper` / `field` | `#F6F8FC` / `#FFFFFF` | dasar halaman dan permukaan kartu |
 
+### Warna bagian, khusus panel (KEP-111)
+
+Revisi klien meminta "warna atau penanda visual khusus yang mudah dikenali sebagai
+pembeda antarbagian". Warna-warna ini hanya dipakai di panel internal; etalase tetap
+navy, merah, dan kuning seperti logo.
+
+| Token | Bagian | Status pesanan yang memakainya |
+|---|---|---|
+| `biru` (`#2563EB`), `biru-terang` | pesanan; menu aktif di sidebar | |
+| `hijau` / `ok` | uang | Selesai |
+| `jingga` (`#EA7A0C`) | produksi | Diproses |
+| `ungu` (`#7C3AED`) | pelunasan, desain | Menunggu pelunasan |
+| `pink` (`#E0336F`) | siap diambil atau dikirim | Siap diambil, Dalam pengiriman |
+| `kuning` | | Menunggu pembayaran |
+| `merah` | | Dibatalkan, Kedaluwarsa |
+
+Satu bagian satu warna di seluruh panel: kartu dashboard, ikon di samping judul
+halaman, kartu ringkasan, dan chip status memakai warna yang sama untuk hal yang sama.
+Dipasang lewat kelas `.warna-{nama}` (komponen `<x-kartu-angka>`, `<x-kop ikon warna>`,
+`.lencana-bagian`, `.pintas`) dan `.chip-{nama}`.
+
 ## Tipografi
 
 **Plus Jakarta Sans**, dirancang Tokotype untuk identitas kota Jakarta. Dipilih
@@ -60,8 +81,8 @@ ingin terbaca rapi dan modern. Satu keluarga untuk seluruh sistem.
 |---|---|---|
 | Tujuan | Mengurangi keraguan sebelum bayar | Menyelesaikan pekerjaan |
 | Kepadatan | Longgar | Padat, tabel rapat |
-| Warna | Kertas dominan, navy sebagai struktur | Navy tua sebagai chrome, putih sebagai ruang kerja |
-| Hiasan | Satu blok berani | Tidak ada |
+| Warna | Kertas dominan, navy sebagai struktur | Sidebar navy tua, bilah atas putih, warna per bagian |
+| Hiasan | Satu blok berani | Kartu angka berwarna pastel, hanya sebagai penanda bagian |
 
 Panel wajib mobile-first: operator produksi membuka antrian dari HP di dekat
 mesin, opname dilakukan sambil berdiri di depan rak, dan admin memeriksa pesanan
@@ -82,6 +103,12 @@ di jalan. Hasil auditnya ada di [13-audit-ui.md](13-audit-ui.md).
   inset-0`, kalau tidak ukuran asli gambar diam-diam menentukan tinggi kotak
 
 ### Panel internal
+
+Kerangkanya mengikuti gambar contoh klien (KEP-111): sidebar navy gelap setinggi layar
+dengan logo dan "Panel Admin", menu aktif biru terang, bilah atas putih berisi cari,
+lonceng, Bantuan, dan akun. Aturan "garis, bukan bayangan" di atas tidak berlaku untuk
+kartu angka berwarna di panel: di sana bayangan tipis dan latar pastel memang penanda
+bagian yang diminta klien.
 
 Satu kop halaman, satu kelas kartu, satu kelas tabel. Halaman yang dipakai
 berjam-jam tiap hari tidak boleh menuntut penyesuaian ulang di tiap layar.

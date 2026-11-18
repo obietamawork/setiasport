@@ -21,9 +21,9 @@
                    :href="route('panel.laporan.stok', ['status' => 'habis'])" :aktif="$status === 'habis'" />
 </div>
 
-<form method="GET" class="mt-6 flex flex-wrap items-center gap-2">
+<form method="GET" class="mt-6 flex flex-wrap items-center gap-2" data-saring-otomatis>
     <label for="status-stok" class="sr-only">Status stok</label>
-    <select id="status-stok" name="status" class="kotak-input w-auto" onchange="this.form.submit()">
+    <select id="status-stok" name="status" class="kotak-input w-auto">
         @foreach (['' => 'Semua status', 'aman' => 'Aman', 'menipis' => 'Menipis', 'habis' => 'Habis'] as $nilai => $label)
             <option value="{{ $nilai }}" @selected($status === $nilai)>{{ $label }}</option>
         @endforeach
