@@ -151,18 +151,6 @@ parameters:
 			path: app/Http/Controllers/Panel/PesananController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Panel/PesananController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$no_hp\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Panel/PesananController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
 			identifier: property.notFound
 			count: 1
@@ -277,22 +265,10 @@ parameters:
 			path: app/Http/Controllers/Panel/ProdukKomponenController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Panel/StokController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Testimoni\:\:\$contoh\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Panel/TestimoniController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Panel/TindakLanjutController.php
 
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:mapWithKeys\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\<int\<0, max\>, array\{tautan\: string, svg\: string\}\>, Closure\(App\\Models\\OrderItem\)\: non\-empty\-array\<int\<0, max\>, array\{tautan\: string, svg\: string\}\> given\.$#'
@@ -309,12 +285,6 @@ parameters:
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
-			count: 1
-			path: app/Http/Controllers/Publik/CheckoutController.php
-
-		-
-			message: '#^Parameter \#1 \$pelanggan of method App\\Http\\Controllers\\Publik\\CheckoutController\:\:buatkanAkun\(\) expects App\\Models\\Customer, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Publik/CheckoutController.php
 
@@ -341,18 +311,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Publik/KatalogController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$aktif\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Publik/KeranjangController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Publik/KeranjangController.php
 
 		-
 			message: '#^Cannot call method labelStaf\(\) on string\.$#'
@@ -629,12 +587,6 @@ parameters:
 			identifier: offsetAccess.notFound
 			count: 1
 			path: app/Models/ProductSizeChart.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$harga_dasar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/ProductVariant.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:aktif\(\)\.$#'
@@ -1063,12 +1015,6 @@ parameters:
 			path: app/Services/KebijakanPembatalan.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/Keranjang.php
-
-		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
 			count: 1
@@ -1237,44 +1183,14 @@ parameters:
 			path: app/Services/OrderStatusResolver.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/PengirimEmail.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Services/PengirimEmail.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$harga_dasar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/PriceCalculator.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Services/PriceCalculator.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sku\.$#'
-			identifier: property.notFound
-			count: 1
+			count: 3
 			path: app/Services/PriceCalculator.php
 
 		-
 			message: '#^Anonymous function should never return but return statement found\.$#'
 			identifier: return.never
-			count: 1
-			path: app/Services/PriceCalculator.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:punyaJalurReadyStock\(\)\.$#'
-			identifier: method.notFound
 			count: 1
 			path: app/Services/PriceCalculator.php
 

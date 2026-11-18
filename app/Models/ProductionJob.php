@@ -33,6 +33,7 @@ class ProductionJob extends Model
         ];
     }
 
+    /** @return BelongsTo<Pekerja, $this> */
     public function pekerja(): BelongsTo
     {
         return $this->belongsTo(Pekerja::class);
@@ -48,6 +49,7 @@ class ProductionJob extends Model
         return $this->belongsTo(User::class, 'ditugaskan_ke');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function penyelesai(): BelongsTo
     {
         return $this->belongsTo(User::class, 'diselesaikan_oleh');

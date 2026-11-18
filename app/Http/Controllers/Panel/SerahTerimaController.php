@@ -8,9 +8,11 @@ use App\Enums\StatusPembatalan;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Order;
+use App\Models\ProductionJob;
 use App\Services\AlurPesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 /**
  * Layar kasir. Pelunasan dan pengambilan adalah SATU tindakan (KEP-006):
@@ -29,7 +31,6 @@ class SerahTerimaController extends Controller
             $order = Order::with([
                 'customer', 'items.options', 'items.rosters', 'adjustments', 'payments',
                 'items.product.images', 'items.variant', 'items.approvedDesign',
-                'items.productionJobs.pekerja', 'items.productionJobs.penyelesai',
             ])
                 ->where('kode_ambil', strtoupper($kode))
                 ->orWhere('kode', strtoupper($kode))
@@ -45,15 +46,7 @@ class SerahTerimaController extends Controller
              * memindai QR, atau staf yang menekan Selesai di antrian. Gambar
              * contoh klien menyebutnya "Dikerjakan oleh".
              */
-            'dikerjakanOleh' => $order
-                ? $order->items
-                    ->flatMap(fn ($item) => $item->productionJobs)
-                    ->filter(fn ($job) => $job->selesai_pada !== null)
-                    ->map(fn ($job) => $job->pekerja?->nama ?? $job->penyelesai?->name)
-                    ->filter()
-                    ->unique()
-                    ->values()
-                : collect(),
+            'dikerjakanOleh' => $order ? $this->pengerja($order) : collect(),
             'siapHariIni' => Order::with('customer')
                 ->where('status', OrderStatus::SIAP_DIAMBIL)
                 ->where('metode_ambil', '!=', MetodeAmbil::KIRIM->value)
@@ -61,6 +54,25 @@ class SerahTerimaController extends Controller
                 ->limit(15)
                 ->get(),
         ]);
+    }
+
+    /**
+     * Nama yang menyelesaikan tahap-tahap pesanan ini, tanpa dobel.
+     *
+     * @return Collection<int, non-falsy-string>
+     */
+    private function pengerja(Order $order): Collection
+    {
+        return ProductionJob::query()
+            ->with(['pekerja', 'penyelesai'])
+            ->whereIn('order_item_id', $order->items->modelKeys())
+            ->whereNotNull('selesai_pada')
+            ->orderBy('selesai_pada')
+            ->get()
+            ->map(fn (ProductionJob $job) => $job->pekerja->nama ?? $job->penyelesai->name ?? null)
+            ->filter()
+            ->unique()
+            ->values();
     }
 
     public function proses(Request $request, Order $pesanan): RedirectResponse

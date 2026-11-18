@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Panel;
 use App\Enums\OrderItemStatus;
 use App\Enums\ProductionStage;
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\AlurPesanan;
 use Illuminate\Database\Eloquent\Builder;
@@ -89,7 +90,7 @@ class AntrianController extends Controller
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->with('order.customer')
             ->whereIn('order_items.status_item', $status)
-            ->whereHas('order', fn ($q) => $q->aktif())
+            ->whereIn('order_items.order_id', Order::query()->aktif()->select('id'))
             ->orderByRaw('orders.target_siap_pada IS NULL')
             ->orderBy('orders.target_siap_pada')
             ->orderBy('order_items.id');

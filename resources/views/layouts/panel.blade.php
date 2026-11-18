@@ -234,7 +234,7 @@
                         <span class="titik-lonceng" aria-hidden="true"></span>
                     @endif
                 </summary>
-                <div class="menu-tarik right-0 w-80">
+                <div class="menu-tarik lonceng-isi sm:right-0 sm:w-80">
                     <p class="border-b border-line px-4 py-3 font-semibold">Perlu ditangani</p>
                     @if ($lonceng === [])
                         <p class="px-4 py-5 text-sm text-muted">Tidak ada yang menunggu Anda. Toko sedang sehat.</p>

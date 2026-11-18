@@ -913,6 +913,18 @@
         padding: 1.5rem 1rem 6rem;
     }
 
+    /* Di HP lonceng berada di tengah bilah atas, jadi isinya yang 20rem akan
+       keluar dari tepi kiri layar. Di sana ia dipasang selebar layar, tepat
+       di bawah bilah atas. */
+    @media (width < 40rem) {
+        .lonceng-isi {
+            position: fixed;
+            top: calc(var(--bilah-atas) - 0.25rem);
+            inset-inline: 0.75rem;
+            width: auto;
+        }
+    }
+
     @media (width >= 40rem) {
         .bilah-atas { padding-inline: 1.5rem; }
         .ruang-kerja { padding-inline: 1.5rem; }

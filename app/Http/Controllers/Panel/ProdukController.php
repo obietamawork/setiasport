@@ -143,10 +143,12 @@ class ProdukController extends Controller
             'category_id.required' => 'Pilih kategori tujuannya.',
         ], ['produk' => 'produk', 'aksi' => 'aksi', 'category_id' => 'kategori']);
 
-        $ubah = match ($data['aksi']) {
+        $aksi = (string) $data['aksi'];
+
+        $ubah = match ($aksi) {
             'tayangkan' => ['aktif' => true],
             'sembunyikan' => ['aktif' => false],
-            'kategori' => ['category_id' => (int) $data['category_id']],
+            default => ['category_id' => (int) $data['category_id']],
         };
 
         $produk = Product::whereIn('id', $data['produk'])->get();
