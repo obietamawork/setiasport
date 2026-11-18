@@ -27,6 +27,9 @@
     $adaSaringan = $status !== '' || request()->filled('q') || $dari || $sampai;
     $bolehKelola = auth('web')->user()->punyaIzin('order.kelola');
     $bolehSerah = auth('web')->user()->punyaIzin('serah_terima.proses');
+    // Hapus riwayat (KEP-119): hanya Pemilik, hanya pesanan mati tanpa uang.
+    $bolehHapus = auth('web')->user()->punyaIzin('order.hapus');
+    $bisaDihapus = $bolehHapus ? $pesanan->filter(fn ($o) => $o->bolehDihapus())->pluck('id')->values() : collect();
 
     // Tautan yang mempertahankan penyaring lain saat satu penyaring diganti.
     $tautan = fn (array $ubah) => route('panel.pesanan.index', array_filter(array_merge([
@@ -92,7 +95,7 @@
     @endforeach
 </nav>
 
-<div class="kartu mt-4">
+<div class="kartu mt-4" x-data="{ dipilih: [], semua: @js($bisaDihapus) }">
     {{-- Penyaring: status, rentang tanggal, dan cari dalam satu baris. Pilihan
          status dan tanggal langsung menyaring; kotak cari menunggu Enter. --}}
     <form method="GET" class="flex flex-wrap items-end gap-3 border-b border-line p-4 sm:p-5" data-saring-otomatis>
@@ -135,6 +138,33 @@
             @endif
         </div>
     </form>
+
+    {{-- Hapus riwayat massal (KEP-119). Kotak centang hanya ada di pesanan
+         yang memang boleh dihapus; server tetap memeriksanya satu per satu. --}}
+    @if ($bisaDihapus->isNotEmpty())
+        <form id="form-hapus-massal" method="POST" action="{{ route('panel.pesanan.hapus-massal') }}"
+              class="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3 sm:px-5"
+              data-konfirmasi="Hapus riwayat pesanan?"
+              data-konfirmasi-pesan="Pesanan yang dipilih akan dihapus permanen beserta isinya, dan tidak bisa dikembalikan."
+              data-konfirmasi-tombol="Hapus" data-konfirmasi-bahaya>
+            @csrf
+            <label class="flex items-center gap-2 text-sm font-medium">
+                <input type="checkbox" class="kotak-centang"
+                       :checked="dipilih.length > 0 && dipilih.length === semua.length"
+                       @change="dipilih = $event.target.checked ? [...semua] : []">
+                Pilih semua yang bisa dihapus
+            </label>
+            <span class="text-sm text-muted"><span class="tabular" x-text="dipilih.length">0</span> pesanan dipilih</span>
+            <button type="submit" class="tombol tombol-sm border-merah-100 bg-merah-50 text-merah-tua hover:bg-merah-100"
+                    :disabled="dipilih.length === 0">
+                <x-ikon nama="hapus" ukuran="size-4" /> Hapus riwayat
+            </button>
+            <p class="flex items-center gap-1.5 text-xs text-muted sm:ml-auto">
+                <x-ikon nama="bantuan" ukuran="size-4" />
+                Hanya pesanan kedaluwarsa atau dibatalkan yang belum pernah dibayar.
+            </p>
+        </form>
+    @endif
 
     @if ($status === 'tindakan')
         <p class="border-b border-line bg-kuning-50 px-5 py-3 text-sm leading-relaxed">
@@ -193,9 +223,12 @@
 
         {{-- Tanpa pembungkus yang bisa digulir: di bawah 64rem daftarnya
              berganti jadi kartu (KEP-101). --}}
-        <table class="tabel hidden lg:table">
+        <table class="tabel tabel-rapat hidden lg:table">
             <thead>
                 <tr>
+                    @if ($bisaDihapus->isNotEmpty())
+                        <th class="w-10"><span class="sr-only">Pilih</span></th>
+                    @endif
                     <th>Kode pesanan</th>
                     <th>Pelanggan</th>
                     <th>Jenis</th>
@@ -214,7 +247,17 @@
                     @endphp
                     {{-- Seluruh baris jadi sasaran klik lewat data-tautan (app.js);
                          tautan, tombol, dan menu aksi di dalamnya tetap bekerja sendiri. --}}
-                    <tr class="hover:bg-navy-50" data-tautan="{{ route('panel.pesanan.show', $o) }}">
+                    <tr class="hover:bg-navy-50" data-tautan="{{ route('panel.pesanan.show', $o) }}"
+                        @if ($bisaDihapus->contains($o->id)) :class="dipilih.includes({{ $o->id }}) && 'bg-merah-50'" @endif>
+                        @if ($bisaDihapus->isNotEmpty())
+                            <td>
+                                @if ($bisaDihapus->contains($o->id))
+                                    <label class="sr-only" for="hapus-{{ $o->id }}">Pilih {{ $o->kode }} untuk dihapus</label>
+                                    <input type="checkbox" id="hapus-{{ $o->id }}" name="pesanan[]" value="{{ $o->id }}"
+                                           form="form-hapus-massal" x-model.number="dipilih" class="kotak-centang">
+                                @endif
+                            </td>
+                        @endif
                         <td>
                             <a href="{{ route('panel.pesanan.show', $o) }}" class="tabular font-bold whitespace-nowrap text-navy-700">{{ $o->kode }}</a>
                             @if ($o->kode_ambil)
@@ -235,7 +278,7 @@
                                 {{ $o->customer->no_hp }}
                             </a>
                         </td>
-                        <td class="min-w-44">
+                        <td class="min-w-32">
                             <span class="flex items-start gap-2">
                                 <x-ikon :nama="$ikonJenis" ukuran="size-4" class="mt-0.5 text-navy-400" />
                                 <span>{{ $namaJenis }}<span class="tabular block text-xs text-muted">({{ $jumlahJenis }})</span></span>
@@ -256,11 +299,23 @@
                             <span class="block text-xs">{{ $o->created_at->format('H:i') }}</span>
                         </td>
                         <td>
-                            <div class="flex items-center justify-center gap-1.5">
+                            <div class="flex items-center justify-center gap-1">
                                 <a href="{{ route('panel.pesanan.show', $o) }}" class="tombol-ikon" title="Lihat pesanan {{ $o->kode }}">
                                     <x-ikon nama="mata" ukuran="size-4" />
                                     <span class="sr-only">Lihat pesanan {{ $o->kode }}</span>
                                 </a>
+                                @if ($bolehHapus && $o->bolehDihapus())
+                                    <form method="POST" action="{{ route('panel.pesanan.hapus', $o) }}"
+                                          data-konfirmasi="Hapus pesanan {{ $o->kode }}?"
+                                          data-konfirmasi-pesan="Pesanan ini akan dihapus permanen beserta isinya, dan tidak bisa dikembalikan."
+                                          data-konfirmasi-tombol="Hapus" data-konfirmasi-bahaya>
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="tombol-ikon tombol-ikon-bahaya" title="Hapus pesanan {{ $o->kode }}">
+                                            <x-ikon nama="hapus" ukuran="size-4" />
+                                            <span class="sr-only">Hapus pesanan {{ $o->kode }}</span>
+                                        </button>
+                                    </form>
+                                @endif
                                 <details class="relative" x-data @click.outside="$el.removeAttribute('open')">
                                     <summary class="tombol-ikon" title="Aksi lain">
                                         <x-ikon nama="titik-tiga" ukuran="size-4" />
@@ -285,7 +340,7 @@
             </tbody>
         </table>
 
-        @include('panel.komponen.halaman', ['daftar' => $pesanan, 'benda' => 'pesanan'])
+        @include('panel.komponen.halaman', ['daftar' => $pesanan, 'benda' => 'pesanan', 'tampil' => [10, 20, 50]])
     @endif
 </div>
 @endsection

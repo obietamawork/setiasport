@@ -13,6 +13,7 @@ use App\Http\Controllers\Panel\ContohProfilController;
 use App\Http\Controllers\Panel\CsController;
 use App\Http\Controllers\Panel\DashboardController;
 use App\Http\Controllers\Panel\GambarProdukController;
+use App\Http\Controllers\Panel\HapusPesananController;
 use App\Http\Controllers\Panel\InvoiceController;
 use App\Http\Controllers\Panel\IsiPesananController;
 use App\Http\Controllers\Panel\KategoriController;
@@ -90,6 +91,13 @@ Route::prefix('panel')->name('panel.')->group(function () {
         Route::middleware('izin:order.kelola')->group(function () {
             Route::get('pesanan/baru', [PesananManualController::class, 'form'])->name('pesanan.baru');
             Route::post('pesanan/baru', [PesananManualController::class, 'simpan'])->name('pesanan.baru.simpan');
+        });
+
+        // Hapus riwayat pesanan mati tanpa uang (KEP-119). Didaftarkan sebelum
+        // pesanan/{pesanan} supaya "hapus-massal" tidak dibaca sebagai kode.
+        Route::middleware('izin:order.hapus')->group(function () {
+            Route::post('pesanan/hapus-massal', [HapusPesananController::class, 'massal'])->name('pesanan.hapus-massal');
+            Route::delete('pesanan/{pesanan}', [HapusPesananController::class, 'satu'])->name('pesanan.hapus');
         });
 
         Route::middleware('izin:order.lihat')->group(function () {

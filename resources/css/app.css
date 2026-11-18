@@ -1670,3 +1670,37 @@
         cursor: pointer;
     }
 }
+
+@layer components {
+    /* Tombol hapus di baris tabel (KEP-119): merah lembut, bukan merah penuh,
+       supaya tidak menyaingi aksi utama halaman. */
+    /* Di dalam tabel tombolnya sedikit lebih kecil: tiga tombol aksi selebar
+       2,25rem ditambah kolom centang membuat tabel pesanan meluap. */
+    .tabel .tombol-ikon {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    /* Tabel berkolom banyak (daftar pesanan): jarak sel dirapatkan supaya
+       sembilan kolom muat di samping sidebar tanpa digeser ke samping. */
+    .tabel-rapat thead th,
+    .tabel-rapat tbody td {
+        padding-inline: 0.65rem;
+    }
+
+    .tabel-rapat thead th:first-child,
+    .tabel-rapat tbody td:first-child {
+        padding-left: 1rem;
+    }
+
+    .tombol-ikon-bahaya {
+        border-color: var(--color-merah-100);
+        background: var(--color-merah-50);
+        color: var(--color-merah-tua);
+    }
+
+    .tombol-ikon-bahaya:hover {
+        border-color: var(--color-merah);
+        background: var(--color-merah-100);
+    }
+}

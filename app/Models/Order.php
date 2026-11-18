@@ -180,6 +180,17 @@ class Order extends Model
      * Pesanan ini memuat barang yang dikerjakan di workshop. Dipakai untuk
      * memisahkan tab di panel (KEP-027).
      */
+    /**
+     * Boleh dihapus dari panel (KEP-119): sudah mati dan tidak pernah membawa
+     * uang. Pesanan yang pernah dibayar ikut menghapus pembayarannya, dan
+     * laporan penjualan akan kehilangan uang yang benar-benar masuk.
+     */
+    public function bolehDihapus(): bool
+    {
+        return in_array($this->status, [OrderStatus::KADALUARSA, OrderStatus::DIBATALKAN], true)
+            && ! $this->payments->contains('status', PaymentStatus::LUNAS);
+    }
+
     public function punyaKustom(): bool
     {
         return $this->items->contains(fn (OrderItem $i) => $i->kustom());

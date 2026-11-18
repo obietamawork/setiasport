@@ -13,6 +13,24 @@
             Menampilkan {{ $daftar->firstItem() }} sampai {{ $daftar->lastItem() }} dari {{ $daftar->total() }} {{ $benda }}
         </p>
 
+        <div class="flex flex-wrap items-center gap-3">
+        @isset($tampil)
+            {{-- Jumlah baris per halaman (KEP-119). Penyaring lain ikut terbawa. --}}
+            <form method="GET" class="flex items-center gap-2 text-sm" data-saring-otomatis>
+                @foreach (request()->except(['tampil', 'page']) as $nama => $nilai)
+                    @if (is_string($nilai))
+                        <input type="hidden" name="{{ $nama }}" value="{{ $nilai }}">
+                    @endif
+                @endforeach
+                <label for="tampil-{{ $benda }}" class="text-muted">Tampilkan</label>
+                <select id="tampil-{{ $benda }}" name="tampil" class="kotak-input w-auto py-1.5">
+                    @foreach ($tampil as $n)
+                        <option value="{{ $n }}" @selected($daftar->perPage() === $n)>{{ $n }}</option>
+                    @endforeach
+                </select>
+            </form>
+        @endisset
+
         @if ($daftar->hasPages())
             <div class="flex items-center gap-1.5">
                 @if ($daftar->onFirstPage())
@@ -44,5 +62,6 @@
                 @endif
             </div>
         @endif
+        </div>
     </nav>
 @endif

@@ -23,6 +23,8 @@ class RolePermissionSeeder extends Seeder
                 'order.lihat' => 'Lihat Pesanan',
                 'order.kelola' => 'Kelola Pesanan',
                 'order.batal' => 'Batalkan Pesanan',
+                // Hanya pesanan mati tanpa uang (KEP-119); tidak diberikan ke Admin.
+                'order.hapus' => 'Hapus Riwayat Pesanan',
                 'order.penyesuaian' => 'Tambah Penyesuaian Biaya',
             ],
             'pembayaran' => [

@@ -364,8 +364,15 @@
      dan membatalkannya dulu meninggalkan tombol "Memproses..." yang mati. --}}
 <dialog id="dialog-konfirmasi" class="dialog" aria-labelledby="dialog-konfirmasi-judul" aria-describedby="dialog-konfirmasi-pesan">
     <div class="p-5 sm:p-6">
-        <h2 id="dialog-konfirmasi-judul" class="text-lg font-bold" data-konfirmasi-judul></h2>
-        <p id="dialog-konfirmasi-pesan" class="mt-2 leading-relaxed text-muted" data-konfirmasi-pesan></p>
+        <div class="flex items-start gap-4">
+            <span data-konfirmasi-ikon hidden class="flex size-11 shrink-0 items-center justify-center rounded-full bg-merah-50 text-merah">
+                <x-ikon nama="hapus" ukuran="size-5" />
+            </span>
+            <div class="min-w-0">
+                <h2 id="dialog-konfirmasi-judul" class="text-lg font-bold" data-konfirmasi-judul></h2>
+                <p id="dialog-konfirmasi-pesan" class="mt-2 leading-relaxed text-muted" data-konfirmasi-pesan></p>
+            </div>
+        </div>
         <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <button type="button" class="tombol tombol-garis" data-konfirmasi-batal>Batal</button>
             <button type="button" class="tombol tombol-utama" data-konfirmasi-ya></button>

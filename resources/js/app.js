@@ -82,6 +82,8 @@ document.addEventListener('submit', (e) => {
     pesan.hidden = !form.dataset.konfirmasiPesan;
 
     dialogKonfirmasi.querySelector('[data-konfirmasi-ya]').textContent = form.dataset.konfirmasiTombol || 'Ya, lanjutkan';
+    // Tindakan yang menghapus permanen diberi ikon tempat sampah (KEP-119).
+    dialogKonfirmasi.querySelector('[data-konfirmasi-ikon]').hidden = form.dataset.konfirmasiBahaya === undefined;
     dialogKonfirmasi.returnValue = '';
     dialogKonfirmasi.showModal();
     // Fokus awal di Batal: Enter yang kebablasan tidak boleh langsung menghapus.

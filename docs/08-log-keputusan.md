@@ -4279,6 +4279,36 @@ dan tes tidak sempat berjalan.
 
 ---
 
+## KEP-119 — Hapus riwayat pesanan yang mati dan tanpa uang
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien: "Sertakan ikon tempat sampah (hapus) dan pop-up konfirmasi sebelum data
+benar-benar terhapus", dengan contoh daftar pesanan bercentang dan tombol Hapus riwayat.
+
+Menghapus pesanan ikut menghapus pembayarannya (hapus berantai di basis data), jadi
+pemilik proyek memutuskan yang boleh dihapus hanya pesanan yang sudah mati dan tidak
+pernah membawa uang:
+
+- Boleh dihapus: status **Kedaluwarsa** atau **Dibatalkan**, tanpa satu pun pembayaran
+  berstatus lunas (`Order::bolehDihapus()`). Pesanan yang masih berjalan atau yang
+  pernah dibayar ditolak dengan alasan yang jelas, supaya laporan penjualan tetap utuh.
+- Izin baru `order.hapus` ("Hapus Riwayat Pesanan"), hanya dimiliki Pemilik; peran
+  Admin tidak mendapatkannya.
+- Tempat sampah merah di kolom aksi dan kotak centang hanya muncul pada baris yang
+  memang boleh dihapus. Bilah di atas tabel memuat "Pilih semua yang bisa dihapus",
+  jumlah yang dipilih, dan tombol **Hapus riwayat**. Hapus massal tetap memeriksa
+  setiap pesanan di server dan menyebut yang dilewati.
+- Keduanya meminta konfirmasi lewat dialog panel, kini dengan ikon tempat sampah merah
+  untuk tindakan yang menghapus permanen (`data-konfirmasi-bahaya`).
+- Sebelum dihapus, kode, pelanggan, status, dan total dicatat di log aktivitas
+  (`pesanan.dihapus`). Berkas bukti bayar dan mockup ikut dihapus setelah datanya
+  hilang.
+- Penomoran halaman daftar pesanan mendapat pilihan **Tampilkan 10/20/50**; angka di
+  luar pilihan kembali ke 20. Tabelnya dirapatkan (`.tabel-rapat`) supaya kolom centang
+  dan tombol hapus muat di samping sidebar.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4401,3 +4431,4 @@ dan tes tidak sempat berjalan.
 | KEP-116 | Daftar produk: penyaring kategori dan stok, aksi massal | TERKUNCI |
 | KEP-117 | Laporan tiga halaman: penjualan, stok barang, produk terlaris | TERKUNCI |
 | KEP-118 | Tambalan keamanan laravel/framework 12.73.0 | TERKUNCI |
+| KEP-119 | Hapus pesanan kedaluwarsa/dibatalkan tanpa uang, dengan konfirmasi | TERKUNCI |

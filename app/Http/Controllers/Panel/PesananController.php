@@ -70,7 +70,9 @@ class PesananController extends Controller
                     fn ($q) => $q->where('status', $status))
                 ->when($request->filled('q'), fn ($q) => $q->cari($request->string('q')->toString()))
                 ->latest('id')
-                ->paginate(20)
+                // Jumlah baris per halaman dari pilihan "Tampilkan" (KEP-119);
+                // angka di luar pilihan kembali ke 20.
+                ->paginate(in_array($request->integer('tampil'), [10, 20, 50], true) ? $request->integer('tampil') : 20)
                 ->withQueryString(),
             'status' => $status,
             'jalur' => $jalur,
