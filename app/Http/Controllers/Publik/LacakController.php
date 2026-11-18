@@ -91,7 +91,7 @@ class LacakController extends Controller
     {
         $order = Order::where('access_token', $token)
             ->with([
-                'customer', 'items.options', 'items.product', 'items.rosters',
+                'customer', 'items.options', 'items.product.category', 'items.product.images', 'items.rosters',
                 'items.designAssets', 'items.approvedDesign', 'adjustments',
                 'payments', 'statusLogs.orderItem', 'pembatalans',
             ])

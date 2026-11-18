@@ -159,6 +159,8 @@ Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->middleware('th
     // WhatsApp (KEP-095).
     Route::post('setujui', [PesananItemController::class, 'setujuiDesain'])->name('setujui');
     Route::post('revisi', [PesananItemController::class, 'mintaRevisi'])->name('revisi');
+    // Catatan desain dari pelanggan, terbuka sampai desain disetujui (KEP-122).
+    Route::post('catatan', [PesananItemController::class, 'ubahCatatan'])->name('catatan');
 });
 
 /*

@@ -4374,6 +4374,41 @@ tersusun seperti gambar, untuk DP di awal maupun pelunasan (KEP-028):
 
 ---
 
+## KEP-122 — Halaman progres pesanan seperti contoh klien, dengan tanda pensil
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien pada gambar contoh "Progres Pesanan": "Tolong buat tata letaknya seperti
+pada gambar referensi ini agar tampilannya jelas, ringkas, dan tidak terlalu banyak
+tulisan. Pada bagian yang saya tandai dengan titik-titik merah, tolong berikan ikon atau
+tombol aksi (seperti ikon pensil) yang menandakan bahwa status atau detail pesanan
+tersebut bisa diedit."
+
+Bagian progres di halaman pesanan pelanggan kini per barang (`publik/lacak/item`):
+
+- **Kartu tahap**: gambar (mockup yang disetujui atau foto produk), nama barang, tanggal
+  pesanan dibuat, chip tahap yang sedang berjalan, lalu tahap mendatar dengan bulatan
+  hijau bercentang untuk yang lewat, biru untuk yang berjalan ("Sedang berjalan"), dan
+  bernomor untuk yang belum. Di HP tahapnya tetap menurun. Tahapnya tetap tahap besar
+  dari `LinimasaItem` (KEP-028); subtahap produksi tampil sebagai deret chip singkat
+  setelah produksi mulai.
+- **Detail pesanan**: jenis produk, jumlah, kategori, pilihan (bahan dan lainnya), dan
+  estimasi selesai dari target siap pesanan.
+- **Desain**: komponen persetujuan desain yang sudah ada, kini di dalam kartu.
+- **Daftar pemain**: lima baris dulu (No., nama, nomor, ukuran), "Lihat seluruhnya" untuk
+  sisanya, dan jumlah pemain. Selama desain belum disetujui, tiap baris diberi **ikon
+  pensil**; menekannya membuka formulir pemain yang lama. Setelah disetujui pensilnya
+  hilang dan tertulis "Terkunci sejak desain disetujui".
+- **Catatan pesanan**: catatan desain dari pelanggan (`order_items.catatan`) dengan tombol
+  **Ubah catatan** (`POST /lacak/{token}/item/{item}/catatan`), terbuka sampai desain
+  disetujui; setelah itu ditolak dengan arahan menghubungi toko. Perubahannya dicatat
+  di log aktivitas.
+- **Ringkasan pembayaran** untuk seluruh pesanan: total, uang muka (dengan persentasenya
+  bila yang dibayar baru DP) atau sudah dibayar, chip Lunas, dan sisa pelunasan merah,
+  beserta keterangan kapan pelunasan dilakukan. Rincian biaya, riwayat, dan pembatalan
+  tetap di bawahnya.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4499,3 +4534,4 @@ tersusun seperti gambar, untuk DP di awal maupun pelunasan (KEP-028):
 | KEP-119 | Hapus pesanan kedaluwarsa/dibatalkan tanpa uang, dengan konfirmasi | TERKUNCI |
 | KEP-120 | Stok per produk, barang masuk dari supplier, penyesuaian terpisah | TERKUNCI |
 | KEP-121 | Halaman menunggu pembayaran: ringkasan, sisa waktu, QRIS/transfer | TERKUNCI |
+| KEP-122 | Progres pesanan: tahap mendatar, pemain berpensil, ubah catatan | TERKUNCI |

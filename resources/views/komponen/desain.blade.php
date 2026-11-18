@@ -10,8 +10,12 @@
         .'untuk pesanan '.$order->kode.' ('.$item->nama_produk.').');
 @endphp
 
-<div class="border-t border-line px-5 py-4">
-    <h3 class="font-semibold">Desain</h3>
+{{-- Di kartu progres (KEP-122) judulnya sudah ada di kepala kartu, jadi
+     tidak diulang, dan bingkainya mengikuti kartu itu. --}}
+<div @class(['border-t border-line px-5 py-4' => ! ($dalamKartu ?? false)])>
+    @unless ($dalamKartu ?? false)
+        <h3 class="font-semibold">Desain</h3>
+    @endunless
 
     @if ($item->sudahDisetujui())
         <div class="mt-2 border-l-2 border-navy bg-navy-50 p-3 text-sm leading-relaxed">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Publik;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\AlurDesain;
@@ -77,6 +78,36 @@ class PesananItemController extends Controller
 
         return back()->with('sukses',
             'Desain disetujui dan pesanan masuk antrian produksi. Desain dan daftar pemain sekarang terkunci.');
+    }
+
+    /**
+     * Catatan desain dari pelanggan (KEP-122). Terbuka sampai desain
+     * disetujui: sesudah itu konveksi sudah bekerja dari mockup yang
+     * disepakati, dan catatan yang berubah diam-diam tidak akan terbaca lagi.
+     */
+    public function ubahCatatan(Request $request, string $token, OrderItem $item): RedirectResponse
+    {
+        $item = $this->item($token, $item);
+
+        if (! $item->kustom() || $item->sudahDisetujui()) {
+            return back()->withErrors(
+                'Catatan tidak bisa diubah lagi karena desainnya sudah disetujui. '
+                .'Kalau ada yang perlu diubah, hubungi kami lewat '.kanal_kontak().'.'
+            );
+        }
+
+        $data = $request->validate([
+            'catatan' => ['nullable', 'string', 'max:1000'],
+        ], [], ['catatan' => 'catatan']);
+
+        $item->update(['catatan' => $data['catatan'] ?? null]);
+
+        ActivityLog::catat('pesanan.catatan_pelanggan', $item->order, [
+            'kode' => $item->order->kode,
+            'barang' => $item->nama_produk,
+        ]);
+
+        return back()->with('sukses', 'Catatan disimpan. Desainer membacanya sebelum menyiapkan mockup.');
     }
 
     public function mintaRevisi(Request $request, string $token, OrderItem $item): RedirectResponse

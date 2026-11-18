@@ -246,7 +246,7 @@
     @endphp
 
     <section class="mt-8">
-        <h2 class="text-xl font-extrabold">Progres</h2>
+        <h2 class="text-xl font-extrabold">Progres pesanan</h2>
 
         @foreach ($grup as $g)
         <div class="mt-6">
@@ -261,95 +261,14 @@
 
             <div class="mt-4 space-y-4">
             @foreach ($g['items'] as $item)
-                @php $linimasa = App\Support\LinimasaItem::untuk($item, $order); @endphp
-
-                <div class="border border-line bg-field">
-                    <div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-5 py-3">
-                        <span class="font-semibold">{{ $item->nama_produk }}</span>
-                        <span class="text-sm text-muted tabular">{{ $item->qty }} pcs</span>
-                    </div>
-
-                    @if ($linimasa['batal'])
-                        <p class="px-5 py-4 text-sm text-muted">Item ini dibatalkan.</p>
-                    @else
-                        {{-- Tahap besar saja (KEP-028). Status internal yang rinci
-                             tetap ada, tapi hanya Produksi yang membuka subprogresnya:
-                             di situlah penungguan paling lama terasa. --}}
-                        <ol class="px-5 py-4">
-                            @foreach ($linimasa['fase'] as $f)
-                                @php
-                                    $lewat = $f['keadaan'] === 'lewat';
-                                    $kini = $f['keadaan'] === 'kini';
-                                @endphp
-                                <li class="flex gap-3 {{ $loop->last ? '' : 'pb-4' }}">
-                                    <div class="flex flex-col items-center">
-                                        <span class="mt-1 size-2.5 shrink-0 rounded-full
-                                            {{ $kini ? 'bg-merah ring-4 ring-merah-50' : ($lewat ? 'bg-navy' : 'bg-line-strong') }}"></span>
-                                        @unless ($loop->last)
-                                            <span class="w-px flex-1 {{ $lewat ? 'bg-navy' : 'bg-line' }}"></span>
-                                        @endunless
-                                    </div>
-
-                                    <div class="-mt-0.5 min-w-0 flex-1 pb-1">
-                                        <div class="flex flex-wrap items-baseline justify-between gap-x-3">
-                                            <p class="text-sm {{ $kini ? 'font-bold' : ($lewat ? '' : 'text-muted') }}">
-                                                {{ $f['label'] }}
-                                            </p>
-                                            @if ($f['waktu'])
-                                                <p class="text-xs text-muted tabular">
-                                                    {{ $f['waktu']->translatedFormat('j M Y, H:i') }}
-                                                </p>
-                                            @endif
-                                        </div>
-
-                                        @if ($f['catatan'])
-                                            <p class="mt-1 text-sm leading-relaxed text-muted">{{ $f['catatan'] }}</p>
-                                        @endif
-
-                                        {{-- Subprogres ditampilkan selama produksi berjalan dan
-                                             sesudahnya. Sebelum produksi dimulai, lima baris
-                                             abu-abu hanya menambah panjang tanpa menjawab apa pun. --}}
-                                        @if ($f['subtahap'] !== [] && $f['keadaan'] !== 'nanti')
-                                            <ol class="mt-3 grid gap-1.5 border-l-2 border-line pl-3 text-sm">
-                                                @foreach ($f['subtahap'] as $sub)
-                                                    <li class="flex flex-wrap items-baseline justify-between gap-x-3">
-                                                        <span class="flex items-center gap-2
-                                                            {{ $sub['keadaan'] === 'kini' ? 'font-semibold text-ink' : ($sub['keadaan'] === 'lewat' ? 'text-ink' : 'text-muted') }}">
-                                                            <span class="inline-block size-1.5 shrink-0 rounded-full
-                                                                {{ $sub['keadaan'] === 'kini' ? 'bg-merah' : ($sub['keadaan'] === 'lewat' ? 'bg-navy' : 'bg-line-strong') }}"></span>
-                                                            {{ $sub['label'] }}
-                                                            @if ($sub['keadaan'] === 'kini')
-                                                                <span class="text-xs font-normal text-merah">sedang dikerjakan</span>
-                                                            @endif
-                                                        </span>
-                                                        @if ($sub['waktu'])
-                                                            <span class="text-xs text-muted tabular">
-                                                                {{ $sub['waktu']->translatedFormat('j M, H:i') }}
-                                                            </span>
-                                                        @endif
-                                                    </li>
-                                                @endforeach
-                                            </ol>
-                                        @endif
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ol>
-                    @endif
-
-                    @if ($item->kustom() && ! $linimasa['batal'])
-                        @include('komponen.desain', ['item' => $item, 'order' => $order])
-
-                        @if ($item->product->roster_wajib || $item->rosters->isNotEmpty())
-                            @include('komponen.roster', ['item' => $item, 'order' => $order])
-                        @endif
-                    @endif
-                </div>
+                @include('publik.lacak.item', ['item' => $item, 'order' => $order])
             @endforeach
             </div>
         </div>
         @endforeach
     </section>
+
+    @include('publik.lacak.ringkasan-bayar', ['order' => $order])
 
     <section class="mt-8 border border-line bg-field">
         <h2 class="border-b border-line px-5 py-3 font-semibold">Rincian biaya</h2>
