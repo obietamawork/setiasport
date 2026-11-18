@@ -4260,6 +4260,25 @@ supaya berpindah halaman tidak diam-diam mengganti periodenya.
 
 ---
 
+## KEP-118 — Tambalan keamanan laravel/framework 12.73.0
+**Status:** TERKUNCI · 2026-11-18
+
+`composer audit` di `deploy/periksa.sh` (KEP-109) menemukan advisory baru yang terbit
+13 November 2026: CVE-2026-128083 / GHSA-63hm-g96r-2m2q, "Task Output Injection" pada
+Concurrency Process di `laravel/framework`, tingkat rendah, berlaku untuk versi di bawah
+12.71.0. Toko ini memakai 12.69.1, jadi pemeriksaan sebelum deploy gagal di langkah audit
+dan tes tidak sempat berjalan.
+
+- Hanya `laravel/framework` yang diperbarui, ke 12.73.0 (versi 12.x terbaru), lewat
+  `composer update laravel/framework` tanpa mengubah `composer.json`. Paket lain di
+  `composer.lock` tidak ikut bergeser.
+- Setelahnya `composer audit` dan `npm audit` bersih, Larastan tanpa galat, dan seluruh
+  tes lulus.
+- Disetujui pemilik proyek di percakapan, sesuai aturan bahwa dependensi tidak diubah
+  tanpa izin.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4381,3 +4400,4 @@ supaya berpindah halaman tidak diam-diam mengganti periodenya.
 | KEP-115 | Serah terima: detail lengkap, pengerja, ringkasan bayar | TERKUNCI |
 | KEP-116 | Daftar produk: penyaring kategori dan stok, aksi massal | TERKUNCI |
 | KEP-117 | Laporan tiga halaman: penjualan, stok barang, produk terlaris | TERKUNCI |
+| KEP-118 | Tambalan keamanan laravel/framework 12.73.0 | TERKUNCI |
