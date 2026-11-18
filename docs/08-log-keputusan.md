@@ -4126,8 +4126,8 @@ pembatalan, email gagal, stok, harga belum lengkap, dan seterusnya) sebagai juml
 jenis, dengan titik merah bila ada isinya. Tanpa status "sudah dibaca": isinya hilang
 sendiri begitu urusannya ditangani. Kuerinya dipindah dari `DashboardController` ke
 `App\Services\DaftarTindakan`, supaya lonceng dan dashboard tidak bisa berselisih.
-Hitungannya disimpan 30 detik karena dimuat di setiap halaman panel; akibatnya urusan
-yang baru ditangani bisa masih terhitung paling lama setengah menit.
+Hitungannya sengaja tidak disimpan di cache: versi pertama menyimpannya 30 detik, dan
+email yang baru ditandai sudah ditangani masih muncul di lonceng sesudahnya.
 
 ---
 

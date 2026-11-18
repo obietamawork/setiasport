@@ -15,7 +15,6 @@ use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * Yang menunggu orang toko, dipakai dua tempat (KEP-111): dashboard
@@ -28,9 +27,6 @@ use Illuminate\Support\Facades\Cache;
  */
 class DaftarTindakan
 {
-    /** Hitungan lonceng disimpan sebentar: ia dimuat di setiap halaman panel. */
-    private const SIMPAN_DETIK = 30;
-
     public function __construct(private KesehatanSistem $kesehatan) {}
 
     /**
@@ -71,11 +67,15 @@ class DaftarTindakan
      * Isi lonceng untuk satu pengguna: hanya jenis yang halamannya boleh ia
      * buka, supaya tidak ada tautan yang berujung "tidak diizinkan".
      *
+     * Sengaja tidak disimpan di cache: urusan yang baru ditangani harus hilang
+     * dari lonceng di halaman berikutnya, bukan setengah menit kemudian. Isinya
+     * hanya hitungan, dan sebagian besar kuerinya menyaring kolom status.
+     *
      * @return list<array{label: string, jumlah: int, url: string, mendesak: bool}>
      */
     public function lonceng(User $user): array
     {
-        $hitungan = Cache::remember('panel.lonceng', self::SIMPAN_DETIK, fn () => $this->hitungan());
+        $hitungan = $this->hitungan();
 
         $tindakan = route('panel.pesanan.index', ['status' => 'tindakan']);
         $dashboard = route('panel.dashboard');
