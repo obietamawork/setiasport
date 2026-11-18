@@ -88,6 +88,7 @@ class PesananItemController extends Controller
     public function ubahCatatan(Request $request, string $token, OrderItem $item): RedirectResponse
     {
         $item = $this->item($token, $item);
+        $order = Order::where('access_token', $token)->firstOrFail();
 
         if (! $item->kustom() || $item->sudahDisetujui()) {
             return back()->withErrors(
@@ -102,8 +103,8 @@ class PesananItemController extends Controller
 
         $item->update(['catatan' => $data['catatan'] ?? null]);
 
-        ActivityLog::catat('pesanan.catatan_pelanggan', $item->order, [
-            'kode' => $item->order->kode,
+        ActivityLog::catat('pesanan.catatan_pelanggan', $order, [
+            'kode' => $order->kode,
             'barang' => $item->nama_produk,
         ]);
 
