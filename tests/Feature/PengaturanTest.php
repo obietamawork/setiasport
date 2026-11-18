@@ -10,6 +10,7 @@ use Database\Seeders\SettingSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /** Halaman pengaturan yang ditata per tab. */
@@ -44,10 +45,15 @@ class PengaturanTest extends TestCase
     {
         config(['fitur.cs' => false]);
 
-        $this->actingAs($this->owner())->get(route('panel.pengaturan.index'))
+        $halaman = $this->actingAs($this->owner())->get(route('panel.pengaturan.index'))
             ->assertDontSee('Tampilkan Chat CS')
-            ->assertDontSee('Sapaan Pembuka')
-            ->assertDontSee('Lainnya');
+            ->assertDontSee('Sapaan Pembuka');
+
+        // Hanya deret tab pengaturan yang diperiksa: kelompok menu samping
+        // juga bernama "Lainnya" sejak kerangka revisi klien (KEP-111).
+        $this->assertStringNotContainsString('Lainnya', Str::between(
+            $halaman->getContent(), 'aria-label="Kelompok pengaturan"', '</nav>'
+        ));
 
         $this->actingAs($this->owner())->put(route('panel.pengaturan.update'), ['setting' => ['cs_aktif' => '1']]);
 
