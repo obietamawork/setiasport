@@ -22,6 +22,9 @@
             // Kamus bahan (KEP-072): penjelasan ditampilkan begitu nilai ini
             // dipilih, supaya pelanggan awam tahu "Milano" itu bahan seperti apa.
             'deskripsi' => $v->material?->deskripsi,
+            // Foto tekstur bahan (KEP-110), tampil bersama penjelasannya.
+            'gambar' => $v->material?->thumb_url,
+            'gambarBesar' => $v->material?->gambar_url,
         ])->values(),
     ])->values();
 
@@ -211,9 +214,16 @@
                         {{-- Kamus bahan (KEP-072): penjelasannya baru muncul begitu
                              nilainya dipilih, bukan dijejalkan di tiap tombol --
                              pelanggan baca sambil memutuskan, tanpa pindah halaman. --}}
-                        <p x-show="deskripsiTerpilih({{ $opsi->id }})" x-cloak
-                           x-text="deskripsiTerpilih({{ $opsi->id }})"
-                           class="mt-3 border-l-2 border-navy-200 bg-navy-50 p-3 text-sm leading-relaxed text-ink"></p>
+                        <div x-show="deskripsiTerpilih({{ $opsi->id }}) || nilaiTerpilih({{ $opsi->id }})?.gambar" x-cloak
+                             class="mt-3 flex items-start gap-3 border-l-2 border-navy-200 bg-navy-50 p-3 text-sm leading-relaxed text-ink">
+                            <template x-if="nilaiTerpilih({{ $opsi->id }})?.gambar">
+                                <a :href="nilaiTerpilih({{ $opsi->id }}).gambarBesar" target="_blank" rel="noopener" class="shrink-0">
+                                    <img :src="nilaiTerpilih({{ $opsi->id }}).gambar" :alt="'Tekstur bahan ' + nilaiTerpilih({{ $opsi->id }}).label"
+                                         width="72" height="72" class="size-18 rounded-[6px] border border-line object-cover">
+                                </a>
+                            </template>
+                            <p x-text="deskripsiTerpilih({{ $opsi->id }})"></p>
+                        </div>
 
                         <input type="hidden" name="opsi[{{ $opsi->id }}]" :value="pilihan[{{ $opsi->id }}] ?? ''">
                     </div>
@@ -590,13 +600,17 @@
                 return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n || 0));
             },
 
+            /** Nilai yang sedang dipilih untuk satu opsi, kalau ada. */
+            nilaiTerpilih(opsiId) {
+                const dipilih = this.pilihan[opsiId];
+                if (!dipilih) return null;
+
+                return this.opsi.find(o => o.id === opsiId)?.values.find(v => v.id === dipilih) ?? null;
+            },
+
             /** Kamus bahan (KEP-072): deskripsi nilai yang sedang dipilih untuk satu opsi, kalau ada. */
             deskripsiTerpilih(opsiId) {
-                const dipilih = this.pilihan[opsiId];
-                if (!dipilih) return '';
-
-                const opsi = this.opsi.find(o => o.id === opsiId);
-                return opsi?.values.find(v => v.id === dipilih)?.deskripsi ?? '';
+                return this.nilaiTerpilih(opsiId)?.deskripsi ?? '';
             },
 
             ke(n) {

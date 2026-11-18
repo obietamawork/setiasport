@@ -6,6 +6,7 @@
 
 <form method="POST"
       action="{{ $bahan->exists ? route('panel.bahan.update', $bahan) : route('panel.bahan.store') }}"
+      enctype="multipart/form-data"
       class="kartu mt-6 max-w-xl space-y-4 p-6">
     @csrf
     @if ($bahan->exists) @method('PUT') @endif
@@ -27,6 +28,33 @@
             Tampil ke pelanggan begitu bahan ini dipilih saat memesan. Tulis dengan bahasa yang
             dipahami orang awam &mdash; bukan istilah dagang konveksi. Boleh dikosongkan.
         </p>
+    </div>
+
+    {{-- Foto wajib (KEP-110): emboss dan tekstur tiap bahan berbeda, dan
+         itu yang paling sulit dijelaskan lewat kalimat. Pratinjaunya muncul
+         sebelum disimpan, supaya foto yang buram atau salah pilih ketahuan. --}}
+    <div x-data="{ pratinjau: @js($bahan->thumb_url) }">
+        <label for="gambar" class="label-form">Foto bahan</label>
+        <div class="flex flex-wrap items-start gap-4">
+            <div class="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-line bg-paper">
+                <img x-show="pratinjau" :src="pratinjau" alt="Pratinjau foto bahan" class="size-full object-cover"
+                     @if (! $bahan->thumb_url) x-cloak @endif
+                     @if ($bahan->thumb_url) src="{{ $bahan->thumb_url }}" @endif>
+                <x-ikon nama="bahan" ukuran="size-8" class="text-navy-300" x-show="! pratinjau" />
+            </div>
+            <div class="min-w-0 flex-1 basis-56">
+                <input type="file" id="gambar" name="gambar" accept="image/*" class="kotak-input"
+                       @change="pratinjau = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : @js($bahan->thumb_url)"
+                       @unless ($bahan->gambar_path) required @endunless>
+                <p class="mt-1 text-xs leading-relaxed text-muted">
+                    Foto dekat permukaan kain di cahaya terang, supaya emboss dan teksturnya terlihat.
+                    JPG, PNG, atau WebP, maksimal {{ setting('upload_maks_mb', 10) }} MB. Dikecilkan otomatis.
+                    @if ($bahan->exists && ! $bahan->gambar_path)
+                        <strong class="mt-1 block text-warn">Bahan ini belum berfoto. Fotonya wajib diisi sebelum disimpan.</strong>
+                    @endif
+                </p>
+            </div>
+        </div>
     </div>
 
     <div class="flex flex-wrap items-center gap-3 border-t border-line pt-5">

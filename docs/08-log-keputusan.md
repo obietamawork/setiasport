@@ -4045,6 +4045,29 @@ Actions sebenarnya gratis; yang menguncinya status tagihan akun, bukan pemakaian
 
 ---
 
+## KEP-110 — Foto wajib untuk bahan: emboss dan tekstur ditunjukkan, bukan diceritakan
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien: "bagian bahan itu wajib di kasih gambar karena tiap bahan ada embos dan
+texture masing-masing." Milano dan Hyget sama-sama polyester di atas kertas, tetapi
+berbeda begitu diraba, dan kalimat di kamus bahan (KEP-072) tidak bisa menunjukkannya.
+
+- Tiap bahan punya satu foto close-up (`materials.gambar_path`, `thumb_path`), diolah
+  `PengunggahGambar` ke folder `bahan/` seperti foto produk: dikecilkan, WebP, dan
+  versi kecil.
+- Foto **wajib**: bahan baru tidak bisa disimpan tanpa foto, dan bahan lama yang belum
+  berfoto ikut ditagih begitu diubah. Kolomnya tetap boleh kosong di basis data supaya
+  bahan yang sudah tayang tidak tiba-tiba rusak; daftar bahan menandai yang belum
+  berfoto dengan "Belum ada foto".
+- Formulir menampilkan pratinjau sebelum disimpan, supaya foto yang buram ketahuan.
+  Mengganti foto menghapus berkas lama setelah yang baru tersimpan; menghapus bahan
+  ikut menghapus fotonya.
+- Pelanggan melihat fotonya di samping penjelasan bahan: di halaman produk (bisa
+  diketuk untuk ukuran penuh) dan di konfigurator kustom begitu bahannya dipilih.
+  Bahan yang punya foto tapi belum berdeskripsi tetap tampil.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4158,3 +4181,4 @@ Actions sebenarnya gratis; yang menguncinya status tagihan akun, bukan pemakaian
 | KEP-107 | Audit UI/UX menyeluruh: bilah judul HP, target sentuh, tombol beli | TERKUNCI |
 | KEP-108 | Audit performa: pengaturan satu kali baca, cache aset setahun, OPcache | TERKUNCI |
 | KEP-109 | CI dijalankan lokal; GitHub Actions hanya manual | TERKUNCI |
+| KEP-110 | Foto bahan wajib, tampil di panel dan ke pelanggan | TERKUNCI |

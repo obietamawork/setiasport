@@ -23,12 +23,27 @@
 @else
     <div class="mt-5 kartu divide-y divide-line overflow-hidden">
         @foreach ($daftar as $b)
-            <div class="relative flex flex-wrap items-start gap-x-3 gap-y-1 px-4 py-3 hover:bg-navy-50">
-                <div class="min-w-0">
+            <div class="relative flex items-start gap-3 px-4 py-3 hover:bg-navy-50">
+                {{-- Foto bahan (KEP-110): yang belum berfoto ditandai, karena
+                     pelanggan memilih bahan dari teksturnya. --}}
+                @if ($b->thumb_url)
+                    <img src="{{ $b->thumb_url }}" alt="" width="56" height="56" loading="lazy"
+                         class="size-14 shrink-0 rounded-[8px] border border-line object-cover">
+                @else
+                    <span class="flex size-14 shrink-0 items-center justify-center rounded-[8px] border border-dashed border-line-strong text-navy-300">
+                        <x-ikon nama="gambar" ukuran="size-5" />
+                    </span>
+                @endif
+                <div class="min-w-0 flex-1">
                     <a href="{{ route('panel.bahan.edit', $b) }}"
                        class="font-semibold before:absolute before:inset-0 before:content-['']">
                         {{ $b->nama }}
                     </a>
+                    @unless ($b->gambar_path)
+                        <span class="chip chip-kuning ml-1 align-middle">
+                            <x-ikon nama="peringatan" ukuran="size-3.5" /> Belum ada foto
+                        </span>
+                    @endunless
                     @if ($b->deskripsi)
                         <p class="mt-0.5 max-w-xl text-sm leading-relaxed text-muted">{{ Str::limit($b->deskripsi, 140) }}</p>
                     @else
@@ -36,7 +51,7 @@
                     @endif
                 </div>
 
-                <span class="ml-auto shrink-0 text-sm text-muted tabular">
+                <span class="shrink-0 text-sm text-muted tabular">
                     @if ($b->option_values_count > 0)
                         dipakai {{ $b->option_values_count }}×
                     @else

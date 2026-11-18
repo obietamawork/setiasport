@@ -205,14 +205,28 @@
                                     </div>
 
                                     {{-- Kamus bahan (KEP-072): penjelasan untuk pelanggan awam,
-                                         cuma ditampilkan untuk nilai yang memang ditautkan. --}}
-                                    @if ($opsi->values->contains(fn ($v) => $v->material?->deskripsi))
-                                        <dl class="mt-2 space-y-1 border-t border-line pt-2 text-xs leading-relaxed text-muted">
+                                         cuma ditampilkan untuk nilai yang memang ditautkan. Fotonya
+                                         (KEP-110) memperlihatkan emboss dan tekstur kain; diketuk
+                                         untuk melihat ukuran penuhnya. --}}
+                                    @if ($opsi->values->contains(fn ($v) => $v->material?->deskripsi || $v->material?->gambar_path))
+                                        <dl class="mt-3 space-y-2.5 border-t border-line pt-3 text-xs leading-relaxed text-muted">
                                             @foreach ($opsi->values as $v)
-                                                @if ($v->material?->deskripsi)
-                                                    <div>
-                                                        <dt class="inline font-medium text-ink">{{ $v->label }}:</dt>
-                                                        <dd class="inline">{{ $v->material->deskripsi }}</dd>
+                                                @if ($v->material?->deskripsi || $v->material?->gambar_path)
+                                                    <div class="flex items-start gap-3">
+                                                        @if ($v->material->thumb_url)
+                                                            <a href="{{ $v->material->gambar_url }}" target="_blank" rel="noopener" class="shrink-0"
+                                                               title="Lihat tekstur {{ $v->label }} lebih dekat">
+                                                                <img src="{{ $v->material->thumb_url }}" alt="Tekstur bahan {{ $v->label }}"
+                                                                     width="56" height="56" loading="lazy"
+                                                                     class="size-14 rounded-[6px] border border-line object-cover">
+                                                            </a>
+                                                        @endif
+                                                        <div class="min-w-0">
+                                                            <dt class="font-medium text-ink">{{ $v->label }}</dt>
+                                                            @if ($v->material->deskripsi)
+                                                                <dd>{{ $v->material->deskripsi }}</dd>
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 @endif
                                             @endforeach

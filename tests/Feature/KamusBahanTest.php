@@ -12,6 +12,8 @@ use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SettingSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -27,7 +29,13 @@ class KamusBahanTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Storage::fake('public');
         $this->seed([SettingSeeder::class, RolePermissionSeeder::class, UserSeeder::class, MaterialSeeder::class, CatalogSeeder::class]);
+    }
+
+    private function foto(string $nama = 'tekstur.jpg'): UploadedFile
+    {
+        return UploadedFile::fake()->image($nama, 1200, 900);
     }
 
     private function owner(): User
@@ -55,6 +63,7 @@ class KamusBahanTest extends TestCase
             ->post(route('panel.bahan.store'), [
                 'nama' => 'Supertex',
                 'deskripsi' => 'Kain tipis dan adem, cocok untuk cuaca panas.',
+                'gambar' => $this->foto(),
             ])
             ->assertRedirect(route('panel.bahan.index'));
 
@@ -75,10 +84,94 @@ class KamusBahanTest extends TestCase
     public function test_deskripsi_boleh_dikosongkan(): void
     {
         $this->actingAs($this->owner())
-            ->post(route('panel.bahan.store'), ['nama' => 'Bahan Tanpa Keterangan'])
+            ->post(route('panel.bahan.store'), ['nama' => 'Bahan Tanpa Keterangan', 'gambar' => $this->foto()])
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('materials', ['nama' => 'Bahan Tanpa Keterangan', 'deskripsi' => null]);
+    }
+
+    // ------------------------------------------------------- foto bahan
+
+    /*
+     * Foto bahan (KEP-110): tiap bahan punya emboss dan tekstur sendiri, dan
+     * itu tidak bisa dijelaskan dengan kalimat. Fotonya wajib, dan ikut
+     * tampil ke pelanggan di samping penjelasan bahan.
+     */
+
+    public function test_bahan_baru_wajib_berfoto(): void
+    {
+        $this->actingAs($this->owner())
+            ->post(route('panel.bahan.store'), ['nama' => 'Tanpa Foto'])
+            ->assertSessionHasErrors('gambar');
+
+        $this->assertDatabaseMissing('materials', ['nama' => 'Tanpa Foto']);
+    }
+
+    public function test_foto_bahan_disimpan_beserta_versi_kecil(): void
+    {
+        $this->actingAs($this->owner())
+            ->post(route('panel.bahan.store'), ['nama' => 'Supertex', 'gambar' => $this->foto()])
+            ->assertSessionHasNoErrors();
+
+        $bahan = Material::where('nama', 'Supertex')->firstOrFail();
+
+        $this->assertStringStartsWith('bahan/', $bahan->gambar_path);
+        Storage::disk('public')->assertExists([$bahan->gambar_path, $bahan->thumb_path]);
+    }
+
+    public function test_bahan_lama_tanpa_foto_wajib_diberi_foto_saat_diubah(): void
+    {
+        $milano = Material::where('nama', 'Milano')->firstOrFail();
+
+        $this->actingAs($this->owner())
+            ->put(route('panel.bahan.update', $milano), ['nama' => 'Milano', 'deskripsi' => 'Tebal.'])
+            ->assertSessionHasErrors('gambar');
+    }
+
+    public function test_bahan_yang_sudah_berfoto_boleh_diubah_tanpa_unggah_ulang(): void
+    {
+        $milano = Material::where('nama', 'Milano')->firstOrFail();
+        $milano->forceFill(['gambar_path' => 'bahan/lama.webp', 'thumb_path' => 'bahan/lama-kecil.webp'])->save();
+
+        $this->actingAs($this->owner())
+            ->put(route('panel.bahan.update', $milano), ['nama' => 'Milano', 'deskripsi' => 'Tebal.'])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('bahan/lama.webp', $milano->fresh()->gambar_path);
+    }
+
+    public function test_mengganti_foto_menghapus_berkas_lama(): void
+    {
+        Storage::disk('public')->put('bahan/lama.webp', 'x');
+        Storage::disk('public')->put('bahan/lama-kecil.webp', 'x');
+        $milano = Material::where('nama', 'Milano')->firstOrFail();
+        $milano->forceFill(['gambar_path' => 'bahan/lama.webp', 'thumb_path' => 'bahan/lama-kecil.webp'])->save();
+
+        $this->actingAs($this->owner())
+            ->put(route('panel.bahan.update', $milano), ['nama' => 'Milano', 'gambar' => $this->foto('baru.jpg')])
+            ->assertSessionHasNoErrors();
+
+        Storage::disk('public')->assertMissing(['bahan/lama.webp', 'bahan/lama-kecil.webp']);
+        $this->assertNotSame('bahan/lama.webp', $milano->fresh()->gambar_path);
+    }
+
+    public function test_menghapus_bahan_ikut_menghapus_fotonya(): void
+    {
+        Storage::disk('public')->put('bahan/x.webp', 'x');
+        $bahan = Material::create(['nama' => 'Belum Dipakai']);
+        $bahan->forceFill(['gambar_path' => 'bahan/x.webp'])->save();
+
+        $this->actingAs($this->owner())->delete(route('panel.bahan.destroy', $bahan));
+
+        Storage::disk('public')->assertMissing('bahan/x.webp');
+    }
+
+    public function test_daftar_bahan_menandai_yang_belum_berfoto(): void
+    {
+        $this->actingAs($this->owner())
+            ->get(route('panel.bahan.index'))
+            ->assertOk()
+            ->assertSee('Belum ada foto');
     }
 
     public function test_bahan_yang_masih_dipakai_tidak_bisa_dihapus(): void
@@ -223,5 +316,31 @@ class KamusBahanTest extends TestCase
         $this->get(route('produk', $produk))
             ->assertOk()
             ->assertSee('Kain adem dan cepat kering.');
+    }
+
+    public function test_foto_bahan_tampil_di_halaman_produk_walau_tanpa_deskripsi(): void
+    {
+        $produk = $this->produk();
+        $milano = $this->bahan($produk, 'Milano');
+        $milano->material->forceFill([
+            'deskripsi' => null, 'gambar_path' => 'bahan/milano.webp', 'thumb_path' => 'bahan/milano-kecil.webp',
+        ])->save();
+
+        $this->get(route('produk', $produk))
+            ->assertOk()
+            ->assertSee(Storage::disk('public')->url('bahan/milano-kecil.webp'), false);
+    }
+
+    public function test_foto_bahan_dikirim_ke_konfigurator(): void
+    {
+        $produk = $this->produk();
+        $milano = $this->bahan($produk, 'Milano');
+        $milano->material->forceFill(['gambar_path' => 'bahan/milano.webp', 'thumb_path' => 'bahan/milano-kecil.webp'])->save();
+
+        // Dikirim sebagai data JS lewat @js, yang meng-escape garis miringnya
+        // dua kali; yang diperiksa cukup nama berkasnya.
+        $this->get(route('kustom.buat', $produk))
+            ->assertOk()
+            ->assertSee('milano-kecil.webp', false);
     }
 }
