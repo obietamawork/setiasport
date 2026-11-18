@@ -187,7 +187,10 @@ class Order extends Model
      */
     public function bolehDihapus(): bool
     {
-        return in_array($this->status, [OrderStatus::KADALUARSA, OrderStatus::DIBATALKAN], true)
+        /** @var OrderStatus $status */
+        $status = $this->status;
+
+        return in_array($status, [OrderStatus::KADALUARSA, OrderStatus::DIBATALKAN], true)
             && ! $this->payments->contains('status', PaymentStatus::LUNAS);
     }
 

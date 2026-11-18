@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Panel;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\DesignAsset;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,17 +67,20 @@ class HapusPesananController extends Controller
 
     private function hapus(Order $pesanan): void
     {
-        $pesanan->loadMissing(['customer', 'payments', 'items.designAssets', 'items.options', 'items.rosters', 'adjustments']);
+        $pesanan->loadMissing(['customer', 'payments', 'items.options', 'items.rosters', 'adjustments']);
+
+        /** @var OrderStatus $status */
+        $status = $pesanan->status;
 
         $berkas = $pesanan->payments->pluck('bukti_path')
-            ->merge($pesanan->items->flatMap(fn ($item) => $item->designAssets->pluck('path')))
+            ->merge(DesignAsset::whereIn('order_item_id', $pesanan->items->modelKeys())->pluck('path'))
             ->filter()
             ->unique();
 
         ActivityLog::catat('pesanan.dihapus', null, [
             'kode' => $pesanan->kode,
             'pelanggan' => $pesanan->customer->nama,
-            'status' => $pesanan->status->value,
+            'status' => $status->value,
             'total' => $pesanan->total,
         ]);
 
@@ -92,8 +97,11 @@ class HapusPesananController extends Controller
 
     private function alasanDitolak(Order $pesanan): string
     {
-        return $pesanan->status->final() && $pesanan->status->value !== 'SELESAI'
+        /** @var OrderStatus $status */
+        $status = $pesanan->status;
+
+        return in_array($status, [OrderStatus::KADALUARSA, OrderStatus::DIBATALKAN], true)
             ? "Pesanan {$pesanan->kode} pernah menerima pembayaran, jadi tidak bisa dihapus: uangnya akan hilang dari laporan penjualan."
-            : "Pesanan {$pesanan->kode} masih {$pesanan->status->label()}. Yang bisa dihapus hanya pesanan kedaluwarsa atau dibatalkan yang belum pernah dibayar.";
+            : "Pesanan {$pesanan->kode} masih {$status->label()}. Yang bisa dihapus hanya pesanan kedaluwarsa atau dibatalkan yang belum pernah dibayar.";
     }
 }
