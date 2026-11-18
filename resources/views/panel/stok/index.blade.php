@@ -1,189 +1,340 @@
 @extends('layouts.panel')
-@section('judul', 'Stok')
+@section('judul', 'Stok barang')
+
+@php
+    $keadaan = fn ($v) => match (true) {
+        $v->stok_tersedia <= 0 => 'habis',
+        $v->stok_tersedia <= 3 => 'menipis',
+        default => 'aman',
+    };
+    $chip = [
+        'aman' => ['chip-ok', 'Ready stock'],
+        'menipis' => ['chip-kuning', 'Stok menipis'],
+        'habis' => ['chip-merah', 'Habis'],
+        'sebagian' => ['chip-kuning', 'Sebagian menipis'],
+    ];
+    $adaSaringan = request()->filled('q') || $kategori || $status !== '';
+
+    /*
+     * Data untuk formulir barang masuk: semua produk ready stock beserta
+     * variannya, bukan hanya yang sedang tersaring, supaya kiriman untuk
+     * produk lain tetap bisa dicatat tanpa menghapus penyaring dulu.
+     */
+    $dataProduk = $semuaProduk->map(function ($p) {
+        // Urutan varian sama dengan tabel: ukuran seperti orang membacanya, lalu warna.
+        $urutan = urutkan_ukuran($p->variants->pluck('ukuran'));
+
+        return [
+            'id' => $p->id,
+            'nama' => $p->nama,
+            'varian' => $p->variants
+                ->sortBy(fn ($v) => [array_search((string) $v->ukuran, $urutan, true) === false ? 999 : array_search((string) $v->ukuran, $urutan, true), (string) $v->warna])
+                ->map(fn ($v) => ['id' => $v->id, 'label' => $v->label, 'sku' => $v->sku, 'stok' => $v->stok])
+                ->values(),
+        ];
+    })->values();
+    $produkLama = (int) old('produk_id');
+@endphp
 
 @section('isi')
-{{--
-    Layar opname. Dibuka sambil berdiri di depan rak, dari HP, sambil menghitung
-    barang dengan tangan satu lagi. Karena itu semuanya bertombol besar, dan
-    angka yang diketik adalah angka yang BENAR-BENAR ADA DI RAK, bukan angka
-    yang sudah dikurangi pesanan.
---}}
-<x-kop judul="Stok"
-       catatan="Isi dengan jumlah yang benar-benar ada di rak. Yang sudah dipesan pelanggan dikurangi otomatis oleh sistem.">
-    <form method="GET" class="relative">
-        <input type="hidden" name="saring" value="{{ request('saring') }}">
-        <label for="cari-stok" class="sr-only">Cari produk</label>
-        <x-ikon nama="cari" ukuran="size-4"
-                class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-navy-300" />
-        <input type="search" id="cari-stok" name="q" value="{{ request('q') }}"
-               placeholder="Produk atau SKU&hellip;" class="kotak-input w-44 pl-9 sm:w-56">
-    </form>
+<div x-data="barangMasuk(@js($dataProduk), {{ $produkLama ?: 'null' }}, {{ $errors->hasAny(['supplier', 'tanggal', 'harga_beli', 'baris', 'baris.*', 'baris.*.jumlah']) ? 'true' : 'false' }})">
+
+<x-kop judul="Stok barang" ikon="stok" warna="jingga"
+       catatan="Pantau, tambah, dan sesuaikan stok produk toko. Stok adalah jumlah di rak; yang bisa dijual sudah dikurangi pesanan.">
+    <a href="{{ route('panel.stok.penyesuaian') }}" class="tombol tombol-garis">
+        <x-ikon nama="muat-ulang" ukuran="size-4" />
+        Penyesuaian stok
+    </a>
+    <button type="button" class="tombol tombol-navy" @click="buka()">
+        <x-ikon nama="tambah" ukuran="size-4" />
+        Barang masuk
+    </button>
 </x-kop>
 
-<div class="segmen mt-1">
-    @foreach (['' => 'Semua varian', 'habis' => 'Hanya yang habis'] as $nilai => $label)
-        <a href="{{ route('panel.stok.index', array_filter(['saring' => $nilai, 'q' => request('q')])) }}"
-           class="segmen-item {{ request('saring') === $nilai ? 'segmen-item-aktif' : '' }}">
-            @if ($nilai === 'habis')
-                <x-ikon nama="peringatan" ukuran="size-4" />
-            @endif
-            {{ $label }}
-        </a>
-    @endforeach
+<div class="kartu">
+    <form method="GET" class="flex flex-wrap items-end gap-3 border-b border-line p-4 sm:p-5" data-saring-otomatis>
+        <div class="w-full sm:w-52">
+            <label for="saring-kategori" class="sr-only">Kategori</label>
+            <select id="saring-kategori" name="kategori" class="kotak-input">
+                <option value="">Semua kategori</option>
+                @foreach ($pilihanKategori as $k)
+                    <option value="{{ $k->id }}" @selected($kategori === $k->id)>{{ $k->nama }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="w-full sm:w-52">
+            <label for="saring-status" class="sr-only">Status stok</label>
+            <select id="saring-status" name="status" class="kotak-input">
+                <option value="">Semua status</option>
+                <option value="aman" @selected($status === 'aman')>Ready stock</option>
+                <option value="menipis" @selected($status === 'menipis')>Stok menipis (sisa 1 sampai 3)</option>
+                <option value="habis" @selected($status === 'habis')>Habis</option>
+            </select>
+        </div>
+        <div class="relative min-w-0 flex-1 basis-56">
+            <label for="cari-stok" class="sr-only">Cari produk</label>
+            <x-ikon nama="cari" ukuran="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-navy-300" />
+            <input type="search" id="cari-stok" name="q" value="{{ request('q') }}"
+                   placeholder="Cari produk, SKU, atau varian&hellip;" class="kotak-input pl-9">
+        </div>
+        @if ($adaSaringan)
+            <a href="{{ route('panel.stok.index') }}" class="tombol tombol-garis tombol-sm">
+                <x-ikon nama="muat-ulang" ukuran="size-4" /> Reset
+            </a>
+        @endif
+    </form>
+
+    @if ($varian->isEmpty())
+        <div class="p-8 text-center">
+            <x-ikon nama="stok" ukuran="size-9" class="mx-auto text-navy-300" />
+            <p class="mt-3 font-bold">{{ $adaSaringan ? 'Tidak ada varian yang cocok' : 'Belum ada barang ready stock' }}</p>
+            <p class="mx-auto mt-2 max-w-sm text-sm text-muted">
+                {{ $adaSaringan ? 'Coba kata kunci lain, atau tekan Reset.' : 'Produk berjalur Ready Stock muncul di sini beserta variannya.' }}
+            </p>
+        </div>
+    @else
+        {{-- Satu tbody per produk: barisnya bisa dibuka-tutup bersama tanpa
+             memecah tabel. Saat ada penyaring, semuanya langsung terbuka. --}}
+        <table class="tabel tabel-rapat">
+            <thead>
+                <tr>
+                    <th class="w-8"><span class="sr-only">Buka</span></th>
+                    <th>Produk / varian</th>
+                    <th class="hidden md:table-cell">SKU</th>
+                    <th class="text-right">Stok</th>
+                    <th class="hidden sm:table-cell">Status</th>
+                    <th class="text-right">Aksi</th>
+                </tr>
+            </thead>
+            @foreach ($varian as $grup)
+                @php
+                    $produk = $grup->first()->product;
+                    $gambar = $produk->images->first();
+                    $tunggal = $grup->count() === 1;
+                    $keadaanGrup = $grup->map($keadaan);
+                    $statusProduk = $keadaanGrup->every(fn ($k) => $k === 'habis') ? 'habis'
+                        : ($keadaanGrup->contains(fn ($k) => $k !== 'aman') ? 'sebagian' : 'aman');
+                @endphp
+                <tbody x-data="{ terbuka: {{ $adaSaringan ? 'true' : 'false' }} }">
+                    <tr class="bg-field">
+                        <td>
+                            @unless ($tunggal)
+                                <button type="button" @click="terbuka = ! terbuka" class="tombol-ikon size-8 border-transparent"
+                                        :aria-expanded="terbuka.toString()" aria-label="Tampilkan varian {{ $produk->nama }}">
+                                    <x-ikon nama="lanjut" ukuran="size-4" x-bind:class="terbuka && 'rotate-90'" class="transition-transform" />
+                                </button>
+                            @endunless
+                        </td>
+                        <td>
+                            <span class="flex items-center gap-3">
+                                @if ($gambar)
+                                    <img src="{{ $gambar->thumb_url }}" alt="" width="44" height="44" loading="lazy"
+                                         class="hidden size-11 shrink-0 sm:block rounded-[8px] border border-line object-cover">
+                                @else
+                                    <span class="hidden size-11 shrink-0 items-center justify-center rounded-[8px] border border-dashed sm:flex border-line-strong text-navy-300">
+                                        <x-ikon nama="gambar" ukuran="size-4" />
+                                    </span>
+                                @endif
+                                <span class="min-w-0">
+                                    <a href="{{ route('panel.produk.edit', $produk) }}" class="block font-bold text-ink hover:text-navy">{{ $produk->nama }}</a>
+                                    <span class="text-xs text-muted">
+                                        {{ $tunggal ? 'Varian: tunggal' : $grup->count().' varian' }}
+                                    </span>
+                                </span>
+                            </span>
+                        </td>
+                        <td class="hidden md:table-cell">
+                            <span class="chip chip-netral tabular border border-line">{{ $tunggal ? $grup->first()->sku : $produk->sku }}</span>
+                        </td>
+                        <td class="tabular text-right font-bold whitespace-nowrap">
+                            {{ $grup->sum('stok') }} pcs
+                            <span class="block text-xs font-semibold sm:hidden {{ ['aman' => 'text-ok', 'sebagian' => 'text-warn', 'habis' => 'text-merah-tua'][$statusProduk] }}">{{ $chip[$statusProduk][1] }}</span>
+                            @if ($grup->sum('stok_dipesan') > 0)
+                                <span class="block text-xs font-normal text-muted">{{ $grup->sum('stok_dipesan') }} dipesan</span>
+                            @endif
+                        </td>
+                        <td class="hidden sm:table-cell"><span class="chip {{ $chip[$statusProduk][0] }}">{{ $chip[$statusProduk][1] }}</span></td>
+                        <td>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button type="button" class="tombol tombol-garis tombol-sm" @click="buka({{ $produk->id }}, {{ $tunggal ? $grup->first()->id : 'null' }})">
+                                    <x-ikon nama="tambah" ukuran="size-4" />
+                                    <span class="sr-only sm:not-sr-only">Barang masuk</span>
+                                </button>
+                                <details class="relative hidden sm:block" x-data @click.outside="$el.removeAttribute('open')">
+                                    <summary class="tombol-ikon" title="Aksi lain">
+                                        <x-ikon nama="titik-tiga" ukuran="size-4" />
+                                        <span class="sr-only">Aksi lain untuk {{ $produk->nama }}</span>
+                                    </summary>
+                                    <div class="menu-tarik menu-aksi-isi right-0 w-56">
+                                        <a href="{{ route('panel.stok.penyesuaian', ['q' => $produk->nama]) }}"><x-ikon nama="muat-ulang" ukuran="size-4" class="text-navy-400" /> Sesuaikan stok</a>
+                                        <a href="{{ route('panel.produk.edit', $produk) }}"><x-ikon nama="pensil" ukuran="size-4" class="text-navy-400" /> Ubah produk</a>
+                                    </div>
+                                </details>
+                            </div>
+                        </td>
+                    </tr>
+                    @unless ($tunggal)
+                        @foreach ($grup as $v)
+                            @php $k = $keadaan($v); @endphp
+                            <tr x-show="terbuka" @unless ($adaSaringan) x-cloak @endunless class="bg-paper/60">
+                                <td></td>
+                                <td>
+                                    <span class="flex items-center gap-2 pl-4 text-sm">
+                                        <x-ikon nama="lanjut" ukuran="size-4" class="text-navy-300" />
+                                        <span class="font-semibold">{{ $v->label }}</span>
+                                    </span>
+                                </td>
+                                <td class="hidden md:table-cell"><span class="chip chip-netral tabular border border-line">{{ $v->sku }}</span></td>
+                                <td class="tabular text-right whitespace-nowrap">
+                                    {{ $v->stok }} pcs
+                                    <span class="block text-xs font-semibold sm:hidden {{ ['aman' => 'text-ok', 'menipis' => 'text-warn', 'habis' => 'text-merah-tua'][$k] }}">{{ $chip[$k][1] }}</span>
+                                    @if ($v->stok_dipesan > 0)
+                                        <span class="block text-xs text-muted">{{ $v->stok_dipesan }} dipesan</span>
+                                    @endif
+                                </td>
+                                <td class="hidden sm:table-cell"><span class="chip {{ $chip[$k][0] }}">{{ $chip[$k][1] }}</span></td>
+                                <td>
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <button type="button" class="tombol tombol-garis tombol-sm" @click="buka({{ $produk->id }}, {{ $v->id }})">
+                                            <x-ikon nama="tambah" ukuran="size-4" />
+                                            <span class="sr-only sm:not-sr-only">Barang masuk</span>
+                                        </button>
+                                        <details class="relative hidden sm:block" x-data @click.outside="$el.removeAttribute('open')">
+                                            <summary class="tombol-ikon" title="Aksi lain">
+                                                <x-ikon nama="titik-tiga" ukuran="size-4" />
+                                                <span class="sr-only">Aksi lain untuk {{ $v->sku }}</span>
+                                            </summary>
+                                            <div class="menu-tarik menu-aksi-isi right-0 w-56">
+                                                <a href="{{ route('panel.stok.penyesuaian', ['q' => $v->sku]) }}"><x-ikon nama="muat-ulang" ukuran="size-4" class="text-navy-400" /> Sesuaikan stok</a>
+                                            </div>
+                                        </details>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    @endunless
+                </tbody>
+            @endforeach
+        </table>
+    @endif
 </div>
 
-@if ($varian->isEmpty())
-    {{-- "Habis" yang kosong berarti kabar BAIK (tidak ada yang kehabisan),
-         bukan "belum ada varian apa pun" -- dua keadaan yang beda jauh, jadi
-         pesannya tidak boleh sama. --}}
-    <div class="kartu mt-6 p-8 text-center">
-        <x-ikon nama="{{ request('saring') === 'habis' ? 'centang' : 'stok' }}" ukuran="size-9"
-                class="mx-auto {{ request('saring') === 'habis' ? 'text-ok' : 'text-navy-300' }}" />
-        <p class="mt-3 text-lg font-bold">
-            @if (request('saring') === 'habis')
-                Tidak ada yang kehabisan stok
-            @elseif (request('q'))
-                Tidak ada produk atau SKU yang cocok
-            @else
-                Tidak ada varian yang cocok
-            @endif
-        </p>
-        <p class="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
-            @if (request('saring') === 'habis')
-                Semua varian masih punya stok yang bisa dijual.
-            @elseif (request('q'))
-                Coba kata lain, atau hapus pencarian untuk melihat semua varian.
-            @else
-                Varian ditambahkan dari halaman ubah produk, di bagian Varian &amp; stok.
-            @endif
-        </p>
-    </div>
-@else
-    {{-- Seluruh daftar satu formulir: opname dikerjakan sekali jalan dari rak
-         pertama sampai rak terakhir, bukan disimpan per baris. --}}
-    {{-- Tiap baris menjaga angkanya sendiri dan mengabarkan perubahannya ke
-         formulir. Menghitung ulang dengan membaca .value milik input tidak bisa
-         dipakai: nilai mentah input bukan sesuatu yang bisa diamati Alpine,
-         sehingga penandanya tidak pernah menyala. --}}
-    <form method="POST" action="{{ route('panel.stok.update') }}" class="mt-5"
-          x-data="{
-              diubah: {},
-              get berubah() { return Object.values(this.diubah).filter(Boolean).length },
-          }"
-          @stok-berubah="diubah[$event.detail.id] = $event.detail.berubah">
-        @csrf @method('PUT')
+<div class="notis notis-info mt-5 text-sm leading-relaxed">
+    <p class="font-semibold">Catatan</p>
+    <ul class="mt-1 list-inside list-disc space-y-0.5">
+        <li>Pakai <strong>Barang masuk</strong> untuk menambah stok dari kiriman supplier. Supplier, jumlah, dan harga belinya tercatat.</li>
+        <li>Pakai <strong>Penyesuaian stok</strong> untuk koreksi: stok opname, barang rusak, atau selisih. Alasannya wajib ditulis.</li>
+    </ul>
+</div>
 
-        <div class="space-y-3">
-            @foreach ($varian as $grup)
-                @php $produk = $grup->first()->product; @endphp
-
-                <section class="kartu overflow-hidden">
-                    <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-line px-4 py-2.5">
-                        <a href="{{ route('panel.produk.edit', $produk) }}" class="font-semibold hover:text-navy">
-                            {{ $produk->nama }}
-                        </a>
-                        <span class="text-xs text-muted tabular">{{ $produk->sku }}</span>
-                        <span class="ml-auto text-xs text-muted tabular">{{ $grup->count() }} varian</span>
-                    </div>
-
-                    <div class="divide-y divide-line">
-                        @foreach ($grup as $v)
-                            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-                                <div class="min-w-36 flex-1">
-                                    <p class="font-medium">{{ $v->label ?: 'Varian tunggal' }}</p>
-                                    <p class="tabular text-xs text-muted">{{ $v->sku }}</p>
-                                </div>
-
-                                {{-- Dua angka yang beda arti dipisah terang-terangan:
-                                     yang dihitung tangan, dan yang boleh dijual. Dulu
-                                     keduanya berdempetan dan tertukar terus. --}}
-                                <p class="tabular min-w-32 text-sm">
-                                    @if ($v->stok_dipesan > 0)
-                                        <span class="text-muted">{{ $v->stok_dipesan }} sudah dipesan,</span>
-                                        <span class="block {{ $v->stok_tersedia < 1 ? 'font-semibold text-merah' : 'text-muted' }}">
-                                            sisa {{ $v->stok_tersedia }} bisa dijual
-                                        </span>
-                                    @elseif ($v->stok_tersedia < 1)
-                                        <span class="chip chip-merah">
-                                            <x-ikon nama="peringatan" ukuran="size-3.5" />
-                                            Habis
-                                        </span>
-                                    @else
-                                        <span class="text-muted">{{ $v->stok_tersedia }} bisa dijual</span>
-                                    @endif
-                                </p>
-
-                                {{-- Tombol kurang dan tambah: menghitung sambil memegang
-                                     barang jauh lebih mudah dengan menekan daripada
-                                     mengetik ulang angkanya di papan ketik HP. Ukurannya
-                                     dipatok size-9 (36x36) di semua perangkat. aspect-square
-                                     saja tidak cukup: di layar tanpa sentuh tingginya tidak
-                                     pasti, sehingga lebarnya menyusut ke lebar huruf (14px). --}}
-                                @php $nAwal = (int) old('stok.'.$v->id, $v->stok); @endphp
-                                <div class="flex items-center gap-1"
-                                     x-data="{ n: {{ $nAwal }}, awal: {{ (int) $v->stok }} }"
-                                     x-init="$watch('n', () => $dispatch('stok-berubah', {
-                                         id: {{ $v->id }}, berubah: n !== awal,
-                                     })); if (n !== awal) $dispatch('stok-berubah', { id: {{ $v->id }}, berubah: true })">
-                                    <button type="button" class="tombol tombol-garis tombol-sm size-9 px-0"
-                                            @click="n = Math.max(0, n - 1)">
-                                        <span class="sr-only">Kurangi stok {{ $v->label ?: $produk->nama }}</span>
-                                        <span aria-hidden="true">&minus;</span>
-                                    </button>
-
-                                    <label class="sr-only" for="stok-{{ $v->id }}">
-                                        Jumlah di rak, {{ $produk->nama }} {{ $v->label }}
-                                    </label>
-                                    {{-- value tetap ditulis walau ada x-model: kalau
-                                         JavaScript gagal dimuat, kotaknya harus tetap
-                                         berisi angka stok yang sekarang, bukan kosong.
-                                         Dibaca dari old() dulu: tanpa ini, angka yang
-                                         sudah diketik hilang diam-diam begitu "alasan"
-                                         ditolak validasi karena sebab LAIN selain kosong
-                                         (misalnya kepanjangan), dan opname harus diulang
-                                         dari rak pertama. --}}
-                                    <input type="number" id="stok-{{ $v->id }}" name="stok[{{ $v->id }}]"
-                                           value="{{ $nAwal }}" x-model.number="n"
-                                           :class="n !== awal ? 'border-navy bg-navy-50 font-semibold' : ''"
-                                           class="kotak-input tabular w-20 text-center" min="0" inputmode="numeric">
-
-                                    <button type="button" class="tombol tombol-garis tombol-sm size-9 px-0"
-                                            @click="n = n + 1">
-                                        <span class="sr-only">Tambah stok {{ $v->label ?: $produk->nama }}</span>
-                                        <span aria-hidden="true">+</span>
-                                    </button>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </section>
-            @endforeach
-        </div>
-
-        {{-- Stok yang berubah tanpa jejak adalah sumber perselisihan internal,
-             jadi alasan wajib diisi sebelum penyimpanan diterima. --}}
-        <div class="bilah-aksi mt-6 items-end">
-            <div class="min-w-56 flex-1">
-                <label for="alasan" class="label-form">
-                    Alasan penyesuaian
-                    <span class="font-normal text-muted" x-show="berubah > 0" x-cloak>
-                        &middot; <span x-text="berubah"></span> varian diubah
-                    </span>
-                </label>
-                <input type="text" id="alasan" name="alasan" class="kotak-input" required
-                       value="{{ old('alasan') }}"
-                       placeholder="Opname 7 September / barang rusak / retur supplier">
+{{-- Formulir barang masuk (KEP-120). Satu kiriman bisa berisi beberapa
+     varian; varian yang tidak dikirim cukup dikosongkan. --}}
+<dialog x-ref="dialog" class="dialog w-[min(40rem,calc(100vw-2rem))]" aria-labelledby="judul-barang-masuk"
+        @close="terbuka = false">
+    <form method="POST" action="{{ route('panel.stok.masuk') }}" class="p-5 sm:p-6">
+        @csrf
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <h2 id="judul-barang-masuk" class="text-lg font-bold">Barang masuk</h2>
+                <p class="mt-1 text-sm text-muted">Stok bertambah begitu disimpan.</p>
             </div>
-            <button type="submit" class="tombol tombol-navy">
-                <x-ikon nama="centang" ukuran="size-4" />
-                Simpan stok
+            <button type="button" class="tombol-ikon border-transparent" @click="$refs.dialog.close()" aria-label="Tutup">
+                <x-ikon nama="silang" ukuran="size-4" />
             </button>
         </div>
 
-        <p class="kolom-baca mt-3 text-sm leading-relaxed text-muted">
-            Setiap perubahan dicatat beserta alasan dan nama Anda. Itu disengaja: stok yang
-            berubah tanpa jejak adalah awal dari saling menyalahkan.
-        </p>
+        <div class="mt-5 grid gap-4 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+                <label for="bm-produk" class="label-form">Produk</label>
+                <select id="bm-produk" name="produk_id" x-model.number="produkId" class="kotak-input" required>
+                    <option value="">Pilih produk</option>
+                    <template x-for="p in produk" :key="p.id">
+                        <option :value="p.id" x-text="p.nama" :selected="p.id === produkId"></option>
+                    </template>
+                </select>
+            </div>
+
+            <div class="sm:col-span-2" x-show="produkTerpilih" x-cloak>
+                <p class="label-form">Jumlah yang datang</p>
+                {{-- Produk berwarna-warni bisa punya dua puluh varian: daftarnya
+                     digulir sendiri supaya kolom supplier tetap terlihat. --}}
+                <div class="max-h-64 divide-y divide-line overflow-y-auto rounded-[10px] border border-line">
+                    <template x-for="(v, i) in produkTerpilih?.varian ?? []" :key="v.id">
+                        <label class="flex items-center gap-3 px-3 py-2">
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-sm font-semibold" x-text="v.label"></span>
+                                <span class="tabular text-xs text-muted" x-text="v.sku + ' · stok ' + v.stok"></span>
+                            </span>
+                            <input type="hidden" :name="`baris[${i}][variant_id]`" :value="v.id">
+                            <input type="number" :name="`baris[${i}][jumlah]`" min="1" max="99999" inputmode="numeric"
+                                   placeholder="0" class="kotak-input tabular w-24 text-right" :id="'bm-jumlah-' + v.id">
+                        </label>
+                    </template>
+                </div>
+                @error('baris') <p class="mt-1 text-sm text-merah-tua">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label for="bm-supplier" class="label-form">Supplier</label>
+                <input type="text" id="bm-supplier" name="supplier" list="daftar-supplier" maxlength="100" required
+                       value="{{ old('supplier') }}" class="kotak-input" placeholder="CV Sumber Kain">
+                <datalist id="daftar-supplier">
+                    @foreach ($supplier as $s)
+                        <option value="{{ $s }}">
+                    @endforeach
+                </datalist>
+            </div>
+            <div>
+                <label for="bm-tanggal" class="label-form">Tanggal datang</label>
+                <input type="date" id="bm-tanggal" name="tanggal" required max="{{ now()->toDateString() }}"
+                       value="{{ old('tanggal', now()->toDateString()) }}" class="kotak-input">
+            </div>
+            <div>
+                <label for="bm-harga" class="label-form">Harga beli per pcs <span class="font-normal text-muted">(opsional)</span></label>
+                <input type="number" id="bm-harga" name="harga_beli" min="0" inputmode="numeric"
+                       value="{{ old('harga_beli') }}" class="kotak-input tabular" placeholder="45000">
+            </div>
+            <div>
+                <label for="bm-catatan" class="label-form">Catatan <span class="font-normal text-muted">(opsional)</span></label>
+                <input type="text" id="bm-catatan" name="catatan" maxlength="255"
+                       value="{{ old('catatan') }}" class="kotak-input" placeholder="Nomor nota, kondisi barang">
+            </div>
+        </div>
+
+        <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <button type="button" class="tombol tombol-garis" @click="$refs.dialog.close()">Batal</button>
+            <button type="submit" class="tombol tombol-navy" :disabled="! produkTerpilih">
+                <x-ikon nama="centang" ukuran="size-4" /> Simpan barang masuk
+            </button>
+        </div>
     </form>
-@endif
+</dialog>
+</div>
 @endsection
+
+@push('skrip')
+<script nonce="{{ Vite::cspNonce() }}">
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('barangMasuk', (produk, produkAwal, bukaAwal) => ({
+            produk,
+            produkId: produkAwal,
+            terbuka: false,
+            get produkTerpilih() {
+                return this.produk.find((p) => p.id === this.produkId) ?? null;
+            },
+            init() {
+                if (bukaAwal) this.$nextTick(() => this.buka(produkAwal));
+            },
+            buka(produkId = null, variantId = null) {
+                if (produkId) this.produkId = produkId;
+                this.$refs.dialog.showModal();
+                this.terbuka = true;
+                this.$nextTick(() => {
+                    const sasaran = variantId ? document.getElementById('bm-jumlah-' + variantId) : null;
+                    (sasaran ?? document.getElementById(this.produkId ? 'bm-supplier' : 'bm-produk'))?.focus();
+                });
+            },
+        }));
+    });
+</script>
+@endpush

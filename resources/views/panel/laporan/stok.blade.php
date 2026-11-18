@@ -88,6 +88,43 @@
     </div>
 @endif
 
+{{-- Kiriman supplier (KEP-120), dicatat lewat Barang masuk di halaman Stok. --}}
+<section class="kartu mt-8 overflow-hidden">
+    <h2 class="kartu-kop flex items-center gap-2">
+        <span class="lencana-bagian warna-hijau"><x-ikon nama="kirim" ukuran="size-4" /></span>
+        Riwayat barang masuk
+    </h2>
+    @if ($barangMasuk->isEmpty())
+        <p class="p-5 text-sm text-muted">Belum ada barang masuk yang dicatat.</p>
+    @else
+        <table class="tabel tabel-hp">
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Barang</th>
+                    <th>Supplier</th>
+                    <th class="text-right">Jumlah</th>
+                    <th class="text-right">Harga beli</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($barangMasuk as $bm)
+                    <tr>
+                        <td data-kolom="Tanggal" class="tabular whitespace-nowrap">{{ $bm->tanggal->translatedFormat('j M Y') }}</td>
+                        <td data-utama>
+                            {{ $bm->varian?->product->nama }} <span class="text-muted">{{ $bm->varian?->label }}</span>
+                            <div class="tabular text-xs text-muted">{{ $bm->varian?->sku }} &middot; {{ $bm->pencatat?->name ?? 'Sistem' }}</div>
+                        </td>
+                        <td data-kolom="Supplier">{{ $bm->supplier }}</td>
+                        <td data-kolom="Jumlah" class="tabular text-right font-semibold">+{{ $bm->jumlah }}</td>
+                        <td data-kolom="Harga beli" class="tabular text-right whitespace-nowrap">{{ $bm->harga_beli !== null ? rupiah($bm->harga_beli) : '-' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+</section>
+
 {{-- Riwayat penyesuaian diambil dari log aktivitas (stok.disesuaikan), jadi
      tidak ada catatan kedua yang bisa berselisih dengan yang pertama. --}}
 <section class="kartu mt-8 overflow-hidden">

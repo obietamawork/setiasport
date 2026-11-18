@@ -4309,6 +4309,40 @@ pernah membawa uang:
 
 ---
 
+## KEP-120 — Stok per produk dan barang masuk dari supplier
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien pada gambar contoh "Stok Barang": "Menu stok e tambahi + barang masuk dr
+supplier", dengan kartu ringkasan di atas tabel dicoret ("Sg iki gausah").
+
+- **Halaman Stok** kini daftar per produk seperti gambar: produk berganti baris dengan
+  variannya yang bisa dibuka-tutup (produk bervarian tunggal tanpa tombol buka), kolom
+  SKU, stok di rak (dengan jumlah yang sudah dipesan), status, dan aksi. Status dihitung
+  dari stok yang bisa dijual: Ready stock, Stok menipis (sisa 1 sampai 3), Habis; baris
+  produk menyebut "Sebagian menipis" bila ada variannya yang menipis atau habis.
+  Penyaring kategori, status, dan cari; saat ada penyaring, semua varian langsung
+  terbuka. Tanpa kartu ringkasan, sesuai coretan klien. Di HP kolom status dan foto
+  diganti teks kecil di bawah angka stok supaya tabel tidak digeser ke samping.
+- **Barang masuk** (`POST /panel/stok/masuk`, izin `stok.kelola`): tabel baru
+  `barang_masuk` menyimpan varian, jumlah, supplier, harga beli per pcs (opsional),
+  tanggal datang, catatan, dan pencatatnya. Satu kiriman bisa berisi beberapa varian
+  dari satu produk; varian yang tidak dikirim dikosongkan, minimal satu wajib berisi.
+  Stok bertambah dalam transaksi yang sama, dan kirimannya juga dicatat di log
+  aktivitas (`stok.masuk`). Tanggal tidak boleh di masa depan. Supplier teks bebas
+  dengan saran dari nama yang pernah diketik, supaya satu supplier tidak tercatat
+  dengan lima ejaan.
+- Formulirnya satu dialog: dibuka dari tombol di kepala halaman, atau dari tombol
+  "+ Barang masuk" di baris produk atau varian dengan produk dan variannya sudah
+  terpilih. Daftar variannya digulir sendiri supaya kolom supplier tetap terlihat.
+- **Penyesuaian stok** (formulir opname yang lama, alasan wajib) pindah ke
+  `/panel/stok/penyesuaian`. Barang masuk untuk menambah stok dari supplier,
+  penyesuaian untuk koreksi: opname, barang rusak, selisih. Catatan di bawah tabel
+  menjelaskan bedanya.
+- Laporan Stok barang (KEP-117) mendapat bagian **Riwayat barang masuk**: tanggal,
+  barang, supplier, jumlah, dan harga beli.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4432,3 +4466,4 @@ pernah membawa uang:
 | KEP-117 | Laporan tiga halaman: penjualan, stok barang, produk terlaris | TERKUNCI |
 | KEP-118 | Tambalan keamanan laravel/framework 12.73.0 | TERKUNCI |
 | KEP-119 | Hapus pesanan kedaluwarsa/dibatalkan tanpa uang, dengan konfirmasi | TERKUNCI |
+| KEP-120 | Stok per produk, barang masuk dari supplier, penyesuaian terpisah | TERKUNCI |

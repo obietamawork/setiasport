@@ -8,6 +8,7 @@ use App\Enums\PaymentStatus;
 use App\Enums\StatusPembatalan;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\BarangMasuk;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Pembatalan;
@@ -122,6 +123,13 @@ class LaporanController extends Controller
             'totalUnit' => (int) $semua->sum(fn (ProductVariant $v) => max(0, $v->stok)),
             'jumlahHabis' => $semua->filter(fn (ProductVariant $v) => $keadaan($v) === 'habis')->count(),
             'jumlahMenipis' => $semua->filter(fn (ProductVariant $v) => $keadaan($v) === 'menipis')->count(),
+            // Kiriman supplier terakhir (KEP-120), dari tabel barang_masuk.
+            'barangMasuk' => BarangMasuk::query()
+                ->with(['varian.product', 'pencatat'])
+                ->latest('tanggal')
+                ->latest('id')
+                ->limit(20)
+                ->get(),
             'riwayat' => ActivityLog::query()
                 ->with('user')
                 ->where('aksi', 'stok.disesuaikan')

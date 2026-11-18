@@ -117,8 +117,9 @@ class KatalogPanelTest extends TestCase
         $varian = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();
         $varian->update(['stok' => 10, 'stok_dipesan' => 3]);
 
+        // Formulir opname pindah ke halaman Penyesuaian stok (KEP-120).
         $this->actingAs($this->owner())
-            ->get(route('panel.stok.index'))
+            ->get(route('panel.stok.penyesuaian'))
             ->assertOk()
             ->assertSee('jumlah yang benar-benar ada di rak')
             ->assertSee('3 sudah dipesan,')

@@ -294,6 +294,9 @@ Route::prefix('panel')->name('panel.')->group(function () {
         Route::middleware('izin:stok.kelola')->group(function () {
             Route::get('stok', [StokController::class, 'index'])->name('stok.index');
             Route::put('stok', [StokController::class, 'update'])->name('stok.update');
+            // Opname dipisah dari daftar stok, barang masuk dari supplier (KEP-120).
+            Route::get('stok/penyesuaian', [StokController::class, 'penyesuaian'])->name('stok.penyesuaian');
+            Route::post('stok/masuk', [StokController::class, 'masuk'])->name('stok.masuk');
         });
 
         // Tiga halaman laporan dengan periode yang sama (KEP-117).

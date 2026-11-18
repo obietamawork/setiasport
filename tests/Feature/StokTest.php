@@ -63,7 +63,7 @@ class StokTest extends TestCase
         $alasanTerlaluPanjang = str_repeat('x', 130);
 
         $response = $this->actingAs($this->owner())
-            ->from(route('panel.stok.index'))
+            ->from(route('panel.stok.penyesuaian'))
             ->followingRedirects()
             ->put(route('panel.stok.update'), [
                 'stok' => [$bola->id => 20],
