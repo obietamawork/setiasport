@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -113,7 +114,7 @@ class KatalogPanelTest extends TestCase
      */
     public function test_halaman_stok_membedakan_jumlah_di_rak_dan_yang_bisa_dijual(): void
     {
-        $varian = \App\Models\ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();
+        $varian = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();
         $varian->update(['stok' => 10, 'stok_dipesan' => 3]);
 
         $this->actingAs($this->owner())
@@ -158,5 +159,97 @@ class KatalogPanelTest extends TestCase
                 ->assertOk()
                 ->assertSee(route('panel.bantuan'), false);
         }
+    }
+
+    // -------------------------------------- daftar produk revisi klien (KEP-116)
+
+    public function test_produk_bisa_disaring_per_kategori(): void
+    {
+        $produk = Product::with('category')->firstOrFail();
+
+        $daftar = $this->actingAs($this->owner())
+            ->get(route('panel.produk.index', ['kategori' => $produk->category_id]))
+            ->assertOk()
+            ->viewData('produk');
+
+        $this->assertNotEmpty($daftar);
+        $this->assertTrue($daftar->every(fn (Product $p) => $p->category_id === $produk->category_id));
+    }
+
+    public function test_produk_bisa_disaring_menurut_jalur_stok(): void
+    {
+        $daftar = $this->actingAs($this->owner())
+            ->get(route('panel.produk.index', ['stok' => 'PREORDER']))
+            ->assertOk()
+            ->viewData('produk');
+
+        $this->assertNotEmpty($daftar);
+        $this->assertTrue($daftar->every(fn (Product $p) => $p->fulfillment_type->value === 'PREORDER'));
+    }
+
+    public function test_aksi_massal_menyembunyikan_lalu_menayangkan(): void
+    {
+        $ids = Product::where('aktif', true)->limit(2)->pluck('id')->all();
+
+        $this->actingAs($this->owner())
+            ->post(route('panel.produk.massal'), ['produk' => $ids, 'aksi' => 'sembunyikan'])
+            ->assertSessionHas('sukses');
+
+        $this->assertSame(0, Product::whereIn('id', $ids)->where('aktif', true)->count());
+
+        $this->actingAs($this->owner())
+            ->post(route('panel.produk.massal'), ['produk' => $ids, 'aksi' => 'tayangkan'])
+            ->assertSessionHas('sukses');
+
+        $this->assertSame(2, Product::whereIn('id', $ids)->where('aktif', true)->count());
+    }
+
+    public function test_aksi_massal_memindahkan_kategori(): void
+    {
+        $tujuan = Category::create(['nama' => 'Promo', 'slug' => 'promo', 'urutan' => 99]);
+        $ids = Product::limit(2)->pluck('id')->all();
+
+        $this->actingAs($this->owner())
+            ->post(route('panel.produk.massal'), ['produk' => $ids, 'aksi' => 'kategori', 'category_id' => $tujuan->id])
+            ->assertSessionHas('sukses');
+
+        $this->assertSame(2, Product::whereIn('id', $ids)->where('category_id', $tujuan->id)->count());
+    }
+
+    public function test_aksi_massal_menolak_pilihan_kosong_atau_tidak_dikenal(): void
+    {
+        $this->actingAs($this->owner())
+            ->post(route('panel.produk.massal'), ['aksi' => 'sembunyikan'])
+            ->assertSessionHasErrors('produk');
+
+        $this->actingAs($this->owner())
+            ->post(route('panel.produk.massal'), ['produk' => [999_999], 'aksi' => 'sembunyikan'])
+            ->assertSessionHasErrors('produk.0');
+
+        $this->actingAs($this->owner())
+            ->post(route('panel.produk.massal'), ['produk' => Product::limit(1)->pluck('id')->all(), 'aksi' => 'kategori'])
+            ->assertSessionHasErrors('category_id');
+    }
+
+    public function test_alih_tayang_dari_menu_aksi(): void
+    {
+        $produk = Product::where('aktif', true)->firstOrFail();
+
+        $this->actingAs($this->owner())
+            ->post(route('panel.produk.tayang', $produk))
+            ->assertSessionHas('sukses');
+
+        $this->assertFalse($produk->fresh()->aktif);
+    }
+
+    public function test_menu_aksi_menautkan_halaman_produk_di_toko(): void
+    {
+        $produk = Product::where('aktif', true)->orderBy('nama')->firstOrFail();
+
+        $this->actingAs($this->owner())
+            ->get(route('panel.produk.index'))
+            ->assertOk()
+            ->assertSee(route('produk', $produk))
+            ->assertSee(route('panel.produk.tayang', $produk));
     }
 }

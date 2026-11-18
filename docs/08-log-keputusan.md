@@ -4234,6 +4234,32 @@ pesanan untuk tahu siapa pelanggannya, apa isinya, dan berapa sisanya.
 
 ---
 
+## KEP-116 — Daftar produk mengikuti contoh klien: penyaring, aksi massal, menu aksi
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien: daftar produk mengikuti gambar contoh "menu produk", dan semua elemennya
+berfungsi.
+
+- Tab berbentuk pil dengan jumlahnya: Semua, Tayang, Disembunyikan, Belum lengkap.
+- Penyaring: kotak cari (nama atau SKU, lewat `Product::cari`), **kategori**, dan
+  **status stok** (Ready Stock, PreOrder / Kustom, keduanya, atau stok habis), dengan
+  tombol Reset. Jumlah di tab mengikuti penyaring yang sedang dipakai.
+- Tabel: kotak centang, gambar kecil, nama, SKU, dan peringatan "Belum ada gambar/harga";
+  kategori sebagai chip yang warnanya tetap per nama kategori; status tayang; **stok**
+  berupa jalur jualnya plus sisa stok tersedia untuk barang ready stock; harga; dan aksi
+  (ubah, lalu menu titik tiga berisi lihat di toko, tayangkan atau sembunyikan, dan hapus).
+- **Aksi massal**: begitu ada yang dicentang, muncul bilah untuk menayangkan,
+  menyembunyikan, atau memindahkan kategori produk terpilih (`POST
+  /panel/produk/massal`, paling banyak 100 sekaligus, tercatat di log aktivitas).
+  Hapus massal sengaja tidak dibuat: produk yang pernah dipesan memang tidak boleh
+  dihapus, dan menghapus puluhan produk dengan satu klik terlalu mudah terjadi tanpa
+  sengaja.
+- Hapus dari menu titik tiga tetap lewat aturan lama: meminta konfirmasi, dan produk
+  yang pernah dipesan ditolak dengan saran menyembunyikannya.
+- Penomoran halaman sama dengan daftar pesanan (KEP-113).
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4354,3 +4380,4 @@ pesanan untuk tahu siapa pelanggannya, apa isinya, dan berapa sisanya.
 | KEP-113 | Daftar pesanan: kartu status, rentang tanggal, menu aksi | TERKUNCI |
 | KEP-114 | Daftar pekerjaan di antrian, urut target selesai | TERKUNCI |
 | KEP-115 | Serah terima: detail lengkap, pengerja, ringkasan bayar | TERKUNCI |
+| KEP-116 | Daftar produk: penyaring kategori dan stok, aksi massal | TERKUNCI |

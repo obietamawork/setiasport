@@ -209,6 +209,10 @@ Route::prefix('panel')->name('panel.')->group(function () {
                 ->except('show')
                 ->parameters(['bahan' => 'bahan']);
 
+            // Aksi massal dan alih tayang dari daftar produk (KEP-116).
+            Route::post('produk/massal', [ProdukController::class, 'massal'])->name('produk.massal');
+            Route::post('produk/{produk}/tayang', [ProdukController::class, 'alihTayang'])->name('produk.tayang');
+
             Route::resource('produk', ProdukController::class)
                 ->except('show')
                 ->parameters(['produk' => 'produk']);

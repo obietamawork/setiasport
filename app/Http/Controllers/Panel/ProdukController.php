@@ -20,12 +20,22 @@ class ProdukController extends Controller
     {
         $saring = $request->string('saring')->toString();
 
+        /*
+         * Penyaring kategori dan status stok dari gambar contoh klien
+         * (KEP-116). "Habis" berarti barang ready stock yang tidak punya satu
+         * varian pun dengan stok tersedia.
+         */
+        $kategori = $request->integer('kategori') ?: null;
+        $stok = $request->string('stok')->toString();
+        $stok = in_array($stok, ['habis', ...array_column(FulfillmentType::cases(), 'value')], true) ? $stok : '';
+
         $dasar = fn () => Product::query()
-            ->when($request->filled('q'), function ($q) use ($request) {
-                // % dan _ dibaca sebagai huruf biasa, bukan pola (KEP-105, seperti pesanan di KEP-099).
-                $cari = '%'.addcslashes($request->string('q')->toString(), '%_\\').'%';
-                $q->where(fn ($w) => $w->where('nama', 'like', $cari)->orWhere('sku', 'like', $cari));
-            });
+            ->when($request->filled('q'), fn ($q) => $q->cari($request->string('q')->toString()))
+            ->when($kategori, fn ($q) => $q->where('category_id', $kategori))
+            ->when($stok === 'habis', fn ($q) => $q
+                ->whereIn('fulfillment_type', [FulfillmentType::READY_STOCK->value, FulfillmentType::BOTH->value])
+                ->whereDoesntHave('variants', fn ($v) => $v->whereColumn('stok', '>', 'stok_dipesan')))
+            ->when($stok !== '' && $stok !== 'habis', fn ($q) => $q->where('fulfillment_type', $stok));
 
         /*
          * Penyaring "belum lengkap" menggabungkan dua hal yang sama-sama membuat
@@ -42,6 +52,9 @@ class ProdukController extends Controller
 
         return view('panel.produk.index', [
             'saring' => $saring,
+            'kategori' => $kategori,
+            'stok' => $stok,
+            'pilihanKategori' => $this->pilihanKategori(),
             'jumlah' => [
                 '' => $dasar()->count(),
                 'tayang' => $dasar()->where('aktif', true)->count(),
@@ -51,6 +64,8 @@ class ProdukController extends Controller
             'produk' => $dasar()
                 ->with(['category', 'images', 'priceTiers', 'prices'])
                 ->withCount('variants')
+                ->withSum('variants', 'stok')
+                ->withSum('variants', 'stok_dipesan')
                 ->when($saring === 'tayang', fn ($q) => $q->where('aktif', true))
                 ->when($saring === 'sembunyi', fn ($q) => $q->where('aktif', false))
                 ->when($saring === 'belum-lengkap',
@@ -104,6 +119,58 @@ class ProdukController extends Controller
         ActivityLog::catat('produk.diubah', $produk, ['sku' => $produk->sku]);
 
         return back()->with('sukses', 'Perubahan produk disimpan.');
+    }
+
+    /**
+     * Aksi massal dari kotak centang daftar produk (KEP-116): tayangkan,
+     * sembunyikan, atau pindahkan kategori. Hapus massal sengaja tidak ada:
+     * produk yang pernah dipesan memang tidak boleh dihapus, dan menghapus
+     * puluhan produk dengan satu klik terlalu mudah terjadi tanpa sengaja.
+     */
+    public function massal(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'produk' => ['required', 'array', 'max:100'],
+            'produk.*' => ['integer', 'distinct', Rule::exists('products', 'id')],
+            'aksi' => ['required', Rule::in(['tayangkan', 'sembunyikan', 'kategori'])],
+            'category_id' => [
+                Rule::requiredIf($request->input('aksi') === 'kategori'),
+                'nullable', 'integer', Rule::exists('categories', 'id'),
+            ],
+        ], [
+            'produk.required' => 'Centang dulu produk yang mau diubah.',
+            'produk.*.exists' => 'Salah satu produk yang dicentang sudah tidak ada. Muat ulang halamannya.',
+            'category_id.required' => 'Pilih kategori tujuannya.',
+        ], ['produk' => 'produk', 'aksi' => 'aksi', 'category_id' => 'kategori']);
+
+        $ubah = match ($data['aksi']) {
+            'tayangkan' => ['aktif' => true],
+            'sembunyikan' => ['aktif' => false],
+            'kategori' => ['category_id' => (int) $data['category_id']],
+        };
+
+        $produk = Product::whereIn('id', $data['produk'])->get();
+        $produk->each(fn (Product $p) => $p->update($ubah));
+
+        ActivityLog::catat('produk.massal', null, [
+            'aksi' => $data['aksi'],
+            'sku' => $produk->pluck('sku')->all(),
+            ...($data['aksi'] === 'kategori' ? ['category_id' => (int) $data['category_id']] : []),
+        ]);
+
+        $kata = ['tayangkan' => 'ditayangkan', 'sembunyikan' => 'disembunyikan', 'kategori' => 'dipindahkan kategorinya'];
+
+        return back()->with('sukses', $produk->count().' produk '.$kata[$data['aksi']].'.');
+    }
+
+    /** Tayangkan atau sembunyikan satu produk dari menu aksi daftar (KEP-116). */
+    public function alihTayang(Product $produk): RedirectResponse
+    {
+        $produk->update(['aktif' => ! $produk->aktif]);
+
+        ActivityLog::catat($produk->aktif ? 'produk.ditayangkan' : 'produk.disembunyikan', $produk, ['sku' => $produk->sku]);
+
+        return back()->with('sukses', "\"{$produk->nama}\" ".($produk->aktif ? 'ditayangkan.' : 'disembunyikan dari katalog.'));
     }
 
     public function destroy(Product $produk): RedirectResponse
