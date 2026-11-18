@@ -13,6 +13,8 @@ use App\Services\AlurPesanan;
 use App\Services\KebijakanPembatalan;
 use App\Services\LangkahBerikut;
 use App\Services\PengirimEmail;
+use Carbon\CarbonImmutable;
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -40,9 +42,23 @@ class PesananController extends Controller
          */
         $jalur = $request->string('jalur')->toString();
 
+        /*
+         * Rentang tanggal (KEP-113). Tanggal yang terbalik dibaca sebagai
+         * rentang yang sama, bukan daftar kosong yang membuat orang mengira
+         * tidak ada pesanan; tanggal yang bukan tanggal diabaikan.
+         */
+        $dari = $this->tanggal($request->string('dari')->toString());
+        $sampai = $this->tanggal($request->string('sampai')->toString());
+
+        if ($dari && $sampai && $dari->gt($sampai)) {
+            [$dari, $sampai] = [$sampai, $dari];
+        }
+
         $saring = fn ($q) => $q
             ->when($jalur === 'kustom', fn ($w) => $w->adaKustom())
-            ->when($jalur === 'stok', fn ($w) => $w->hanyaStok());
+            ->when($jalur === 'stok', fn ($w) => $w->hanyaStok())
+            ->when($dari, fn ($w) => $w->where('created_at', '>=', $dari->startOfDay()))
+            ->when($sampai, fn ($w) => $w->where('created_at', '<=', $sampai->endOfDay()));
 
         return view('panel.pesanan.index', [
             'pesanan' => Order::query()
@@ -58,6 +74,16 @@ class PesananController extends Controller
                 ->withQueryString(),
             'status' => $status,
             'jalur' => $jalur,
+            'dari' => $dari,
+            'sampai' => $sampai,
+            // Kartu ringkasan di atas daftar (KEP-113), mengikuti tab jalur dan
+            // rentang tanggal seperti hitungan penyaring di bawah.
+            'ringkasan' => [
+                'semua' => Order::query()->tap($saring)->count(),
+                ...collect([OrderStatus::MENUNGGU_PEMBAYARAN, OrderStatus::DIPROSES, OrderStatus::SELESAI, OrderStatus::KADALUARSA])
+                    ->mapWithKeys(fn (OrderStatus $st) => [$st->value => Order::query()->tap($saring)->where('status', $st)->count()])
+                    ->all(),
+            ],
             // Hitungan status mengikuti tab yang sedang dibuka; kalau tidak,
             // angkanya menjanjikan hasil yang tidak akan muncul saat diklik.
             'jumlahStatus' => [
@@ -70,6 +96,9 @@ class PesananController extends Controller
                 OrderStatus::MENUNGGU_PELUNASAN->value => Order::query()->tap($saring)->where('status', OrderStatus::MENUNGGU_PELUNASAN)->count(),
                 OrderStatus::SIAP_DIAMBIL->value => Order::query()->tap($saring)->where('status', OrderStatus::SIAP_DIAMBIL)->count(),
                 OrderStatus::DIKIRIM->value => Order::query()->tap($saring)->where('status', OrderStatus::DIKIRIM)->count(),
+                OrderStatus::SELESAI->value => Order::query()->tap($saring)->where('status', OrderStatus::SELESAI)->count(),
+                OrderStatus::DIBATALKAN->value => Order::query()->tap($saring)->where('status', OrderStatus::DIBATALKAN)->count(),
+                OrderStatus::KADALUARSA->value => Order::query()->tap($saring)->where('status', OrderStatus::KADALUARSA)->count(),
             ],
             'jumlahJalur' => [
                 '' => Order::count(),
@@ -77,6 +106,18 @@ class PesananController extends Controller
                 'stok' => Order::hanyaStok()->count(),
             ],
         ]);
+    }
+
+    /** Tanggal Y-m-d yang sah, atau null. "2026-13-45" tidak diam-diam jadi Februari. */
+    private function tanggal(string $isi): ?CarbonImmutable
+    {
+        try {
+            $hasil = CarbonImmutable::createFromFormat('!Y-m-d', $isi);
+        } catch (InvalidFormatException) {
+            return null;
+        }
+
+        return $hasil && $hasil->format('Y-m-d') === $isi ? $hasil : null;
     }
 
     public function show(Order $pesanan)

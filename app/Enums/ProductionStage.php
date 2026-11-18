@@ -57,6 +57,34 @@ enum ProductionStage: string
     }
 
     /**
+     * Warna chip tahap di daftar pekerjaan (KEP-114). Tiap meja satu warna,
+     * supaya deretan "Jahit, Printing, Desain" bisa dibaca sekilas.
+     */
+    public function warna(): string
+    {
+        return match ($this) {
+            self::DESAIN => 'chip-ungu',
+            self::PRINT => 'chip-biru',
+            self::PRESS => 'chip-pink',
+            self::POTONG => 'chip-kuning',
+            self::JAHIT => 'chip-jingga',
+            self::QC, self::PACKING => 'chip-ok',
+        };
+    }
+
+    /** Divisi yang sedang memegang barang berstatus ini, kalau ada. */
+    public static function dariStatus(OrderItemStatus $status): ?self
+    {
+        foreach (self::cases() as $tahap) {
+            if (in_array($status, $tahap->statusDipegang(), true)) {
+                return $tahap;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Status item yang sedang dipegang divisi ini (KEP-014). Satu-satunya
      * sumber: layar antrian dan badge menu dulu menyimpan salinannya sendiri,
      * dan salinan di menu tertinggal saat potong dan press ditambahkan

@@ -46,17 +46,20 @@ enum OrderStatus: string
      * tampilan: warna status yang berbeda-beda antar halaman membuat staf
      * berhenti mempercayai warnanya dan kembali membaca teksnya satu per satu.
      *
-     * Artinya seragam: merah menuntut tindakan hari ini, kuning menunggu orang
-     * lain, navy sedang berjalan, hijau selesai, abu-abu sudah tidak hidup.
+     * Sejak revisi klien (KEP-113) warnanya sama dengan kartu tahap yang sama
+     * di dashboard dan daftar pesanan (KEP-111): kuning menunggu pembayaran,
+     * jingga sedang dikerjakan, ungu menunggu pelunasan, pink siap diambil
+     * atau dikirim, hijau selesai, merah yang sudah tidak hidup.
      */
     public function warna(): string
     {
         return match ($this) {
-            self::SIAP_DIAMBIL => 'chip-merah',
-            self::MENUNGGU_PEMBAYARAN, self::MENUNGGU_PELUNASAN => 'chip-kuning',
-            self::DIPROSES, self::DIKIRIM => 'chip-navy',
+            self::MENUNGGU_PEMBAYARAN => 'chip-kuning',
+            self::DIPROSES => 'chip-jingga',
+            self::MENUNGGU_PELUNASAN => 'chip-ungu',
+            self::SIAP_DIAMBIL, self::DIKIRIM => 'chip-pink',
             self::SELESAI => 'chip-ok',
-            self::DIBATALKAN, self::KADALUARSA => 'chip-netral',
+            self::DIBATALKAN, self::KADALUARSA => 'chip-merah',
         };
     }
 
@@ -64,8 +67,9 @@ enum OrderStatus: string
     public function ikon(): string
     {
         return match ($this) {
-            self::MENUNGGU_PEMBAYARAN, self::MENUNGGU_PELUNASAN => 'uang',
-            self::DIPROSES => 'antrian',
+            self::MENUNGGU_PEMBAYARAN => 'jam-pasir',
+            self::MENUNGGU_PELUNASAN => 'uang',
+            self::DIPROSES => 'pengaturan',
             self::SIAP_DIAMBIL => 'toko',
             self::DIKIRIM => 'kirim',
             self::SELESAI => 'centang',

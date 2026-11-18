@@ -4158,6 +4158,38 @@ referensi ini?" Susunannya kini mengikuti gambar contoh.
 
 ---
 
+## KEP-113 — Daftar pesanan mengikuti contoh klien: kartu status, rentang tanggal, menu aksi
+**Status:** TERKUNCI · 2026-11-18
+
+Revisi klien: daftar pesanan mengikuti gambar contoh "Pesanan".
+
+- Ikon bagian di samping judul dan tombol **Pesanan baru** yang tetap terlihat.
+- Lima **kartu ringkasan**: semua pesanan, menunggu pembayaran, diproses, selesai,
+  kedaluwarsa. Mengekliknya sama dengan memilih status itu; angkanya mengikuti tab
+  jalur dan rentang tanggal yang sedang dipakai.
+- Tab jalur (KEP-027) berbentuk pil dengan jumlahnya: Semua, Kustom / konveksi,
+  Stok toko.
+- Penyaring dalam satu baris: **status** (dropdown; "Perlu tindakan" dan "Masih
+  berjalan" tetap ada, kini ditambah Selesai, Dibatalkan, dan Kedaluwarsa), **rentang
+  tanggal**, kotak cari, dan **Reset**. Status dan tanggal langsung menyaring; kotak
+  cari menunggu Enter. Tanggal terbalik ditukar, dan yang bukan tanggal sah diabaikan
+  (bukan diam-diam digulirkan ke bulan berikutnya).
+- Tabel: kode beserta penanda jalur, pelanggan dengan nomor HP yang langsung membuka
+  WhatsApp, **jenis** (barang kustom pertama dan jumlah potongnya, atau "Produk toko"
+  dan jumlah barangnya), status, total, sisa pembayaran (merah bila masih ada, hijau
+  bila Rp 0), tanggal dan jam, lalu **aksi**: lihat, dan menu titik tiga berisi lihat
+  detail, cetak invoice, kirim WhatsApp, lembar kerja (pesanan kustom), dan serah
+  terima (siap diambil, bagi yang berizin). Pembatalan tetap di halaman detail karena
+  alasannya wajib ditulis.
+- Penomoran halaman menyebut "Menampilkan 1 sampai 20 dari N pesanan" dengan tombol
+  Sebelumnya dan Selanjutnya. Di bawah 64rem tabel tetap berganti jadi kartu.
+- Warna chip status diselaraskan dengan kartu tahapnya (KEP-111): kuning menunggu
+  pembayaran, jingga diproses, ungu menunggu pelunasan, pink siap diambil dan dikirim,
+  hijau selesai, merah dibatalkan dan kedaluwarsa. Dulu dibatalkan dan kedaluwarsa abu-abu;
+  gambar contoh klien memerahkannya.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4275,3 +4307,4 @@ referensi ini?" Susunannya kini mengikuti gambar contoh.
 | KEP-117 | Laporan tiga halaman: penjualan, stok barang, produk terlaris | TERKUNCI |
 | KEP-111 | Kerangka panel baru: sidebar gelap, warna bagian, cari, lonceng | TERKUNCI |
 | KEP-112 | Dashboard berwarna: pesanan terbaru, antrean jersey, jalan pintas | TERKUNCI |
+| KEP-113 | Daftar pesanan: kartu status, rentang tanggal, menu aksi | TERKUNCI |

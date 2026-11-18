@@ -165,4 +165,80 @@ class HalamanPesananPanelTest extends TestCase
 
         $this->assertSame(12_500, $order->fresh()->ongkir);
     }
+
+    // ------------------------------------------ daftar revisi klien (KEP-113)
+
+    /** @return list<string> */
+    private function kodeDaftar(array $saring): array
+    {
+        return $this->actingAs($this->owner())
+            ->get(route('panel.pesanan.index', $saring))
+            ->assertOk()
+            ->viewData('pesanan')
+            ->pluck('kode')
+            ->all();
+    }
+
+    public function test_daftar_bisa_disaring_rentang_tanggal(): void
+    {
+        $lama = $this->pesanan('Pak Andi', '081234567890');
+        $lama->forceFill(['created_at' => '2026-11-02 10:00:00'])->save();
+        $baru = $this->pesanan('Bu Rina', '081311112222');
+        $baru->forceFill(['created_at' => '2026-11-10 23:30:00'])->save();
+
+        $this->assertSame([$baru->kode], $this->kodeDaftar(['dari' => '2026-11-05', 'sampai' => '2026-11-10']));
+        $this->assertSame([$lama->kode], $this->kodeDaftar(['sampai' => '2026-11-04']));
+    }
+
+    /** Tanggal yang terbalik dibaca sebagai rentang yang sama, bukan daftar kosong. */
+    public function test_rentang_tanggal_terbalik_ditukar(): void
+    {
+        $a = $this->pesanan('Pak Andi', '081234567890');
+        $a->forceFill(['created_at' => '2026-11-07 09:00:00'])->save();
+
+        $this->assertSame([$a->kode], $this->kodeDaftar(['dari' => '2026-11-10', 'sampai' => '2026-11-05']));
+    }
+
+    public function test_tanggal_yang_bukan_tanggal_diabaikan(): void
+    {
+        $a = $this->pesanan('Pak Andi', '081234567890');
+
+        $this->assertSame([$a->kode], $this->kodeDaftar(['dari' => 'kemarin', 'sampai' => '2026-13-45']));
+    }
+
+    public function test_kartu_ringkasan_menghitung_per_status(): void
+    {
+        $this->pesanan('Pak Andi', '081234567890');
+        $b = $this->pesanan('Bu Rina', '081311112222');
+        $b->forceFill(['status' => 'KADALUARSA'])->save();
+
+        $this->actingAs($this->owner())
+            ->get(route('panel.pesanan.index'))
+            ->assertOk()
+            ->assertViewHas('ringkasan', fn (array $r) => $r['semua'] === 2
+                && $r['KADALUARSA'] === 1
+                && $r['MENUNGGU_PEMBAYARAN'] + $r['DIPROSES'] + $r['SELESAI'] === 1);
+    }
+
+    public function test_kolom_jenis_menyebut_barang_dan_jumlahnya(): void
+    {
+        $this->pesanan('Pak Andi', '081234567890');
+
+        $this->actingAs($this->owner())
+            ->get(route('panel.pesanan.index'))
+            ->assertOk()
+            ->assertSee('Produk toko')
+            ->assertSee('(1 item)');
+    }
+
+    public function test_menu_aksi_berisi_invoice_dan_whatsapp(): void
+    {
+        $a = $this->pesanan('Pak Andi', '081234567890');
+
+        $this->actingAs($this->owner())
+            ->get(route('panel.pesanan.index'))
+            ->assertOk()
+            ->assertSee(route('panel.pesanan.invoice', $a))
+            ->assertSee('https://wa.me/6281234567890', false);
+    }
 }
