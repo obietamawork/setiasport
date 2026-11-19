@@ -13,6 +13,15 @@ use Illuminate\Support\Str;
 /**
  * Satu percakapan CS (KEP-030). Log-nya adalah catatan resmi toko: klien
  * hanya melayani komplain lewat chat ini.
+ *
+ * @property TopikCs $topik
+ * @property string $ditangani BOT selama asisten otomatis menjawab (KEP-151)
+ * @property ?string $alasan_serah
+ * @property int $gagal_bot
+ * @property ?string $catatan_internal
+ * @property bool $order_terverifikasi
+ * @property-read ?Order $order
+ * @property-read ?Customer $customer
  */
 class PercakapanCs extends Model
 {
@@ -44,22 +53,29 @@ class PercakapanCs extends Model
      * diabaikan diam-diam (ORDER BY kedua kalah dari yang pertama), dan bug itu
      * sempat membalik urutan chat di layar. Setiap kueri menyatakan urutannya.
      */
+    /** @return HasMany<PesanCs, $this> */
     public function pesan(): HasMany
     {
         return $this->hasMany(PesanCs::class, 'percakapan_id');
     }
 
-    /** Untuk cuplikan di daftar percakapan. */
+    /**
+     * Untuk cuplikan di daftar percakapan.
+     *
+     * @return HasOne<PesanCs, $this>
+     */
     public function pesanTerakhir(): HasOne
     {
         return $this->hasOne(PesanCs::class, 'percakapan_id')->latestOfMany('id');
     }
 
+    /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /** @return BelongsTo<Order, $this> */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
@@ -180,11 +196,11 @@ class PercakapanCs extends Model
         $pelanggan = $this->customer ?? ($this->order_terverifikasi ? $this->order?->customer : null);
         $kontak = (string) $this->kontak;
 
-        $noHp = $pelanggan?->no_hp ?? (preg_match('/^\+?[\d\s-]{8,}$/', $kontak) ? $kontak : null);
-        $email = $pelanggan?->email ?? (filter_var($kontak, FILTER_VALIDATE_EMAIL) ? $kontak : null);
+        $noHp = $pelanggan ? $pelanggan->no_hp : (preg_match('/^\+?[\d\s-]{8,}$/', $kontak) ? $kontak : null);
+        $email = $pelanggan ? $pelanggan->email : (filter_var($kontak, FILTER_VALIDATE_EMAIL) ? $kontak : null);
 
         return [
-            'nama' => $pelanggan?->nama ?? $this->nama,
+            'nama' => $pelanggan ? $pelanggan->nama : $this->nama,
             'no_hp' => $noHp,
             'email' => $email,
             'sejak' => $pelanggan?->created_at?->translatedFormat('j M Y'),

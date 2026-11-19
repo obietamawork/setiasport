@@ -150,6 +150,23 @@ class AsistenAiTest extends TestCase
         $this->assertFalse(AsistenAi::mencurigakan('Buka pukul 08:00 - 16:00, selesai 25 November 2026.'));
     }
 
+    /**
+     * Temuan tinjauan keamanan (KEP-152): panggilan yang gagal atau tidak bisa
+     * dibaca tetap bisa ditagih penyedia, jadi tetap dihitung ke batas bulanan.
+     * Tanpa ini, pertanyaan yang sengaja menggagalkan jawaban melewati batas.
+     */
+    public function test_panggilan_gagal_tetap_dihitung_ke_batas_bulanan(): void
+    {
+        Setting::simpan('ai_batas_bulanan', '1');
+        Http::fake([self::URL => Http::response(['choices' => [['message' => ['content' => 'bukan json']]]], 200)]);
+
+        $this->mulai('Apakah bisa bordir topi untuk komunitas motor?');
+        $this->assertNotNull(LogBot::latest('id')->value('model'));
+
+        $this->mulai('Apakah bisa bordir tas untuk komunitas motor?');
+        Http::assertSentCount(1);
+    }
+
     public function test_batas_bulanan_habis_tidak_memanggil_ai(): void
     {
         Http::fake();

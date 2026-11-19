@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -16,6 +17,15 @@ use Illuminate\Support\Str;
  *
  * Semuanya dihitung ulang dari items + adjustments + payments (KEP-003, KEP-007).
  * Menyimpannya sebagai kolom berarti mengundang angka basi di layar kasir, * persis masalah yang ingin dihindari seluruh rancangan pembayaran ini.
+ *
+ * Cast enum dan tanggal tidak terbaca Larastan dari casts(); anotasinya ditulis
+ * di sini supaya kode yang memakai $order->status tidak perlu masuk baseline.
+ *
+ * @property OrderStatus $status
+ * @property ?Carbon $target_siap_pada
+ * @property ?Carbon $kadaluarsa_pada
+ * @property ?Carbon $siap_pada
+ * @property ?Carbon $diambil_pada
  */
 class Order extends Model
 {
@@ -54,6 +64,7 @@ class Order extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    /** @return HasMany<OrderItem, $this> */
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);

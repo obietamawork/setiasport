@@ -5275,8 +5275,11 @@ yang cocok, salam, status pesanan, dan semua jalur serah ke admin tidak pernah m
   dibaca ("AI tidak tersedia"), dan bila jawabannya memuat deret 8 angka atau lebih ("Jawaban
   AI ditahan": nomor rekening atau HP). Nominal rupiah dan jam (08.00-16.00) tidak dihitung;
   jam sempat tertahan saat uji banding.
-- Batas jawaban AI per bulan (bawaan 2.000); setelahnya pertanyaan di luar FAQ langsung ke
-  admin sampai bulan berganti.
+- Batas panggilan AI per bulan (bawaan 2.000); setelahnya pertanyaan di luar FAQ langsung ke
+  admin sampai bulan berganti. Yang dihitung adalah setiap panggilan, termasuk yang gagal atau
+  jawabannya tidak bisa dibaca, karena penyedia tetap bisa menagihnya. Temuan tinjauan keamanan:
+  sebelumnya hanya jawaban yang berhasil dihitung, sehingga pertanyaan yang sengaja membuat
+  jawaban rusak bisa terus memakai kredit tanpa tertahan batas.
 - Setiap panggilan tercatat di `log_bot`: model yang benar-benar menjawab, token, biaya
   (`usage.cost` dari OpenRouter), dan lama. Jawaban AI dan serah karena AI ragu masuk daftar
   "Belum terjawab" untuk dijadikan FAQ.

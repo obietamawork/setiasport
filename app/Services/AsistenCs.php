@@ -144,11 +144,13 @@ class AsistenCs
     {
         $hasil = $this->ai->jawab($percakapan, $teks);
 
-        if ($hasil === null) {
-            return $this->serahkan($percakapan, $pesan, 'AI tidak tersedia', $teks);
-        }
-
+        // Model dan biaya selalu tercatat, juga saat gagal, supaya setiap
+        // panggilan dihitung ke batas bulanan (KEP-152).
         $catatan = array_intersect_key($hasil, array_flip(['model', 'token_masuk', 'token_keluar', 'biaya', 'durasi_ms']));
+
+        if ($hasil['gagal']) {
+            return $this->serahkan($percakapan, $pesan, 'AI tidak tersedia', $teks, $catatan);
+        }
 
         if ($hasil['serahkan']) {
             return $this->serahkan($percakapan, $pesan, 'AI ragu', $teks, [...$catatan, 'jawaban' => $hasil['alasan'] ?: null]);

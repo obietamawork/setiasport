@@ -40,6 +40,7 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    /** @return HasMany<ProductVariant, $this> */
     public function variants(): HasMany
     {
         // chaperone(): varian yang dimuat lewat produknya langsung tahu

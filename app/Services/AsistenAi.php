@@ -6,6 +6,8 @@ use App\Models\FaqBot;
 use App\Models\LogBot;
 use App\Models\PercakapanCs;
 use App\Models\Product;
+use App\Models\ProductVariant;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
@@ -49,16 +51,20 @@ class AsistenAi
     }
 
     /**
-     * @return array{jawaban: string, serahkan: bool, alasan: string, model: ?string, token_masuk: ?int, token_keluar: ?int, biaya: ?float, durasi_ms: int}|null
-     *                                                                                                                                                           null bila panggilan gagal atau jawabannya tidak bisa dibaca
+     * Selalu mengembalikan hasil, juga saat gagal: panggilan yang sudah
+     * dilakukan bisa ditagih penyedia, jadi model dan biayanya harus tercatat
+     * dan dihitung ke batas bulanan (temuan tinjauan keamanan, KEP-152).
+     *
+     * @return array{gagal: bool, jawaban: string, serahkan: bool, alasan: string, model: string, token_masuk: ?int, token_keluar: ?int, biaya: ?float, durasi_ms: int}
      */
-    public function jawab(PercakapanCs $percakapan, string $pertanyaan, ?string $model = null): ?array
+    public function jawab(PercakapanCs $percakapan, string $pertanyaan, ?string $model = null): array
     {
         $utama = $model ?? (string) setting('ai_model', 'openai/gpt-6-luna');
         $cadangan = (string) setting('ai_model_cadangan', '');
         $mulai = hrtime(true);
 
         try {
+            /** @var Response $res */
             $res = Http::withToken((string) config('services.openrouter.key'))
                 ->acceptJson()
                 ->timeout((int) config('services.openrouter.timeout', 20))
@@ -83,27 +89,39 @@ class AsistenAi
         } catch (Throwable $e) {
             report($e);
 
-            return null;
+            return $this->hasil(null, $utama, $mulai, true);
         }
 
         if (! $res->successful()) {
-            return null;
+            return $this->hasil($res, $utama, $mulai, true);
         }
 
         $isi = json_decode((string) $res->json('choices.0.message.content'), true);
 
         if (! is_array($isi) || ! isset($isi['jawaban'], $isi['serahkan_ke_admin']) || ! is_string($isi['jawaban'])) {
-            return null;
+            return $this->hasil($res, $utama, $mulai, true);
         }
 
+        $jawaban = trim($isi['jawaban']);
+
+        return $this->hasil($res, $utama, $mulai, false, $jawaban,
+            (bool) $isi['serahkan_ke_admin'] || $jawaban === '', (string) ($isi['alasan'] ?? ''));
+    }
+
+    /**
+     * @return array{gagal: bool, jawaban: string, serahkan: bool, alasan: string, model: string, token_masuk: ?int, token_keluar: ?int, biaya: ?float, durasi_ms: int}
+     */
+    private function hasil(?Response $res, string $utama, int $mulai, bool $gagal, string $jawaban = '', bool $serahkan = true, string $alasan = ''): array
+    {
         return [
-            'jawaban' => trim($isi['jawaban']),
-            'serahkan' => (bool) $isi['serahkan_ke_admin'] || trim($isi['jawaban']) === '',
-            'alasan' => (string) ($isi['alasan'] ?? ''),
-            'model' => $res->json('model'),
-            'token_masuk' => $res->json('usage.prompt_tokens'),
-            'token_keluar' => $res->json('usage.completion_tokens'),
-            'biaya' => $res->json('usage.cost'),
+            'gagal' => $gagal,
+            'jawaban' => $jawaban,
+            'serahkan' => $serahkan,
+            'alasan' => $alasan,
+            'model' => (string) ($res?->json('model') ?: $utama),
+            'token_masuk' => $res?->json('usage.prompt_tokens'),
+            'token_keluar' => $res?->json('usage.completion_tokens'),
+            'biaya' => $res?->json('usage.cost'),
             'durasi_ms' => (int) ((hrtime(true) - $mulai) / 1_000_000),
         ];
     }
@@ -195,7 +213,7 @@ class AsistenAi
                 }
 
                 if ($p->punyaJalurReadyStock()) {
-                    $tersedia = $p->variants->where('aktif', true)->sum(fn ($v) => max(0, $v->stok_tersedia));
+                    $tersedia = $p->variants->where('aktif', true)->sum(fn (ProductVariant $v) => max(0, $v->stok_tersedia));
                     $baris .= '; ready stock '.rupiah((int) $p->harga_dasar).', '.($tersedia > 0 ? 'tersedia' : 'stok habis');
                 }
 
