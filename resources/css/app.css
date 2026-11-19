@@ -1982,3 +1982,20 @@
         .riwayat-lacak li > p:last-child { width: 100%; padding-left: 3.5rem; }
     }
 }
+
+/* Tombol keranjang kecil di kartu produk (KEP-132), seperti gambar klien. */
+@layer components {
+    .tombol-keranjang {
+        display: inline-flex;
+        width: 2rem;
+        height: 2rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: var(--color-navy);
+        color: #fff;
+        transition: background-color 130ms;
+    }
+
+    .tombol-keranjang:hover { background: var(--color-navy-800); }
+}

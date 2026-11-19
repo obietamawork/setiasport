@@ -108,7 +108,7 @@ class BerandaController extends Controller
 
         $produk = Product::query()
             ->aktif()
-            ->with(['images', 'priceTiers', 'prices'])
+            ->with(['images', 'priceTiers', 'prices', 'variants'])
             ->when($terlaris->isNotEmpty(), fn ($q) => $q->whereIn('id', $terlaris))
             ->get()
             ->sortBy(fn (Product $p) => $terlaris->search($p->id) === false ? 99 : $terlaris->search($p->id))
@@ -119,7 +119,7 @@ class BerandaController extends Controller
             $produk = $produk->concat(
                 Product::query()
                     ->aktif()
-                    ->with(['images', 'priceTiers', 'prices'])
+                    ->with(['images', 'priceTiers', 'prices', 'variants'])
                     ->whereNotIn('id', $produk->pluck('id'))
                     ->latest('id')
                     ->take(6 - $produk->count())

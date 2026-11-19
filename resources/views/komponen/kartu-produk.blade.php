@@ -26,17 +26,31 @@
         ])->values()
         : null;
 
-    // Satu baris pendek saja. Kartu marketplace selebar 160px tidak punya ruang
-    // untuk kalimat, dan yang dicari pelanggan cuma "kapan bisa saya ambil".
-    // Barang stok dari Pengaturan > Pesanan, kustom dari produknya (KEP-091).
-    $waktu = match (true) {
-        $stok && $kustom => Str::ucfirst(siap_stok()).' / '.$produk->lead_time_hari.' hari',
-        $kustom => $produk->lead_time_hari.' hari kerja',
-        default => 'Siap '.siap_stok(),
+    // Seperti gambar klien (KEP-132): barang stok menyebut ketersediaannya,
+    // barang kustom "±N hari kerja" berikon kalender. Waktu kustom dari
+    // produknya (KEP-091).
+    $varianAktif = $produk->relationLoaded('variants')
+        ? $produk->variants->where('aktif', true)->values()
+        : null;
+    $tersedia = $varianAktif?->sum(fn ($v) => max(0, $v->stok_tersedia));
+    $teksStok = match (true) {
+        $tersedia === null => 'Siap '.siap_stok(),
+        $tersedia > 0 => 'Stok tersedia',
+        default => 'Stok habis',
     };
+    $hariKerja = '±'.$produk->lead_time_hari.' hari kerja';
+
+    // Tombol keranjang: barang stok yang hanya punya satu varian bersisa
+    // langsung masuk keranjang. Yang perlu memilih ukuran atau warna, dan
+    // barang kustom, dibuka halamannya: di sanalah pilihannya.
+    $tambahLangsung = $stok && ! $kustom && $varianAktif?->count() === 1 && $tersedia > 0;
+    $tujuan = $kustom && ! $stok ? route('kustom.buat', $produk) : route('produk', $produk);
 @endphp
 
-<a href="{{ route('produk', $produk) }}" class="kartu kartu-tautan group flex flex-col overflow-hidden">
+{{-- Kartu berupa blok, bukan satu tautan besar: tombol keranjang di dalamnya
+     tidak boleh berada di dalam <a>. Judulnya membawa tautan yang direntangkan
+     menutupi kartu. --}}
+<div class="kartu kartu-tautan group relative flex flex-col overflow-hidden">
 
     {{-- shrink-0 dan grow-0 wajib: sebagai anak flex, kotak berasio ini ikut
          meregang mengisi tinggi baris grid dan rasionya lepas. --}}
@@ -66,14 +80,18 @@
         {{-- Penanda jalur ditempel di gambar, bukan menempati baris teks
              sendiri: di kartu sesempit ini setiap baris berharga. --}}
         <div class="absolute top-2 left-2 flex flex-wrap gap-1">
-            @if ($stok) <span class="chip chip-navy shadow-sm">Ready Stock</span> @endif
-            @if ($kustom) <span class="chip chip-merah shadow-sm">Custom</span> @endif
+            @if ($stok) <span class="chip bg-biru-700 font-bold text-white shadow-sm">Ready Stock</span> @endif
+            @if ($kustom) <span class="chip chip-merah font-bold shadow-sm">Pre Order</span> @endif
         </div>
     </div>
 
     <div class="flex flex-1 flex-col gap-1 p-2.5 sm:p-3">
-        <h3 class="line-clamp-2 text-sm leading-snug font-semibold">{{ $produk->nama }}</h3>
+        <h3 class="line-clamp-2 text-sm leading-snug font-bold">
+            <a href="{{ route('produk', $produk) }}" class="before:absolute before:inset-0 before:content-['']">{{ $produk->nama }}</a>
+        </h3>
 
+        {{-- Harga satu baris penuh; di bawahnya ketersediaan atau hari kerja
+             sejajar dengan tombol keranjang, seperti gambar klien. --}}
         <div class="mt-auto pt-1">
             @if ($modeJumlah && $perUkuran)
                 {{-- Harga matriks tidak berubah menurut jumlah, melainkan menurut
@@ -82,7 +100,7 @@
                      ukuran. --}}
                 <div x-data="{ moq: {{ $produk->moq }}, mulai: {{ (int) $hargaKustom }} }">
                     <p class="tabular text-[15px] font-extrabold">
-                        <span class="text-xs font-medium text-muted">mulai</span>
+                        <span class="text-xs font-medium text-muted">Mulai</span>
                         {{ rupiah($hargaKustom) }}<span class="text-xs font-medium text-muted">/pcs</span>
                     </p>
                     <p class="truncate text-xs" :class="qty < moq ? 'text-merah' : 'text-muted'"
@@ -98,18 +116,47 @@
                 </div>
             @elseif ($stok)
                 <p class="tabular text-[15px] font-extrabold">{{ rupiah($produk->harga_dasar) }}</p>
-                <p class="truncate text-xs text-muted">{{ $waktu }}</p>
             @elseif ($hargaKustom)
                 <p class="tabular text-[15px] font-extrabold">
                     @if ($perUkuran)
-                        <span class="text-xs font-medium text-muted">mulai</span>
+                        <span class="text-xs font-medium text-muted">Mulai</span>
                     @endif
                     {{ rupiah($hargaKustom) }}<span class="text-xs font-medium text-muted">/pcs</span>
                 </p>
-                <p class="truncate text-xs text-muted">{{ $waktu }}</p>
-            @else
-                <p class="truncate text-xs text-muted">{{ $waktu }}</p>
             @endif
+
+        <div class="mt-1 flex items-center justify-between gap-2">
+            <div class="min-w-0">
+                @if ($stok)
+                    <p @class(['truncate text-xs', 'text-muted' => $tersedia !== 0, 'font-semibold text-merah' => $tersedia === 0])>{{ $teksStok }}</p>
+                @endif
+                @if ($kustom)
+                    <p class="flex items-center gap-1 truncate text-xs font-semibold text-ink">
+                        <x-ikon nama="kalender" ukuran="size-3.5" class="shrink-0 text-muted" />
+                        {{ $hariKerja }}
+                    </p>
+                @endif
+            </div>
+
+        {{-- Di atas tautan yang direntangkan (z-10), supaya bisa ditekan sendiri. --}}
+        @if ($tambahLangsung)
+            <form method="POST" action="{{ route('keranjang.tambah') }}" class="relative z-10 shrink-0">
+                @csrf
+                <input type="hidden" name="variant_id" value="{{ $varianAktif->first()->id }}">
+                <input type="hidden" name="qty" value="1">
+                <button type="submit" class="tombol-keranjang" title="Tambah ke keranjang">
+                    <x-ikon nama="keranjang" ukuran="size-4" />
+                    <span class="sr-only">Tambah {{ $produk->nama }} ke keranjang</span>
+                </button>
+            </form>
+        @elseif ($kustom || ($tersedia ?? 1) > 0)
+            <a href="{{ $tujuan }}" class="tombol-keranjang relative z-10 shrink-0"
+               title="{{ $kustom ? 'Pesan' : 'Pilih ukuran' }}">
+                <x-ikon nama="keranjang" ukuran="size-4" />
+                <span class="sr-only">{{ $kustom ? 'Pesan' : 'Pilih ukuran' }} {{ $produk->nama }}</span>
+            </a>
+        @endif
+        </div>
         </div>
     </div>
-</a>
+</div>

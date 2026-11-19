@@ -303,7 +303,7 @@ class CatalogSeeder extends Seeder
             'moq' => 6,
             'diskon_min_qty' => 12,
             'diskon_per_pcs' => 5_000,
-            'lead_time_hari' => 10,
+            'lead_time_hari' => 7,
             'roster_wajib' => false,
             'deskripsi' => 'Jaket full printing dengan desain bebas. Harga mengikuti bahan dan ukuran.',
         ]);
@@ -328,7 +328,7 @@ class CatalogSeeder extends Seeder
             'moq' => 6,
             'diskon_min_qty' => 12,
             'diskon_per_pcs' => 5_000,
-            'lead_time_hari' => 10,
+            'lead_time_hari' => 7,
             'roster_wajib' => false,
             'deskripsi' => 'Celana training panjang, full printing. Harga mengikuti bahan dan ukuran.',
         ]);
@@ -354,7 +354,7 @@ class CatalogSeeder extends Seeder
             'nama' => 'Seragam Olahraga (Kaos + Training)',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'moq' => 24,
-            'lead_time_hari' => 10,
+            'lead_time_hari' => 7,
             'deskripsi' => 'Satu set berisi kaos dan training panjang. Harga mengikuti bahan '
                 .'dan jenjang sekolah. Lengan panjang menambah biaya per set.',
         ]);
@@ -490,7 +490,7 @@ class CatalogSeeder extends Seeder
             'nama' => 'Kaos Olahraga Sekolah (Sablon)',
             'fulfillment_type' => FulfillmentType::PREORDER,
             'moq' => 40,
-            'lead_time_hari' => 10,
+            'lead_time_hari' => 7,
             'roster_wajib' => false,
         ]);
 
@@ -517,7 +517,7 @@ class CatalogSeeder extends Seeder
             'fulfillment_type' => FulfillmentType::BOTH,
             'harga_dasar' => 65_000,
             'moq' => 12,
-            'lead_time_hari' => 10,
+            'lead_time_hari' => 7,
             'roster_wajib' => false,
         ]);
 

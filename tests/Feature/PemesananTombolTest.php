@@ -128,8 +128,10 @@ class PemesananTombolTest extends TestCase
         $this->get(route('produk', 'bola-futsal-mitre-ultimatch'))->assertSee('Siap diambil hari ini pada jam buka.');
         $this->get(route('katalog'))->assertSee('siap hari ini. Diambil di toko atau dikirim.');
 
+        // Kartu katalog menyebut ketersediaan seperti gambar klien (KEP-132);
+        // waktu siapnya tetap di halaman produk dan keterangan katalog.
         Setting::simpan('stok_siap_hari', 3);
-        $this->get(route('katalog', ['jalur' => 'stok']))->assertSee('Siap 3 hari lagi');
+        $this->get(route('katalog', ['jalur' => 'stok']))->assertSee('Stok tersedia');
     }
 
     /** Waktu pengerjaan dari produknya, dan rentang kalau produknya berbeda-beda. */

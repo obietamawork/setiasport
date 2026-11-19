@@ -4653,6 +4653,31 @@ menyerahkan rancangannya. Sebelumnya hanya staf yang bisa menutup pesanan kirim 
 
 ---
 
+## KEP-132 — Kartu produk seperti gambar klien dan waktu pengerjaan 7 hari
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien untuk kartu produk di katalog dan beranda: label "Ready Stock" (biru) dan
+"Pre Order", ikon keranjang, dan "±7 hari kerja"; "tidak ada 10 hari kerja". Pemilik proyek
+memilih semua produk kustom 10 hari menjadi 7.
+
+- **Kartu**: label Ready Stock (biru penuh) dan Pre Order (sebelumnya "Custom"), nama tebal,
+  harga "Mulai Rp.../pcs" satu baris penuh, lalu di bawahnya ketersediaan atau ikon kalender
+  "±N hari kerja" sejajar dengan **tombol keranjang**.
+- **Tombol keranjang**: barang stok yang hanya punya satu varian bersisa langsung masuk
+  keranjang (`keranjang.tambah`, 1 pcs). Barang yang perlu memilih ukuran atau warna membuka
+  halaman produknya; barang kustom membuka halaman pemesanannya. Barang stok yang habis tidak
+  menawarkan tombol.
+- Barang stok menulis "Stok tersedia" atau "Stok habis" seperti gambar, menggantikan "Siap
+  besok". Waktu siap dari pengaturan (KEP-091) tetap di halaman produk dan keterangan katalog.
+- Kartu kini blok dengan tautan nama yang direntangkan menutupi kartu, karena tombol keranjang
+  tidak boleh berada di dalam `<a>`.
+- **Data**: migrasi `waktu_pengerjaan_tujuh_hari` mengubah produk kustom (PREORDER/BOTH) yang
+  masih 10 hari menjadi 7: jaket, celana training, seragam, kaos sekolah, jersey polos. Angka
+  lain dianggap sudah diatur pemilik dan tidak disentuh. Pesanan yang sudah ada tidak berubah.
+  Seeder katalog ikut 7 hari.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4788,3 +4813,4 @@ menyerahkan rancangannya. Sebelumnya hanya staf yang bisa menutup pesanan kirim 
 | KEP-129 | Antrian divisi: tab semua divisi dengan jumlah, cari, foto, ringkasan ukuran | TERKUNCI |
 | KEP-130 | Serah terima: tab Siap/Sudah/Semua, pesanan kirim ikut tampil, serahkan beberapa sekaligus | TERKUNCI |
 | KEP-131 | Tombol Pesanan sudah saya terima di halaman lacak; email dikirim mengarah ke sana | TERKUNCI |
+| KEP-132 | Kartu produk: Ready Stock/Pre Order, ±N hari kerja, tombol keranjang; kustom 10 hari jadi 7 | TERKUNCI |
