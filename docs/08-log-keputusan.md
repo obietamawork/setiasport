@@ -4678,6 +4678,21 @@ memilih semua produk kustom 10 hari menjadi 7.
 
 ---
 
+## KEP-133 — Tabel Detail pesanan di langkah Cek pesanan
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien untuk langkah **Cek pesanan** di halaman pemesanan kustom: daftar ukuran dibuat
+sebagai tabel seperti gambar contoh.
+
+- Tabel **Detail pesanan** berkolom No., Nama / Nomor, Ukuran, Jumlah, dan Harga, dengan baris
+  kepala berlatar, lalu kotak "Pastikan detail pesanan sudah benar sebelum lanjut ke pembayaran."
+- Kolom Harga berisi **harga per pcs** baris itu, seperti gambar (baris 3 pcs tetap menulis
+  harga satuan). Ini juga yang membedakan baris berkerah dan oblong (KEP-123). Total pesanan
+  tetap di Ringkasan pesanan di bawahnya.
+- Pilihan barang (bahan, model, lengan, desain) tetap di atas tabel.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4814,3 +4829,4 @@ memilih semua produk kustom 10 hari menjadi 7.
 | KEP-130 | Serah terima: tab Siap/Sudah/Semua, pesanan kirim ikut tampil, serahkan beberapa sekaligus | TERKUNCI |
 | KEP-131 | Tombol Pesanan sudah saya terima di halaman lacak; email dikirim mengarah ke sana | TERKUNCI |
 | KEP-132 | Kartu produk: Ready Stock/Pre Order, ±N hari kerja, tombol keranjang; kustom 10 hari jadi 7 | TERKUNCI |
+| KEP-133 | Cek pesanan kustom: tabel No/Nama/Ukuran/Jumlah/Harga per pcs dan pengingat | TERKUNCI |

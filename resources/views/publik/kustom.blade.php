@@ -486,23 +486,45 @@
                         </div>
                     </dl>
 
-                    <table class="mt-4 w-full text-sm">
-                        <tbody>
-                            <template x-for="(b, i) in baris" :key="i">
-                                <tr class="border-t border-line">
-                                    <td class="py-1.5">
-                                        <span x-text="b.nama_punggung || 'Tanpa nama'"></span>
-                                        <span class="text-muted" x-show="b.nomor" x-text="' #' + b.nomor"></span>
-                                    </td>
-                                    <td class="py-1.5 text-muted" x-text="labelUkuran(b)"></td>
-                                    <td class="py-1.5 text-right tabular" x-text="b.jumlah + ' pcs'"></td>
-                                    <td class="py-1.5 text-right tabular" x-text="rp(hargaPotong(b) * (b.jumlah || 0))"></td>
+                    {{-- Tabel bernomor seperti gambar klien (KEP-133). Harga yang
+                         ditulis harga per pcs baris itu; totalnya di Ringkasan
+                         pesanan di bawah. --}}
+                    <h3 class="mt-5 flex items-center gap-2 font-bold">
+                        <x-ikon nama="daftar" ukuran="size-5" class="text-navy-400" /> Detail pesanan
+                    </h3>
+                    <div class="mt-3 overflow-x-auto">
+                        <table class="tabel tabel-rapat min-w-[30rem] text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="w-10">No.</th>
+                                    <th>Nama / Nomor</th>
+                                    <th>Ukuran</th>
+                                    <th class="text-right">Jumlah</th>
+                                    <th class="text-right">Harga</th>
                                 </tr>
-                            </template>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                <template x-for="(b, i) in baris" :key="i">
+                                    <tr>
+                                        <td class="tabular text-muted" x-text="i + 1"></td>
+                                        <td class="font-medium">
+                                            <span x-text="b.nama_punggung || 'Tanpa nama'"></span><span class="tabular" x-show="b.nomor" x-text="' #' + b.nomor"></span>
+                                        </td>
+                                        <td x-text="labelUkuran(b)"></td>
+                                        <td class="tabular text-right" x-text="(b.jumlah || 0) + ' pcs'"></td>
+                                        <td class="tabular text-right" x-text="rp(hargaPotong(b))"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
 
-                    <p class="mt-4 text-xs leading-relaxed text-muted">
+                    <p class="mt-3 flex items-start gap-2 rounded-[10px] bg-biru-50 px-3 py-2.5 text-sm">
+                        <x-ikon nama="bantuan" ukuran="size-4" class="mt-0.5 shrink-0 text-biru-700" />
+                        Pastikan detail pesanan sudah benar sebelum lanjut ke pembayaran.
+                    </p>
+
+                    <p class="mt-3 text-xs leading-relaxed text-muted">
                         Setelah pesanan dibuat, Anda mendapat halaman pesanan sendiri berisi tagihan,
                         mockup untuk disetujui, dan progres pengerjaannya.
                     </p>
