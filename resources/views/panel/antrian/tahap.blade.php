@@ -8,37 +8,62 @@
 @endphp
 
 <x-kop :judul="'Antrian '.$stage->label()"
-       :kembali="$tahapLain->isNotEmpty() ? route('panel.antrian.index') : null"
-       kembali-label="Semua divisi">
-    <x-slot:bawahJudul>
-        <p class="text-sm text-muted">
-            {{ $pekerjaan->count() }} pekerjaan menunggu di meja ini.
-        </p>
-    </x-slot:bawahJudul>
-</x-kop>
+       :kembali="$tabDivisi->count() > 1 ? route('panel.antrian.index') : null"
+       kembali-label="Semua divisi"
+       :catatan="'Daftar pesanan pada divisi '.Str::lower($stage->label()).'.'" />
 
-{{-- Pindah divisi tanpa kembali ke daftar: orang yang memegang dua meja
-     bolak-balik di antara keduanya sepanjang hari. --}}
-@if ($tahapLain->isNotEmpty())
-    <div class="segmen -mt-2 mb-4">
-        @foreach ($tahapLain as $t)
-            <a href="{{ route('panel.antrian.tahap', strtolower($t->value)) }}" class="segmen-item">
-                <x-ikon :nama="$t->ikon()" ukuran="size-4" />
-                {{ $t->label() }}
+{{-- Tab semua divisi seperti gambar klien (KEP-129): yang aktif berwarna
+     navy, masing-masing dengan jumlah pekerjaannya. Orang yang memegang dua
+     meja bolak-balik di antara keduanya sepanjang hari. --}}
+@if ($tabDivisi->count() > 1)
+    <nav class="mb-4 flex flex-wrap gap-2" aria-label="Divisi">
+        @foreach ($tabDivisi as $tab)
+            @php $aktif = $tab['tahap'] === $stage; @endphp
+            <a href="{{ route('panel.antrian.tahap', strtolower($tab['tahap']->value)) }}"
+               @class(['tombol tombol-sm', 'tombol-navy' => $aktif, 'tombol-garis' => ! $aktif])
+               @if ($aktif) aria-current="page" @endif>
+                <x-ikon :nama="$tab['tahap']->ikon()" ukuran="size-4" />
+                <span>{{ $tab['tahap']->label() }} ({{ $tab['jumlah'] }})</span>
             </a>
         @endforeach
-    </div>
+    </nav>
 @endif
+
+{{-- Petunjuk dan kotak cari dalam satu bilah, seperti gambar klien. --}}
+<div class="mb-2 flex flex-wrap items-center gap-3 rounded-[12px] border border-biru-100 bg-biru-50 px-4 py-3">
+    <x-ikon nama="bantuan" class="shrink-0 text-biru-700" />
+    <div class="min-w-48 flex-1 text-sm">
+        <p class="font-semibold">Antrian {{ Str::lower($stage->label()) }}</p>
+        <p class="text-muted">
+            {{ $pekerjaan->count() }} pekerjaan{{ $cari !== '' ? ' cocok dengan "'.$cari.'"' : ' menunggu di meja ini' }}.
+            Pilih pesanan di bawah, lalu mulai kerjakan atau tandai selesai.
+        </p>
+    </div>
+    <form method="GET" role="search" class="relative w-full sm:w-72">
+        <label for="cari-antrian" class="sr-only">Cari no. pesanan, nama pelanggan, atau produk</label>
+        <x-ikon nama="cari" ukuran="size-4" class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-navy-400" />
+        <input type="search" id="cari-antrian" name="q" value="{{ $cari }}" maxlength="60"
+               placeholder="Cari no. pesanan / nama..." class="kotak-input bg-field pl-9">
+    </form>
+</div>
 
 <div x-data="{ terpilih: [] }">
 
 @if ($pekerjaan->isEmpty())
     <div class="kartu mt-6 p-8 text-center">
         <x-ikon :nama="$stage->ikon()" ukuran="size-9" class="mx-auto text-navy-300" />
-        <p class="mt-3 text-lg font-bold">Antrian kosong</p>
-        <p class="mt-2 text-sm text-muted">
-            Tidak ada pekerjaan {{ Str::lower($stage->label()) }} yang menunggu. Cek lagi nanti.
-        </p>
+        @if ($cari !== '')
+            <p class="mt-3 text-lg font-bold">Tidak ada yang cocok</p>
+            <p class="mt-2 text-sm text-muted">
+                Tidak ada pekerjaan {{ Str::lower($stage->label()) }} untuk "{{ $cari }}".
+                <a href="{{ route('panel.antrian.tahap', strtolower($stage->value)) }}" class="tautan">Tampilkan semua</a>
+            </p>
+        @else
+            <p class="mt-3 text-lg font-bold">Antrian kosong</p>
+            <p class="mt-2 text-sm text-muted">
+                Tidak ada pekerjaan {{ Str::lower($stage->label()) }} yang menunggu. Cek lagi nanti.
+            </p>
+        @endif
     </div>
 @else
     {{-- Printing berjalan per ROLL kertas, bukan per pesanan (KEP-051): satu
@@ -91,25 +116,39 @@
                         </label>
                     @endif
 
+                    @php
+                        $gambar = $item->approvedDesign?->path
+                            ? asset('storage/'.$item->approvedDesign->path)
+                            : $item->product?->images->first()?->thumb_url;
+                        $rentang = $item->rentangUkuran();
+                    @endphp
+                    @if ($gambar)
+                        <img src="{{ $gambar }}" alt="" width="72" height="72" loading="lazy"
+                             class="size-18 shrink-0 rounded-[10px] border border-line bg-paper object-cover">
+                    @else
+                        <span class="flex size-18 shrink-0 items-center justify-center rounded-[10px] border border-dashed border-line-strong text-navy-300">
+                            <x-ikon nama="kaos" ukuran="size-7" />
+                        </span>
+                    @endif
+
                     <div class="min-w-50 flex-1">
                         <p class="font-bold">{{ $item->nama_produk }}</p>
                         <p class="mt-0.5 text-sm text-muted tabular">
-                            {{ $item->qty }} pcs &middot; {{ $item->order->kode }} &middot;
+                            {{ $item->order->kode }} &middot; {{ $item->qty }} pcs &middot;
                             {{ $item->order->customer->nama }}
                         </p>
+                        @if ($rentang)
+                            <p class="text-sm text-muted" title="{{ $item->ringkasanUkuran() }}">{{ $rentang }}</p>
+                        @endif
 
                         {{-- KEP-095: filenya ada di WhatsApp toko, bukan di sistem. --}}
                         @if ($stage === ProductionStage::DESAIN && $item->desain_sumber === 'sendiri')
                             <p class="mt-1 text-sm font-medium">Desain dari pelanggan, lewat WhatsApp</p>
                         @endif
 
-                        @if ($item->rosters->isNotEmpty())
-                            <p class="mt-1 text-sm tabular">{{ $item->ringkasanUkuran() }}</p>
-                        @endif
-
                         @if ($item->order->target_siap_pada)
-                            <p class="mt-1 text-sm {{ $item->order->target_siap_pada->isPast() ? 'text-merah' : 'text-muted' }}">
-                                Target siap {{ $item->order->target_siap_pada->translatedFormat('j M Y') }}
+                            <p class="text-sm {{ $item->order->target_siap_pada->isPast() ? 'font-semibold text-merah' : 'text-muted' }}">
+                                Target: {{ $item->order->target_siap_pada->translatedFormat('j M Y') }}
                             </p>
                         @endif
 

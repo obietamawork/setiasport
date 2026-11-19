@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\FulfillmentType;
+use App\Enums\KategoriUkuran;
 use App\Enums\OrderItemStatus;
 use App\Enums\PriceBasis;
 use Illuminate\Database\Eloquent\Model;
@@ -164,6 +165,26 @@ class OrderItem extends Model
      * L berbeda 14 cm di lebar dada, dan "L:9" membuat konveksi memotong
      * ukuran dewasa untuk anak.
      */
+    /**
+     * Ringkasan pendek untuk baris antrian (KEP-129), seperti gambar klien:
+     * "SMA / Dewasa M–XL". Rinciannya tetap di lembar kerja.
+     */
+    public function rentangUkuran(): ?string
+    {
+        if ($this->rosters->isEmpty()) {
+            return null;
+        }
+
+        $kategori = $this->rosters
+            ->map(fn (OrderItemRoster $r) => KategoriUkuran::tryFrom((string) $r->getRawOriginal('kategori'))?->label())
+            ->filter()->unique()->implode(', ');
+
+        $ukuran = urutkan_ukuran($this->rosters->pluck('ukuran'));
+        $rentang = count($ukuran) > 1 ? $ukuran[0].'–'.$ukuran[count($ukuran) - 1] : ($ukuran[0] ?? '');
+
+        return trim($kategori.' '.$rentang);
+    }
+
     public function ringkasanUkuran(): string
     {
         return $this->rosters

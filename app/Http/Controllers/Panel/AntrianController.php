@@ -96,7 +96,7 @@ class AntrianController extends Controller
             ->orderBy('order_items.id');
     }
 
-    public function tahap(string $tahap)
+    public function tahap(Request $request, string $tahap)
     {
         $stage = ProductionStage::tryFrom(strtoupper($tahap));
 
@@ -104,12 +104,37 @@ class AntrianController extends Controller
         abort_unless(auth('web')->user()->punyaIzin($stage->permission()), 403,
             'Peran Anda tidak memegang antrian '.$stage->label().'.');
 
+        $cari = $request->string('q')->trim()->limit(60, '')->toString();
+
         return view('panel.antrian.tahap', [
             'stage' => $stage,
-            'pekerjaan' => $this->kueri($stage)->get(),
-            'tahapLain' => collect(auth('web')->user()->tahapProduksi())
-                ->reject(fn (ProductionStage $t) => $t === $stage),
+            'cari' => $cari,
+            'pekerjaan' => $this->kueri($stage)
+                ->with(['product.images', 'approvedDesign'])
+                ->when($cari !== '', fn (Builder $q) => $this->saring($q, $cari))
+                ->get(),
+            // Tab semua divisi milik pengguna, termasuk yang sedang dibuka,
+            // dengan jumlah pekerjaannya (KEP-129).
+            'tabDivisi' => collect(auth('web')->user()->tahapProduksi())
+                ->map(fn (ProductionStage $t) => ['tahap' => $t, 'jumlah' => $this->kueri($t)->count()]),
         ]);
+    }
+
+    /**
+     * Cari kode pesanan, nama pelanggan, atau nama produk (KEP-129).
+     *
+     * @param  Builder<OrderItem>  $kueri
+     * @return Builder<OrderItem>
+     */
+    private function saring(Builder $kueri, string $kata): Builder
+    {
+        $pola = '%'.addcslashes($kata, '%_\\').'%';
+
+        // Kode dan data pelanggan lewat pencarian pesanan yang sama dengan
+        // halaman Pesanan, termasuk nomor HP dalam format apa pun.
+        return $kueri->where(fn (Builder $q) => $q
+            ->where('nama_produk', 'like', $pola)
+            ->orWhereIn('order_id', Order::query()->cari($kata)->select('id')));
     }
 
     /**
@@ -185,7 +210,8 @@ class AntrianController extends Controller
             'Item ini berada di antrian '.$stage->label().', yang bukan tanggung jawab peran Anda.');
     }
 
-    private function kueri(ProductionStage $stage)
+    /** @return Builder<OrderItem> */
+    private function kueri(ProductionStage $stage): Builder
     {
         return OrderItem::query()
             ->with(['order.customer', 'product', 'productionJobs.petugas', 'rosters'])

@@ -4586,6 +4586,24 @@ keterangan "Pengajuan akan kami tinjau dan diberitahukan melalui email."
 
 ---
 
+## KEP-129 — Antrian divisi seperti gambar klien
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien untuk layar antrian per divisi (gambar "Antrian Printing Jersey").
+
+- **Tab semua divisi** milik pengguna, termasuk yang sedang dibuka (navy, `aria-current`),
+  masing-masing dengan jumlah pekerjaannya, misalnya "Printing Jersey (3)". Dulu tab yang aktif
+  tidak tampil dan tidak ada jumlahnya.
+- Subjudul "Daftar pesanan pada divisi ..." dan **bilah petunjuk dengan kotak cari**. Pencarian
+  mencocokkan nama produk, atau kode pesanan dan data pelanggan lewat pencarian pesanan yang
+  sama dengan halaman Pesanan (`Order::cari`, termasuk nomor HP dalam format apa pun).
+- Tiap baris memakai **foto** (mockup yang disetujui, atau foto produk), kode dan jumlah,
+  **ringkasan ukuran pendek** (`OrderItem::rentangUkuran()`, misalnya "SMA / Dewasa M–L"; rincian
+  lengkapnya di keterangan sorot dan lembar kerja), dan "Target: 24 Nov 2026".
+- Roll printing, Lembar kerja, Mulai kerjakan, dan Selesai tetap seperti sebelumnya.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4718,3 +4736,4 @@ keterangan "Pengajuan akan kami tinjau dan diberitahukan melalui email."
 | KEP-126 | Kartu Progres produksi: persen, bilah, lima meja produksi | TERKUNCI |
 | KEP-127 | Riwayat lacak: garis waktu berikon, hanya yang sudah terjadi, tanpa catatan staf | TERKUNCI |
 | KEP-128 | Pembatalan: kartu terbuka dengan ketentuan toko; email keputusan disetujui/ditolak | TERKUNCI |
+| KEP-129 | Antrian divisi: tab semua divisi dengan jumlah, cari, foto, ringkasan ukuran | TERKUNCI |
