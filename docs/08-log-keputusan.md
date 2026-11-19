@@ -5078,6 +5078,38 @@ ketik**.
 
 ---
 
+## KEP-148 — Teks klien untuk halaman menunggu pembayaran
+**Status:** TERKUNCI · 2026-11-20
+
+Klien mengganti kalimat di halaman pesanan yang menunggu pembayaran. Tangkapan layarnya dari
+tampilan lama (sebelum KEP-121/134), tetapi kalimatnya dipasang di tampilan yang sekarang.
+
+- Di bawah "Salin tautan pesanan": "Bagikan tautan ini kepada anggota tim untuk memantau pesanan
+  bersama. Informasi pribadi tetap terlindungi."
+- Judul tagihan "Yang perlu dibayar sekarang" menjadi **"Pembayaran saat ini"** (kotak klien
+  menutupi judul lama mulai sesudah huruf Y dan berbunyi "... pembayaran saat ini").
+- Batas pembayaran ditulis lengkap: "Selasa, 10 November 2026, pukul 22.27 WIB", dengan kalimat
+  "Pesanan akan otomatis dibatalkan apabila pembayaran belum diterima hingga batas waktu
+  tersebut." Kotak "Sisa waktu" kini turun ke bawah di HP; tanggal yang lebih panjang membuat
+  kolom teksnya terjepit dan terlipat kata per kata.
+- QRIS: "Pembayaran dapat dilakukan melalui aplikasi bank atau e-wallet yang mendukung QRIS. Jika
+  menggunakan perangkat yang sama, simpan kode QR lalu pilih fitur pindai dari galeri pada
+  aplikasi pembayaran." Tulisan "simpan kode QR" membuka gambar ukuran penuh, menggantikan
+  tautan "buka ukuran penuh".
+- Catatan penting: "**Pembayaran hanya melalui rekening resmi atau QRIS yang tertera di halaman
+  ini.** Abaikan permintaan pembayaran melalui WhatsApp atau rekening lain yang mengatasnamakan
+  Setia Sport."
+- Langkah 2: judul "Unggah Bukti Pembayaran" dan kalimat "Unggah foto atau tangkapan layar bukti
+  transfer. Pembayaran akan diverifikasi sesuai mutasi rekening pada jam operasional (setiap
+  hari, 07.00–16.00 WIB). Konfirmasi akan dikirim melalui email."
+- Jam operasional tetap dari Pengaturan. Nilai bawaannya kini "Setiap hari, 07.00–16.00 WIB";
+  migrasi mengganti nilai lama "Setiap hari 07.00-16.00" hanya bila belum diubah pemilik. Teks
+  ini hanya tampilan (jendela chat, halaman depan, halaman pembayaran); logika peringatan chat
+  membaca `cs_jam_mulai` dan `cs_jam_selesai`.
+- Baris "Ada pertanyaan atau komplain soal pesanan ini?" di bawahnya tetap ada.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5229,3 +5261,4 @@ ketik**.
 | KEP-145 | Tombol wa.me tanpa nomor di halaman pesanan; pelanggan memilih kontak atau grup timnya | TERKUNCI |
 | KEP-146 | Tab SD/SMP/SMA-Dewasa ber-cm, ikut kategori pemain terakhir, ukuran yang dipesan ditandai; catatan klien | TERKUNCI |
 | KEP-147 | Panel - + per ukuran per model dan kategori; baris baru meniru sebelumnya; Enter berpindah isian, tidak mengirim formulir | TERKUNCI |
+| KEP-148 | Kalimat klien di tautan, batas, QRIS, catatan penting, unggah bukti; jam layanan bawaan ber-WIB | TERKUNCI |

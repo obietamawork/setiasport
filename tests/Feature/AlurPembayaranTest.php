@@ -170,7 +170,7 @@ class AlurPembayaranTest extends TestCase
             ->assertSee('Kedaluwarsa')
             ->assertSee('Pesanan ini dibatalkan otomatis')
             ->assertSee('Pesan lagi')
-            ->assertDontSee('Yang perlu dibayar sekarang');
+            ->assertDontSee('Pembayaran saat ini');
     }
 
     /** Pesanan yang dikirim tidak pernah lewat toko; tagihan pelunasannya tidak boleh menyuruh datang ke kasir. */

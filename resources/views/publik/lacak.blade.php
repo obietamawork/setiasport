@@ -52,7 +52,8 @@
             </a>
         </div>
         <p class="mt-1.5 text-xs leading-relaxed text-muted">
-            Boleh dibagikan ke anggota tim yang ingin ikut memantau; tidak ada data pribadi di sini.
+            {{-- Teks klien (KEP-148). --}}
+            Bagikan tautan ini kepada anggota tim untuk memantau pesanan bersama. Informasi pribadi tetap terlindungi.
         </p>
     </div>
 

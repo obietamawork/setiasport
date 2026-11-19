@@ -123,9 +123,48 @@ class HalamanBayarTest extends TestCase
 
         $this->get(route('lacak.token', $order->access_token))
             ->assertOk()
-            ->assertSee('Unggah bukti pembayaran')
+            ->assertSee('Unggah Bukti Pembayaran')
             ->assertSee('Unggah bukti')
             ->assertSee('Catatan penting')
-            ->assertSee('Hanya transfer ke rekening dan QRIS di halaman ini.');
+            ->assertSee('Pembayaran hanya melalui rekening resmi atau QRIS yang tertera di halaman ini.');
+    }
+
+    /** Kalimat dari klien untuk halaman menunggu pembayaran (KEP-148). */
+    public function test_halaman_menunggu_pembayaran_memakai_teks_klien(): void
+    {
+        Setting::simpan('qris_path', 'qris/toko.png');
+        $order = $this->pesan();
+
+        $halaman = $this->get(route('lacak.token', $order->access_token))
+            ->assertOk()
+            ->assertSee('Bagikan tautan ini kepada anggota tim untuk memantau pesanan bersama. Informasi pribadi tetap terlindungi.')
+            ->assertSee('Pembayaran saat ini')
+            ->assertSee('Pesanan akan otomatis dibatalkan apabila pembayaran belum diterima hingga batas waktu tersebut.')
+            ->assertSeeInOrder(['Pembayaran dapat dilakukan melalui aplikasi bank atau e-wallet yang mendukung QRIS. Jika menggunakan perangkat yang sama,', 'simpan kode QR', 'lalu pilih fitur pindai dari galeri pada aplikasi pembayaran.'])
+            ->assertSee('Abaikan permintaan pembayaran melalui WhatsApp atau rekening lain yang mengatasnamakan Setia Sport.')
+            ->assertSee('Unggah foto atau tangkapan layar bukti transfer. Pembayaran akan diverifikasi sesuai mutasi rekening pada jam operasional (setiap hari, 07.00–16.00 WIB). Konfirmasi akan dikirim melalui email.')
+            ->assertDontSee('Lewat itu pesanan otomatis dibatalkan')
+            ->assertDontSee('Boleh dibagikan ke anggota tim')
+            ->assertDontSee('Yang perlu dibayar sekarang');
+
+        // "Selasa, 10 November 2026, pukul 22.27 WIB"
+        $this->assertMatchesRegularExpression(
+            '/(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu), \d{1,2} \p{L}+ \d{4}, pukul \d{2}\.\d{2} WIB/u',
+            (string) $halaman->getContent(),
+        );
+    }
+
+    public function test_migrasi_jam_layanan_hanya_mengganti_teks_bawaan(): void
+    {
+        $migrasi = require database_path('migrations/2026_11_20_090000_jam_layanan_dari_klien.php');
+
+        Setting::simpan('cs_jam_layanan', 'Setiap hari 07.00-16.00');
+        $migrasi->up();
+        $this->assertSame('Setiap hari, 07.00–16.00 WIB', Setting::ambil('cs_jam_layanan'));
+
+        // Teks yang sudah diubah pemilik tidak disentuh.
+        Setting::simpan('cs_jam_layanan', 'Senin-Sabtu 08.00-15.00');
+        $migrasi->up();
+        $this->assertSame('Senin-Sabtu 08.00-15.00', Setting::ambil('cs_jam_layanan'));
     }
 }

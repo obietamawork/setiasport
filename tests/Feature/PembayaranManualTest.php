@@ -120,10 +120,10 @@ class PembayaranManualTest extends TestCase
 
             $html = $this->get(route('lacak.token', $order->access_token))
                 ->assertOk()
-                ->assertSee('Hanya transfer ke rekening dan QRIS di halaman ini.')
+                ->assertSee('Pembayaran hanya melalui rekening resmi atau QRIS yang tertera di halaman ini.')
                 ->getContent();
 
-            $awal = strpos($html, 'Yang perlu dibayar sekarang');
+            $awal = strpos($html, 'Pembayaran saat ini');
             $akhir = strpos($html, 'Unggah bukti', $awal);
             $this->assertNotFalse($awal);
             $this->assertNotFalse($akhir);

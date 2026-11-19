@@ -164,7 +164,7 @@ class AlurInternalTest extends TestCase
         auth('web')->logout();
         $this->get(route('lacak.token', $order->access_token))
             ->assertOk()
-            ->assertDontSee('Yang perlu dibayar sekarang');
+            ->assertDontSee('Pembayaran saat ini');
     }
 
     /**

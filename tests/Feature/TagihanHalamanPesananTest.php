@@ -56,7 +56,7 @@ class TagihanHalamanPesananTest extends TestCase
         $this->get(route('lacak.token', $order->access_token))
             ->assertOk()
             ->assertSee('1234567890')
-            ->assertSee('Yang perlu dibayar sekarang');
+            ->assertSee('Pembayaran saat ini');
     }
 
     /** Inti perbaikannya: begitu lunas, tujuan transfer hilang dari halaman. */
@@ -75,7 +75,7 @@ class TagihanHalamanPesananTest extends TestCase
         $this->get(route('lacak.token', $order->access_token))
             ->assertOk()
             ->assertDontSee('1234567890')
-            ->assertDontSee('Yang perlu dibayar sekarang');
+            ->assertDontSee('Pembayaran saat ini');
     }
 
     /**

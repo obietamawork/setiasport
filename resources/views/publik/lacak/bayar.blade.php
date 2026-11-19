@@ -70,7 +70,8 @@
 
 <section class="mt-8 space-y-4" aria-labelledby="judul-bayar">
     <h2 id="judul-bayar" class="text-xl font-extrabold">
-        {{ $tagihan['jenis'] === 'pelunasan' ? 'Pelunasan' : 'Yang perlu dibayar sekarang' }}
+        {{-- Teks klien (KEP-148): "... pembayaran saat ini". --}}
+        {{ $tagihan['jenis'] === 'pelunasan' ? 'Pelunasan' : 'Pembayaran saat ini' }}
     </h2>
 
     @if ($ditolak)
@@ -164,10 +165,12 @@
                                }, 30000);
                            } }">
                 <x-ikon nama="jam" ukuran="size-7" class="text-merah" />
-                <div class="min-w-0 flex-1">
+                {{-- basis-48: di HP kotak sisa waktu turun ke baris berikutnya,
+                     bukan menjepit tanggal sampai terlipat kata per kata. --}}
+                <div class="min-w-0 flex-1 basis-48">
                     <p class="text-sm font-semibold text-merah-tua">Batas pembayaran</p>
-                    <p class="tabular text-lg font-bold">{{ $tagihan['batas']->translatedFormat('j M Y, H.i') }}</p>
-                    <p class="text-xs text-muted">Lewat itu pesanan otomatis dibatalkan dan barangnya kembali dijual.</p>
+                    <p class="tabular text-lg font-bold">{{ $tagihan['batas']->translatedFormat('l, j F Y') }}, pukul {{ $tagihan['batas']->format('H.i') }} WIB</p>
+                    <p class="text-xs text-muted">Pesanan akan otomatis dibatalkan apabila pembayaran belum diterima hingga batas waktu tersebut.</p>
                 </div>
                 <div class="overflow-hidden rounded-[10px] border border-merah text-center">
                     <p class="bg-merah px-4 py-1 text-xs font-semibold text-white">Sisa waktu</p>
@@ -261,10 +264,12 @@
                     </a>
                     {{-- Membayar dari HP berarti tidak bisa memindai layar sendiri.
                          Aplikasi bank di Indonesia umumnya bisa memindai dari galeri. --}}
+                    {{-- Teks klien (KEP-148); "simpan kode QR" membuka gambar ukuran
+                         penuh seperti tautan "buka ukuran penuh" sebelumnya. --}}
                     <p class="mt-3 text-xs leading-relaxed text-muted">
-                        Membayar dari HP ini? Simpan gambarnya (tekan lama, atau
-                        <a href="{{ $qris }}" target="_blank" rel="noopener" class="tautan">buka ukuran penuh</a>),
-                        lalu pilih pindai dari galeri di aplikasi bank.
+                        Pembayaran dapat dilakukan melalui aplikasi bank atau e-wallet yang mendukung QRIS. Jika menggunakan perangkat yang sama,
+                        <a href="{{ $qris }}" target="_blank" rel="noopener" class="tautan">simpan kode QR</a>
+                        lalu pilih fitur pindai dari galeri pada aplikasi pembayaran.
                     </p>
                 </div>
                 <div class="rounded-[12px] bg-biru-50 p-5">
@@ -330,7 +335,7 @@
     <div class="kartu-bayar" x-show="cara === 'transfer'">
         <h3 class="flex items-center gap-3 text-lg font-extrabold">
             <x-ikon nama="unggah" ukuran="size-7" class="text-navy-400" />
-            Unggah bukti pembayaran
+            Unggah Bukti Pembayaran
         </h3>
         @if ($buktiAda)
             <div class="mt-3 border-l-2 border-navy bg-navy-50 p-4 text-sm leading-relaxed">
@@ -341,8 +346,7 @@
             </div>
         @else
             <p class="mt-1 text-sm leading-relaxed text-muted">
-                Foto atau tangkapan layar struk pembayaran dari aplikasi bank. Kami mencocokkannya dengan
-                mutasi rekening pada jam operasional ({{ Str::lcfirst((string) setting('cs_jam_layanan')) }}).
+                Unggah foto atau tangkapan layar bukti transfer. Pembayaran akan diverifikasi sesuai mutasi rekening pada jam operasional ({{ Str::lcfirst((string) setting('cs_jam_layanan')) }}). Konfirmasi akan dikirim melalui email.
             </p>
         @endif
 
@@ -374,9 +378,8 @@
             <li>Bayar sesuai nominal dan sebelum batas waktu yang tertera.</li>
             <li>Pesanan diproses setelah pembayaran kami verifikasi.</li>
             <li>Setelah bukti terkirim, kami cocokkan lalu kabari lewat email.</li>
-            <li><strong>Hanya transfer ke rekening dan QRIS di halaman ini.</strong>
-                Kami tidak pernah meminta pembayaran lewat WhatsApp atau ke rekening lain.
-                Kalau ada yang memintanya atas nama kami, jangan dibayar.</li>
+            <li><strong>Pembayaran hanya melalui rekening resmi atau QRIS yang tertera di halaman ini.</strong>
+                Abaikan permintaan pembayaran melalui WhatsApp atau rekening lain yang mengatasnamakan Setia Sport.</li>
         </ul>
     </div>
 </section>
