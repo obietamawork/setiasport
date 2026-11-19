@@ -143,7 +143,16 @@
 
                         {{-- KEP-095: filenya ada di WhatsApp toko, bukan di sistem. --}}
                         @if ($stage === ProductionStage::DESAIN && $item->desain_sumber === 'sendiri')
-                            <p class="mt-1 text-sm font-medium">Desain dari pelanggan, lewat WhatsApp</p>
+                            {{-- Tautan Drive dari pelanggan (KEP-139), kalau ada; selain itu lewat WhatsApp. --}}
+                            @php $tautanPelanggan = $item->designAssets->where('tipe', \App\Enums\DesignAssetType::UPLOAD_PELANGGAN)->whereNotNull('external_url')->sortByDesc('versi')->first(); @endphp
+                            @if ($tautanPelanggan)
+                                <p class="mt-1 text-sm font-medium">
+                                    Desain dari pelanggan:
+                                    <a href="{{ $tautanPelanggan->external_url }}" target="_blank" rel="noopener noreferrer" class="tautan break-all font-normal">buka tautan</a>
+                                </p>
+                            @else
+                                <p class="mt-1 text-sm font-medium">Desain dari pelanggan, lewat WhatsApp</p>
+                            @endif
                         @endif
 
                         @if ($item->order->target_siap_pada)

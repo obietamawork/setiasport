@@ -4825,6 +4825,32 @@ Revisi klien untuk halaman pemesanan kustom.
 
 ---
 
+## KEP-139 — File desain pelanggan lewat tautan Drive atau Dropbox
+**Status:** TERKUNCI · 2026-11-19
+
+Permintaan klien: file desain pelanggan bisa diunggah di website atau lewat Google Drive, tidak
+hanya WhatsApp (KEP-095). Pemilik proyek khawatir unggah langsung rentan serangan, dan memilih
+**tautan Drive/Dropbox ditambah WhatsApp**.
+
+- **Konfigurator**: pilihan "Kirim desain sendiri" kini memuat isian opsional **Tautan Google
+  Drive atau Dropbox** di samping tombol WhatsApp. Hanya `https://` yang diterima (`url:https`,
+  maks. 500 karakter); tautan diabaikan bila sumber desain bukan kirim sendiri.
+- **Halaman pesanan pelanggan**: selama desain belum disetujui dan mockup belum ada, pelanggan
+  bisa mengirim atau mengganti tautannya (`POST /lacak/{token}/item/{item}/tautan-desain`).
+  Tautan baru tidak menghapus yang lama.
+- **Penyimpanan**: tautan disimpan sebagai berkas desain bertipe `UPLOAD_PELANGGAN` dengan
+  `external_url`, tanpa `path`. **Tidak ada berkas yang masuk ke server**, jadi tidak ada celah
+  unggah, tidak ada beban penyimpanan hosting, dan tidak ada berkas berbahaya yang diunduh staf
+  dari server toko.
+- **Staf**: kartu File desain di detail pesanan menampilkan "File dari pelanggan" (terbaru di
+  atas), dan Antrian desain menautkannya langsung ("Desain dari pelanggan: buka tautan").
+- Tautan selalu dibuka dengan `rel="noopener noreferrer"`. Pelanggan diingatkan mengatur akses
+  "Siapa saja yang memiliki link".
+- Unggah langsung tidak dibuat: format desain (CDR, AI, PSD) tidak bisa diperiksa isinya, dan
+  menyimpan berkas orang lain di hosting menambah beban dan risiko yang harus dijaga terus.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4967,3 +4993,4 @@ Revisi klien untuk halaman pemesanan kustom.
 | KEP-136 | Lembar kerja baru: status desain, rekap ukuran, QR penuh sekotak, QC, petunjuk pindai di bawah | TERKUNCI |
 | KEP-137 | Teks klien: layanan custom, Kenapa Belanja, Tentang, toko/konveksi, katalog, kaki halaman; Donoharjo sekali | TERKUNCI |
 | KEP-138 | Konfigurator: tanpa produk lain, penjelasan opsi desain, kalimat klien, baris pemain rapi | TERKUNCI |
+| KEP-139 | Tautan https Drive/Dropbox di konfigurator dan halaman pesanan, tanpa unggah berkas | TERKUNCI |

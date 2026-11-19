@@ -118,6 +118,28 @@
                     </p>
                 @endif
 
+                {{-- Tautan file desain dari pelanggan (KEP-139), terbaru di atas. --}}
+                @php
+                    $dariPelanggan = $item->designAssets
+                        ->where('tipe', DesignAssetType::UPLOAD_PELANGGAN)
+                        ->whereNotNull('external_url')
+                        ->sortByDesc('versi');
+                @endphp
+                @if ($dariPelanggan->isNotEmpty())
+                    <div class="mt-3 rounded-[10px] bg-paper px-4 py-3 text-sm">
+                        <p class="font-semibold">File dari pelanggan</p>
+                        <ul class="mt-1 space-y-1">
+                            @foreach ($dariPelanggan as $f)
+                                <li class="flex flex-wrap items-baseline gap-x-2">
+                                    <a href="{{ $f->external_url }}" target="_blank" rel="noopener noreferrer"
+                                       class="tautan break-all">{{ $f->external_url }}</a>
+                                    <span class="tabular text-xs text-muted">{{ $f->created_at->translatedFormat('j M, H.i') }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 {{-- Mockup versi baru selama pelanggan belum menyetujui (KEP-098). --}}
                 @if ($menunggu && $izin->punyaIzin('produksi.desain'))
                     <details class="mt-3 border-t border-line pt-3">

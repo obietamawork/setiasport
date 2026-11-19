@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\DesignAssetType;
 use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
@@ -10,6 +11,7 @@ use App\Enums\PaymentType;
 use App\Enums\PriceBasis;
 use App\Enums\ProductionStage;
 use App\Models\Customer;
+use App\Models\DesignAsset;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusLog;
@@ -121,6 +123,17 @@ class Checkout
                 ]);
 
                 $this->simpanDaftarUkuran($item, $baris);
+
+                // Tautan Google Drive atau Dropbox dari konfigurator (KEP-139).
+                if (filled($baris['tautan_desain'] ?? null)) {
+                    DesignAsset::create([
+                        'order_item_id' => $item->getKey(),
+                        'tipe' => DesignAssetType::UPLOAD_PELANGGAN,
+                        'versi' => 1,
+                        'external_url' => $baris['tautan_desain'],
+                        'catatan' => 'Tautan dari pelanggan saat memesan.',
+                    ]);
+                }
 
                 // Snapshot opsi lengkap dengan basis-nya, agar rincian harga
                 // tetap bisa dijelaskan setelah data master berubah.

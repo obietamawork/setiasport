@@ -263,12 +263,21 @@
                          kotak unggah di website, termasuk di halaman pesanan. --}}
                     <div x-show="desainSumber === 'sendiri'" x-cloak
                          class="mt-4 border-l-2 border-navy-200 bg-navy-50 p-3 text-sm leading-relaxed">
-                        <p class="font-semibold">File desain dikirim lewat WhatsApp</p>
+                        <p class="font-semibold">Kirim file desain lewat tautan atau WhatsApp</p>
                         <p class="mt-1">
-                            Semua format diterima: CDR, AI, PSD, PDF, PNG, JPG, atau tautan Google Drive.
-                            Kirim sekarang, atau nanti saja: setelah pesanan dibuat, admin kami menghubungi
-                            nomor WhatsApp yang Anda isi di data pemesan untuk meminta filenya.
+                            Semua format diterima: CDR, AI, PSD, PDF, PNG, atau JPG. Tempel tautan Google Drive
+                            atau Dropbox di bawah, atau kirim lewat WhatsApp. Boleh juga nanti: tautannya bisa
+                            dikirim dari halaman pesanan, dan admin kami menghubungi nomor WhatsApp Anda.
                         </p>
+                        {{-- Tautan saja (KEP-139): tidak ada berkas yang masuk ke server. --}}
+                        <label for="tautan-desain" class="label-form mt-3">Tautan Google Drive atau Dropbox <span class="font-normal text-muted">(opsional)</span></label>
+                        <input type="url" id="tautan-desain" name="tautan_desain" maxlength="500"
+                               value="{{ old('tautan_desain') }}" placeholder="https://drive.google.com/..."
+                               class="kotak-input bg-field" :disabled="desainSumber !== 'sendiri'">
+                        <p class="mt-1 text-xs text-muted">Atur aksesnya "Siapa saja yang memiliki link" supaya desainer bisa membukanya.</p>
+                        @error('tautan_desain')
+                            <p class="mt-1 text-sm text-merah">{{ $message }}</p>
+                        @enderror
                         @if ($waDesain = tautan_wa('Halo '.setting('toko_nama', 'Setia Sport').', saya mau mengirim file desain untuk pesanan '.$produk->nama.'. Pesanannya saya buat di website.'))
                             <p class="mt-2 text-xs text-muted">
                                 Kirim dari nomor yang sama dengan yang nanti Anda isi, supaya desainnya

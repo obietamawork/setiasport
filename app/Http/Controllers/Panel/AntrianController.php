@@ -214,7 +214,7 @@ class AntrianController extends Controller
     private function kueri(ProductionStage $stage): Builder
     {
         return OrderItem::query()
-            ->with(['order.customer', 'product', 'productionJobs.petugas', 'rosters'])
+            ->with(['order.customer', 'product', 'productionJobs.petugas', 'rosters', 'designAssets'])
             ->whereIn('status_item', array_map(
                 fn (OrderItemStatus $s) => $s->value,
                 $stage->statusDipegang()

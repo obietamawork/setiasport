@@ -985,7 +985,7 @@ parameters:
 			path: app/Services/Keranjang.php
 
 		-
-			message: '#^Method App\\Services\\Keranjang\:\:isi\(\) should return Illuminate\\Support\\Collection\<int, array\{kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, qty\: int, jalur\: App\\Enums\\FulfillmentType, opsi\: array, rincian\: App\\Services\\PriceBreakdown, masalah\: string\|null, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{qty\: int, opsi\: array\<int, int\>, catatan\: string\|null, desain_sumber\: string\|null, ukuran\: array\<int, array\<string, mixed\>\>\|null, kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, \.\.\.\}\>\.$#'
+			message: '#^Method App\\Services\\Keranjang\:\:isi\(\) should return Illuminate\\Support\\Collection\<int, array\{kunci\: string, produk\: App\\Models\\Product, varian\: App\\Models\\ProductVariant\|null, qty\: int, jalur\: App\\Enums\\FulfillmentType, opsi\: array, rincian\: App\\Services\\PriceBreakdown, masalah\: string\|null, \.\.\.\}\> but returns Illuminate\\Support\\Collection\<int, array\{qty\: int, opsi\: array\<int, int\>, catatan\: string\|null, desain_sumber\: string\|null, tautan_desain\: string\|null, ukuran\: array\<int, array\<string, mixed\>\>\|null, kunci\: string, produk\: App\\Models\\Product, \.\.\.\}\>\.$#'
 			identifier: return.type
 			count: 1
 			path: app/Services/Keranjang.php

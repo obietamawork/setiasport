@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Publik;
 
+use App\Enums\DesignAssetType;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Order;
@@ -109,6 +110,43 @@ class PesananItemController extends Controller
         ]);
 
         return back()->with('sukses', 'Catatan disimpan. Desainer membacanya sebelum menyiapkan mockup.');
+    }
+
+    /**
+     * Tautan Google Drive atau Dropbox untuk file desain (KEP-139), di samping
+     * WhatsApp. Yang disimpan hanya tautan https; tidak ada berkas yang masuk
+     * ke server. Tautan baru tidak menghapus yang lama: desainer melihat
+     * semuanya, yang terbaru di atas.
+     */
+    public function kirimTautanDesain(Request $request, string $token, OrderItem $item): RedirectResponse
+    {
+        $item = $this->item($token, $item);
+
+        if (! $item->kustom() || $item->sudahDisetujui()) {
+            return back()->withErrors(
+                'Desainnya sudah disetujui, jadi file desain tidak bisa diganti lagi. '
+                .'Kalau ada yang perlu diubah, hubungi kami lewat '.kanal_kontak().'.'
+            );
+        }
+
+        $data = $request->validate([
+            'tautan_desain' => ['required', 'url:https', 'max:500'],
+        ], [
+            'tautan_desain.url' => 'Tautan harus diawali https://, misalnya tautan Google Drive.',
+        ], ['tautan_desain' => 'tautan file desain']);
+
+        $item->designAssets()->create([
+            'tipe' => DesignAssetType::UPLOAD_PELANGGAN,
+            'versi' => (int) $item->designAssets()->where('tipe', DesignAssetType::UPLOAD_PELANGGAN)->max('versi') + 1,
+            'external_url' => $data['tautan_desain'],
+            'catatan' => 'Tautan dari halaman pesanan pelanggan.',
+        ]);
+
+        ActivityLog::catat('pesanan.tautan_desain', $item->order, [
+            'barang' => $item->nama_produk,
+        ]);
+
+        return back()->with('sukses', 'Tautan file desain terkirim. Desainer membukanya sebelum menyiapkan mockup.');
     }
 
     public function mintaRevisi(Request $request, string $token, OrderItem $item): RedirectResponse

@@ -52,10 +52,16 @@ class KustomController extends Controller
             'baris.*.model' => ['nullable', 'integer'],
             'desain_sumber' => ['required', 'in:katalog,sendiri,admin'],
             'catatan_desain' => ['nullable', 'string', 'max:1000'],
-        ], [], [
+            // Tautan Google Drive atau Dropbox (KEP-139): hanya https, tidak
+            // ada berkas yang masuk ke server.
+            'tautan_desain' => ['nullable', 'url:https', 'max:500'],
+        ], [
+            'tautan_desain.url' => 'Tautan file desain harus diawali https://, misalnya tautan Google Drive.',
+        ], [
             'baris' => 'data pemain',
             'baris.*.ukuran' => 'ukuran',
             'baris.*.jumlah' => 'jumlah',
+            'tautan_desain' => 'tautan file desain',
         ]);
 
         $opsi = collect($data['opsi'] ?? [])->filter()->map(fn ($v) => (int) $v)->values()->all();
@@ -67,6 +73,7 @@ class KustomController extends Controller
                 $opsi,
                 $this->catatan($data),
                 $data['desain_sumber'],
+                $data['desain_sumber'] === 'sendiri' ? ($data['tautan_desain'] ?? null) : null,
             );
         } catch (InvalidArgumentException $e) {
             // Harga dan MOQ dihitung ulang di server; pesan aslinya yang paling

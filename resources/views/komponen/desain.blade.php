@@ -119,8 +119,15 @@
          instruksi transfer terbaca seperti bagian dari pembayaran. Yang tersisa
          hanya kabar ke mana filenya dikirim, sampai mockup pertama terbit. --}}
     @if ($item->desain_sumber === 'sendiri' && $mockup->isEmpty() && ! $item->sudahDisetujui())
+        @php
+            $tautanPelanggan = $item->designAssets
+                ->where('tipe', DesignAssetType::UPLOAD_PELANGGAN)
+                ->whereNotNull('external_url')
+                ->sortByDesc('versi')
+                ->first();
+        @endphp
         <div class="mt-3 border-l-2 border-navy bg-navy-50 p-3 text-sm leading-relaxed">
-            <p class="font-semibold">File desain Anda dikirim lewat WhatsApp</p>
+            <p class="font-semibold">Kirim file desain Anda lewat WhatsApp atau tautan</p>
             <p class="mt-1">
                 Admin kami menghubungi
                 {{-- Disamarkan: tautan halaman ini beredar di grup tim (KEP-008). --}}
@@ -135,6 +142,30 @@
                     Kirim desain lewat WhatsApp
                 </a>
             @endif
+
+            {{-- Tautan Google Drive atau Dropbox (KEP-139). Hanya tautannya yang
+                 disimpan; berkasnya tetap di Drive pelanggan. --}}
+            <div class="mt-4 border-t border-navy-100 pt-3">
+                <p class="font-semibold">Atau kirim tautan Google Drive / Dropbox</p>
+                @if ($tautanPelanggan)
+                    <p class="mt-1 text-xs">
+                        Tautan terkirim:
+                        <a href="{{ $tautanPelanggan->external_url }}" target="_blank" rel="noopener noreferrer"
+                           class="tautan break-all">{{ $tautanPelanggan->external_url }}</a>
+                    </p>
+                @endif
+                <form method="POST" action="{{ route('lacak.item.tautan-desain', [$order->access_token, $item]) }}"
+                      class="mt-2 flex flex-wrap items-start gap-2">
+                    @csrf
+                    <label for="tautan-desain-{{ $item->id }}" class="sr-only">Tautan Google Drive atau Dropbox</label>
+                    <input type="url" id="tautan-desain-{{ $item->id }}" name="tautan_desain" required maxlength="500"
+                           placeholder="https://drive.google.com/..." class="kotak-input min-w-0 flex-1 basis-56">
+                    <button type="submit" class="tombol tombol-navy tombol-sm">
+                        {{ $tautanPelanggan ? 'Ganti tautan' : 'Kirim tautan' }}
+                    </button>
+                </form>
+                <p class="mt-1 text-xs text-muted">Atur aksesnya "Siapa saja yang memiliki link" supaya desainer bisa membukanya.</p>
+            </div>
         </div>
     @endif
 </div>

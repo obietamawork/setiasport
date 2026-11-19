@@ -31,7 +31,7 @@ class Keranjang
 
     public function __construct(private PriceCalculator $kalkulator) {}
 
-    /** @return array<string, array{product_id:int, variant_id:?int, qty:int, jalur:string, opsi:array<int,int>, catatan?:?string, desain_sumber?:?string, ukuran?:array<int, array<string, mixed>>}> */
+    /** @return array<string, array{product_id:int, variant_id:?int, qty:int, jalur:string, opsi:array<int,int>, catatan?:?string, desain_sumber?:?string, tautan_desain?:?string, ukuran?:array<int, array<string, mixed>>}> */
     public function baris(): array
     {
         return session(self::KUNCI, []);
@@ -130,6 +130,7 @@ class Keranjang
         array $optionValueIds,
         ?string $catatan = null,
         ?string $desainSumber = null,
+        ?string $tautanDesain = null,
     ): void {
         $rincian = $this->kalkulator->kustomPerUkuran($produk, $daftarUkuran, $optionValueIds);
 
@@ -151,6 +152,7 @@ class Keranjang
             'opsi' => $optionValueIds,
             'catatan' => $catatan,
             'desain_sumber' => $desainSumber,
+            'tautan_desain' => $tautanDesain,
             'ukuran' => array_map(fn (array $b, array $r) => [
                 'kategori' => (string) ($b['kategori'] ?? ''),
                 'ukuran' => (string) $b['ukuran'],
@@ -226,7 +228,7 @@ class Keranjang
     /**
      * Isi keranjang lengkap dengan rincian harga terkini.
      *
-     * @return Collection<int, array{kunci:string, produk:Product, varian:?ProductVariant, qty:int, jalur:FulfillmentType, opsi:array, rincian:PriceBreakdown, masalah:?string, catatan:?string, desain_sumber:?string, ukuran:?array<int, array<string, mixed>>}>
+     * @return Collection<int, array{kunci:string, produk:Product, varian:?ProductVariant, qty:int, jalur:FulfillmentType, opsi:array, rincian:PriceBreakdown, masalah:?string, catatan:?string, desain_sumber:?string, tautan_desain:?string, ukuran:?array<int, array<string, mixed>>}>
      */
     public function isi(): Collection
     {
@@ -261,6 +263,7 @@ class Keranjang
                     'opsi' => $b['opsi'],
                     'catatan' => $b['catatan'] ?? null,
                     'desain_sumber' => $b['desain_sumber'] ?? null,
+                    'tautan_desain' => $b['tautan_desain'] ?? null,
                     'ukuran' => $b['ukuran'] ?? null,
                 ];
         })->filter()->values();

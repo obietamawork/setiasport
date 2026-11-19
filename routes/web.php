@@ -166,6 +166,8 @@ Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->middleware('th
     Route::post('revisi', [PesananItemController::class, 'mintaRevisi'])->name('revisi');
     // Catatan desain dari pelanggan, terbuka sampai desain disetujui (KEP-122).
     Route::post('catatan', [PesananItemController::class, 'ubahCatatan'])->name('catatan');
+    // Tautan file desain dari pelanggan (KEP-139).
+    Route::post('tautan-desain', [PesananItemController::class, 'kirimTautanDesain'])->name('tautan-desain');
 });
 
 /*
