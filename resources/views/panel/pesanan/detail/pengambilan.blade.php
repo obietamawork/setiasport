@@ -1,4 +1,6 @@
-{{-- Bagian dari detail pesanan panel (KEP-124). Isinya dipindah dari halaman lama apa adanya. --}}
+{{-- Bagian dari detail pesanan panel (KEP-124). Penulisannya mengikuti
+     gambar klien (KEP-135): judul Pengiriman untuk pesanan kirim, label tebal,
+     ongkir di kanan, dan tombol yang menyebut akibatnya. --}}
 @php
     use App\Enums\MetodeAmbil;
     use App\Enums\OrderStatus;
@@ -7,40 +9,42 @@
      kasir: kesepakatan mengirim terjadi lewat WhatsApp jauh sebelum
      barangnya siap, bukan di depan meja kasir. --}}
 <section id="pengambilan" class="kartu-bayar scroll-mt-32">
-    <h2 class="judul-kartu"><x-ikon nama="kirim" class="text-navy-400" /> Pengambilan</h2>
+    <h2 class="judul-kartu">
+        <x-ikon :nama="$pesanan->dikirim() ? 'kirim' : 'toko'" class="text-navy-400" />
+        {{ $pesanan->dikirim() ? 'Pengiriman' : 'Pengambilan' }}
+    </h2>
 
     <div class="mt-4 space-y-4">
-        <div class="flex flex-wrap items-center gap-3">
-            <span class="chip {{ $pesanan->dikirim() ? 'chip-kuning' : 'chip-netral' }}">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <span class="chip {{ $pesanan->dikirim() ? 'chip-kuning' : 'chip-netral' }} px-3 py-1.5 text-sm font-bold">
+                <x-ikon :nama="$pesanan->dikirim() ? 'kirim' : 'toko'" ukuran="size-4" />
                 {{ $pesanan->metode_ambil->label() }}
             </span>
             @if ($pesanan->dikirim())
-                <span class="text-sm {{ $pesanan->ongkir > 0 ? 'text-muted' : 'text-merah' }}">
-                    @if ($pesanan->ongkir > 0)
-                        Ongkir <span class="tabular">{{ rupiah($pesanan->ongkir) }}</span> sudah masuk tagihan.
-                    @else
-                        Ongkirnya belum diisi, jadi tagihannya masih kurang.
-                    @endif
-                </span>
+                @if ($pesanan->ongkir > 0)
+                    <span class="text-sm font-semibold">Ongkir: <span class="tabular">{{ rupiah($pesanan->ongkir) }}</span></span>
+                @else
+                    <span class="text-sm font-semibold text-merah">Ongkir belum diisi, tagihannya masih kurang.</span>
+                @endif
             @endif
         </div>
 
         @if ($pesanan->dikirim_pada)
             <dl class="grid gap-3 border-t border-line pt-4 text-sm sm:grid-cols-2">
                 <div>
-                    <dt class="text-muted">Jasa kirim</dt>
-                    <dd class="font-semibold">{{ $pesanan->jasa_kirim }}</dd>
+                    <dt class="font-bold">Jasa kirim</dt>
+                    <dd class="mt-0.5">{{ $pesanan->jasa_kirim }}</dd>
                 </div>
                 <div>
-                    <dt class="text-muted">Nomor resi</dt>
-                    <dd class="numeral text-lg">{{ $pesanan->no_resi }}</dd>
+                    <dt class="font-bold">Nomor resi</dt>
+                    <dd class="numeral mt-0.5 text-lg">{{ $pesanan->no_resi }}</dd>
                 </div>
                 <div>
-                    <dt class="text-muted">Diserahkan ke kurir</dt>
-                    <dd class="tabular">{{ $pesanan->dikirim_pada->translatedFormat('j M Y, H:i') }}</dd>
+                    <dt class="font-bold">Diserahkan ke kurir</dt>
+                    <dd class="tabular mt-0.5">{{ $pesanan->dikirim_pada->translatedFormat('j M Y, H:i') }}</dd>
                 </div>
                 <div>
-                    <dt class="text-muted">Alamat</dt>
+                    <dt class="font-bold">Alamat pengiriman</dt>
                     <dd class="leading-relaxed">
                         {{ $pesanan->alamat_kirim }}
                         @if ($pesanan->tautanLokasiAman())
@@ -97,12 +101,14 @@
         @elseif ($izin->punyaIzin('serah_terima.proses') && ! $pesanan->status->final())
             @if ($pesanan->dikirim())
                 <div class="border-t border-line pt-4">
-                    <p class="text-sm leading-relaxed">
-                        Dikirim ke:<br>
-                        <span class="font-medium">{{ $pesanan->alamat_kirim }}</span>
+                    <p class="font-bold">Alamat pengiriman</p>
+                    <p class="mt-1 leading-relaxed">
+                        {{ $pesanan->alamat_kirim ?: 'Belum diisi.' }}
                         @if ($pesanan->tautanLokasiAman())
                             <a href="{{ $pesanan->tautan_lokasi }}" target="_blank" rel="noopener noreferrer"
-                               class="tautan ml-1 whitespace-nowrap">Buka di peta</a>
+                               class="tautan ml-1 inline-flex items-center gap-1 whitespace-nowrap">
+                                <x-ikon nama="buka-luar" ukuran="size-3.5" /> Buka di peta
+                            </a>
                         @endif
                     </p>
 
@@ -129,15 +135,18 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="no_resi" class="label-form">Nomor resi</label>
+                                <label for="no_resi" class="label-form">Nomor resi <span class="text-merah">*</span></label>
                                 <input type="text" id="no_resi" name="no_resi" class="kotak-input tabular"
                                        maxlength="60" required autocomplete="off">
                             </div>
                             <div class="sm:col-span-2">
-                                <button type="submit" class="tombol tombol-navy">Catat resi, tandai dikirim</button>
-                                <p class="mt-2 text-xs leading-relaxed text-muted">
-                                    Tekan setelah paket benar-benar diserahkan ke kurir. Pelanggan langsung
-                                    menerima email berisi resi ini.
+                                <button type="submit" class="tombol tombol-navy">
+                                    <x-ikon nama="kirim" ukuran="size-4" /> Kirim resi ke pelanggan
+                                </button>
+                                <p class="mt-2 flex items-start gap-2 text-sm leading-relaxed text-muted">
+                                    <x-ikon nama="bantuan" ukuran="size-4" class="mt-0.5 shrink-0" />
+                                    Tekan setelah paket benar-benar diserahkan ke kurir. Nomor resi tampil di
+                                    halaman lacak pesanan dan dikirim ke email pelanggan.
                                 </p>
                             </div>
                         </form>

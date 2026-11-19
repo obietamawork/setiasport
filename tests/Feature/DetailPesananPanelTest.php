@@ -149,6 +149,17 @@ class DetailPesananPanelTest extends TestCase
             ->assertSeeInOrder(['Pembayaran', 'Metode', $bayar->metode->label(), 'Jumlah', rupiah($bayar->jumlah), 'Status', $bayar->status->label()]);
     }
 
+    /** Kartu Pengiriman dengan label tebal seperti gambar klien (KEP-135). */
+    public function test_kartu_pengiriman_dengan_label_yang_jelas(): void
+    {
+        $order = $this->pesananKustom();
+        $order->update(['metode_ambil' => 'KIRIM', 'alamat_kirim' => 'Jl. Raya Solo KM 20, Sragen', 'ongkir' => 19_000]);
+
+        $this->actingAs($this->owner())->get(route('panel.pesanan.show', $order))
+            ->assertOk()
+            ->assertSeeInOrder(['Pengiriman', 'Dikirim ke alamat pelanggan', 'Ongkir:', rupiah(19_000), 'Alamat pengiriman', 'Jl. Raya Solo KM 20, Sragen']);
+    }
+
     public function test_staf_tanpa_izin_kelola_tidak_melihat_perbarui_progres(): void
     {
         $order = $this->pesananKustom();

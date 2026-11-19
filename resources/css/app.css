@@ -395,11 +395,13 @@
         box-shadow: 0 0 0 3px var(--color-navy-100);
     }
 
+    /* Tebal dan sedikit lebih besar (KEP-135): label harus terbedakan dari
+       isian dan teks penjelas di sekitarnya, seperti gambar klien. */
     .label-form {
         display: block;
-        margin-bottom: 0.3rem;
-        font-size: 0.8125rem;
-        font-weight: 600;
+        margin-bottom: 0.35rem;
+        font-size: 0.875rem;
+        font-weight: 700;
         color: var(--color-ink);
     }
 

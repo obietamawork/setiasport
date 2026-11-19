@@ -4714,6 +4714,25 @@ contoh, **Transfer / QRIS** dan **Tunai di toko**.
 
 ---
 
+## KEP-135 — Kartu Pengiriman dengan label tebal
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien untuk kartu pengambilan/pengiriman di detail pesanan panel: isinya tetap, tetapi
+"teks-teksnya ditebalkan supaya bisa dibedakan dan gampang dibaca". Pemilik proyek meminta
+penulisan dan tebal-tipis teks di bagian lain ikut diperhatikan.
+
+- Kartu bernama **Pengiriman** untuk pesanan kirim (tetap "Pengambilan" untuk ambil di toko),
+  chip cara ambil yang lebih besar dan berikon, "Ongkir: Rp..." di kanan.
+- Label tebal: **Alamat pengiriman**, **Jasa kirim**, **Nomor resi** (bertanda wajib), dan pada
+  pesanan yang sudah dikirim: Jasa kirim, Nomor resi, Diserahkan ke kurir, Alamat pengiriman.
+- Tombol "Catat resi, tandai dikirim" menjadi **Kirim resi ke pelanggan**, dengan keterangan
+  berikon: resi tampil di halaman lacak pesanan dan dikirim ke email pelanggan.
+- **Seluruh aplikasi**: label formulir (`.label-form`) menjadi tebal (700) dan sedikit lebih
+  besar (14px), supaya label di panel maupun halaman pelanggan terbedakan dari isian dan teks
+  penjelasnya.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4852,3 +4871,4 @@ contoh, **Transfer / QRIS** dan **Tunai di toko**.
 | KEP-132 | Kartu produk: Ready Stock/Pre Order, ±N hari kerja, tombol keranjang; kustom 10 hari jadi 7 | TERKUNCI |
 | KEP-133 | Cek pesanan kustom: tabel No/Nama/Ukuran/Jumlah/Harga per pcs dan pengingat | TERKUNCI |
 | KEP-134 | Halaman bayar: pilihan Transfer/QRIS dan Tunai di toko dengan alamat, kode, batas | TERKUNCI |
+| KEP-135 | Kartu Pengiriman seperti gambar; label formulir tebal di seluruh aplikasi | TERKUNCI |
