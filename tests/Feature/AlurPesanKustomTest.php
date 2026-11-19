@@ -173,7 +173,7 @@ class AlurPesanKustomTest extends TestCase
     {
         $this->get(route('kustom.buat', $this->produk()))
             ->assertOk()
-            ->assertSeeInOrder(['Kirim desain sendiri', 'File desain dikirim lewat WhatsApp', 'Data pemain'], false)
+            ->assertSeeInOrder(['Kirim desain sendiri', 'Kirim file desain lewat tautan atau WhatsApp', 'Data pemain'], false)
             ->assertSee('https://wa.me/6285160025810?text=', false);
     }
 
@@ -215,7 +215,7 @@ class AlurPesanKustomTest extends TestCase
 
         $this->get(route('lacak.token', $order->access_token))
             ->assertOk()
-            ->assertSee('File desain Anda dikirim lewat WhatsApp')
+            ->assertSee('Kirim file desain Anda lewat WhatsApp atau tautan')
             // Disamarkan: tautan halaman pesanan beredar di grup tim (KEP-008).
             ->assertSee('nomor 0812******90')
             ->assertDontSee('081234567890')
