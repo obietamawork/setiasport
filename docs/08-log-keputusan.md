@@ -4851,6 +4851,28 @@ hanya WhatsApp (KEP-095). Pemilik proyek khawatir unggah langsung rentan seranga
 
 ---
 
+## KEP-140 — Foto bahan di tiap pilihan konfigurator
+**Status:** TERKUNCI · 2026-11-19
+
+Permintaan klien: foto dan deskripsi bahan ditampilkan saat pelanggan melihat atau memilih
+bahan. Sebelumnya foto dan penjelasan bahan (KEP-072, KEP-110) baru muncul setelah satu bahan
+dipilih, dengan foto kecil 72 px, sehingga pelanggan tidak bisa membandingkan tekstur.
+
+- **Konfigurator, langkah Desain & Detail**: bila ada bahan yang berfoto, tombol pilihan opsi
+  itu berubah menjadi kartu berisi **foto tekstur, nama, dan tambahan harga**, dua kolom di
+  ponsel dan tiga kolom di layar lebar. Bahan tanpa foto mendapat kotak kosong supaya kartunya
+  tetap sejajar. Opsi yang tidak punya foto sama sekali (model, lengan, saku) tetap berupa
+  tombol teks biasa.
+- **Bahan yang dipilih**: kotak penjelasan di bawahnya memuat nama bahan, foto 128 px,
+  deskripsinya, dan petunjuk "Ketuk foto untuk melihat tekstur lebih dekat"; fotonya membuka
+  ukuran penuh.
+- **Halaman produk** tidak berubah: daftar opsi di sana sudah menampilkan foto dan deskripsi
+  setiap bahan (KEP-110).
+- Foto diunggah di Panel, menu Kamus bahan. Tombol pilihan memakai `aria-pressed` agar pembaca
+  layar tahu bahan mana yang terpilih.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4994,3 +5016,4 @@ hanya WhatsApp (KEP-095). Pemilik proyek khawatir unggah langsung rentan seranga
 | KEP-137 | Teks klien: layanan custom, Kenapa Belanja, Tentang, toko/konveksi, katalog, kaki halaman; Donoharjo sekali | TERKUNCI |
 | KEP-138 | Konfigurator: tanpa produk lain, penjelasan opsi desain, kalimat klien, baris pemain rapi | TERKUNCI |
 | KEP-139 | Tautan https Drive/Dropbox di konfigurator dan halaman pesanan, tanpa unggah berkas | TERKUNCI |
+| KEP-140 | Kartu bahan berfoto di konfigurator; bahan terpilih memperlihatkan foto besar dan deskripsi | TERKUNCI |

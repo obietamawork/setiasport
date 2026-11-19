@@ -343,4 +343,18 @@ class KamusBahanTest extends TestCase
             ->assertOk()
             ->assertSee('milano-kecil.webp', false);
     }
+
+    public function test_foto_bahan_tampil_di_tombol_pilihan_konfigurator(): void
+    {
+        $produk = $this->produk();
+        $milano = $this->bahan($produk, 'Milano');
+        $milano->material->forceFill(['gambar_path' => 'bahan/milano.webp', 'thumb_path' => 'bahan/milano-kecil.webp'])->save();
+
+        // KEP-140: fotonya tampil di tiap tombol, bukan baru muncul setelah
+        // dipilih, supaya pelanggan membandingkan tekstur sebelum memilih.
+        $this->get(route('kustom.buat', $produk))
+            ->assertOk()
+            ->assertSee('src="'.Storage::disk('public')->url('bahan/milano-kecil.webp').'"', false)
+            ->assertSee('alt="Tekstur bahan Milano"', false);
+    }
 }

@@ -196,35 +196,55 @@
                                 <span class="text-sm font-normal text-muted">(opsional)</span>
                             @endunless
                         </p>
-                        <div class="mt-3 flex flex-wrap gap-2">
+                        {{-- Foto bahan di tiap tombol (KEP-140): pelanggan membandingkan
+                             tekstur sebelum memilih. Opsi tanpa foto sama sekali (model,
+                             lengan) tetap berupa tombol teks. --}}
+                        @php $adaFoto = $opsi->values->contains(fn ($v) => $v->material?->thumb_url); @endphp
+                        <div class="mt-3 {{ $adaFoto ? 'grid grid-cols-2 gap-2 sm:grid-cols-3' : 'flex flex-wrap gap-2' }}">
                             @foreach ($opsi->values as $v)
                                 <button type="button" @click="pilihan[{{ $opsi->id }}] = {{ $v->id }}"
-                                        class="rounded-[8px] border px-3 py-2 text-left text-sm transition-colors"
+                                        :aria-pressed="pilihan[{{ $opsi->id }}] === {{ $v->id }}"
+                                        class="rounded-[8px] border text-left text-sm transition-colors {{ $adaFoto ? 'flex min-w-0 items-center gap-2.5 p-2' : 'px-3 py-2' }}"
                                         :class="pilihan[{{ $opsi->id }}] === {{ $v->id }}
                                             ? 'border-navy bg-navy-50 font-medium text-navy-800'
                                             : 'border-line hover:border-navy-300'">
-                                    {{ $v->label }}
-                                    @if ($v->tambahan_harga !== 0)
-                                        <span class="block text-xs text-muted">
-                                            + {{ rupiah($v->tambahan_harga) }} / pcs
-                                        </span>
+                                    @if ($adaFoto)
+                                        @if ($v->material?->thumb_url)
+                                            <img src="{{ $v->material->thumb_url }}" alt="Tekstur bahan {{ $v->label }}"
+                                                 width="48" height="48" loading="lazy"
+                                                 class="size-12 shrink-0 rounded-[6px] border border-line object-cover">
+                                        @else
+                                            <span class="size-12 shrink-0 rounded-[6px] bg-navy-50" aria-hidden="true"></span>
+                                        @endif
                                     @endif
+                                    <span class="min-w-0">
+                                        {{ $v->label }}
+                                        @if ($v->tambahan_harga !== 0)
+                                            <span class="block text-xs font-normal text-muted">
+                                                + {{ rupiah($v->tambahan_harga) }} / pcs
+                                            </span>
+                                        @endif
+                                    </span>
                                 </button>
                             @endforeach
                         </div>
 
-                        {{-- Kamus bahan (KEP-072): penjelasannya baru muncul begitu
-                             nilainya dipilih, bukan dijejalkan di tiap tombol --
-                             pelanggan baca sambil memutuskan, tanpa pindah halaman. --}}
+                        {{-- Kamus bahan (KEP-072): penjelasan bahan yang dipilih, dengan
+                             fotonya lebih besar (KEP-140); diketuk untuk ukuran penuh. --}}
                         <div x-show="deskripsiTerpilih({{ $opsi->id }}) || nilaiTerpilih({{ $opsi->id }})?.gambar" x-cloak
-                             class="mt-3 flex items-start gap-3 border-l-2 border-navy-200 bg-navy-50 p-3 text-sm leading-relaxed text-ink">
+                             class="mt-3 flex flex-col gap-3 border-l-2 border-navy-200 bg-navy-50 p-3 text-sm leading-relaxed text-ink sm:flex-row sm:items-start">
                             <template x-if="nilaiTerpilih({{ $opsi->id }})?.gambar">
-                                <a :href="nilaiTerpilih({{ $opsi->id }}).gambarBesar" target="_blank" rel="noopener" class="shrink-0">
+                                <a :href="nilaiTerpilih({{ $opsi->id }}).gambarBesar" target="_blank" rel="noopener" class="shrink-0"
+                                   :title="'Lihat tekstur ' + nilaiTerpilih({{ $opsi->id }}).label + ' lebih dekat'">
                                     <img :src="nilaiTerpilih({{ $opsi->id }}).gambar" :alt="'Tekstur bahan ' + nilaiTerpilih({{ $opsi->id }}).label"
-                                         width="72" height="72" class="size-18 rounded-[6px] border border-line object-cover">
+                                         width="128" height="128" class="size-32 rounded-[6px] border border-line object-cover">
                                 </a>
                             </template>
-                            <p x-text="deskripsiTerpilih({{ $opsi->id }})"></p>
+                            <div class="min-w-0">
+                                <p class="font-semibold" x-text="nilaiTerpilih({{ $opsi->id }})?.label"></p>
+                                <p class="mt-1" x-text="deskripsiTerpilih({{ $opsi->id }})"></p>
+                                <p x-show="nilaiTerpilih({{ $opsi->id }})?.gambar" class="mt-1 text-xs text-muted">Ketuk foto untuk melihat tekstur lebih dekat.</p>
+                            </div>
                         </div>
 
                         <input type="hidden" name="opsi[{{ $opsi->id }}]" :value="pilihan[{{ $opsi->id }}] ?? ''">
