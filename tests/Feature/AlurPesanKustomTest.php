@@ -187,7 +187,7 @@ class AlurPesanKustomTest extends TestCase
 
         $this->get(route('checkout'))
             ->assertOk()
-            ->assertSee('Admin menghubungi nomor ini lewat WhatsApp untuk menerima file desain Anda.');
+            ->assertSee('Admin akan menghubungi Anda melalui WhatsApp untuk menerima file desain pesanan.');
     }
 
     public function test_checkout_tanpa_desain_sendiri_tidak_menyebut_file_desain(): void

@@ -123,7 +123,7 @@ class CheckoutOngkirTest extends TestCase
 
         $this->get(route('checkout'))
             ->assertOk()
-            ->assertSee('Kirim ke alamat saya')
+            ->assertSee('Kirim ke Alamat Tujuan')
             ->assertSee('setelah paket ditimbang');
     }
 

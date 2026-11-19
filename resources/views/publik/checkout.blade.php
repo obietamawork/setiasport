@@ -5,9 +5,9 @@
 @section('isi')
 <div class="mx-auto max-w-4xl px-5 py-10">
     <h1 class="text-3xl font-extrabold">Data pemesan</h1>
+    {{-- Teks di halaman ini dari klien (KEP-144). --}}
     <p class="kolom-baca mt-3 text-muted">
-        Pesanan boleh diambil sendiri di toko atau dikirim ke alamat Anda. Yang kami
-        butuhkan hanya cara menghubungi Anda saat pesanan siap.
+        Pesanan dapat diambil langsung di toko atau dikirim ke alamat tujuan. Pastikan nomor WhatsApp yang Anda cantumkan aktif agar kami dapat menghubungi Anda saat pesanan siap.
     </p>
 
     <div class="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]"
@@ -38,9 +38,11 @@
                 <label for="email" class="label-form">Email</label>
                 <input type="email" id="email" name="email" value="{{ old('email') }}"
                        class="kotak-input" required autocomplete="email">
+                {{-- Klien menulis "dikirim melalui WhatsApp dan email", tetapi yang
+                     terkirim otomatis hanya email; WhatsApp-nya lewat tombol Bagikan
+                     di halaman pesanan (KEP-144). --}}
                 <p class="mt-1 text-xs leading-relaxed text-muted">
-                    Ke sinilah tautan pesanan dikirim. Tautan itu satu-satunya cara membuka
-                    pesanan Anda tanpa membuat akun, dan boleh dibagikan ke anggota tim.
+                    Tautan pesanan dikirim melalui email untuk akses tanpa akun, dan dapat dibagikan lewat WhatsApp kepada anggota tim.
                 </p>
             </div>
 
@@ -50,7 +52,7 @@
                        class="kotak-input tabular" required autocomplete="tel">
                 @if ($desainLewatWa)
                     <p class="mt-1 text-xs text-muted">
-                        Admin menghubungi nomor ini lewat WhatsApp untuk menerima file desain Anda.
+                        Admin akan menghubungi Anda melalui WhatsApp untuk menerima file desain pesanan.
                     </p>
                 @else
                     <p class="mt-1 text-xs text-muted">Dipakai kalau kami perlu menghubungi Anda langsung.</p>
@@ -60,23 +62,28 @@
             {{-- Pilihan penyerahan (KEP-058). Ditaruh sebelum cara pembayaran
                  karena ongkirnya ikut mengubah angka yang dibayar. --}}
             <fieldset class="border-t border-line pt-4">
-                <legend class="label-form">Barangnya mau diapakan?</legend>
+                <legend class="label-form">Metode Penerimaan Pesanan</legend>
                 <div class="space-y-2">
                     <label class="flex items-start gap-2 text-sm">
                         <input type="radio" name="metode_ambil" value="AMBIL_TOKO" x-model="metode"
                                class="mt-0.5 size-4 accent-navy">
                         <span>
-                            <strong>Saya ambil sendiri di toko</strong>
-                            <span class="block text-muted">{{ setting('toko_alamat', 'Alamat toko') }}. Tanpa ongkos kirim.</span>
+                            <strong>Ambil Langsung di Toko</strong>
+                            <span class="block text-muted">Pesanan dapat diambil di Setia Sport Wonogiri tanpa biaya pengiriman.</span>
+                            <span class="block text-muted">{{ setting('toko_alamat', 'Alamat toko') }}.</span>
                         </span>
                     </label>
                     <label class="flex items-start gap-2 text-sm">
                         <input type="radio" name="metode_ambil" value="KIRIM" x-model="metode"
                                class="mt-0.5 size-4 accent-navy">
                         <span>
-                            <strong>Kirim ke alamat saya</strong>
+                            <strong>Kirim ke Alamat Tujuan</strong>
                             <span class="block text-muted">
-                                Paket berangkat setelah pesanan lunas dan barangnya selesai.
+                                @if ($adaKustom)
+                                    Pesanan akan dikirim ke alamat yang Anda cantumkan setelah proses produksi dan pembayaran selesai.
+                                @else
+                                    Pesanan akan dikirim ke alamat yang Anda cantumkan setelah pembayaran selesai.
+                                @endif
                             </span>
                         </span>
                     </label>
@@ -88,7 +95,6 @@
                         <textarea id="alamat_kirim" name="alamat_kirim" rows="3" maxlength="500"
                                   class="kotak-input leading-relaxed"
                                   placeholder="Nama penerima, jalan, RT/RW, kelurahan, kecamatan, kota, kode pos">{{ old('alamat_kirim') }}</textarea>
-                        <p class="bantuan-form">Tulis selengkap mungkin; kurir membaca alamat ini apa adanya.</p>
                     </div>
 
                     <div>
@@ -96,9 +102,8 @@
                         <input type="url" id="tautan_lokasi" name="tautan_lokasi" class="kotak-input"
                                placeholder="https://maps.app.goo.gl/..." value="{{ old('tautan_lokasi') }}">
                         <p class="bantuan-form">
-                            Supaya kurir langsung menuju titik rumah Anda, bukan menebak dari tulisan
-                            alamat saja. Buka Google Maps &rarr; cari lokasi Anda &rarr; <strong>Bagikan</strong>
-                            &rarr; <strong>Salin tautan</strong>, lalu tempel di sini.
+                            Cantumkan tautan lokasi Google Maps agar kurir dapat menemukan alamat pengiriman dengan tepat.
+                            Buka Google Maps &rarr; Pilih lokasi &rarr; <strong>Bagikan</strong> &rarr; <strong>Salin tautan</strong>, lalu tempelkan di sini.
                         </p>
                     </div>
 
@@ -187,15 +192,17 @@
                                    @checked(old('tipe_pembayaran', 'DP') === 'DP')>
                             <span>
                                 <strong>Uang muka {{ $persenDp }}%</strong>
-                                <span class="tabular">{{ rupiah($dpMinimum) }}</span> sekarang,
-                                @if ($campuran)
-                                    sisanya dilunasi setelah seluruh pesanan siap, termasuk barang stok di dalamnya, karena diserahkan bersamaan dalam satu kali pengambilan, lewat transfer atau di kasir.
-                                @else
-                                    sisanya dilunasi setelah barang selesai dikerjakan, lewat transfer atau di kasir.
-                                @endif
-                                <span x-show="metode === 'KIRIM'" x-cloak class="block text-muted">
-                                    Ongkos kirim ikut dilunasi di akhir, bukan sekarang.
+                                <span class="block">
+                                    Pembayaran awal sebesar {{ $persenDp }}% (<span class="tabular">{{ rupiah($dpMinimum) }}</span>).
+                                    Sisa pembayaran<span x-show="metode === 'KIRIM'" x-cloak> beserta ongkos kirim</span>
+                                    dilunasi setelah pesanan selesai, melalui transfer atau langsung di kasir toko.
                                 </span>
+                                @if ($campuran)
+                                    {{-- Barang stok ikut menunggu: satu pesanan, satu kali serah terima. --}}
+                                    <span class="block text-muted">
+                                        Barang stok di pesanan ini ikut diserahkan bersamaan setelah barang custom selesai.
+                                    </span>
+                                @endif
                             </span>
                         </label>
                         <label class="flex items-start gap-2 text-sm">
@@ -220,11 +227,9 @@
                         <input type="checkbox" name="buat_akun" value="1" x-model="buat"
                                class="mt-0.5 size-4 accent-navy">
                         <span>
-                            <strong>Buat akun sekalian</strong>
+                            <strong>Buat Akun</strong>
                             <span class="block text-muted">
-                                Supaya semua pesanan Anda bisa dilihat dalam satu halaman
-                                tanpa mencari email. Kami kirim tautan konfirmasi terpisah;
-                                pesanan ini tetap berjalan normal sambil menunggu.
+                                Buat akun untuk mengelola seluruh pesanan dalam satu halaman. Tautan verifikasi akan dikirim melalui email tanpa menghambat proses pesanan.
                             </span>
                         </span>
                     </label>
@@ -248,10 +253,7 @@
             <label class="flex items-start gap-2 border-t border-line pt-4 text-sm">
                 <input type="checkbox" name="setuju" value="1" class="mt-0.5 size-4 accent-navy" @checked(old('setuju'))>
                 <span>
-                    Saya paham pembayaran perlu diselesaikan dalam
-                    {{ setting('batas_bayar_jam', 24) }} jam sebelum pesanan otomatis dibatalkan,
-                    <span x-show="metode === 'KIRIM'" x-cloak>dan paket baru berangkat setelah pesanan lunas.</span><span
-                          x-show="metode !== 'KIRIM'">dan barangnya diambil sendiri di toko.</span>
+                    Saya menyetujui batas pembayaran {{ setting('batas_bayar_jam', 24) }} jam sebelum pembatalan otomatis.
                 </span>
             </label>
 
@@ -274,7 +276,7 @@
                  jalur pemesanan (KEP-040); pesanannya tetap dibuat di sini. --}}
             @if ($bantuanWa = tautan_wa('Halo '.setting('toko_nama', 'Setia Sport').', saya sedang mengisi pesanan di web dan mau bertanya.'))
                 <div class="flex flex-wrap items-center justify-center gap-2 text-sm text-muted">
-                    <span>Ada yang ingin ditanyakan dulu?</span>
+                    <span>Butuh bantuan?</span>
                     <a href="{{ $bantuanWa }}" target="_blank" rel="noopener"
                        class="inline-flex items-center gap-1.5 font-medium text-ink underline decoration-line-strong underline-offset-4 hover:text-navy">
                         <svg class="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

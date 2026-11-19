@@ -556,9 +556,9 @@
                         Pastikan detail pesanan sudah benar sebelum lanjut ke pembayaran.
                     </p>
 
+                    {{-- Teks klien (KEP-144). --}}
                     <p class="mt-3 text-xs leading-relaxed text-muted">
-                        Setelah pesanan dibuat, Anda mendapat halaman pesanan sendiri berisi tagihan,
-                        mockup untuk disetujui, dan progres pengerjaannya.
+                        Setelah pesanan dibuat, Anda dapat mengakses halaman khusus untuk melihat rincian tagihan, menyetujui desain (mockup), dan memantau progres pengerjaan pesanan.
                     </p>
                 </div>
             </section>

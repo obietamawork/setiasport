@@ -43,6 +43,7 @@ class CheckoutController extends Controller
         }
 
         $isi = $this->keranjang->isi();
+        $adaKustom = $isi->contains(fn ($b) => $b['jalur'] === FulfillmentType::PREORDER);
 
         return view('publik.checkout', [
             'isi' => $isi,
@@ -50,14 +51,18 @@ class CheckoutController extends Controller
             'adaMasalah' => $this->keranjang->adaMasalah(),
             // DP hanya masuk akal untuk pesanan kustom: barang stok diambil
             // besok, jadi tidak ada gunanya menunda pembayarannya (KEP-005).
-            'bolehDp' => $isi->contains(fn ($b) => $b['jalur'] === FulfillmentType::PREORDER),
+            'bolehDp' => $adaKustom,
+            // Barang stok tidak melewati produksi; kalimat pengiriman klien
+            // ("setelah proses produksi dan pembayaran selesai") hanya untuk
+            // keranjang yang berisi barang custom (KEP-144).
+            'adaKustom' => $adaKustom,
             // Keranjang campuran (stok + kustom): barang stok ikut menunggu
             // sampai pesanan SELURUHNYA siap dan lunas (satu nomor pesanan,
             // satu kali serah terima -- Order::bolehDiserahkan() mensyaratkan
             // SEMUA item Siap). Teks DP yang bilang "setelah barang selesai
             // dikerjakan" membingungkan kalau sebagian isinya cuma barang
             // stok yang sebenarnya tidak "dikerjakan" apa-apa.
-            'campuran' => $isi->contains(fn ($b) => $b['jalur'] === FulfillmentType::PREORDER)
+            'campuran' => $adaKustom
                 && $isi->contains(fn ($b) => $b['jalur'] === FulfillmentType::READY_STOCK),
             'persenDp' => (int) setting('dp_minimum_persen', 50),
             // File desain kiriman sendiri hanya lewat WhatsApp (KEP-095), ke

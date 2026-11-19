@@ -696,11 +696,11 @@ class KustomFlowTest extends TestCase
 
         $this->get('/checkout')
             ->assertOk()
-            ->assertSee('sisanya dilunasi setelah seluruh pesanan siap')
-            ->assertSee('termasuk barang stok di dalamnya');
+            ->assertSee('dilunasi setelah pesanan selesai')
+            ->assertSee('Barang stok di pesanan ini ikut diserahkan bersamaan setelah barang custom selesai.');
     }
 
-    /** Keranjang kustom murni (tanpa barang stok) tetap memakai teks aslinya. */
+    /** Keranjang kustom murni (tanpa barang stok) tidak menyebut barang stok (teks klien, KEP-144). */
     public function test_checkout_kustom_murni_memakai_teks_dikerjakan(): void
     {
         $this->post(route('keranjang.kustom', $this->jersey()), [
@@ -710,7 +710,7 @@ class KustomFlowTest extends TestCase
 
         $this->get('/checkout')
             ->assertOk()
-            ->assertSee('sisanya dilunasi setelah barang selesai dikerjakan')
-            ->assertDontSee('termasuk barang stok di dalamnya');
+            ->assertSee('dilunasi setelah pesanan selesai')
+            ->assertDontSee('Barang stok di pesanan ini ikut diserahkan bersamaan');
     }
 }

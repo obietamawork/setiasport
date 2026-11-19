@@ -4959,6 +4959,46 @@ punya menu tarik (Aksi lain) tidak dibungkus kotak geser, karena menunya akan ik
 
 ---
 
+## KEP-144 — Teks klien untuk cek pesanan dan checkout
+**Status:** TERKUNCI · 2026-11-19
+
+Klien mengganti kalimat di langkah Cek pesanan dan halaman checkout (Data pemesan).
+
+- **Cek pesanan**: "Setelah pesanan dibuat, Anda dapat mengakses halaman khusus untuk melihat
+  rincian tagihan, menyetujui desain (mockup), dan memantau progres pengerjaan pesanan."
+- **Pembuka checkout**: "Pesanan dapat diambil langsung di toko atau dikirim ke alamat tujuan.
+  Pastikan nomor WhatsApp yang Anda cantumkan aktif agar kami dapat menghubungi Anda saat
+  pesanan siap."
+- **Email**: klien menulis "Tautan pesanan dikirim melalui WhatsApp dan email ...", padahal yang
+  terkirim otomatis hanya email dan pesan WhatsApp admin tidak memuat tautannya. Disetujui
+  pemilik proyek: "Tautan pesanan dikirim melalui email untuk akses tanpa akun, dan dapat
+  dibagikan lewat WhatsApp kepada anggota tim." WhatsApp-nya dibuat benar lewat KEP-145.
+- **Nomor HP** (desain dikirim sendiri): "Admin akan menghubungi Anda melalui WhatsApp untuk
+  menerima file desain pesanan."
+- **Metode Penerimaan Pesanan** (dulu "Barangnya mau diapakan?"):
+  - **Ambil Langsung di Toko**: "Pesanan dapat diambil di Setia Sport Wonogiri tanpa biaya
+    pengiriman.", lalu alamat toko dari Pengaturan.
+  - **Kirim ke Alamat Tujuan**: "Pesanan akan dikirim ke alamat yang Anda cantumkan setelah
+    proses produksi dan pembayaran selesai." Keranjang tanpa barang custom memakai "... setelah
+    pembayaran selesai.", karena barang stok tidak melewati produksi.
+  - Petunjuk "Tulis selengkap mungkin; kurir membaca alamat ini apa adanya." dihapus (dicoret
+    klien).
+  - Tautan Google Maps: "Cantumkan tautan lokasi Google Maps agar kurir dapat menemukan alamat
+    pengiriman dengan tepat. Buka Google Maps → Pilih lokasi → **Bagikan** → **Salin
+    tautan**, lalu tempelkan di sini."
+- **Uang muka**: "Pembayaran awal sebesar 50% (Rp ...). Sisa pembayaran beserta ongkos kirim
+  dilunasi setelah pesanan selesai, melalui transfer atau langsung di kasir toko." Nominal
+  mengisi "(.....)" dari klien; "beserta ongkos kirim" hanya tampil bila dikirim. Keranjang
+  campuran mendapat satu kalimat tambahan: barang stoknya ikut diserahkan bersamaan setelah
+  barang custom selesai.
+- **Buat Akun**: "Buat akun untuk mengelola seluruh pesanan dalam satu halaman. Tautan
+  verifikasi akan dikirim melalui email tanpa menghambat proses pesanan."
+- **Persetujuan**: "Saya menyetujui batas pembayaran 24 jam sebelum pembatalan otomatis." Angka
+  jam tetap dari Pengaturan.
+- **Bantuan**: "Ada yang ingin ditanyakan dulu?" menjadi "Butuh bantuan?".
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5106,3 +5146,4 @@ punya menu tarik (Aksi lain) tidak dibungkus kotak geser, karena menunya akan ik
 | KEP-141 | Keterangan gambar dari Panel tampil di bawah foto; sketsa hilang begitu ada foto | TERKUNCI |
 | KEP-142 | Kartu Semua/Ready Stock/Custom jadi penyaring; tab dobel dan kalimat di bawah judul jalur dihapus | TERKUNCI |
 | KEP-143 | Kolom sekunder menumpang di sel lain selama layar sempit; tidak ada halaman yang digeser ke samping mulai 768 px | TERKUNCI |
+| KEP-144 | Kalimat checkout dari klien; tautan pesanan tetap disebut lewat email, WhatsApp lewat tombol bagikan | TERKUNCI |
