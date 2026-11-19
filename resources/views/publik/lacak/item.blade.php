@@ -112,7 +112,11 @@
     @endif
 </article>
 
-@unless ($linimasa['batal'])
+@if (! $linimasa['batal'] && $item->status_item === App\Enums\OrderItemStatus::MENUNGGU_PERSETUJUAN)
+    {{-- Selama menunggu persetujuan, kartu persetujuan (KEP-125) memuat
+         detail, desain, dan daftar pemain sekaligus. --}}
+    @include('publik.lacak.persetujuan', ['item' => $item, 'order' => $order])
+@elseif (! $linimasa['batal'])
     <div class="grid gap-4 md:grid-cols-2">
         <section class="kartu-bayar">
             <h3 class="flex items-center gap-2.5 text-lg font-extrabold"><x-ikon nama="pesanan" class="text-navy-400" /> Detail pesanan</h3>
@@ -208,6 +212,9 @@
         </section>
     @endif
 
+@endif
+
+@unless ($linimasa['batal'])
     @if ($item->kustom())
         {{-- Catatan desain dari pelanggan, bisa diubah sampai desain disetujui. --}}
         <section class="kartu-bayar" x-data="{ ubah: false }">

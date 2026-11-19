@@ -327,13 +327,16 @@ class KustomFlowTest extends TestCase
     {
         $item = $this->siapkanMenungguPersetujuan();
 
+        $formulir = route('lacak.item.revisi', [$item->order->access_token, $item]);
+
         $this->get(route('lacak.token', $item->order->access_token))
-            ->assertSee('Minta revisi');
+            ->assertSee('Ajukan revisi')
+            ->assertSee($formulir);
 
         $item->update(['jumlah_revisi' => (int) setting('revisi_gratis_maks', 3)]);
 
         $this->get(route('lacak.token', $item->order->access_token))
-            ->assertDontSee('Minta revisi')
+            ->assertDontSee($formulir)
             ->assertSee('sudah terpakai');
     }
 

@@ -264,7 +264,7 @@
                                         @if ($opsiPemain)
                                             <td>
                                                 <select x-model="b.model" :name="`baris[${i}][model]`" class="kotak-input"
-                                                        :aria-label="`{{ $opsiPemain->nama }} pemain ${i + 1}`">
+                                                        :aria-label="@js($opsiPemain->nama) + ' pemain ' + (i + 1)">
                                                     @unless ($opsiPemain->wajib)
                                                         <option value="">Tanpa pilihan</option>
                                                     @endunless

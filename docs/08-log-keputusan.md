@@ -4496,6 +4496,30 @@ yang sah.
 
 ---
 
+## KEP-125 — Persetujuan desain pelanggan seperti gambar klien
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien (gambar "Persetujuan Desain"): halaman persetujuan desain untuk pelanggan dibuat
+seperti contoh, dengan catatan bahwa nama dan nomor punggung juga bisa diubah di situ lewat
+ikon panah di kanan.
+
+- Selama barang **menunggu persetujuan**, kartu Persetujuan desain menggantikan kartu Detail
+  pesanan, Desain, dan Daftar pemain untuk barang itu di halaman progres (KEP-122). Isinya:
+  petunjuk singkat, mockup terbaru yang besar dengan tombol **Lihat ukuran penuh** (dan Buka file
+  desain bila ada tautan), Detail pesanan (produk, jumlah, opsi, catatan), lipatan **Nama & nomor
+  punggung (n pemain)** berisi penyunting pemain yang sudah ada, lalu **Pilih tindakan**: dua
+  kartu Setujui desain / Ajukan revisi dan satu tombol **Kirim keputusan**.
+- **Nama dan pernyataan tetap diminta** saat memilih Setujui (docs/02): tautan halaman ini beredar
+  di grup tim, dan catatan siapa yang menyetujui versi mana yang menyelesaikan sengketa. Isiannya
+  muncul di bawah kartu pilihan, tidak ada di gambar contoh.
+- **Ajukan revisi** membuka Catatan revisi (penghitung 0/250) dan keterangan "Batas revisi:
+  maksimal N kali. Revisi ke: x dari N". Setelah jatahnya habis, kartu revisi tampil nonaktif
+  dengan kalimat KEP-038 dan formulir revisinya tidak ada sama sekali.
+- Versi mockup yang dilihat tetap ikut terkirim (KEP-098). Aksi formulir mengikuti pilihan;
+  tanpa JavaScript formulir mengarah ke persetujuan.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4624,3 +4648,4 @@ yang sah.
 | KEP-122 | Progres pesanan: tahap mendatar, pemain berpensil, ubah catatan | TERKUNCI |
 | KEP-123 | Model per pemain: kerah dan oblong dalam satu pesanan | TERKUNCI |
 | KEP-124 | Detail pesanan panel dirombak; Perbarui progres hanya langkah sah; penyesuaian berjenis dan beralasan | TERKUNCI |
+| KEP-125 | Kartu persetujuan desain: mockup besar, lipatan pemain, Setujui/Ajukan revisi, nama tetap diminta | TERKUNCI |

@@ -10,13 +10,19 @@
     $ukuranPilihan = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 @endphp
 
-<div class="border-t border-line px-5 py-4">
-    <div class="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 class="font-semibold">Nama &amp; nomor punggung</h3>
-        <span class="text-sm text-muted tabular">
-            {{ $item->jumlahBernama() }} dari {{ $item->qty }} bernama
-        </span>
-    </div>
+{{-- Di lipatan kartu persetujuan desain (KEP-125) judulnya sudah ada di
+     ringkasan lipatan, jadi tidak diulang. --}}
+<div @class(['border-t border-line px-5 py-4' => ! ($dalamLipatan ?? false)])>
+    @if ($dalamLipatan ?? false)
+        <p class="text-sm text-muted tabular">{{ $item->jumlahBernama() }} dari {{ $item->qty }} bernama</p>
+    @else
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 class="font-semibold">Nama &amp; nomor punggung</h3>
+            <span class="text-sm text-muted tabular">
+                {{ $item->jumlahBernama() }} dari {{ $item->qty }} bernama
+            </span>
+        </div>
+    @endif
 
     @if ($terkunci)
         <p class="mt-2 text-sm text-muted">

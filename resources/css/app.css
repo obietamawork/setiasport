@@ -1869,3 +1869,50 @@
         box-shadow: 0 0 0 4px var(--color-biru-100);
     }
 }
+
+/* Persetujuan desain pelanggan (KEP-125): dua kartu pilihan seperti gambar
+   klien, hijau untuk setujui dan biru untuk revisi, serta lipatan daftar
+   pemain dengan panah yang berputar. */
+@layer components {
+    .pilih-tindakan {
+        display: block;
+        width: 100%;
+        border: 1px solid var(--color-line-strong);
+        border-radius: 14px;
+        background: var(--color-field);
+        padding: 1.1rem 1.25rem;
+        text-align: center;
+        transition: border-color 130ms, background-color 130ms, box-shadow 130ms;
+    }
+
+    .pilih-tindakan:hover:not([aria-disabled="true"]) { border-color: var(--color-navy-300); }
+
+    .pilih-tindakan-ikon {
+        display: inline-flex;
+        width: 2.75rem;
+        height: 2.75rem;
+        margin-bottom: 0.5rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+    }
+
+    .pilih-tindakan-setuju,
+    .pilih-tindakan-setuju:hover {
+        border-color: var(--color-ok);
+        background: var(--color-ok-50);
+        box-shadow: 0 0 0 2px var(--color-ok-50);
+    }
+
+    .pilih-tindakan-revisi,
+    .pilih-tindakan-revisi:hover {
+        border-color: var(--color-biru-terang);
+        background: var(--color-biru-50);
+        box-shadow: 0 0 0 2px var(--color-biru-100);
+    }
+
+    .lipatan-pemain > summary { list-style: none; }
+    .lipatan-pemain > summary::-webkit-details-marker { display: none; }
+    .lipatan-pemain-panah { transition: transform 150ms; }
+    .lipatan-pemain[open] .lipatan-pemain-panah { transform: rotate(180deg); }
+}
