@@ -1916,3 +1916,69 @@
     .lipatan-pemain-panah { transition: transform 150ms; }
     .lipatan-pemain[open] .lipatan-pemain-panah { transform: rotate(180deg); }
 }
+
+/* Riwayat di halaman lacak (KEP-127): garis waktu dengan titik di kiri,
+   ikon dalam lingkaran, dan waktu di kanan, seperti gambar klien. Yang
+   terbaru diberi cincin biru. */
+@layer components {
+    .riwayat-lacak { padding-block: 0.5rem; }
+
+    .riwayat-lacak li {
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.25rem 1rem;
+        padding: 0.9rem 0 0.9rem 1.75rem;
+    }
+
+    .riwayat-lacak li + li { border-top: 1px solid var(--color-line); }
+
+    /* Titik dan garis penghubung di tepi kiri. */
+    .riwayat-lacak li::before {
+        content: "";
+        position: absolute;
+        top: 1.55rem;
+        left: 0.15rem;
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 999px;
+        background: var(--color-biru-terang);
+        z-index: 1;
+    }
+
+    .riwayat-lacak li:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        top: 1.9rem;
+        bottom: -1.6rem;
+        left: calc(0.15rem + 0.35rem - 1px);
+        width: 2px;
+        background: var(--color-line);
+    }
+
+    .riwayat-lacak .riwayat-lacak-awal::before { background: var(--color-ok); }
+
+    .riwayat-lacak .riwayat-lacak-kini::before {
+        background: var(--color-field);
+        box-shadow: inset 0 0 0 3px var(--color-biru-terang), 0 0 0 3px var(--color-biru-100);
+    }
+
+    .riwayat-lacak-ikon {
+        display: inline-flex;
+        width: 2.5rem;
+        height: 2.5rem;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: var(--color-navy-50);
+        color: var(--color-navy-700);
+    }
+
+    .riwayat-lacak-awal .riwayat-lacak-ikon { background: var(--color-ok-50); color: var(--color-ok); }
+
+    @media (width < 40rem) {
+        .riwayat-lacak li > p:last-child { width: 100%; padding-left: 3.5rem; }
+    }
+}

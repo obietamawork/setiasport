@@ -31,6 +31,7 @@ class PengirimEmail
         'pesanan-siap' => 'Pesanan %s sudah siap',
         'pesanan-dikirim' => 'Pesanan %s sudah dikirim, ini nomor resinya',
         'pengingat-ambil' => 'Pengingat: pesanan %s masih menunggu diambil',
+        'pembatalan-diputuskan' => 'Keputusan pengajuan pembatalan pesanan %s',
     ];
 
     /** Template yang masih dikenal, untuk tombol kirim ulang (KEP-098). */
@@ -139,6 +140,10 @@ class PengirimEmail
                 ."Kode ambil: {$order->kode_ambil}. "
                 .($order->sisa_tagihan > 0 ? 'Mohon bawa '.rupiah($order->sisa_tagihan).' untuk pelunasan. ' : '')
                 ."Detail: {$tautan}",
+
+            // Keputusan pengajuan pembatalan (KEP-128); rinciannya di halaman pesanan.
+            'pembatalan-diputuskan' => "Halo {$nama}, pengajuan pembatalan pesanan {$order->kode} sudah kami putuskan. "
+                ."Keputusan dan rincian pengembaliannya ada di sini: {$tautan}",
 
             default => "Halo {$nama}, pesanan {$order->kode} masih menunggu diambil di toko. "
                 ."Kode ambil: {$order->kode_ambil}. Detail: {$tautan}",

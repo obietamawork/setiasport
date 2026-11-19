@@ -22,7 +22,10 @@ use Illuminate\Support\Facades\DB;
  */
 class KebijakanPembatalan
 {
-    public function __construct(private AlurPesanan $alur) {}
+    public function __construct(
+        private AlurPesanan $alur,
+        private PengirimEmail $email,
+    ) {}
 
     /**
      * Tahap terjauh yang sudah dicapai pesanan.
@@ -141,6 +144,18 @@ class KebijakanPembatalan
                 'diputuskan_pada' => now(),
             ]);
         });
+
+        $this->kabari($pembatalan);
+    }
+
+    /**
+     * Keputusan dikirim ke email pelanggan (KEP-128). Kartu pengajuannya
+     * berjanji "diberitahukan melalui email"; pelanggan tanpa email tetap
+     * membacanya di halaman pesanan (PengirimEmail melewatinya).
+     */
+    private function kabari(Pembatalan $pembatalan): void
+    {
+        $this->email->kirim(Order::with('customer')->findOrFail($pembatalan->order_id), 'pembatalan-diputuskan');
     }
 
     /**
@@ -193,5 +208,7 @@ class KebijakanPembatalan
             'diputuskan_oleh' => $olehUserId,
             'diputuskan_pada' => now(),
         ]);
+
+        $this->kabari($pembatalan);
     }
 }

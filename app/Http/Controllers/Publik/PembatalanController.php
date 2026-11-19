@@ -34,6 +34,6 @@ class PembatalanController extends Controller
         $this->kebijakan->ajukan($order, $data['alasan']);
 
         return back()->with('sukses',
-            'Pengajuan pembatalan terkirim. Toko akan mengabari keputusannya di halaman ini.');
+            'Pengajuan pembatalan terkirim. Keputusannya kami kirim lewat email dan tampil di halaman ini.');
     }
 }

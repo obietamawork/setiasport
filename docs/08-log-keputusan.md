@@ -4542,6 +4542,50 @@ buat kemarin".
 
 ---
 
+## KEP-127 — Riwayat di halaman lacak sebagai garis waktu
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien: bagian **Riwayat** di halaman lacak pesanan diganti seperti gambar contoh, yaitu
+garis waktu dengan ikon, judul, satu kalimat penjelasan, dan waktu di kanan.
+
+- Disusun `App\Support\RiwayatPesanan::untuk()`, dari yang terlama. Baris pertama selalu
+  "Pesanan berhasil dibuat" dengan nomor pesanannya; yang terbaru diberi cincin biru.
+- Tiap tahap barang punya ikon, judul, dan kalimatnya sendiri (Masuk antrean desain, Desain sedang
+  dibuat, Mockup siap diperiksa, Desain disetujui, Proses printing, Proses press / sublim, Potong
+  kain, Proses jahit, Finishing & packing, Produksi selesai, dan seterusnya). Di tingkat pesanan
+  hanya yang tidak terwakili tahap barang: Pembayaran diterima, Siap diambil atau Siap dikirim,
+  Pesanan dikirim, Pesanan selesai, dibatalkan, kedaluwarsa. Pesanan satu barang tidak menulis
+  "siap" dua kali; pesanan berbarang banyak menyebut nama barangnya di kalimat.
+- **Hanya yang sudah terjadi.** Gambar contoh juga menulis tahap yang belum terjadi; itu sudah
+  terlihat di deret tahap di atasnya, dan baris bertanggal untuk hal yang belum terjadi
+  menyesatkan.
+- **Catatan staf tidak ikut**: alasan mundur (KEP-098), catatan Perbarui progres (KEP-124), dan
+  alasan pembatalan dari toko. Yang tampil hanya catatan perubahan isi pesanan (KEP-044), sebagai
+  "Pesanan diperbarui".
+
+---
+
+## KEP-128 — Kartu pengajuan pembatalan dan email keputusannya
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien (gambar "Ajukan Pembatalan Pesanan"): bagian pembatalan di halaman lacak menjadi
+kartu yang langsung terbuka, dengan alasan wajib, tombol merah muda "Ajukan pembatalan", dan
+keterangan "Pengajuan akan kami tinjau dan diberitahukan melalui email."
+
+- Kartu menggantikan lipatan "Ingin membatalkan pesanan ini?". Kalimat di bawah judulnya
+  **ketentuan toko untuk tahap pesanan saat ini** (KEP-041), bukan kalimat di gambar ("dapat
+  dibatalkan jika belum masuk proses produksi"): pembatalan saat produksi tetap boleh, hanya uang
+  mukanya tidak kembali. Perkiraan pengembalian tetap ditulis.
+- **Email keputusan baru** (`pembatalan-diputuskan`): dikirim saat toko menyetujui atau menolak
+  pengajuan (`KebijakanPembatalan::setujui()`/`tolak()`). Isinya keputusan, pengembalian dan
+  caranya bila disetujui, catatan toko, dan tautan halaman pesanan; rekening tidak ditulis
+  (KEP-029). Teks WhatsApp-nya ikut tersedia untuk kirim ulang. Pembatalan oleh toko sendiri dan
+  penutupan otomatis tidak mengirim email ini, karena bukan jawaban atas pengajuan.
+- Pelanggan tanpa email (KEP-054) tidak dijanjikan email: keterangannya menjadi "keputusannya
+  tampil di halaman ini", dan pesan setelah mengajukan menyesuaikan.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4672,3 +4716,5 @@ buat kemarin".
 | KEP-124 | Detail pesanan panel dirombak; Perbarui progres hanya langkah sah; penyesuaian berjenis dan beralasan | TERKUNCI |
 | KEP-125 | Kartu persetujuan desain: mockup besar, lipatan pemain, Setujui/Ajukan revisi, nama tetap diminta | TERKUNCI |
 | KEP-126 | Kartu Progres produksi: persen, bilah, lima meja produksi | TERKUNCI |
+| KEP-127 | Riwayat lacak: garis waktu berikon, hanya yang sudah terjadi, tanpa catatan staf | TERKUNCI |
+| KEP-128 | Pembatalan: kartu terbuka dengan ketentuan toko; email keputusan disetujui/ditolak | TERKUNCI |

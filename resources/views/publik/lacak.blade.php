@@ -340,31 +340,27 @@
         </dl>
     </section>
 
-    @if ($order->statusLogs->isNotEmpty())
-        <section class="mt-8">
-            <h2 class="text-xl font-extrabold">Riwayat</h2>
-            <ul class="mt-4 divide-y divide-line border border-line bg-field text-sm">
-                @foreach ($order->statusLogs->take(20) as $log)
-                    <li class="flex flex-wrap justify-between gap-3 px-5 py-2.5">
-                        {{-- Baris yang statusnya tidak berpindah adalah catatan, bukan
-                             kenaikan tahap: misalnya jumlah pesanan diubah (KEP-044).
-                             Menampilkan labelnya saja membuat perubahan tagihan
-                             seolah tidak pernah terjadi. --}}
-                        <span>
-                            @if ($log->dari === $log->ke && $log->catatan)
-                                {{ $log->catatan }}
-                            @else
-                                {{ $log->orderItem?->nama_produk ?? 'Pesanan' }}
-                                {{ \App\Enums\OrderItemStatus::tryFrom($log->ke)?->label()
-                                    ?? OrderStatus::tryFrom($log->ke)?->label() ?? $log->ke }}
-                            @endif
-                        </span>
-                        <span class="text-muted tabular">{{ $log->created_at?->translatedFormat('j M Y, H:i') }}</span>
-                    </li>
-                @endforeach
-            </ul>
-        </section>
-    @endif
+    {{-- Riwayat sebagai garis waktu berikon (KEP-127), seperti gambar klien.
+         Disusun App\Support\RiwayatPesanan: hanya yang sudah terjadi, tanpa
+         catatan staf. --}}
+    @php $riwayat = \App\Support\RiwayatPesanan::untuk($order); @endphp
+    <section class="mt-8">
+        <h2 class="flex items-center gap-2.5 text-xl font-extrabold"><x-ikon nama="jam" class="text-navy-400" /> Riwayat</h2>
+        <p class="mt-1 text-sm text-muted">Berikut adalah riwayat aktivitas dan pembaruan pesanan Anda.</p>
+
+        <ol class="kartu-bayar riwayat-lacak mt-4">
+            @foreach ($riwayat as $r)
+                <li @class(['riwayat-lacak-kini' => $loop->last, 'riwayat-lacak-awal' => $loop->first])>
+                    <span class="riwayat-lacak-ikon"><x-ikon :nama="$r['ikon']" ukuran="size-5" /></span>
+                    <div class="min-w-0 flex-1">
+                        <p class="font-semibold">{{ $r['judul'] }}</p>
+                        <p class="text-sm text-muted">{{ $r['kalimat'] }}</p>
+                    </div>
+                    <p class="tabular shrink-0 text-sm text-muted sm:text-right">{{ $r['waktu']->translatedFormat('j M Y, H.i') }}</p>
+                </li>
+            @endforeach
+        </ol>
+    </section>
 
     {{-- Pembatalan (KEP-041). Ketentuannya ditulis apa adanya SEBELUM tombolnya,
          termasuk kalimat pahit bahwa uang muka bisa hangus: pelanggan yang baru
@@ -376,9 +372,9 @@
         <section class="mt-8 border border-kuning bg-kuning-50 p-5">
             <h2 class="font-bold">Pengajuan pembatalan sedang diperiksa</h2>
             <p class="mt-1 text-sm leading-relaxed">
-                Diajukan {{ $batal->created_at->translatedFormat('j M Y, H:i') }}. Toko akan
-                mengabari keputusannya di halaman ini. Selama belum diputuskan, pesanan Anda
-                tetap berjalan seperti biasa.
+                Diajukan {{ $batal->created_at->translatedFormat('j M Y, H:i') }}. Keputusannya
+                tampil di halaman ini{{ $order->customer->email ? ' dan kami kirim lewat email' : '' }}.
+                Selama belum diputuskan, pesanan Anda tetap berjalan seperti biasa.
             </p>
             <p class="mt-2 text-sm text-muted">Alasan yang Anda tulis: "{{ $batal->alasan }}"</p>
         </section>
@@ -409,10 +405,14 @@
     @endif
 
     @if ($pembatalan['boleh'])
-        <details class="mt-8 border border-line bg-field p-5">
-            <summary class="cursor-pointer font-medium">Ingin membatalkan pesanan ini?</summary>
-
-            <p class="mt-3 text-sm leading-relaxed">{{ $pembatalan['tahap']->ketentuan() }}</p>
+        {{-- Kartu terbuka seperti gambar klien (KEP-128). Kalimat di bawah
+             judulnya ketentuan toko untuk tahap ini, bukan kalimat di gambar:
+             pembatalan saat produksi tetap boleh, hanya uang mukanya hangus. --}}
+        <section class="kartu-bayar mt-8">
+            <h2 class="flex items-center gap-2.5 text-xl font-extrabold">
+                <x-ikon nama="chat" class="text-navy-700" /> Ajukan pembatalan pesanan
+            </h2>
+            <p class="mt-1 leading-relaxed text-muted">{{ $pembatalan['tahap']->ketentuan() }}</p>
 
             @if ($pembatalan['tahap']->adaPengembalian() && $order->sudah_dibayar > 0)
                 <p class="mt-2 text-sm">
@@ -423,26 +423,36 @@
                 </p>
             @endif
 
-            <form method="POST" action="{{ route('lacak.pembatalan', $order->access_token) }}" class="mt-4 space-y-3">
+            <form method="POST" action="{{ route('lacak.pembatalan', $order->access_token) }}" class="mt-5 space-y-4">
                 @csrf
                 <div>
-                    <label for="alasan-batal" class="label-form">Alasan pembatalan</label>
+                    <label for="alasan-batal" class="label-form">Alasan pembatalan <span class="text-merah">*</span></label>
                     <textarea id="alasan-batal" name="alasan" rows="3" class="kotak-input" required
                               minlength="10" maxlength="1000"
-                              placeholder="Contoh: turnamennya diundur, tim belum bisa menentukan ukuran"></textarea>
+                              placeholder="Tulis alasan pembatalan...">{{ old('alasan') }}</textarea>
                     @error('alasan')
                         <p class="mt-1 text-sm text-merah">{{ $message }}</p>
                     @enderror
                 </div>
-                <button type="submit" class="tombol tombol-garis text-merah"
-                        data-teks-proses="Mengirim...">
-                    Ajukan pembatalan
-                </button>
+                <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+                    <button type="submit" class="tombol border border-merah/40 bg-merah-50 text-merah hover:bg-merah-100"
+                            data-teks-proses="Mengirim...">
+                        <x-ikon nama="silang" ukuran="size-4" /> Ajukan pembatalan
+                    </button>
+                    <p class="flex items-center gap-2 text-sm text-muted">
+                        <x-ikon nama="bantuan" ukuran="size-4" />
+                        @if ($order->customer->email)
+                            Pengajuan akan kami tinjau dan diberitahukan melalui email.
+                        @else
+                            Pengajuan akan kami tinjau dan keputusannya tampil di halaman ini.
+                        @endif
+                    </p>
+                </div>
                 <p class="text-xs leading-relaxed text-muted">
-                    Pesanan belum langsung batal. Toko memeriksa dulu, dan Anda dikabari di halaman ini.
+                    Pesanan belum langsung batal. Selama diperiksa, pesanan tetap berjalan seperti biasa.
                 </p>
             </form>
-        </details>
+        </section>
     @endif
 
     {{-- Ditawarkan di sini karena inilah saat pelanggan paling mungkin mau:
