@@ -4733,6 +4733,34 @@ penulisan dan tebal-tipis teks di bagian lain ikut diperhatikan.
 
 ---
 
+## KEP-136 — Lembar kerja seperti gambar klien
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien untuk lembar kerja: gambar contoh menggambar ulang seluruh lembar, dengan catatan
+"QR dibuat penuh sekotak, agak besar" dan "tulisan di samping QR dipindah ke bawah". Pemilik
+proyek memilih seluruh lembar mengikuti gambar.
+
+- **Kepala**: logo toko dan kotak **No. Pesanan**; baris informasi Pemesan, No. Kontak,
+  Pengambilan | Tanggal Pesan, Target Selesai, Jenis Pesanan | **Status Desain** (centang
+  Disetujui pelanggan bila semua barang kustom disetujui, Revisi (n kali)).
+- **Per barang**: Desain yang Disetujui | Spesifikasi Produk | Jumlah Pesanan (dirinci per model
+  bila ada, KEP-123); lalu **Daftar Pemain / Detail Ukuran** (No, Nama Pemain, No. Punggung,
+  Ukuran, Jumlah, Ket.) di samping **Rekap Ukuran** yang diurutkan per kategori lalu ukuran,
+  dengan Total; lalu **QR Pesanan** | **Catatan** (pelanggan dan internal) | **Pemeriksaan Akhir
+  (QC)** berisi lima kotak centang.
+- **QR memenuhi kotaknya** (dibuat 320 px, tampil sampai 44 mm) tanpa tulisan di sampingnya.
+  Petunjuk "Pindai setelah pekerjaan selesai" beserta tautannya pindah ke bawah deretan kotak
+  dengan jarak rapat.
+- **Nomor HP dicetak tersamar** ("0812******77") seperti gambar. Sebelumnya tidak dicetak sama
+  sekali (KEP-056) karena lembar ini difoto ke grup WhatsApp; yang tersamar tetap tidak bisa
+  dipakai menghubungi pelanggan.
+- Aturan cetak yang lama tetap: baris tabel dan bagian atas barang tidak terbelah, kepala tabel
+  "Daftar ukuran KODE · barang" berulang di halaman lanjutan (KEP-100), tanda PESANAN
+  DIBATALKAN, satu QR per barang (KEP-047). Catatan produksi kosong di akhir lembar digantikan
+  kotak Catatan internal per barang.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4872,3 +4900,4 @@ penulisan dan tebal-tipis teks di bagian lain ikut diperhatikan.
 | KEP-133 | Cek pesanan kustom: tabel No/Nama/Ukuran/Jumlah/Harga per pcs dan pengingat | TERKUNCI |
 | KEP-134 | Halaman bayar: pilihan Transfer/QRIS dan Tunai di toko dengan alamat, kode, batas | TERKUNCI |
 | KEP-135 | Kartu Pengiriman seperti gambar; label formulir tebal di seluruh aplikasi | TERKUNCI |
+| KEP-136 | Lembar kerja baru: status desain, rekap ukuran, QR penuh sekotak, QC, petunjuk pindai di bawah | TERKUNCI |

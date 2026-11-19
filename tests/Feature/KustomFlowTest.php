@@ -427,7 +427,7 @@ class KustomFlowTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        $this->assertStringContainsString('Desain yang disetujui', $html);
+        $this->assertStringContainsString('Desain yang Disetujui', $html);
         $this->assertStringContainsString($item->approvedDesign->path, $html);
         $this->assertStringNotContainsString($item->order->customer->no_hp, $html);
     }

@@ -118,8 +118,8 @@ class KerjaQrTest extends TestCase
 
         $this->assertStringContainsString('Jumlah', $html);
         // Baris "ANDI" dari itemProduksi() berjumlah 6, baris tambahan di atas 5.
-        $this->assertMatchesRegularExpression('/<td class="nomor"><strong>6<\/strong><\/td>/', $html);
-        $this->assertMatchesRegularExpression('/<td class="nomor"><strong>5<\/strong><\/td>/', $html);
+        $this->assertMatchesRegularExpression('/<td class="jml">6<\/td>/', $html);
+        $this->assertMatchesRegularExpression('/<td class="jml">5<\/td>/', $html);
     }
 
     /** Pratinjau tautan di grup WhatsApp membuka halaman ini sendiri. */

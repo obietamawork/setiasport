@@ -27,6 +27,7 @@ class WorksheetController extends Controller
             'items.options',
             'items.approvedDesign',
             'items.product',
+            'items.variant',
             'items.productionJobs',
         ]);
 
@@ -40,7 +41,8 @@ class WorksheetController extends Controller
             ->mapWithKeys(fn (OrderItem $i) => [
                 $i->id => [
                     'tautan' => route('kerja', $i->tokenKerja()),
-                    'svg' => $this->qr->svg(route('kerja', $i->tokenKerja()), 170),
+                    // Besar, memenuhi kotak QR di lembar (KEP-136).
+                    'svg' => $this->qr->svg(route('kerja', $i->tokenKerja()), 320),
                 ],
             ]);
 

@@ -306,7 +306,7 @@ class PesananPerUkuranTest extends TestCase
         $this->actingAs($owner)
             ->get(route('panel.pesanan.worksheet', $order))
             ->assertOk()
-            ->assertSee('SD L:6, SMA / Dewasa L:3')
+            ->assertSeeInOrder(['Rekap Ukuran', 'SD L', '6', 'SMA / Dewasa L', '3'])
             ->assertSeeInOrder(['PELATIH', 'SMA / Dewasa L']);
     }
 
