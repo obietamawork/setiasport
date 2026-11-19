@@ -4873,6 +4873,29 @@ dipilih, dengan foto kecil 72 px, sehingga pelanggan tidak bisa membandingkan te
 
 ---
 
+## KEP-141 — Keterangan foto tampil di halaman produk
+**Status:** TERKUNCI · 2026-11-19
+
+Pertanyaan klien atas halaman produk: apakah sketsa pola bisa diganti gambar sungguhan, dan
+apakah kata-katanya bisa diganti juga.
+
+- **Gambar**: sudah bisa tanpa perubahan kode. Foto diunggah di Panel, Produk, Ubah, bagian
+  Foto produk; begitu produk punya foto, sketsa pola beserta kalimat "Sketsa pola tanpa
+  desain..." tidak tampil lagi (KEP-106).
+- **Kata-kata**: kolom **Keterangan gambar** yang selama ini hanya menjadi teks alternatif kini
+  **tampil di bawah foto** halaman produk, sebagai `figcaption`. Saat pelanggan mengetuk foto
+  lain di galeri, keterangannya ikut berganti.
+- Keterangan kosong tersimpan sebagai nama produk; keterangan yang sama dengan nama produk tidak
+  ditampilkan karena nama itu sudah menjadi judul halaman.
+- Kalimat bantuan di Panel diganti menjadi "Tampil di bawah foto di halaman produk. Boleh
+  dikosongkan."
+- Keterangan diisi saat foto diunggah. Untuk mengubahnya, foto dihapus lalu diunggah ulang
+  dengan keterangan baru; ubah keterangan tanpa unggah ulang belum dibuat.
+- Sketsa "Gambaran bentuk" di halaman pemesanan tidak diganti foto: sketsa itu mengikuti model
+  leher dan lengan yang dipilih pelanggan.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5017,3 +5040,4 @@ dipilih, dengan foto kecil 72 px, sehingga pelanggan tidak bisa membandingkan te
 | KEP-138 | Konfigurator: tanpa produk lain, penjelasan opsi desain, kalimat klien, baris pemain rapi | TERKUNCI |
 | KEP-139 | Tautan https Drive/Dropbox di konfigurator dan halaman pesanan, tanpa unggah berkas | TERKUNCI |
 | KEP-140 | Kartu bahan berfoto di konfigurator; bahan terpilih memperlihatkan foto besar dan deskripsi | TERKUNCI |
+| KEP-141 | Keterangan gambar dari Panel tampil di bawah foto; sketsa hilang begitu ada foto | TERKUNCI |

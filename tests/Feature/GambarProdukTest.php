@@ -242,4 +242,34 @@ class GambarProdukTest extends TestCase
         Storage::disk('public')->assertMissing($thumb);
         $this->assertSame(0, $produk->images()->count());
     }
+
+    public function test_keterangan_gambar_tampil_di_bawah_foto_halaman_produk(): void
+    {
+        $produk = $this->produk();
+
+        $this->post(route('panel.produk.gambar.simpan', $produk), [
+            'berkas' => UploadedFile::fake()->image('tim.jpg', 900, 900),
+            'alt' => 'Jersey tim Garuda FC, bahan Milano',
+        ])->assertSessionHasNoErrors();
+
+        // KEP-141: kalimatnya ditulis toko sendiri di Panel, tampil di bawah
+        // foto, bukan cuma tersimpan sebagai teks alternatif.
+        $this->get(route('produk', $produk))
+            ->assertOk()
+            ->assertSeeInOrder(['<figcaption', 'Jersey tim Garuda FC, bahan Milano', '</figcaption>'], false);
+    }
+
+    public function test_keterangan_kosong_tidak_menampilkan_nama_produk_dua_kali(): void
+    {
+        $produk = $this->produk();
+
+        // Keterangan kosong tersimpan sebagai nama produk, yang sudah jadi judul halaman.
+        $this->post(route('panel.produk.gambar.simpan', $produk), [
+            'berkas' => UploadedFile::fake()->image('polos.jpg', 900, 900),
+        ])->assertSessionHasNoErrors();
+
+        $this->get(route('produk', $produk))
+            ->assertOk()
+            ->assertDontSee('<figcaption', false);
+    }
 }

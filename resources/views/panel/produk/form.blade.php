@@ -325,7 +325,7 @@
                 <label for="alt" class="label-form">Keterangan gambar</label>
                 <input type="text" id="alt" name="alt" class="kotak-input" maxlength="150"
                        placeholder="{{ $produk->nama }}">
-                <p class="bantuan-form">Dibaca pembaca layar dan mesin pencari. Boleh dikosongkan.</p>
+                <p class="bantuan-form">Tampil di bawah foto di halaman produk. Boleh dikosongkan.</p>
             </div>
 
             @php $warnaVarian = $produk->variants->pluck('warna')->filter()->unique()->sort()->values(); @endphp

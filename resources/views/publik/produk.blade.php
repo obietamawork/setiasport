@@ -88,15 +88,33 @@
                 <div x-data="{ aktif: 0, gambarPerWarna: @js($gambarPerWarna), gambarPerOpsi: @js($gambarPerOpsi) }"
                      @warna-dipilih.window="if ($event.detail in gambarPerWarna) aktif = gambarPerWarna[$event.detail]"
                      @opsi-dipilih.window="if ($event.detail in gambarPerOpsi) aktif = gambarPerOpsi[$event.detail]">
-                    <div class="kartu relative aspect-4/3 overflow-hidden bg-navy-50">
-                        @foreach ($produk->images as $g)
-                            <img x-show="aktif === {{ $loop->index }}" src="{{ $g->url }}"
-                                 alt="{{ $g->alt ?? $produk->nama }}"
-                                 width="{{ $g->lebar }}" height="{{ $g->tinggi }}"
-                                 class="absolute inset-0 h-full w-full object-cover"
-                                 {{ $loop->first ? '' : 'loading=lazy' }} decoding="async">
-                        @endforeach
-                    </div>
+                    {{-- Keterangan gambar (KEP-141) ditulis toko di Panel dan tampil di
+                         bawah foto yang sedang dilihat. Keterangan kosong tersimpan
+                         sebagai nama produk, yang sudah jadi judul, jadi tidak diulang. --}}
+                    @php
+                        $keteranganFoto = $produk->images->map(fn ($g) => filled($g->alt)
+                            && Str::lower(trim($g->alt)) !== Str::lower(trim($produk->nama)) ? $g->alt : null);
+                    @endphp
+                    <figure>
+                        <div class="kartu relative aspect-4/3 overflow-hidden bg-navy-50">
+                            @foreach ($produk->images as $g)
+                                <img x-show="aktif === {{ $loop->index }}" src="{{ $g->url }}"
+                                     alt="{{ $g->alt ?? $produk->nama }}"
+                                     width="{{ $g->lebar }}" height="{{ $g->tinggi }}"
+                                     class="absolute inset-0 h-full w-full object-cover"
+                                     {{ $loop->first ? '' : 'loading=lazy' }} decoding="async">
+                            @endforeach
+                        </div>
+                        @if ($keteranganFoto->filter()->isNotEmpty())
+                            <figcaption class="text-sm leading-relaxed text-muted">
+                                @foreach ($keteranganFoto as $i => $teks)
+                                    @if ($teks)
+                                        <span x-show="aktif === {{ $i }}" @if ($i > 0) x-cloak @endif class="mt-2 block">{{ $teks }}</span>
+                                    @endif
+                                @endforeach
+                            </figcaption>
+                        @endif
+                    </figure>
 
                     @if ($produk->images->count() > 1)
                         <div class="mt-3 flex flex-wrap gap-2">
