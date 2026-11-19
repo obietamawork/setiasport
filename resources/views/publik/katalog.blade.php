@@ -22,55 +22,30 @@
         <p class="kolom-baca mt-3 leading-relaxed text-muted">{{ $keterangan }}</p>
     @endif
 
-    {{-- Perbedaan dua jalur belanja. Dulu satu bidang penuh setinggi layar, dan
-         itu berarti pengunjung harus menggulir melewati penjelasan sebelum
-         melihat satu pun produk. Isinya tetap, bentuknya diringkas jadi satu
-         baris; yang ingin rinciannya sudah membacanya di halaman depan. --}}
-    @unless (request()->hasAny(['jalur', 'kategori', 'q']))
-        <div class="kartu mt-6 grid divide-y divide-line sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-            <a href="{{ route('katalog', ['jalur' => 'stok']) }}"
-               class="group flex items-center gap-3 p-4 hover:bg-navy-50">
-                <span class="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-navy-50 text-navy">
-                    <x-ikon nama="toko" />
-                </span>
-                <span class="min-w-0 flex-1">
-                    <span class="block font-semibold">Ready Stock</span>
-                    <span class="block text-sm text-muted">
-                        Produk tersedia dan siap dibeli. Pesanan dapat dikirim atau diambil langsung di toko.
-                    </span>
-                </span>
-                <x-ikon nama="lanjut" ukuran="size-4" class="text-navy-300 group-hover:text-navy" />
-            </a>
-
-            <a href="{{ route('katalog', ['jalur' => 'kustom']) }}"
-               class="group flex items-center gap-3 p-4 hover:bg-navy-50">
-                <span class="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-merah-50 text-merah">
-                    <x-ikon nama="kategori" />
-                </span>
-                <span class="min-w-0 flex-1">
-                    <span class="block font-semibold">Custom Apparel (Pre-Order)</span>
-                    <span class="block text-sm text-muted">
-                        Estimasi produksi 7–10 hari kerja setelah desain disetujui.
-                    </span>
-                </span>
-                <x-ikon nama="lanjut" ukuran="size-4" class="text-navy-300 group-hover:text-navy" />
-            </a>
-        </div>
-    @endunless
-
-    {{-- Ready Stock dan Custom adalah dua cara belanja yang berbeda, bukan
-         sekadar dua nilai filter. Dipisah sebagai tab supaya perbedaannya
-         terlihat sebelum pelanggan mulai menjelajah. --}}
-    {{-- Tautan berpindah halaman, jadi nav dengan aria-current, bukan role="tab"
-         yang menjanjikan panel tab yang tidak ada (KEP-104). --}}
-    <nav class="mt-6 flex gap-1 border-b border-line" aria-label="Cara belanja">
-        @foreach ([['', 'Semua'], ['stok', 'Ready Stock'], ['kustom', 'Custom']] as [$nilai, $label])
-            @php $aktifTab = request('jalur', '') === $nilai; @endphp
+    {{-- Tiga cara belanja dalam satu baris (KEP-142). Dulu kartu penjelas dan
+         tab di bawahnya menyaring hal yang sama dan terlihat dobel; kini kartu
+         itulah penyaringnya, dan penjelasnya tetap terbaca setelah dipilih.
+         Tautan berpindah halaman, jadi nav dengan aria-current, bukan
+         role="tab" yang menjanjikan panel tab yang tidak ada (KEP-104). --}}
+    @php $jalurAktif = request()->string('jalur')->toString(); @endphp
+    <nav class="mt-6 grid gap-2 sm:grid-cols-3 sm:gap-3" aria-label="Cara belanja">
+        @foreach ([
+            ['', 'Semua produk', 'Perlengkapan olahraga siap beli dan jersey custom dalam satu daftar.', 'produk', 'bg-navy-50 text-navy'],
+            ['stok', 'Ready Stock', 'Produk tersedia dan siap dibeli. Pesanan dapat dikirim atau diambil langsung di toko.', 'toko', 'bg-navy-50 text-navy'],
+            ['kustom', 'Custom Apparel (Pre-Order)', 'Estimasi produksi 7–10 hari kerja setelah desain disetujui.', 'kategori', 'bg-merah-50 text-merah'],
+        ] as [$nilai, $label, $penjelasan, $ikon, $warnaIkon])
+            @php $aktif = $jalurAktif === $nilai; @endphp
             <a href="{{ route('katalog', array_filter(['jalur' => $nilai, 'kategori' => request('kategori'), 'q' => request('q')])) }}"
-               @if ($aktifTab) aria-current="page" @endif
-               class="-mb-px px-4 py-2.5 text-sm font-semibold transition-colors
-                      {{ $aktifTab ? 'garis-aktif text-navy' : 'text-muted hover:text-ink' }}">
-                {{ $label }}
+               @if ($aktif) aria-current="page" @endif
+               class="kartu flex items-start gap-3 p-3 transition-colors sm:p-4
+                      {{ $aktif ? 'border-navy bg-navy-50 ring-1 ring-navy' : 'hover:border-navy-300 hover:bg-navy-50' }}">
+                <span class="flex size-9 shrink-0 items-center justify-center rounded-[10px] {{ $aktif ? 'bg-navy text-white' : $warnaIkon }}">
+                    <x-ikon :nama="$ikon" />
+                </span>
+                <span class="min-w-0">
+                    <span class="block font-semibold {{ $aktif ? 'text-navy-800' : '' }}">{{ $label }}</span>
+                    <span class="mt-0.5 block text-sm leading-snug text-muted">{{ $penjelasan }}</span>
+                </span>
             </a>
         @endforeach
     </nav>
@@ -80,7 +55,7 @@
          terpisah dari kotak pencarian membuat orang mengira keduanya dua
          pencarian yang berbeda. --}}
     <form method="GET" action="{{ route('katalog') }}" class="mt-5 flex flex-wrap items-center gap-2">
-        {{-- Tab yang sedang aktif ikut terbawa saat filter dikirim. --}}
+        {{-- Cara belanja yang sedang dipilih ikut terbawa saat filter dikirim. --}}
         <input type="hidden" name="jalur" value="{{ request('jalur') }}">
 
         <div class="relative min-w-52 flex-1">

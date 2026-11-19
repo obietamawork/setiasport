@@ -43,13 +43,17 @@ class KartuProdukTest extends TestCase
 
     public function test_kartu_kustom_pre_order_dengan_hari_kerja(): void
     {
-        $this->get(route('katalog', ['jalur' => 'kustom']))
+        $halaman = $this->get(route('katalog', ['jalur' => 'kustom']))
             ->assertOk()
             ->assertSee('Pre Order')
             ->assertSee('Mulai')
             ->assertSee('±7 hari kerja')
-            ->assertDontSee('10 hari kerja')
             ->assertSee('Pesan Custom Celana Training Fullprint');
+
+        // Kartu produk tidak lagi menyebut 10 hari (KEP-132). Satu-satunya
+        // "7–10 hari kerja" adalah kalimat klien di kartu Custom Apparel
+        // (KEP-137), yang sejak KEP-142 tetap tampil sebagai penyaring.
+        $this->assertSame(1, substr_count((string) $halaman->getContent(), '10 hari kerja'));
     }
 
     public function test_stok_habis_tidak_menawarkan_tambah_keranjang(): void

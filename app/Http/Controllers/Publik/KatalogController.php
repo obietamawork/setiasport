@@ -107,11 +107,11 @@ class KatalogController extends Controller
             ];
         }
 
+        // Penjelasan jalur ada di kartu cara belanja yang sedang aktif (KEP-142);
+        // kalimat kedua di bawah judul membuatnya terbaca dobel.
         return match ($jalur) {
-            'stok' => ['Ready Stock', 'Barang yang sudah ada di rak. '.(siap_stok() === 'hari ini'
-                ? 'Bayar dan ambil hari itu juga pada jam buka.'
-                : 'Bayar hari ini, ambil '.siap_stok().' pada jam buka.')],
-            'kustom' => ['Custom jersey', 'Dibuat di workshop kami dengan desain, nama, dan nomor punggung tim Anda.'],
+            'stok' => ['Ready Stock', null],
+            'kustom' => ['Custom jersey', null],
             default => ['Katalog produk', null],
         };
     }

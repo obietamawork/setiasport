@@ -267,11 +267,28 @@ class ProfilUsahaTest extends TestCase
             ->assertSee('Custom Apparel (Pre-Order)')
             ->assertSee('Produk tersedia dan siap dibeli.')
             ->assertSee('hari kerja');
+    }
 
-        // Sudah menyaring berarti sudah tahu maunya; penjelasnya tidak perlu lagi.
+    /**
+     * Kartu penjelas dan tab di bawahnya dulu menyaring hal yang sama, jadi
+     * terlihat dobel (KEP-142). Kini satu baris kartu yang sekaligus menjadi
+     * penyaring; penjelasnya tetap terbaca setelah salah satu dipilih.
+     */
+    public function test_kartu_jalur_sekaligus_penyaring_tanpa_tab_dobel(): void
+    {
+        $halaman = $this->get(route('katalog'))->assertOk();
+        $this->assertSame(1, substr_count((string) $halaman->getContent(), 'href="'.route('katalog', ['jalur' => 'stok']).'"'));
+
         $this->get(route('katalog', ['jalur' => 'stok']))
             ->assertOk()
-            ->assertDontSee('Produk tersedia dan siap dibeli.');
+            ->assertSee('Produk tersedia dan siap dibeli.')
+            ->assertSeeInOrder(['Semua produk', 'aria-current="page"', 'Ready Stock', 'Custom Apparel (Pre-Order)'], false)
+            // Kartu yang aktif sudah menjelaskan; kalimat lain di bawah judul jadi dobel lagi.
+            ->assertDontSee('Barang yang sudah ada di rak.');
+
+        $this->get(route('katalog', ['jalur' => 'kustom']))
+            ->assertOk()
+            ->assertDontSee('Dibuat di workshop kami dengan desain');
     }
 
     public function test_owner_menambah_portofolio_lengkap_dengan_foto(): void

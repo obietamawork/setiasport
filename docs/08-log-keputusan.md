@@ -4896,6 +4896,31 @@ apakah kata-katanya bisa diganti juga.
 
 ---
 
+## KEP-142 — Katalog: tiga kartu cara belanja dalam satu baris
+**Status:** TERKUNCI · 2026-11-19
+
+Pertanyaan klien atas katalog: kartu keterangan Ready Stock dan Custom di atas, lalu tab Semua /
+Ready Stock / Custom di bawahnya, terlihat dobel. Keduanya memang menyaring hal yang sama.
+Pemilik proyek memilih **gabung satu baris**.
+
+- **Satu baris tiga kartu** (`nav` "Cara belanja"): **Semua produk**, **Ready Stock**, dan
+  **Custom Apparel (Pre-Order)**, masing-masing dengan ikon dan kalimatnya. Kalimat Ready Stock
+  dan Custom tetap teks klien (KEP-137); kalimat Semua produk: "Perlengkapan olahraga siap beli
+  dan jersey custom dalam satu daftar."
+- Kartu itulah penyaringnya. Kartu yang aktif bergaris navy dan bertanda `aria-current="page"`;
+  pilihan kategori dan kata pencarian ikut terbawa saat berpindah kartu. **Baris tab dihapus.**
+- Kartu kini **selalu tampil**, juga setelah menyaring, karena kartu itulah cara berpindah
+  jalur. Sebelumnya kartu disembunyikan begitu jalur, kategori, atau pencarian dipilih.
+- Kalimat di bawah judul halaman Ready Stock ("Barang yang sudah ada di rak...") dan Custom
+  jersey ("Dibuat di workshop kami...") dihapus: kartu yang aktif sudah menjelaskannya, dan
+  waktu siap ambil tetap tertulis di kartu produk dan halaman produk. Judul halamannya tetap.
+- Ponsel: tiga kartu bertumpuk, ringkas. Tablet ke atas: satu baris tiga kolom.
+- Catatan untuk klien: di halaman Custom kini terbaca bersamaan "Estimasi produksi 7–10 hari
+  kerja" (kalimat klien di kartu, KEP-137) dan "±7 hari kerja" di kartu produk (KEP-132).
+  Keduanya teks klien dan dibiarkan apa adanya.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5041,3 +5066,4 @@ apakah kata-katanya bisa diganti juga.
 | KEP-139 | Tautan https Drive/Dropbox di konfigurator dan halaman pesanan, tanpa unggah berkas | TERKUNCI |
 | KEP-140 | Kartu bahan berfoto di konfigurator; bahan terpilih memperlihatkan foto besar dan deskripsi | TERKUNCI |
 | KEP-141 | Keterangan gambar dari Panel tampil di bawah foto; sketsa hilang begitu ada foto | TERKUNCI |
+| KEP-142 | Kartu Semua/Ready Stock/Custom jadi penyaring; tab dobel dan kalimat di bawah judul jalur dihapus | TERKUNCI |
