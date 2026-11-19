@@ -103,6 +103,21 @@ class RiwayatLacakTest extends TestCase
         $this->assertStringContainsString('menjadi 14 pcs', end($riwayat)['kalimat']);
     }
 
+    /**
+     * Pesanan kembali ke Diproses dari Menunggu Pelunasan saat barang
+     * dikerjakan ulang atau ditambah. Itu bukan pembayaran baru.
+     */
+    public function test_kembali_diproses_dari_pelunasan_tidak_ditulis_sebagai_pembayaran(): void
+    {
+        $item = $this->barang();
+        $item->order->statusLogs()->create(['dari' => 'MENUNGGU_PEMBAYARAN', 'ke' => 'DIPROSES', 'created_at' => now()->subHours(40)]);
+        $item->order->statusLogs()->create(['dari' => 'MENUNGGU_PELUNASAN', 'ke' => 'DIPROSES', 'created_at' => now()->subHour()]);
+
+        $judul = array_column($this->riwayat($item), 'judul');
+
+        $this->assertCount(1, array_keys($judul, 'Pembayaran diterima', true));
+    }
+
     public function test_halaman_lacak_menampilkan_garis_waktu(): void
     {
         $item = $this->barang();

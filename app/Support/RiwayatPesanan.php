@@ -93,6 +93,13 @@ final class RiwayatPesanan
                 continue;
             }
 
+            // Pesanan kembali ke Diproses dari Menunggu Pelunasan saat barang
+            // dikerjakan ulang atau ditambah: itu bukan pembayaran baru.
+            if (! $tingkatBarang && $log->ke === OrderStatus::DIPROSES->value
+                && ! in_array($log->dari, [null, OrderStatus::MENUNGGU_PEMBAYARAN->value], true)) {
+                continue;
+            }
+
             $peta = $tingkatBarang ? self::TAHAP_BARANG : self::TAHAP_PESANAN;
             $isi = $peta[(string) $log->ke] ?? null;
 

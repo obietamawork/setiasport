@@ -4562,6 +4562,9 @@ garis waktu dengan ikon, judul, satu kalimat penjelasan, dan waktu di kanan.
 - **Catatan staf tidak ikut**: alasan mundur (KEP-098), catatan Perbarui progres (KEP-124), dan
   alasan pembatalan dari toko. Yang tampil hanya catatan perubahan isi pesanan (KEP-044), sebagai
   "Pesanan diperbarui".
+- Status pesanan yang kembali ke Diproses dari Menunggu Pelunasan (barang dikerjakan ulang atau
+  ditambah) tidak ditulis sebagai "Pembayaran diterima"; hanya perpindahan dari Menunggu
+  Pembayaran yang ditulis begitu.
 
 ---
 
