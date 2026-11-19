@@ -58,12 +58,16 @@
             <tbody>
                 @foreach ($log as $l)
                     <tr>
+                        {{-- Jam di baris kedua dan kode aksi boleh patah di mana saja:
+                             sebaris, tabel ini lebih lebar 7-15px dari kartunya di
+                             layar 48-64rem dan harus digeser (KEP-143). --}}
                         <td class="tabular whitespace-nowrap text-sm text-muted">
-                            {{ $l->created_at->translatedFormat('j M Y, H:i') }}
+                            {{ $l->created_at->translatedFormat('j M Y') }}
+                            <span class="block text-xs">{{ $l->created_at->format('H:i') }}</span>
                         </td>
                         <td class="text-sm">{{ $l->user->name ?? 'Sistem / publik' }}</td>
-                        <td class="text-sm font-medium">{{ $l->aksi }}</td>
-                        <td class="text-sm text-muted">
+                        <td class="text-sm font-medium wrap-anywhere">{{ $l->aksi }}</td>
+                        <td class="text-sm text-muted wrap-anywhere">
                             {{ $l->subjek_tipe ? $l->subjek_tipe.' #'.$l->subjek_id : '-' }}
                         </td>
                         <td class="max-w-xs text-xs text-muted">

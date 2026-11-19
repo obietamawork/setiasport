@@ -57,7 +57,11 @@
     @endforeach
 </ul>
 
-<table class="tabel hidden md:table">
+{{-- Tanda tenggat di bawah tanggal, bukan di sampingnya: sebaris, kolom ini
+     selebar 216px dan tabelnya terpotong di layar 64rem (KEP-143). Pembungkus
+     geser hanya jaring pengaman; tabel ini tanpa menu tarik. --}}
+<div class="hidden overflow-x-auto md:block">
+<table class="tabel">
     <thead>
         <tr>
             <th>Kode pesanan</th>
@@ -90,13 +94,14 @@
                     </span>
                 </td>
                 <td class="tabular text-right whitespace-nowrap">{{ $item->qty }} pcs</td>
-                <td class="whitespace-nowrap">
-                    <span class="tabular">{{ $target?->translatedFormat('j M Y') ?? '-' }}</span>
+                <td>
+                    <span class="tabular block whitespace-nowrap">{{ $target?->translatedFormat('j M Y') ?? '-' }}</span>
                     @if ($tanda)
-                        <span class="chip {{ $tanda[1] }} ml-1">{{ $tanda[0] }}</span>
+                        <span class="chip {{ $tanda[1] }} mt-1">{{ $tanda[0] }}</span>
                     @endif
                 </td>
             </tr>
         @endforeach
     </tbody>
 </table>
+</div>

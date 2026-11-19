@@ -65,14 +65,18 @@
                         </li>
                     @endforeach
                 </ul>
-                <table class="tabel hidden md:table">
+                {{-- Kartu ini berbagi lebar dengan kartu stok mulai 80rem, jadi
+                     produk menumpang di bawah nama pelanggan dan tanggal baru
+                     tampil kalau muat (KEP-143). Pembungkus geser hanya jaring
+                     pengaman untuk zoom ekstrem; tabel ini tanpa menu tarik. --}}
+                <div class="hidden overflow-x-auto md:block">
+                <table class="tabel">
                     <thead>
                         <tr>
                             <th>No. pesanan</th>
                             <th>Pelanggan</th>
-                            <th>Produk</th>
                             <th>Status</th>
-                            <th>Tanggal</th>
+                            <th class="xl:hidden 2xl:table-cell">Tanggal</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -80,22 +84,22 @@
                             @php $item = $o->items->first(); @endphp
                             <tr class="hover:bg-navy-50" data-tautan="{{ route('panel.pesanan.show', $o) }}">
                                 <td class="whitespace-nowrap"><a href="{{ route('panel.pesanan.show', $o) }}" class="tabular font-semibold text-navy-700">{{ $o->kode }}</a></td>
-                                {{-- Nama dipotong satu baris: kartu ini berbagi lebar dengan
-                                     kartu stok, dan baris setinggi lima baris teks membuat lima
-                                     pesanan terbaru memakan satu layar penuh. --}}
-                                <td class="max-w-44"><span class="block truncate" title="{{ $o->customer->nama }}">{{ $o->customer->nama }}</span></td>
-                                <td class="max-w-52">
-                                    <span class="block truncate" title="{{ $item?->nama_produk }}">{{ $item?->nama_produk ?? '-' }}</span>
-                                    @if ($item)
-                                        <span class="tabular text-xs text-muted">{{ $o->items->sum('qty') }} pcs</span>
-                                    @endif
+                                {{-- Nama dan produk dipotong satu baris: baris setinggi lima
+                                     baris teks membuat lima pesanan terbaru memakan satu layar.
+                                     w-full max-w-0 membuat kolom ini yang mengalah, bukan tabelnya. --}}
+                                <td class="w-full max-w-0">
+                                    <span class="block truncate font-medium" title="{{ $o->customer->nama }}">{{ $o->customer->nama }}</span>
+                                    <span class="block truncate text-xs text-muted" title="{{ $item?->nama_produk }}">
+                                        {{ $item?->nama_produk ?? '-' }}@if ($item)<span class="tabular"> · {{ $o->items->sum('qty') }} pcs</span>@endif
+                                    </span>
                                 </td>
                                 <td><span class="chip {{ $o->status->warna() }}">{{ $o->status->label() }}</span></td>
-                                <td class="tabular whitespace-nowrap text-muted">{{ $o->created_at->translatedFormat('j M Y') }}</td>
+                                <td class="tabular whitespace-nowrap text-muted xl:hidden 2xl:table-cell">{{ $o->created_at->translatedFormat('j M Y') }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             @endif
         </section>
     @endif

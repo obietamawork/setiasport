@@ -4921,6 +4921,43 @@ Pemilik proyek memilih **gabung satu baris**.
 
 ---
 
+## KEP-143 — Tabel panel dan penanda langkah muat di semua lebar
+**Status:** TERKUNCI · 2026-11-19
+
+Laporan klien: di zoom 100% tabel "Pesanan terbaru" di dasbor terpotong dan daftar Pesanan
+bergeser ke samping. Tangkapan layarnya selebar 1920 px dengan huruf besar, yaitu laptop dengan
+skala Windows 150%: lebar halaman sebenarnya sekitar 1280 px CSS. Pemindaian Playwright di
+sepuluh lebar (390, 768, 853, 911, 1024, 1093, 1280, 1366, 1536, 1920) pada semua halaman
+panel dan publik menemukan lima tabel yang lebih lebar dari kartunya.
+
+Prinsipnya: **tidak ada yang hilang, hanya pindah tempat.** Kolom yang kalah penting menumpang
+di sel lain selama layarnya sempit, lalu kembali ke kolomnya sendiri begitu muat. Tabel yang
+punya menu tarik (Aksi lain) tidak dibungkus kotak geser, karena menunya akan ikut terpotong.
+
+- **Pesanan**: Total dan Sisa pembayaran digabung menjadi satu kolom **Tagihan** (total, lalu
+  "sisa Rp ..." merah atau hijau), seperti kartu di layar sempit. Di bawah 1536 px, status dan
+  tanggal menumpang di bawah kode pesanan, dan jenis barang di bawah nama pelanggan. Tabel dari
+  1049 px menjadi sekitar 640 px; per baris tetap bisa dicentang untuk hapus riwayat.
+- **Dasbor, Pesanan terbaru**: produk menumpang di bawah nama pelanggan (keduanya dipotong satu
+  baris); tanggal disembunyikan selama kartu berbagi lebar dengan kartu stok (1280-1535 px).
+  Kotak geser dipasang sebagai jaring pengaman untuk zoom ekstrem.
+- **Produk**: di bawah 1536 px kategori dan status Tayang menumpang di bawah nama produk;
+  gambar kecil baru tampil mulai 1280 px. Di HP, kartu produknya ikut lebih ringkas.
+- **Stok**: di bawah 1280 px SKU menumpang di bawah nama produk dan varian.
+- **Antrian kerja, daftar pekerjaan**: tanda tenggat turun ke bawah tanggal target, bukan di
+  sampingnya; kotak geser sebagai jaring pengaman.
+- **Riwayat aktivitas**: jam di baris kedua dan kode aktivitas boleh patah, supaya tabelnya
+  tidak lagi harus digeser 7-15 px di layar 768-1024 px.
+- **Penanda langkah pemesanan** (HP): di bawah 768 px hanya langkah yang aktif yang berlabel,
+  yang lain cukup nomornya (label tetap dibaca pembaca layar). Keempat langkah kini muat dari
+  lebar 360 px; dulu hanya satu setengah langkah yang terlihat.
+- Hasil pemindaian ulang: mulai 768 px tidak ada halaman yang bisa digeser ke samping dan tidak
+  ada isi yang terpotong. Di HP yang tersisa hanya penggeser yang memang dirancang begitu
+  (tab segmen dan matriks harga), dan tabel serah terima yang sengaja selebar 44rem dan digeser
+  di dalam kartunya sendiri (klien menyebut revisi serah terima menyusul).
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5067,3 +5104,4 @@ Pemilik proyek memilih **gabung satu baris**.
 | KEP-140 | Kartu bahan berfoto di konfigurator; bahan terpilih memperlihatkan foto besar dan deskripsi | TERKUNCI |
 | KEP-141 | Keterangan gambar dari Panel tampil di bawah foto; sketsa hilang begitu ada foto | TERKUNCI |
 | KEP-142 | Kartu Semua/Ready Stock/Custom jadi penyaring; tab dobel dan kalimat di bawah judul jalur dihapus | TERKUNCI |
+| KEP-143 | Kolom sekunder menumpang di sel lain selama layar sempit; tidak ada halaman yang digeser ke samping mulai 768 px | TERKUNCI |

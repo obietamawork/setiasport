@@ -100,19 +100,22 @@
     </nav>
 
     {{-- Penanda langkah. Langkah yang sudah dilewati bisa diklik untuk mundur:
-         memperbaiki bahan tidak boleh berarti mengetik ulang daftar pemain. --}}
-    <ol x-ref="penanda" class="mt-5 flex items-center gap-2 overflow-x-auto pb-1 text-sm">
+         memperbaiki bahan tidak boleh berarti mengetik ulang daftar pemain.
+         Di HP hanya langkah yang aktif yang berlabel, yang lain cukup nomornya
+         (labelnya tetap dibaca pembaca layar), supaya keempatnya muat tanpa
+         terpotong di tepi layar (KEP-143). --}}
+    <ol x-ref="penanda" class="mt-5 flex items-center gap-1 overflow-x-auto pb-1 text-sm md:gap-2">
         @foreach ($langkah as $i => $nama)
-            <li class="flex shrink-0 items-center gap-2">
+            <li class="flex shrink-0 items-center gap-1 md:gap-2">
                 <button type="button" data-langkah="{{ $i + 1 }}" @click="ke({{ $i + 1 }})" :disabled="{{ $i + 1 }} > tertinggi"
-                        class="flex items-center gap-2 rounded-full py-1 pr-3 pl-1 transition-colors disabled:cursor-not-allowed"
-                        :class="langkah === {{ $i + 1 }} ? 'bg-navy text-white' : ({{ $i + 1 }} <= tertinggi ? 'text-ink hover:bg-navy-50' : 'text-muted')">
+                        class="flex items-center gap-2 rounded-full py-1 pl-1 transition-colors disabled:cursor-not-allowed"
+                        :class="langkah === {{ $i + 1 }} ? 'bg-navy pr-3 text-white' : (({{ $i + 1 }} <= tertinggi ? 'text-ink hover:bg-navy-50' : 'text-muted') + ' pr-1 md:pr-3')">
                     <span class="flex size-6 items-center justify-center rounded-full text-xs font-bold"
                           :class="langkah === {{ $i + 1 }} ? 'bg-white text-navy' : 'bg-navy-100 text-navy-800'">{{ $i + 1 }}</span>
-                    <span class="whitespace-nowrap">{{ $nama }}</span>
+                    <span class="whitespace-nowrap" :class="langkah === {{ $i + 1 }} ? '' : 'sr-only md:not-sr-only'">{{ $nama }}</span>
                 </button>
                 @unless ($loop->last)
-                    <span class="h-px w-6 bg-line-strong" aria-hidden="true"></span>
+                    <span class="h-px w-3 bg-line-strong md:w-6" aria-hidden="true"></span>
                 @endunless
             </li>
         @endforeach

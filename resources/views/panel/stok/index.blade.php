@@ -100,7 +100,8 @@
                 <tr>
                     <th class="w-8"><span class="sr-only">Buka</span></th>
                     <th>Produk / varian</th>
-                    <th class="hidden md:table-cell">SKU</th>
+                    {{-- SKU menumpang di bawah nama di bawah 80rem (KEP-143). --}}
+                    <th class="hidden xl:table-cell">SKU</th>
                     <th class="text-right">Stok</th>
                     <th class="hidden sm:table-cell">Status</th>
                     <th class="text-right">Aksi</th>
@@ -139,11 +140,12 @@
                                     <a href="{{ route('panel.produk.edit', $produk) }}" class="block font-bold text-ink hover:text-navy">{{ $produk->nama }}</a>
                                     <span class="text-xs text-muted">
                                         {{ $tunggal ? 'Varian: tunggal' : $grup->count().' varian' }}
+                                        <span class="tabular hidden md:inline xl:hidden">· {{ $tunggal ? $grup->first()->sku : $produk->sku }}</span>
                                     </span>
                                 </span>
                             </span>
                         </td>
-                        <td class="hidden md:table-cell">
+                        <td class="hidden xl:table-cell">
                             <span class="chip chip-netral tabular border border-line">{{ $tunggal ? $grup->first()->sku : $produk->sku }}</span>
                         </td>
                         <td class="tabular text-right font-bold whitespace-nowrap">
@@ -182,9 +184,10 @@
                                     <span class="flex items-center gap-2 pl-4 text-sm">
                                         <x-ikon nama="lanjut" ukuran="size-4" class="text-navy-300" />
                                         <span class="font-semibold">{{ $v->label }}</span>
+                                        <span class="tabular hidden text-xs text-muted md:inline xl:hidden">{{ $v->sku }}</span>
                                     </span>
                                 </td>
-                                <td class="hidden md:table-cell"><span class="chip chip-netral tabular border border-line">{{ $v->sku }}</span></td>
+                                <td class="hidden xl:table-cell"><span class="chip chip-netral tabular border border-line">{{ $v->sku }}</span></td>
                                 <td class="tabular text-right whitespace-nowrap">
                                     {{ $v->stok }} pcs
                                     <span class="block text-xs font-semibold sm:hidden {{ ['aman' => 'text-ok', 'menipis' => 'text-warn', 'habis' => 'text-merah-tua'][$k] }}">{{ $chip[$k][1] }}</span>

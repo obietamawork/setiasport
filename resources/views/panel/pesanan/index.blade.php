@@ -222,7 +222,9 @@
         </ul>
 
         {{-- Tanpa pembungkus yang bisa digulir: di bawah 64rem daftarnya
-             berganti jadi kartu (KEP-101). --}}
+             berganti jadi kartu (KEP-101), dan menu aksi akan terpotong oleh
+             pembungkus semacam itu. Supaya tetap muat tanpa digeser, di bawah
+             96rem jenis, status, dan tanggal menumpang di kolom lain (KEP-143). --}}
         <table class="tabel tabel-rapat hidden lg:table">
             <thead>
                 <tr>
@@ -231,11 +233,10 @@
                     @endif
                     <th>Kode pesanan</th>
                     <th>Pelanggan</th>
-                    <th>Jenis</th>
-                    <th>Status</th>
-                    <th class="text-right">Total</th>
-                    <th class="text-right">Sisa pembayaran</th>
-                    <th>Tanggal</th>
+                    <th class="hidden 2xl:table-cell">Jenis</th>
+                    <th class="hidden 2xl:table-cell">Status</th>
+                    <th class="text-right">Tagihan</th>
+                    <th class="hidden 2xl:table-cell">Tanggal</th>
                     <th class="text-center">Aksi</th>
                 </tr>
             </thead>
@@ -268,6 +269,13 @@
                                     @include('panel.pesanan.penanda-jalur', ['o' => $o])
                                 </div>
                             @endif
+                            <div class="mt-1.5 2xl:hidden">
+                                <span class="chip {{ $o->status->warna() }}">
+                                    <x-ikon :nama="$o->status->ikon()" ukuran="size-3.5" />
+                                    {{ $o->status->label() }}
+                                </span>
+                                <span class="tabular mt-1 block text-xs text-muted">{{ $o->created_at->translatedFormat('j M Y, H:i') }}</span>
+                            </div>
                         </td>
                         <td>
                             <span class="font-semibold">{{ $o->customer->nama }}</span>
@@ -277,24 +285,31 @@
                                 <x-ikon nama="whatsapp" ukuran="size-3.5" class="text-ok" />
                                 {{ $o->customer->no_hp }}
                             </a>
+                            <span class="mt-1.5 flex items-start gap-1.5 text-xs text-muted 2xl:hidden">
+                                <x-ikon :nama="$ikonJenis" ukuran="size-3.5" class="mt-px text-navy-400" />
+                                <span>{{ $namaJenis }} <span class="tabular">({{ $jumlahJenis }})</span></span>
+                            </span>
                         </td>
-                        <td class="min-w-32">
+                        <td class="hidden min-w-32 2xl:table-cell">
                             <span class="flex items-start gap-2">
                                 <x-ikon :nama="$ikonJenis" ukuran="size-4" class="mt-0.5 text-navy-400" />
                                 <span>{{ $namaJenis }}<span class="tabular block text-xs text-muted">({{ $jumlahJenis }})</span></span>
                             </span>
                         </td>
-                        <td>
+                        <td class="hidden 2xl:table-cell">
                             <span class="chip {{ $o->status->warna() }}">
                                 <x-ikon :nama="$o->status->ikon()" ukuran="size-3.5" />
                                 {{ $o->status->label() }}
                             </span>
                         </td>
-                        <td class="tabular text-right whitespace-nowrap">{{ rupiah($o->total) }}</td>
-                        <td class="tabular text-right font-semibold whitespace-nowrap {{ $o->sisa_tagihan > 0 ? 'text-merah' : 'text-ok' }}">
-                            {{ rupiah($o->sisa_tagihan) }}
+                        {{-- Total dan sisa satu kolom, seperti kartu di layar sempit. --}}
+                        <td class="tabular text-right whitespace-nowrap">
+                            {{ rupiah($o->total) }}
+                            <span class="block text-sm font-semibold {{ $o->sisa_tagihan > 0 ? 'text-merah' : 'text-ok' }}">
+                                sisa {{ rupiah($o->sisa_tagihan) }}
+                            </span>
                         </td>
-                        <td class="tabular whitespace-nowrap text-muted">
+                        <td class="tabular hidden whitespace-nowrap text-muted 2xl:table-cell">
                             {{ $o->created_at->translatedFormat('j M Y') }}
                             <span class="block text-xs">{{ $o->created_at->format('H:i') }}</span>
                         </td>

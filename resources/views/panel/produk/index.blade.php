@@ -143,7 +143,10 @@
             <a href="{{ route('panel.produk.create') }}" class="tombol tombol-navy mt-5">Tambah produk</a>
         </div>
     @else
-        {{-- Di bawah 48rem tabelnya berganti jadi kartu lewat .tabel-hp. --}}
+        {{-- Di bawah 48rem tabelnya berganti jadi kartu lewat .tabel-hp. Supaya
+             tetap muat tanpa digeser (menu aksi terpotong oleh pembungkus geser),
+             kategori dan status menumpang di bawah nama di bawah 96rem, dan
+             gambar kecil baru tampil mulai 80rem (KEP-143). --}}
         <table class="tabel tabel-hp">
             <thead>
                 <tr>
@@ -153,9 +156,10 @@
                                :checked="dipilih.length === semua.length"
                                @change="dipilih = $event.target.checked ? [...semua] : []">
                     </th>
-                    <th colspan="2">Produk</th>
-                    <th>Kategori</th>
-                    <th>Status</th>
+                    <th class="hidden w-16 xl:table-cell"><span class="sr-only">Gambar</span></th>
+                    <th>Produk</th>
+                    <th class="hidden 2xl:table-cell">Kategori</th>
+                    <th class="hidden 2xl:table-cell">Status</th>
                     <th>Stok</th>
                     <th class="text-right">Harga</th>
                     <th class="text-center">Aksi</th>
@@ -182,7 +186,7 @@
                         </td>
                         {{-- Gambar kecil di kolomnya sendiri: itu yang paling cepat
                              dikenali mata saat mencari satu produk di antara lima puluh. --}}
-                        <td class="hidden w-16 md:table-cell">
+                        <td class="hidden w-16 xl:table-cell">
                             @if ($gambar)
                                 <img src="{{ $gambar->thumb_url }}" alt="" width="48" height="48" loading="lazy"
                                      class="size-12 rounded-[8px] border border-line object-cover">
@@ -195,6 +199,14 @@
                         <td data-utama>
                             <a href="{{ route('panel.produk.edit', $p) }}" class="font-semibold text-ink">{{ $p->nama }}</a>
                             <div class="tabular text-xs text-muted">{{ $p->sku }}</div>
+                            <div class="mt-1.5 flex flex-wrap gap-1.5 font-normal 2xl:hidden">
+                                <span class="chip {{ $warnaKategori($p->category->nama) }}">{{ $p->category->nama }}</span>
+                                @if ($p->aktif)
+                                    <span class="chip chip-ok"><span class="size-1.5 rounded-full bg-ok"></span> Tayang</span>
+                                @else
+                                    <span class="chip chip-netral"><x-ikon nama="mata-coret" ukuran="size-3.5" /> Disembunyikan</span>
+                                @endif
+                            </div>
                             @if ($kurang)
                                 <div class="mt-1 flex flex-wrap gap-1.5">
                                     @foreach ($kurang as $apa)
@@ -206,10 +218,10 @@
                                 </div>
                             @endif
                         </td>
-                        <td data-kolom="Kategori">
+                        <td data-kolom="Kategori" class="hidden 2xl:table-cell">
                             <span class="chip {{ $warnaKategori($p->category->nama) }}">{{ $p->category->nama }}</span>
                         </td>
-                        <td data-kolom="Status">
+                        <td data-kolom="Status" class="hidden 2xl:table-cell">
                             @if ($p->aktif)
                                 <span class="chip chip-ok"><span class="size-1.5 rounded-full bg-ok"></span> Tayang</span>
                             @else
