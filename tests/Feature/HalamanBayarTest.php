@@ -99,6 +99,24 @@ class HalamanBayarTest extends TestCase
             ->assertDontSee('-1 jam');
     }
 
+    /**
+     * Pilihan Transfer / QRIS dan Tunai di toko seperti gambar klien (KEP-134).
+     * Tunai berarti datang ke kasir sebelum batas waktu; tidak ada bukti yang
+     * diunggah.
+     */
+    public function test_pilihan_tunai_di_toko_menyebut_alamat_kode_dan_batas(): void
+    {
+        Setting::simpan('toko_alamat', 'Jl. Manyar II No.2, Wonogiri');
+        $order = $this->pesan();
+
+        $this->get(route('lacak.token', $order->access_token))
+            ->assertOk()
+            ->assertSeeInOrder(['Transfer / QRIS', 'Tunai di toko'])
+            ->assertSee('Jl. Manyar II No.2, Wonogiri')
+            ->assertSeeInOrder(['Sebutkan kode pesanan', $order->kode])
+            ->assertSee('Bayar sebelum');
+    }
+
     public function test_tombol_unggah_bukti_dan_catatan_penting_ada(): void
     {
         $order = $this->pesan();

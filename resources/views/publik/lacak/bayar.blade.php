@@ -179,10 +179,55 @@
         @endif
     </div>
 
+    {{-- Dua cara bayar seperti gambar klien (KEP-134): Transfer / QRIS dengan
+         bukti yang diunggah, atau tunai di kasir toko. Setelah bukti transfer
+         terkirim, pilihannya tidak ditawarkan lagi. --}}
+    <div class="space-y-5" x-data="{ cara: 'transfer' }">
+    @unless ($buktiAda)
+        <div class="grid gap-3 sm:grid-cols-2" role="tablist" aria-label="Cara bayar">
+            <button type="button" role="tab" :aria-selected="(cara === 'transfer').toString()" @click="cara = 'transfer'"
+                    class="pilih-metode" :class="cara === 'transfer' && 'pilih-metode-aktif'">
+                <x-ikon nama="uang" ukuran="size-7" />
+                <span class="text-left"><span class="block font-bold">Transfer / QRIS</span><span class="block text-sm opacity-80">Bayar lewat bank atau QRIS, lalu unggah buktinya</span></span>
+            </button>
+            <button type="button" role="tab" :aria-selected="(cara === 'tunai').toString()" @click="cara = 'tunai'"
+                    class="pilih-metode" :class="cara === 'tunai' && 'pilih-metode-aktif'">
+                <x-ikon nama="toko" ukuran="size-7" />
+                <span class="text-left"><span class="block font-bold">Tunai di toko</span><span class="block text-sm opacity-80">Bayar langsung di kasir toko</span></span>
+            </button>
+        </div>
+
+        <div class="kartu-bayar" x-show="cara === 'tunai'" x-cloak>
+            <h3 class="flex items-center gap-2.5 text-lg font-extrabold">
+                <x-ikon nama="toko" ukuran="size-6" class="text-navy-400" /> Bayar tunai di toko
+            </h3>
+            <ol class="langkah-bayar mt-4">
+                <li>
+                    Datang ke <strong>{{ setting('toko_nama', 'Setia Sport') }}</strong>,
+                    {{ setting('toko_alamat') }}.
+                    @if (setting('toko_jam_buka'))
+                        <span class="block text-sm text-muted">Jam buka: {{ preg_replace('/\s*\R\s*/', ', ', trim((string) setting('toko_jam_buka'))) }}</span>
+                    @endif
+                </li>
+                <li>Sebutkan kode pesanan <strong class="tabular">{{ $order->kode }}</strong> di kasir.</li>
+                <li>Bayar <strong class="tabular">{{ rupiah($tagihan['jumlah']) }}</strong>. Kasir mencatatnya, dan pesanan Anda langsung kami proses.</li>
+            </ol>
+            <p class="mt-4 rounded-[10px] bg-kuning-50 px-4 py-3 text-sm leading-relaxed">
+                @if ($tagihan['batas'])
+                    Bayar sebelum <strong>{{ $tagihan['batas']->translatedFormat('l, j F Y H.i') }}</strong>.
+                    Lewat dari itu, pesanan dibatalkan otomatis.
+                @else
+                    Bayar sebelum atau saat mengambil pesanan.
+                @endif
+                Tidak perlu mengunggah bukti.
+            </p>
+        </div>
+    @endunless
+
     {{-- Tujuan pembayaran. Begitu buktinya terkirim, ditutup di balik
          ringkasan: orang yang sudah membayar dan masih melihat QRIS besar di
          layar gampang mengira pembayarannya belum masuk, lalu membayar lagi. --}}
-    <div class="kartu-bayar" x-data="{ metode: @js($qris ? 'qris' : 'transfer') }">
+    <div class="kartu-bayar" x-show="cara === 'transfer'" x-data="{ metode: @js($qris ? 'qris' : 'transfer') }">
         @if ($buktiAda)
             <p class="font-bold">Transfer sudah Anda kirim</p>
             <details class="mt-2">
@@ -282,7 +327,7 @@
     </div>
 
     {{-- Unggah bukti. --}}
-    <div class="kartu-bayar">
+    <div class="kartu-bayar" x-show="cara === 'transfer'">
         <h3 class="flex items-center gap-3 text-lg font-extrabold">
             <x-ikon nama="unggah" ukuran="size-7" class="text-navy-400" />
             Unggah bukti pembayaran
@@ -316,6 +361,8 @@
                 {{ $buktiAda ? 'Ganti bukti' : 'Unggah bukti' }}
             </button>
         </form>
+    </div>
+
     </div>
 
     {{-- Penipu yang menyamar sebagai toko biasanya bekerja lewat WhatsApp

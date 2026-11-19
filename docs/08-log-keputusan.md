@@ -4693,6 +4693,27 @@ sebagai tabel seperti gambar contoh.
 
 ---
 
+## KEP-134 — Pilihan Transfer / QRIS atau Tunai di toko
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien: halaman menunggu pembayaran (KEP-121) mendapat dua pilihan besar seperti gambar
+contoh, **Transfer / QRIS** dan **Tunai di toko**.
+
+- **Transfer / QRIS** berisi tampilan yang sudah ada: QRIS, rekening, cara bayar, dan kotak
+  unggah bukti.
+- **Tunai di toko** berisi nama dan alamat toko, jam buka, kode pesanan yang disebutkan di
+  kasir, nominal, dan batas waktu ("Bayar sebelum ..., lewat dari itu pesanan dibatalkan
+  otomatis"; tanpa batas: "sebelum atau saat mengambil pesanan"). Tidak ada kotak unggah
+  bukti: kasir mencatat pembayarannya dari panel seperti biasa.
+- Subjudulnya ditulis dari sisi pelanggan ("Bayar lewat bank atau QRIS, lalu unggah buktinya",
+  "Bayar langsung di kasir toko"), karena teks di gambar ("Catat pembayaran langsung di toko")
+  berbunyi untuk staf.
+- Setelah bukti transfer terkirim, pilihannya tidak ditawarkan lagi; yang tampil tetap
+  ringkasan transfer yang terlipat (KEP-121).
+- Pilihan ini tidak disimpan di pesanan; ia hanya mengubah petunjuk yang terlihat.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4830,3 +4851,4 @@ sebagai tabel seperti gambar contoh.
 | KEP-131 | Tombol Pesanan sudah saya terima di halaman lacak; email dikirim mengarah ke sana | TERKUNCI |
 | KEP-132 | Kartu produk: Ready Stock/Pre Order, ±N hari kerja, tombol keranjang; kustom 10 hari jadi 7 | TERKUNCI |
 | KEP-133 | Cek pesanan kustom: tabel No/Nama/Ukuran/Jumlah/Harga per pcs dan pengingat | TERKUNCI |
+| KEP-134 | Halaman bayar: pilihan Transfer/QRIS dan Tunai di toko dengan alamat, kode, batas | TERKUNCI |
