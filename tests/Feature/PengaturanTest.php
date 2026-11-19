@@ -55,6 +55,9 @@ class PengaturanTest extends TestCase
             $halaman->getContent(), 'aria-label="Kelompok pengaturan"', '</nav>'
         ));
 
+        // Saklar menyala sebagai bawaan sejak KEP-149; dimatikan dulu supaya
+        // terlihat bahwa kiriman formulir tidak mengubahnya.
+        Setting::simpan('cs_aktif', '0');
         $this->actingAs($this->owner())->put(route('panel.pengaturan.update'), ['setting' => ['cs_aktif' => '1']]);
 
         $this->assertFalse((bool) Setting::ambil('cs_aktif'));

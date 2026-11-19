@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Permission;
 use App\Models\Product;
 use App\Models\Role;
+use App\Models\Setting;
 use App\Models\User;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -94,6 +95,26 @@ class KerangkaPanelTest extends TestCase
             $this->assertNotFalse($ketemu, "Menu \"{$label}\" tidak ada atau salah urutan.");
             $posisi = $ketemu;
         }
+    }
+
+    /**
+     * CS resmi aktif (KEP-149): Customer Service tepat di bawah Pesanan, lalu
+     * menu kerja karyawan, seperti gambar Ruang CS klien.
+     */
+    public function test_customer_service_di_atas_menu_kerja_karyawan(): void
+    {
+        config(['fitur.cs' => true]);
+        Setting::simpan('cs_aktif', '1');
+
+        $menu = $this->menuSamping($this->owner());
+
+        $posisi = -1;
+        foreach (['Dashboard', 'Pesanan', 'Customer Service', 'Antrian kerja', 'Serah terima'] as $label) {
+            $ketemu = strpos($menu, '>'.$label.'<', $posisi + 1);
+            $this->assertNotFalse($ketemu, "Menu \"{$label}\" tidak ada atau salah urutan.");
+            $posisi = $ketemu;
+        }
+        $this->assertStringNotContainsString('>Chat CS<', $menu);
     }
 
     public function test_menu_yang_tidak_ada_di_gambar_contoh_tetap_ada(): void

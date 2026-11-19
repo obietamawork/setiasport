@@ -54,7 +54,9 @@
 
     /*
      * Menu dikelompokkan seperti gambar contoh klien (KEP-111): pekerjaan
-     * harian di atas tanpa judul, lalu Katalog, Laporan, dan Lainnya. Menu yang
+     * harian di atas tanpa judul, lalu Katalog, Laporan, dan Lainnya. Customer
+     * Service tepat di bawah Pesanan, di atas menu kerja karyawan (KEP-149),
+     * seperti gambar Ruang CS klien. Menu yang
      * tidak ada di gambar (Pengguna, Pekerja konveksi, Kesiapan, Riwayat
      * aktivitas) tetap ada di Lainnya: membuangnya berarti fiturnya hilang.
      *
@@ -64,9 +66,9 @@
         '' => [
             ['panel.dashboard', 'Dashboard', null, 'panel.dashboard', null, 'dashboard'],
             ['panel.pesanan.index', 'Pesanan', 'order.lihat', 'panel.pesanan.*', $jumlahPesananAktif ?? null, 'keranjang'],
+            ...(($csTampilMenu ?? true) ? [['panel.cs.index', cs_aktif() ? 'Customer Service' : 'Arsip chat', 'cs.balas', 'panel.cs.*', null, 'chat']] : []),
             ['panel.antrian.index', 'Antrian kerja', null, 'panel.antrian.*', $jumlahAntrian ?? null, 'antrian'],
             ['panel.serah-terima', 'Serah terima', 'serah_terima.proses', 'panel.serah-terima', $jumlahSiapDiambil ?? null, 'serah-terima'],
-            ...(($csTampilMenu ?? true) ? [['panel.cs.index', cs_aktif() ? 'Chat CS' : 'Arsip chat', 'cs.balas', 'panel.cs.*', null, 'chat']] : []),
         ],
         'Katalog' => [
             ['panel.produk.index', 'Produk', 'katalog.kelola', 'panel.produk.*', null, 'produk'],

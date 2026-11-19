@@ -117,9 +117,9 @@ Pos Indonesia', 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
                 'Terisi otomatis dari hasil pencarian. Hanya untuk ditampilkan, tidak dipakai sistem.'],
 
             // Chat CS di website (KEP-030).
-            // Klien membatalkan CS untuk sementara (KEP-034): mati sebagai bawaan,
-            // kodenya tetap ada dan teruji supaya bisa dinyalakan kapan saja.
-            ['cs_aktif', '0', 'bool', 'cs', 'Tampilkan Chat CS',
+            // Klien meresmikan CS (KEP-149, menggantikan KEP-034): menyala sebagai
+            // bawaan. Tampil bila fiturnya dipasang lewat FITUR_CS (KEP-036).
+            ['cs_aktif', '1', 'bool', 'cs', 'Tampilkan Chat CS',
                 'Kalau dimatikan: jendela chat hilang, semua teks "hubungi kami" beralih ke WhatsApp toko, dan tidak ada notifikasi chat di panel. Riwayat chat tetap bisa dibaca di menu Arsip chat.'],
             ['cs_jam_mulai', '07:00', 'string', 'cs', 'Jam Operasional Mulai (JJ:MM)',
                 'Peringatan email untuk chat yang belum dibalas hanya dikirim di antara jam mulai dan selesai.'],

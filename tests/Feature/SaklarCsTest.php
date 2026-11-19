@@ -70,13 +70,33 @@ class SaklarCsTest extends TestCase
             "Halaman $halaman masih menyebut chat CS padahal CS dimatikan.");
     }
 
-    /** Keputusan klien (KEP-034): tanpa CS sampai diputuskan lain. */
-    public function test_instalasi_baru_tanpa_cs(): void
+    /**
+     * Klien meresmikan CS (KEP-149), menggantikan KEP-034: instalasi baru
+     * langsung ber-CS begitu fiturnya dipasang lewat FITUR_CS.
+     */
+    public function test_instalasi_baru_langsung_ber_cs(): void
     {
-        $this->assertFalse(cs_aktif());
+        $this->assertTrue(cs_aktif());
+        $this->getJson(route('cs.status'))->assertOk();
+    }
 
+    /** Tanpa FITUR_CS di .env, saklar yang menyala pun tidak memunculkan CS (KEP-036). */
+    public function test_tanpa_fitur_cs_tetap_tanpa_cs(): void
+    {
+        config(['fitur.cs' => false]);
+
+        $this->assertFalse(cs_aktif());
         $this->tidakMenyebutChatCs($this->get(route('beranda'))->getContent(), 'beranda');
         $this->getJson(route('cs.status'))->assertNotFound();
+    }
+
+    public function test_migrasi_menyalakan_saklar_cs(): void
+    {
+        $this->matikanCs();
+
+        (require database_path('migrations/2026_11_20_100000_nyalakan_chat_cs.php'))->up();
+
+        $this->assertTrue(cs_aktif());
     }
 
     public function test_halaman_publik_bersih_dari_chat_cs_dan_beralih_ke_whatsapp(): void

@@ -5110,6 +5110,31 @@ tampilan lama (sebelum KEP-121/134), tetapi kalimatnya dipasang di tampilan yang
 
 ---
 
+## KEP-149 — Customer Service resmi aktif, menu di bawah Pesanan
+**Status:** TERKUNCI · 2026-11-20
+
+Klien meresmikan Customer Service: "CS resmi aktif sekarang". Keputusan ini menggantikan
+pembatalan sementara di KEP-034. Pemilik proyek mengonfirmasi tafsiran "bagian punya karyawan
+ditaruh di bawah Customer Service" sebagai urutan menu.
+
+- **Menu panel**: Dashboard, Pesanan, **Customer Service**, lalu menu kerja karyawan (Antrian
+  kerja, Serah terima), seperti gambar Ruang CS klien yang menaruh Produksi Jersey tepat di
+  bawah Customer Service. Nama menu "Chat CS" menjadi **Customer Service**; selama CS
+  dimatikan dan masih ada riwayat, namanya tetap "Arsip chat" (KEP-033). Bilah bawah di HP
+  ikut berurutan sama: Dashboard, Pesanan, Customer Service, Antrian kerja.
+- **Saklar menyala**: migrasi `nyalakan_chat_cs` menyalakan "Tampilkan Chat CS" sekali saat
+  rilis, dan seeder memakai nilai bawaan menyala untuk instalasi baru. Saklar tetap bisa
+  dimatikan sementara di Pengaturan.
+- **Fitur dipasang lewat `.env`**: lapis `FITUR_CS` dari KEP-036 tetap ada. `.env.example`
+  kini `FITUR_CS=true`, dan panduan deploy menulis langkahnya: di server, `FITUR_CS=true` lalu
+  `config:cache`. Nilai bawaan di `config/fitur.php` tetap `false`, supaya server yang lupa
+  diisi tidak diam-diam berubah perilaku, dan tes yang tidak memasang fitur CS tetap menguji
+  jalur tanpa CS.
+- Tanpa kunci Pusher chat sudah berjalan dengan jeda sampai 15 detik; kunci Pusher membuatnya
+  seketika (KEP-030).
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5262,3 +5287,4 @@ tampilan lama (sebelum KEP-121/134), tetapi kalimatnya dipasang di tampilan yang
 | KEP-146 | Tab SD/SMP/SMA-Dewasa ber-cm, ikut kategori pemain terakhir, ukuran yang dipesan ditandai; catatan klien | TERKUNCI |
 | KEP-147 | Panel - + per ukuran per model dan kategori; baris baru meniru sebelumnya; Enter berpindah isian, tidak mengirim formulir | TERKUNCI |
 | KEP-148 | Kalimat klien di tautan, batas, QRIS, catatan penting, unggah bukti; jam layanan bawaan ber-WIB | TERKUNCI |
+| KEP-149 | CS menyala lewat migrasi dan seeder; menu Customer Service di atas Antrian kerja dan Serah terima | TERKUNCI |

@@ -115,8 +115,8 @@ ONGKIR_PENYEDIA=biteship      # mati | biteship
 BITESHIP_KUNCI=biteship_live… # kunci LIVE di server; di lokal kunci test, tarifnya sama (KEP-094)
 ONGKIR_KURIR=jne,jnt          # hanya JNE dan J&T: dua kurir yang dilayani toko
 
-FITUR_CS=false                # true hanya kalau chat CS dinyalakan kembali
-# Isi hanya kalau chat CS dinyalakan kembali, lihat "Menyalakan chat CS kembali".
+FITUR_CS=true                 # Customer Service resmi aktif (KEP-149)
+# Chat CS realtime lewat Pusher, lihat "Customer Service".
 BROADCAST_CONNECTION=pusher
 PUSHER_APP_ID=
 PUSHER_APP_KEY=
@@ -134,20 +134,20 @@ Tidak ada kunci payment gateway: pembayaran diverifikasi manual (KEP-023). Nomor
 rekening, gambar QRIS, dan nomor WhatsApp diisi lewat **Panel → Pengaturan**, bukan
 lewat `.env`, supaya pemilik toko bisa menggantinya sendiri tanpa deploy ulang.
 
-### Menyalakan chat CS kembali
+### Customer Service
 
-Klien membatalkan chat CS untuk sementara (KEP-034). Kodenya **tidak dihapus**: ia tetap
-ada, tetap ikut diuji setiap ada perubahan, dan mati sebagai bawaan. Kalau suatu hari
-dibutuhkan lagi:
+Klien meresmikan Customer Service (KEP-149), menggantikan pembatalan sementara di KEP-034.
+Saat pertama kali dirilis:
 
-1. Di `.env` server, ubah `FITUR_CS=false` menjadi `FITUR_CS=true`, lalu
+1. Di `.env` server, pastikan `FITUR_CS=true` (dulu `false`), lalu
    `php artisan config:cache`. Ini memasang fiturnya: tab **Chat CS** muncul di
-   Pengaturan (KEP-036). Selama `false`, tab itu disembunyikan, supaya pemilik toko tidak
-   melihat saklar untuk fitur yang tidak dipakai
-2. **Panel → Pengaturan → Chat CS → Tampilkan Chat CS**, nyalakan, simpan. Jendela chat
-   langsung muncul di website, teks "hubungi kami" beralih dari WhatsApp ke chat, dan
-   menu Chat CS muncul di panel. Tanpa kunci Pusher, chat sudah berfungsi, hanya dengan
-   jeda sampai 15 detik
+   Pengaturan (KEP-036)
+2. Saklar **Panel → Pengaturan → Chat CS → Tampilkan Chat CS** dinyalakan otomatis oleh
+   migrasi `2026_11_20_100000_nyalakan_chat_cs` yang ikut berjalan saat rilis. Jendela chat
+   muncul di website, teks "hubungi kami" beralih dari WhatsApp ke chat, dan menu
+   **Customer Service** muncul di panel tepat di bawah Pesanan. Saklar ini tetap bisa
+   dimatikan sementara dari Pengaturan. Tanpa kunci Pusher, chat sudah berfungsi, hanya
+   dengan jeda sampai 15 detik
 3. Isi jam operasional dan template balasan di Pengaturan dan di Ruang CS
 4. Opsional, supaya pesan muncul seketika: isi kunci Pusher (langkah di bawah), lalu
    `php artisan config:cache` lagi
