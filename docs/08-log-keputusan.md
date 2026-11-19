@@ -4845,6 +4845,8 @@ hanya WhatsApp (KEP-095). Pemilik proyek khawatir unggah langsung rentan seranga
   dari server toko.
 - **Staf**: kartu File desain di detail pesanan menampilkan "File dari pelanggan" (terbaru di
   atas), dan Antrian desain menautkannya langsung ("Desain dari pelanggan: buka tautan").
+- Baris Desain di Cek Pesanan menyebut "Kirim desain sendiri, lewat tautan" bila tautannya sudah
+  ditempel; tanpa tautan tetap "lewat WhatsApp".
 - Tautan selalu dibuka dengan `rel="noopener noreferrer"`. Pelanggan diingatkan mengatur akses
   "Siapa saja yang memiliki link".
 - Unggah langsung tidak dibuat: format desain (CDR, AI, PSD) tidak bisa diperiksa isinya, dan
@@ -5070,6 +5072,9 @@ ketik**.
   - Enter di isian mana pun sebelum langkah Cek Pesanan tidak lagi mengirim formulir. Dulu
     Enter di nama atau jumlah langsung memasukkan pesanan ke keranjang tanpa melewati Cek
     Pesanan.
+- **Tabel Detail pesanan di HP** (langkah Cek Pesanan): ukuran menumpang di bawah nama dan harga
+  per pcs di bawah jumlah, supaya tabelnya muat 390 px tanpa digeser. Dulu kolom Jumlah dan Harga
+  tersembunyi di luar layar.
 
 ---
 

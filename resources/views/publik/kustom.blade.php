@@ -104,6 +104,7 @@
         panduanKategori: @js($panduan->keys()->map(fn ($k) => (string) $k)->values()),
         panduanAktif: @js($panduanAwal),
         moq: {{ $produk->moq }},
+        tautanDesain: @js((string) old('tautan_desain', '')),
         dpPersen: {{ (int) setting('dp_minimum_persen', 50) }},
         diskonMinQty: {{ $produk->diskon_min_qty }},
         diskonPerPcs: {{ $produk->diskon_per_pcs }},
@@ -315,7 +316,7 @@
                         {{-- Tautan saja (KEP-139): tidak ada berkas yang masuk ke server. --}}
                         <label for="tautan-desain" class="label-form mt-3">Tautan Google Drive atau Dropbox <span class="font-normal text-muted">(opsional)</span></label>
                         <input type="url" id="tautan-desain" name="tautan_desain" maxlength="500"
-                               value="{{ old('tautan_desain') }}" placeholder="https://drive.google.com/..."
+                               x-model="tautanDesain" placeholder="https://drive.google.com/..."
                                class="kotak-input bg-field" :disabled="desainSumber !== 'sendiri'">
                         <p class="mt-1 text-xs text-muted">Atur aksesnya "Siapa saja yang memiliki link" supaya desainer bisa membukanya.</p>
                         @error('tautan_desain')
@@ -641,15 +642,17 @@
                     <h3 class="mt-5 flex items-center gap-2 font-bold">
                         <x-ikon nama="daftar" ukuran="size-5" class="text-navy-400" /> Detail pesanan
                     </h3>
+                    {{-- Di HP ukuran menumpang di bawah nama dan harga per pcs di bawah
+                         jumlah, supaya tabelnya muat tanpa digeser (KEP-147). --}}
                     <div class="mt-3 overflow-x-auto">
-                        <table class="tabel tabel-rapat min-w-[30rem] text-sm">
+                        <table class="tabel tabel-rapat text-sm sm:min-w-[30rem]">
                             <thead>
                                 <tr>
                                     <th class="w-10">No.</th>
                                     <th>Nama / Nomor</th>
-                                    <th>Ukuran</th>
+                                    <th class="hidden sm:table-cell">Ukuran</th>
                                     <th class="text-right">Jumlah</th>
-                                    <th class="text-right">Harga</th>
+                                    <th class="hidden text-right sm:table-cell">Harga</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -658,10 +661,14 @@
                                         <td class="tabular text-muted" x-text="i + 1"></td>
                                         <td class="font-medium">
                                             <span x-text="b.nama_punggung || 'Tanpa nama'"></span><span class="tabular" x-show="b.nomor" x-text="' #' + b.nomor"></span>
+                                            <span class="block text-xs font-normal text-muted sm:hidden" x-text="labelUkuran(b)"></span>
                                         </td>
-                                        <td x-text="labelUkuran(b)"></td>
-                                        <td class="tabular text-right" x-text="(b.jumlah || 0) + ' pcs'"></td>
-                                        <td class="tabular text-right" x-text="rp(hargaPotong(b))"></td>
+                                        <td class="hidden sm:table-cell" x-text="labelUkuran(b)"></td>
+                                        <td class="tabular text-right whitespace-nowrap">
+                                            <span x-text="(b.jumlah || 0) + ' pcs'"></span>
+                                            <span class="block text-xs text-muted sm:hidden" x-text="rp(hargaPotong(b)) + ' / pcs'"></span>
+                                        </td>
+                                        <td class="tabular hidden text-right sm:table-cell" x-text="rp(hargaPotong(b))"></td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -1118,7 +1125,9 @@
             },
 
             get labelDesain() {
-                return { katalog: 'Pilih dari katalog', sendiri: 'Kirim desain sendiri, lewat WhatsApp', admin: 'Dibantu admin' }[this.desainSumber];
+                // Tautan Drive/Dropbox yang sudah ditempel ikut disebut (KEP-139).
+                const sendiri = this.tautanDesain.trim() ? 'Kirim desain sendiri, lewat tautan' : 'Kirim desain sendiri, lewat WhatsApp';
+                return { katalog: 'Pilih dari katalog', sendiri, admin: 'Dibantu admin' }[this.desainSumber];
             },
 
             /*
