@@ -160,8 +160,8 @@ Route::post('/lacak/{token}/diterima', KonfirmasiDiterimaController::class)
 // kali per menit; tiap simpan menghapus dan menulis ulang seluruh barisnya.
 Route::prefix('/lacak/{token}/item/{item}')->name('lacak.item.')->middleware('throttle:30,1,item-pesanan')->group(function () {
     Route::post('roster', [PesananItemController::class, 'simpanRoster'])->name('roster');
-    // Tidak ada unggah desain di sini: file desain pelanggan hanya lewat
-    // WhatsApp (KEP-095).
+    // Tidak ada unggah berkas desain di sini (KEP-095): file desain pelanggan
+    // lewat WhatsApp atau tautan https Drive/Dropbox (KEP-139).
     Route::post('setujui', [PesananItemController::class, 'setujuiDesain'])->name('setujui');
     Route::post('revisi', [PesananItemController::class, 'mintaRevisi'])->name('revisi');
     // Catatan desain dari pelanggan, terbuka sampai desain disetujui (KEP-122).

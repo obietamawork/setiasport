@@ -18,6 +18,9 @@ use Illuminate\Http\Request;
  */
 class PesananItemController extends Controller
 {
+    /** Tautan file desain per barang (KEP-139). */
+    private const BATAS_TAUTAN_DESAIN = 10;
+
     public function __construct(
         private RosterPemain $roster,
         private AlurDesain $desain,
@@ -135,9 +138,20 @@ class PesananItemController extends Controller
             'tautan_desain.url' => 'Tautan harus diawali https://, misalnya tautan Google Drive.',
         ], ['tautan_desain' => 'tautan file desain']);
 
+        // Tautan pesanan beredar di grup tim: tanpa batas, siapa pun yang
+        // memegangnya bisa menambah baris tanpa henti ke basis data hosting.
+        $tautanPelanggan = $item->designAssets()->where('tipe', DesignAssetType::UPLOAD_PELANGGAN);
+
+        if ($tautanPelanggan->count() >= self::BATAS_TAUTAN_DESAIN) {
+            return back()->withErrors(
+                'Sudah '.self::BATAS_TAUTAN_DESAIN.' tautan terkirim untuk barang ini. '
+                .'Kalau masih ada file yang perlu dikirim, hubungi kami lewat '.kanal_kontak().'.'
+            );
+        }
+
         $item->designAssets()->create([
             'tipe' => DesignAssetType::UPLOAD_PELANGGAN,
-            'versi' => (int) $item->designAssets()->where('tipe', DesignAssetType::UPLOAD_PELANGGAN)->max('versi') + 1,
+            'versi' => (int) $tautanPelanggan->max('versi') + 1,
             'external_url' => $data['tautan_desain'],
             'catatan' => 'Tautan dari halaman pesanan pelanggan.',
         ]);

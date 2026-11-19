@@ -4837,7 +4837,8 @@ hanya WhatsApp (KEP-095). Pemilik proyek khawatir unggah langsung rentan seranga
   maks. 500 karakter); tautan diabaikan bila sumber desain bukan kirim sendiri.
 - **Halaman pesanan pelanggan**: selama desain belum disetujui dan mockup belum ada, pelanggan
   bisa mengirim atau mengganti tautannya (`POST /lacak/{token}/item/{item}/tautan-desain`).
-  Tautan baru tidak menghapus yang lama.
+  Tautan baru tidak menghapus yang lama. Paling banyak **10 tautan per barang**: tautan pesanan beredar di
+  grup tim, dan tanpa batas siapa pun yang memegangnya bisa terus menambah baris ke basis data.
 - **Penyimpanan**: tautan disimpan sebagai berkas desain bertipe `UPLOAD_PELANGGAN` dengan
   `external_url`, tanpa `path`. **Tidak ada berkas yang masuk ke server**, jadi tidak ada celah
   unggah, tidak ada beban penyimpanan hosting, dan tidak ada berkas berbahaya yang diunduh staf

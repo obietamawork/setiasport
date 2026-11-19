@@ -120,6 +120,24 @@ class TautanDesainTest extends TestCase
         $this->get(route('lacak.token', $item->order->access_token))->assertSee(self::DRIVE);
     }
 
+    public function test_jumlah_tautan_per_barang_dibatasi(): void
+    {
+        $item = $this->barangKirimSendiri();
+        $kirim = fn (int $i) => $this->post(
+            route('lacak.item.tautan-desain', [$item->order->access_token, $item]),
+            ['tautan_desain' => self::DRIVE.'?v='.$i],
+        );
+
+        // Tautan pesanan beredar di grup tim; tanpa batas, siapa pun yang
+        // memegangnya bisa menambah baris tanpa henti ke basis data hosting.
+        foreach (range(1, 10) as $i) {
+            $kirim($i)->assertSessionHas('sukses');
+        }
+        $kirim(11)->assertSessionHasErrors();
+
+        $this->assertSame(10, $item->designAssets()->where('tipe', DesignAssetType::UPLOAD_PELANGGAN)->count());
+    }
+
     public function test_tautan_terkunci_setelah_desain_disetujui(): void
     {
         $item = $this->barangKirimSendiri(disetujui: true);
