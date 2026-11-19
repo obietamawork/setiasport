@@ -10,6 +10,7 @@ use App\Http\Controllers\Publik\HalamanHukumController;
 use App\Http\Controllers\Publik\KatalogController;
 use App\Http\Controllers\Publik\KeranjangController;
 use App\Http\Controllers\Publik\KerjaController;
+use App\Http\Controllers\Publik\KonfirmasiDiterimaController;
 use App\Http\Controllers\Publik\KustomController;
 use App\Http\Controllers\Publik\LacakController;
 use App\Http\Controllers\Publik\OngkirController;
@@ -150,6 +151,10 @@ Route::post('/roll/{token}/selesai', [RollController::class, 'selesai'])
 // tidak bisa dipakai membanjiri panel dengan pengajuan.
 Route::post('/lacak/{token}/pembatalan', [PembatalanController::class, 'ajukan'])
     ->middleware('throttle:6,60,pembatalan')->name('lacak.pembatalan');
+
+// Konfirmasi paket diterima oleh pelanggan sendiri (KEP-131).
+Route::post('/lacak/{token}/diterima', KonfirmasiDiterimaController::class)
+    ->middleware('throttle:6,10,diterima')->name('lacak.diterima');
 
 // Pemegang satu tautan pesanan tidak boleh bisa menulis ulang roster ribuan
 // kali per menit; tiap simpan menghapus dan menulis ulang seluruh barisnya.

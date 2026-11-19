@@ -4631,6 +4631,28 @@ dan tombol Serah terima, plus kotak centang per baris.
 
 ---
 
+## KEP-131 — Pelanggan mengonfirmasi pesanan diterima
+**Status:** TERKUNCI · 2026-11-19
+
+Pertanyaan klien: bagaimana pelanggan mengonfirmasi pesanan sudah diterima? Pemilik proyek
+menyerahkan rancangannya. Sebelumnya hanya staf yang bisa menutup pesanan kirim (KEP-061).
+
+- Di kotak "Sedang dikirim" pada halaman pesanan pelanggan ada tombol **Pesanan sudah saya
+  terima** dengan konfirmasi kedua ("Ya, sudah saya terima"). `POST /lacak/{token}/diterima`
+  (dibatasi 6 kali per 10 menit) memanggil `AlurPesanan::tandaiDiterima()` dengan catatan
+  "dikonfirmasi diterima oleh pelanggan", lalu pesanan selesai seperti bila staf yang menekan.
+  Hanya pesanan yang sedang dikirim; selain itu ditolak.
+- Email **pesanan dikirim** mendapat tombol "Konfirmasi pesanan diterima" yang membuka halaman
+  pesanan di kotak itu (`#konfirmasi-diterima`). **Bukan tautan sekali klik**: pemindai keamanan
+  email membuka tautan secara otomatis, dan tautan yang langsung menutup pesanan akan menandai
+  paket diterima padahal belum sampai.
+- Tombol staf "Paket sudah diterima pelanggan" tetap ada untuk pelanggan yang tidak menekan.
+- Perbaikan sekalian: tahap yang belum terjadi tidak lagi membawa tanggal. Barang yang dikirim
+  sudah berstatus Selesai di item (KEP-026), dan tanggal itu dulu ikut tertulis di tahap
+  "Selesai" pelanggan yang masih abu-abu.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4765,3 +4787,4 @@ dan tombol Serah terima, plus kotak centang per baris.
 | KEP-128 | Pembatalan: kartu terbuka dengan ketentuan toko; email keputusan disetujui/ditolak | TERKUNCI |
 | KEP-129 | Antrian divisi: tab semua divisi dengan jumlah, cari, foto, ringkasan ukuran | TERKUNCI |
 | KEP-130 | Serah terima: tab Siap/Sudah/Semua, pesanan kirim ikut tampil, serahkan beberapa sekaligus | TERKUNCI |
+| KEP-131 | Tombol Pesanan sudah saya terima di halaman lacak; email dikirim mengarah ke sana | TERKUNCI |

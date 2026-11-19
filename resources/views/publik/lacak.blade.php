@@ -144,6 +144,31 @@
                         <p class="mt-1 leading-relaxed">{{ $order->alamat_kirim }}</p>
                     </div>
                 @endif
+
+                {{-- Konfirmasi oleh pelanggan sendiri (KEP-131). Email "pesanan
+                     dikirim" mengarah ke sini; tombolnya meminta konfirmasi kedua
+                     supaya tidak tertekan tanpa sengaja. --}}
+                @if ($order->status === OrderStatus::DIKIRIM && ! $order->diterima_pada)
+                    <div id="konfirmasi-diterima" class="scroll-mt-32 rounded-[12px] border border-ok bg-ok-50 p-4"
+                         x-data="{ yakin: false }">
+                        <p class="font-bold">Paket sudah sampai di tangan Anda?</p>
+                        <p class="mt-1 text-sm leading-relaxed">
+                            Tekan tombol di bawah setelah paketnya Anda terima dan periksa. Pesanan lalu kami tutup.
+                        </p>
+                        <button type="button" class="tombol tombol-navy mt-3" x-show="! yakin" @click="yakin = true">
+                            <x-ikon nama="centang" ukuran="size-4" /> Pesanan sudah saya terima
+                        </button>
+                        <form method="POST" action="{{ route('lacak.diterima', $order->access_token) }}"
+                              class="mt-3 flex flex-wrap items-center gap-2" x-show="yakin" x-cloak>
+                            @csrf
+                            <span class="w-full text-sm font-semibold">Yakin paketnya sudah diterima?</span>
+                            <button type="submit" class="tombol tombol-navy" data-teks-proses="Menyimpan...">
+                                Ya, sudah saya terima
+                            </button>
+                            <button type="button" class="tombol tombol-garis" @click="yakin = false">Belum</button>
+                        </form>
+                    </div>
+                @endif
             </div>
         </section>
 

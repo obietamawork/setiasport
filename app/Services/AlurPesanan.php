@@ -596,17 +596,23 @@ class AlurPesanan
         $this->email->kirim($order->fresh(), 'pesanan-dikirim');
     }
 
-    /** Konfirmasi paket sampai. Sampai ini ditekan, pesanan tetap DIKIRIM. */
-    public function tandaiDiterima(Order $order, ?int $olehUserId = null): void
-    {
+    /**
+     * Konfirmasi paket sampai, oleh staf (KEP-061) atau pelanggan sendiri
+     * (KEP-131). Sampai ini ditekan, pesanan tetap DIKIRIM.
+     */
+    public function tandaiDiterima(
+        Order $order,
+        ?int $olehUserId = null,
+        string $catatan = 'Paket dikonfirmasi sudah diterima pelanggan.',
+    ): void {
         abort_unless($order->status === OrderStatus::DIKIRIM, 422, 'Pesanan ini tidak sedang dalam pengiriman.');
 
-        DB::transaction(function () use ($order, $olehUserId) {
+        DB::transaction(function () use ($order, $olehUserId, $catatan) {
             $order->update(['diterima_pada' => now()]);
 
             $this->sinkronkan(
                 $order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']),
-                'Paket dikonfirmasi sudah diterima pelanggan.'
+                $catatan
             );
 
             unset($olehUserId);

@@ -56,7 +56,10 @@ final class LinimasaItem
                 'label' => self::label($f, $order, $keadaan),
                 'catatan' => $keadaan === 'kini' ? self::catatan($f, $item, $order) : null,
                 'keadaan' => $keadaan,
-                'waktu' => self::waktuMasuk($f, $item, $order, $log),
+                // Tahap yang belum terjadi tidak bertanggal (KEP-131): barang
+                // yang sedang dikirim sudah SELESAI di item, dan tanggal itu
+                // dulu ikut tertulis di tahap Selesai yang belum terjadi.
+                'waktu' => $keadaan === 'nanti' ? null : self::waktuMasuk($f, $item, $order, $log),
                 'subtahap' => $subtahap,
                 'persen' => self::persen($subtahap),
             ];

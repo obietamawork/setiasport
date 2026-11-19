@@ -30,8 +30,20 @@
   {{ kanal_kontak() }} dan akan kami tanyakan ke kurirnya.
 </p>
 
-<a href="{{ $tautan }}"
+{{-- Konfirmasi diterima (KEP-131). Tombol ini hanya membuka halaman pesanan;
+     konfirmasinya ditekan di sana. Tautan di email dibuka otomatis oleh
+     pemindai keamanan, jadi tidak boleh langsung menutup pesanan. --}}
+<p style="margin:0 0 12px;">
+  Kalau paketnya sudah sampai, mohon konfirmasi lewat tombol di bawah. Anda akan dibawa
+  ke halaman pesanan untuk menekan konfirmasinya.
+</p>
+
+<a href="{{ $tautan }}#konfirmasi-diterima"
    style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:3px;">
-  Lihat detail pesanan
+  Konfirmasi pesanan diterima
 </a>
+
+<p style="margin:16px 0 0;font-size:13px;">
+  <a href="{{ $tautan }}" style="color:#16255b;">Lihat detail pesanan</a>
+</p>
 @endsection
