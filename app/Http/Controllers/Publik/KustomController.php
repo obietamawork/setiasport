@@ -30,13 +30,6 @@ class KustomController extends Controller
         return view('publik.kustom', [
             'produk' => $produk,
             'kategori' => KategoriUkuran::cases(),
-
-            // Langkah pertama: pindah produk tanpa keluar dari alur pemesanan.
-            'produkLain' => Product::where('aktif', true)
-                ->where('id', '!=', $produk->id)
-                ->whereHas('prices')
-                ->orderBy('nama')
-                ->get(),
         ]);
     }
 

@@ -4801,6 +4801,30 @@ langsung di `beranda.blade.php`; sisanya mengikuti teks yang sama.
 
 ---
 
+## KEP-138 — Halaman pemesanan kustom lebih ringkas dan jelas
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien untuk halaman pemesanan kustom.
+
+- Bagian **"Mau memesan yang lain?"** (rekomendasi produk lain di langkah pertama) dihapus karena
+  memenuhi tampilan; kueri produk lainnya ikut dihapus dari controller.
+- **Pilihan desain** kini berpenjelasan, karena klien sendiri bingung arti "Pilih dari katalog":
+  - *Pilih dari katalog*: pakai desain dari galeri kami; sebutkan yang disukai di Permintaan
+    desain, warna, nama tim, dan logo kami sesuaikan. Tautan "Lihat galeri desain" ke halaman
+    portofolio muncul saat pilihan ini dipilih.
+  - *Kirim desain sendiri*: sudah punya desain jadi, kirim filenya.
+  - *Dibantu admin*: belum punya desain, desainer membuatkan dari awal.
+- **Kalimat diganti**: keterangan mockup ("Mockup desain akan ditampilkan pada halaman pesanan
+  untuk diperiksa dan disetujui sebelum proses produksi dimulai."), keterangan Data pemain,
+  uang muka di ringkasan ("Pembayaran DP sebesar 50% (Rp...). Sisa pembayaran dilunasi sebelum
+  pesanan diambil."), dan Butuh bantuan ("Masih ragu menentukan bahan atau ukuran? ...").
+- **Baris data pemain**: kolom jumlah dulu 5,5rem, lebih sempit dari tombol − 1 +, sehingga
+  tombol + keluar dari kartunya; produk dengan model per pemain (KEP-123) juga menambah isian
+  ke grid lima kolom. Kolom kini mengikuti isinya: satu baris untuk empat atau lima isian,
+  dua tingkat empat kolom untuk enam isian, dua kolom di layar sempit.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4942,3 +4966,4 @@ langsung di `beranda.blade.php`; sisanya mengikuti teks yang sama.
 | KEP-135 | Kartu Pengiriman seperti gambar; label formulir tebal di seluruh aplikasi | TERKUNCI |
 | KEP-136 | Lembar kerja baru: status desain, rekap ukuran, QR penuh sekotak, QC, petunjuk pindai di bawah | TERKUNCI |
 | KEP-137 | Teks klien: layanan custom, Kenapa Belanja, Tentang, toko/konveksi, katalog, kaki halaman; Donoharjo sekali | TERKUNCI |
+| KEP-138 | Konfigurator: tanpa produk lain, penjelasan opsi desain, kalimat klien, baris pemain rapi | TERKUNCI |

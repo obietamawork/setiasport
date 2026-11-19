@@ -165,25 +165,6 @@
                     <p class="mt-1 text-sm text-muted">
                         Minimal {{ $produk->moq }} pcs. Harga mengikuti bahan, model, dan ukuran yang dipilih.
                     </p>
-
-                    @if ($produkLain->isNotEmpty())
-                        <p class="mt-5 text-sm font-medium">Mau memesan yang lain?</p>
-                        {{-- Kisi sama lebar: pil selebar namanya masing-masing dulu
-                             patah tak beraturan di HP. Tiap ubin membawa sketsa
-                             polanya (KEP-106), jadi setelan, atasan, dan celana
-                             terbedakan sekilas tanpa membaca namanya. --}}
-                        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
-                            @foreach ($produkLain as $lain)
-                                <a href="{{ route('kustom.buat', $lain) }}"
-                                   class="flex flex-col items-center gap-1.5 rounded-[8px] border border-line px-2 py-2.5 text-center text-sm leading-snug hover:border-navy hover:bg-navy-50">
-                                    @if ($lain->pola)
-                                        <span class="block h-12 w-full"><x-pola :pola="$lain->pola" tampak="ringkas" /></span>
-                                    @endif
-                                    {{ $lain->nama }}
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
                 </div>
             </section>
 
@@ -252,17 +233,29 @@
 
                 <div class="kartu p-5">
                     <p class="font-semibold">Desain</p>
+                    {{-- Tiap pilihan membawa penjelasannya (KEP-138): klien sendiri
+                         bingung "pilih dari katalog" itu maksudnya apa. --}}
                     <div class="mt-3 grid gap-2 sm:grid-cols-3">
-                        @foreach (['katalog' => 'Pilih dari katalog', 'sendiri' => 'Kirim desain sendiri', 'admin' => 'Dibantu admin'] as $nilai => $label)
+                        @foreach ([
+                            'katalog' => ['Pilih dari katalog', 'Pakai desain dari galeri kami. Sebutkan desain yang Anda suka di Permintaan desain; warna, nama tim, dan logo kami sesuaikan.'],
+                            'sendiri' => ['Kirim desain sendiri', 'Sudah punya desain jadi? Kirim filenya, kami siapkan mockup-nya.'],
+                            'admin' => ['Dibantu admin', 'Belum punya desain? Ceritakan keinginan Anda, desainer kami membuatkan dari awal.'],
+                        ] as $nilai => [$label, $penjelasan])
                             <button type="button" @click="desainSumber = '{{ $nilai }}'"
-                                    class="rounded-[8px] border px-3 py-2 text-sm transition-colors"
+                                    class="rounded-[10px] border px-3 py-2.5 text-left text-sm transition-colors"
+                                    :aria-pressed="(desainSumber === '{{ $nilai }}').toString()"
                                     :class="desainSumber === '{{ $nilai }}'
-                                        ? 'border-navy bg-navy-50 font-medium text-navy-800'
+                                        ? 'border-navy bg-navy-50 text-navy-800'
                                         : 'border-line hover:border-navy-300'">
-                                {{ $label }}
+                                <span class="block font-semibold">{{ $label }}</span>
+                                <span class="mt-1 block text-xs leading-relaxed text-muted">{{ $penjelasan }}</span>
                             </button>
                         @endforeach
                     </div>
+                    <p x-show="desainSumber === 'katalog'" class="mt-3 text-sm">
+                        <a href="{{ route('portofolio') }}" target="_blank" rel="noopener" class="tautan">Lihat galeri desain</a>
+                        untuk memilih desain yang Anda suka.
+                    </p>
                     <input type="hidden" name="desain_sumber" :value="desainSumber">
 
                     {{-- Dijelaskan di sini, sebelum data pemesan dan pembayaran
@@ -294,7 +287,7 @@
                               x-model="catatanDesain"
                               placeholder="Contoh: warna dasar navy, logo tim di dada kiri, nomor punggung putih"></textarea>
                     <p class="mt-2 text-xs leading-relaxed text-muted">
-                        Mockup dikirim ke halaman pesanan Anda untuk disetujui sebelum apa pun dicetak.
+                        Mockup desain akan ditampilkan pada halaman pesanan untuk diperiksa dan disetujui sebelum proses produksi dimulai.
                     </p>
                 </div>
             </section>
@@ -304,8 +297,7 @@
                 <div>
                     <h2 class="text-xl font-bold">Data pemain</h2>
                     <p class="mt-1 text-sm leading-relaxed text-muted">
-                        Jumlah pesanan dihitung dari daftar ini. Nama dan nomor boleh dikosongkan dulu,
-                        dan masih bisa dilengkapi sampai desain Anda setujui.
+                        Jumlah pesanan mengikuti daftar yang diisi. Nama dan nomor punggung dapat dilengkapi kemudian, sebelum desain disetujui.
                     </p>
                 </div>
 
@@ -316,10 +308,18 @@
                 <div class="space-y-3">
                     <template x-for="(b, i) in baris" :key="i">
                         <div class="kartu p-4">
-                            <div class="grid gap-3 {{ $pakaiKategori
-                                ? 'sm:grid-cols-[minmax(0,1fr)_5.5rem_10rem_7rem_5.5rem]'
-                                : 'sm:grid-cols-[minmax(0,1fr)_5.5rem_7rem_5.5rem]' }}">
-                                <label class="block">
+                            {{-- Kolom mengikuti isinya (KEP-138): kolom jumlah dulu 5,5rem,
+                                 lebih sempit dari tombol − 1 +, dan kolom model per pemain
+                                 menambah satu isian ke grid lima kolom. Enam isian dibagi dua
+                                 tingkat empat kolom; di layar sempit dua kolom, nama selebar
+                                 penuh. --}}
+                            <div class="grid grid-cols-2 gap-3 {{ match (true) {
+                                $pakaiKategori && $opsiPemain => 'lg:grid-cols-4',
+                                $pakaiKategori => 'lg:grid-cols-[minmax(7rem,1fr)_4.5rem_9rem_6rem_9rem]',
+                                (bool) $opsiPemain => 'lg:grid-cols-[minmax(7rem,1fr)_4.5rem_6rem_9rem_9rem]',
+                                default => 'lg:grid-cols-[minmax(7rem,1fr)_4.5rem_6rem_9rem]',
+                            } }}">
+                                <label class="col-span-2 block {{ $pakaiKategori && $opsiPemain ? '' : 'lg:col-span-1' }}">
                                     <span class="label-form">Nama punggung</span>
                                     <input type="text" x-model="b.nama_punggung" :name="`baris[${i}][nama_punggung]`"
                                            maxlength="60" placeholder="Tanpa nama" class="kotak-input">
@@ -361,7 +361,7 @@
                                         </select>
                                     </label>
                                 </template>
-                                <div>
+                                <div class="min-w-0">
                                     <span class="label-form" aria-hidden="true">Jumlah</span>
                                     <x-jumlah x-model.number="b.jumlah" ::name="`baris[${i}][jumlah]`" max="5000" />
                                 </div>
@@ -601,8 +601,7 @@
                         <span class="text-xl font-bold tabular" x-text="rp(total)"></span>
                     </div>
                     <p class="mt-1 text-xs text-muted">
-                        Uang muka <span x-text="rp(dp)"></span> ({{ (int) setting('dp_minimum_persen', 50) }}%),
-                        sisanya dilunasi sebelum barang diambil.
+                        Pembayaran DP sebesar {{ (int) setting('dp_minimum_persen', 50) }}% (<span x-text="rp(dp)"></span>). Sisa pembayaran dilunasi sebelum pesanan diambil.
                     </p>
                 </div>
 
@@ -617,7 +616,7 @@
             <div class="kartu mt-4 p-5 md:mt-0 lg:mt-4">
                 <p class="font-semibold">Butuh bantuan?</p>
                 <p class="mt-1 text-sm leading-relaxed text-muted">
-                    Bingung memilih bahan atau ukuran? Tanya admin dulu, pesanannya tetap diselesaikan di sini.
+                    Masih ragu menentukan bahan atau ukuran? Konsultasikan dengan admin, lalu lanjutkan pemesanan melalui website.
                 </p>
                 <a href="{{ tautan_wa('Halo, saya mau tanya soal pesanan '.$produk->nama) }}"
                    target="_blank" rel="noopener"
