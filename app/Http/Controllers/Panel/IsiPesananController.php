@@ -35,6 +35,7 @@ class IsiPesananController extends Controller
                 'baris.*.jumlah' => ['required', 'integer', 'min:0', 'max:5000'],
                 'baris.*.nama_punggung' => ['nullable', 'string', 'max:60'],
                 'baris.*.nomor' => ['nullable', 'string', 'max:5'],
+                'baris.*.model' => ['nullable', 'integer'],
             ]);
 
             $this->ubah->ubahUkuran($item, $data['baris'], auth('web')->id());

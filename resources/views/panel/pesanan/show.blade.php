@@ -288,6 +288,7 @@
                                                   'jumlah' => $r->jumlah,
                                                   'nama_punggung' => $r->nama_punggung ?? '',
                                                   'nomor' => $r->nomor ?? '',
+                                                  'model' => $r->option_value_id,
                                               ])->values()) }},
                                               pilihan: {{ Js::from($pilihanUkuran) }},
                                               ukuranUntuk(b) {
@@ -311,6 +312,7 @@
                                         <template x-for="(b, i) in baris" :key="i">
                                             <div class="grid gap-2 sm:items-end
                                                         {{ $pakaiKategori ? 'sm:grid-cols-[minmax(0,1fr)_4.5rem_8rem_5rem_4.5rem_auto]' : 'sm:grid-cols-[minmax(0,1fr)_4.5rem_5rem_4.5rem_auto]' }}">
+                                                <input type="hidden" :name="`baris[${i}][model]`" :value="b.model ?? ''">
                                                 <label class="block">
                                                     <span class="label-form">Nama</span>
                                                     <input type="text" x-model="b.nama_punggung" :name="`baris[${i}][nama_punggung]`"

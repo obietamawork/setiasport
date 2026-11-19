@@ -4441,6 +4441,12 @@ di bawah 12. Pemilik proyek memilih model dipilih **per pemain**.
   pelanggan mengirim model tiap baris apa adanya, dan `RosterPemain` menolak perubahan
   jumlah per ukuran dan model, karena mengubah kerah menjadi oblong mengubah tagihan.
   Nama dan nomor tetap bisa diubah.
+- **Penyunting panel** ("Ubah jumlah pesanan", KEP-044) ikut membawa model tiap baris. Sebelumnya
+  baris dibuat ulang tanpa model, dan harga lama dicocokkan per kategori dan ukuran saja, sehingga
+  L berkerah dan L oblong berbagi satu harga. Kuncinya sekarang kategori, ukuran, dan model; baris
+  baru bermodel memakai harga katalog ditambah tambahan modelnya. Permintaan yang tidak menyebut
+  model memakai model baris lama berukuran sama, atau satu-satunya model di barang itu; kalau masih
+  ambigu, staf diminta memilih.
 
 ---
 

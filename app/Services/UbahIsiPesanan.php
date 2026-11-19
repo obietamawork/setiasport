@@ -10,6 +10,7 @@ use App\Models\OptionValue;
 use App\Models\OrderItem;
 use App\Models\OrderItemRoster;
 use App\Models\OrderStatusLog;
+use App\Models\ProductOption;
 use App\Models\ProductVariant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -44,10 +45,18 @@ class UbahIsiPesanan
         $qtyLama = $item->qty;
 
         // Harga yang sudah disepakati tidak dihitung ulang; hanya ukuran yang
-        // benar-benar baru yang memakai harga master hari ini.
+        // benar-benar baru yang memakai harga master hari ini. Modelnya ikut
+        // jadi kunci (KEP-123): L berkerah dan L oblong dua harga berbeda.
         $hargaLama = $item->rosters->mapWithKeys(fn (OrderItemRoster $r) => [
-            $this->kunci($r->kategori?->value, $r->ukuran) => $r->harga_satuan,
+            $this->kunci($r->kategori?->value, $r->ukuran, $r->option_value_id) => $r->harga_satuan,
         ]);
+
+        /** @var ProductOption|null $opsiPemain */
+        $opsiPemain = ProductOption::query()
+            ->where('product_id', $item->product_id)
+            ->where('per_pemain', true)
+            ->with('values')
+            ->first();
 
         $produk = $item->product->loadMissing(['prices', 'sizeCharts']);
 
@@ -67,7 +76,39 @@ class UbahIsiPesanan
 
             $kategori = $pakaiKategori ? KategoriUkuran::tryFrom(trim((string) ($b['kategori'] ?? ''))) : null;
             $ukuran = strtoupper(trim((string) ($b['ukuran'] ?? '')));
-            $kunci = $this->kunci($kategori?->value, $ukuran);
+            $idModel = filled($b['model'] ?? null) ? (int) $b['model'] : null;
+
+            // Permintaan yang tidak menyebut model sama sekali (formulir lama)
+            // memakai model baris lama berukuran sama, atau satu-satunya model
+            // di barang ini. Kalau tidak bisa ditebak, staf diminta memilih,
+            // supaya baris berkerah tidak diam-diam dihargai sebagai oblong.
+            if ($opsiPemain && ! array_key_exists('model', $b)) {
+                $awalan = $this->kunci($kategori?->value, $ukuran);
+                $modelDari = fn (string $kunci): string => substr($kunci, (int) strrpos($kunci, '|') + 1);
+
+                $calon = $hargaLama->keys()->filter(fn (string $k) => str_starts_with($k, $awalan))
+                    ->map($modelDari)->filter()->unique();
+                $calon = $calon->isEmpty() ? $hargaLama->keys()->map($modelDari)->filter()->unique() : $calon;
+
+                if ($calon->count() > 1) {
+                    throw ValidationException::withMessages([
+                        "baris.{$i}.model" => "Pilih {$opsiPemain->nama} untuk baris ke-".($i + 1).'.',
+                    ]);
+                }
+
+                $idModel = $calon->isEmpty() ? null : (int) $calon->first();
+            }
+
+            /** @var OptionValue|null $model */
+            $model = $idModel !== null ? $opsiPemain?->values->firstWhere('id', $idModel) : null;
+
+            if ($idModel !== null && $model === null) {
+                throw ValidationException::withMessages([
+                    "baris.{$i}.model" => 'Pilihan model ini tidak tersedia untuk '.$item->nama_produk.'.',
+                ]);
+            }
+
+            $kunci = $this->kunci($kategori?->value, $ukuran, $model?->id);
 
             if ($pakaiKategori && $kategori === null) {
                 throw ValidationException::withMessages([
@@ -85,7 +126,13 @@ class UbahIsiPesanan
                 ]);
             }
 
-            $harga = $hargaLama[$kunci] ?? $this->hargaTerkini($item, $kategori, $ukuran);
+            if (! isset($hargaLama[$kunci]) && $model && ! $model->aktif) {
+                throw ValidationException::withMessages([
+                    "baris.{$i}.model" => "Model {$model->label} sudah tidak dijual. Pilih model lain.",
+                ]);
+            }
+
+            $harga = $hargaLama[$kunci] ?? $this->hargaTerkini($item, $kategori, $ukuran, $model, $opsiPemain);
 
             if ($harga === null) {
                 throw ValidationException::withMessages([
@@ -101,6 +148,8 @@ class UbahIsiPesanan
                 'harga_satuan' => $harga,
                 'nama_punggung' => trim((string) ($b['nama_punggung'] ?? '')) ?: null,
                 'nomor' => trim((string) ($b['nomor'] ?? '')) ?: null,
+                'option_value_id' => $model?->id,
+                'model' => $model?->label,
             ];
         }
 
@@ -190,11 +239,22 @@ class UbahIsiPesanan
      * katalog: yang berubah cuma ukurannya, bukan kesepakatan soal kerah dan
      * lengan panjang.
      */
-    private function hargaTerkini(OrderItem $item, ?KategoriUkuran $kategori, string $ukuran): ?int
-    {
+    private function hargaTerkini(
+        OrderItem $item,
+        ?KategoriUkuran $kategori,
+        string $ukuran,
+        ?OptionValue $model = null,
+        ?ProductOption $opsiPemain = null,
+    ): ?int {
         $produk = $item->product->load(['prices', 'sizeSurcharges', 'options.values']);
 
         $perPcs = $item->options->where('basis', PriceBasis::PER_PCS);
+
+        // Pesanan lama memilih model sekali untuk seluruh barang. Baris yang
+        // memilih modelnya sendiri tidak ikut menanggung tambahan itu.
+        if ($model && $opsiPemain) {
+            $perPcs = $perPcs->where('option_nama', '!==', $opsiPemain->nama);
+        }
 
         $nilaiOpsi = $perPcs->map(fn ($o) => $produk->options
             ->firstWhere('nama', $o->option_nama)
@@ -214,12 +274,12 @@ class UbahIsiPesanan
             ->reject(fn ($o) => $bahan !== null && $o->option_value === $bahan->label)
             ->sum('tambahan_harga');
 
-        return $dasar + $tambahan + $produk->tambahanUkuran($ukuran);
+        return $dasar + $tambahan + $produk->tambahanUkuran($ukuran) + ($model->tambahan_harga ?? 0);
     }
 
-    private function kunci(?string $kategori, string $ukuran): string
+    private function kunci(?string $kategori, string $ukuran, ?int $model = null): string
     {
-        return ($kategori ?? '').'|'.$ukuran;
+        return ($kategori ?? '').'|'.$ukuran.'|'.($model ?? '');
     }
 
     /**
