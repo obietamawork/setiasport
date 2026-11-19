@@ -97,20 +97,54 @@
             <p class="mt-4 rounded-[10px] bg-biru-50 px-4 py-2.5 text-sm leading-relaxed">{{ $kini['catatan'] }}</p>
         @endif
 
-        {{-- Subtahap produksi sebagai deret singkat, hanya setelah produksi mulai. --}}
-        @php $produksi = collect($linimasa['fase'])->first(fn ($f) => $f['subtahap'] !== [] && $f['keadaan'] !== 'nanti'); @endphp
-        @if ($produksi)
-            <div class="mt-3 flex flex-wrap gap-2">
-                @foreach ($produksi['subtahap'] as $sub)
-                    <span class="chip {{ $sub['keadaan'] === 'kini' ? 'chip-biru' : ($sub['keadaan'] === 'lewat' ? 'chip-ok' : 'chip-netral') }}">
-                        @if ($sub['keadaan'] === 'lewat') <x-ikon nama="centang" ukuran="size-3.5" /> @endif
-                        {{ $sub['label'] }}{{ $sub['keadaan'] === 'kini' ? ', sedang dikerjakan' : '' }}
-                    </span>
-                @endforeach
-            </div>
-        @endif
     @endif
 </article>
+
+{{-- Progres produksi di bawah deret tahap (KEP-126), seperti gambar klien:
+     persen, bilah, dan lima meja produksi. Hanya setelah produksi mulai. --}}
+@php $produksi = $linimasa['batal'] ? null : collect($linimasa['fase'])->first(fn ($f) => $f['subtahap'] !== [] && $f['keadaan'] !== 'nanti'); @endphp
+@if ($produksi)
+    <section class="kartu-bayar" aria-label="Progres produksi {{ $item->nama_produk }}">
+        <div class="flex items-baseline justify-between gap-3">
+            <h3 class="text-lg font-extrabold">Progres produksi</h3>
+            <p class="tabular text-lg font-extrabold">{{ $produksi['persen'] }}%</p>
+        </div>
+        <div class="mt-3 h-3 overflow-hidden rounded-full bg-navy-50" role="progressbar"
+             aria-valuenow="{{ $produksi['persen'] }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="h-full rounded-full bg-biru-terang" style="width: {{ $produksi['persen'] }}%"></div>
+        </div>
+
+        <ol class="mt-5 grid gap-3 sm:grid-cols-5 sm:gap-2">
+            @foreach ($produksi['subtahap'] as $sub)
+                <li class="flex items-center gap-3 sm:flex-col sm:gap-1.5 sm:text-center">
+                    <span @class([
+                        'flex size-10 shrink-0 items-center justify-center rounded-full',
+                        'bg-ok text-white' => $sub['keadaan'] === 'lewat',
+                        'bg-biru-100 text-biru-700' => $sub['keadaan'] === 'kini',
+                        'text-muted' => $sub['keadaan'] === 'nanti',
+                    ])>
+                        <x-ikon :nama="match ($sub['keadaan']) { 'lewat' => 'centang', 'kini' => 'muat-ulang', default => 'jam' }" ukuran="size-5" />
+                    </span>
+                    <span class="min-w-0">
+                        <span @class([
+                            'block font-bold',
+                            'rounded-[8px] bg-biru-50 px-2 text-biru-700' => $sub['keadaan'] === 'kini',
+                        ])>{{ $sub['label'] }}</span>
+                        <span class="block text-sm text-muted tabular">
+                            @if ($sub['keadaan'] === 'lewat')
+                                {{ $sub['waktu']?->translatedFormat('j M') ?? 'Selesai' }}
+                            @elseif ($sub['keadaan'] === 'kini')
+                                Sedang dikerjakan
+                            @else
+                                Menunggu
+                            @endif
+                        </span>
+                    </span>
+                </li>
+            @endforeach
+        </ol>
+    </section>
+@endif
 
 @if (! $linimasa['batal'] && $item->status_item === App\Enums\OrderItemStatus::MENUNGGU_PERSETUJUAN)
     {{-- Selama menunggu persetujuan, kartu persetujuan (KEP-125) memuat

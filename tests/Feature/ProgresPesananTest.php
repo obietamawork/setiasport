@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Enums\FasePesanan;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Support\LinimasaItem;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SettingSeeder;
@@ -111,6 +113,39 @@ class ProgresPesananTest extends TestCase
             ->assertSee('Total 7 pemain')
             ->assertDontSee('Ubah data PEMAIN 1')
             ->assertDontSee('Ubah catatan');
+    }
+
+    /**
+     * Progres produksi (KEP-126): subtahap yang selesai dihitung penuh, yang
+     * sedang dikerjakan setengah. Press berjalan setelah Printing selesai:
+     * (1 + 0,5) dari 5 subtahap.
+     */
+    public function test_persen_produksi_dihitung_dari_subtahap(): void
+    {
+        $item = $this->pesanan('PRESS');
+        $order = $item->order->load('statusLogs');
+
+        $produksi = collect(LinimasaItem::untuk($item, $order)['fase'])->firstWhere('fase', FasePesanan::PRODUKSI);
+
+        $this->assertSame(30, $produksi['persen']);
+    }
+
+    public function test_kartu_progres_produksi_tampil_saat_produksi(): void
+    {
+        $item = $this->pesanan('PRESS');
+
+        $this->get(route('lacak.token', $item->order->access_token))
+            ->assertOk()
+            ->assertSeeInOrder(['Progres produksi', '30%', 'Printing Jersey', 'Press / Sublime', 'Sedang dikerjakan', 'Potong Kain', 'Menunggu']);
+    }
+
+    public function test_kartu_progres_produksi_belum_tampil_sebelum_produksi(): void
+    {
+        $item = $this->pesanan('PROSES_DESAIN', disetujui: false);
+
+        $this->get(route('lacak.token', $item->order->access_token))
+            ->assertOk()
+            ->assertDontSee('Progres produksi');
     }
 
     public function test_catatan_bisa_diubah_sebelum_desain_disetujui(): void

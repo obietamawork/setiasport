@@ -645,7 +645,8 @@ class KustomFlowTest extends TestCase
             ->assertSee('Desain &amp; Data', false)
             ->assertSee('Potong Kain')
             ->assertSee('Press / Sublime')
-            ->assertSee('sedang dikerjakan');
+            ->assertSee('Progres produksi')
+            ->assertSee('Sedang dikerjakan');
     }
 
     public function test_toko_tidak_bisa_melewati_gerbang_persetujuan(): void

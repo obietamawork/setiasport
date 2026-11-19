@@ -25,7 +25,8 @@ final class LinimasaItem
      * @return array{batal: bool, fase: list<array{
      *     fase: FasePesanan, label: string, catatan: ?string,
      *     keadaan: 'lewat'|'kini'|'nanti', waktu: ?Carbon,
-     *     subtahap: list<array{label: string, keadaan: 'lewat'|'kini'|'nanti', waktu: ?Carbon}>
+     *     subtahap: list<array{label: string, keadaan: 'lewat'|'kini'|'nanti', waktu: ?Carbon}>,
+     *     persen: ?int
      * }>}
      */
     public static function untuk(OrderItem $item, Order $order): array
@@ -48,13 +49,16 @@ final class LinimasaItem
                 default => 'nanti',
             };
 
+            $subtahap = self::subtahap($f, $item, $log);
+
             $fase[] = [
                 'fase' => $f,
                 'label' => self::label($f, $order, $keadaan),
                 'catatan' => $keadaan === 'kini' ? self::catatan($f, $item, $order) : null,
                 'keadaan' => $keadaan,
                 'waktu' => self::waktuMasuk($f, $item, $order, $log),
-                'subtahap' => self::subtahap($f, $item, $log),
+                'subtahap' => $subtahap,
+                'persen' => self::persen($subtahap),
             ];
         }
 
@@ -108,16 +112,11 @@ final class LinimasaItem
                 OrderItemStatus::MENUNGGU_PERSETUJUAN => 'Mockup sudah siap dan menunggu persetujuan Anda di bawah. Produksi baru dimulai setelah Anda setuju.',
                 default => $f->catatan(),
             },
-            $f === FasePesanan::PRODUKSI && $item->status_item === OrderItemStatus::ANTRIAN_PRODUKSI
-                => 'Desain terkunci. Menunggu giliran masuk mesin.',
-            $f === FasePesanan::PELUNASAN
-                => 'Barang sudah jadi. Sisa '.rupiah($order->sisa_tagihan).' dilunasi dulu, lalu kode ambil terbit.',
-            $f === FasePesanan::SIAP && $order->status === OrderStatus::MENUNGGU_PELUNASAN
-                => 'Barang ini sudah siap. Kode ambil terbit setelah pesanan ini lunas.',
-            $f === FasePesanan::SIAP && self::menungguBarangLain($order)
-                => 'Barang ini sudah siap, dan diserahkan bersamaan dengan barang lain di pesanan ini begitu semuanya selesai.',
-            $f === FasePesanan::SIAP && $order->dikirim() && ! $order->dikirim_pada
-                => 'Sedang kami siapkan untuk diserahkan ke jasa kirim.',
+            $f === FasePesanan::PRODUKSI && $item->status_item === OrderItemStatus::ANTRIAN_PRODUKSI => 'Desain terkunci. Menunggu giliran masuk mesin.',
+            $f === FasePesanan::PELUNASAN => 'Barang sudah jadi. Sisa '.rupiah($order->sisa_tagihan).' dilunasi dulu, lalu kode ambil terbit.',
+            $f === FasePesanan::SIAP && $order->status === OrderStatus::MENUNGGU_PELUNASAN => 'Barang ini sudah siap. Kode ambil terbit setelah pesanan ini lunas.',
+            $f === FasePesanan::SIAP && self::menungguBarangLain($order) => 'Barang ini sudah siap, dan diserahkan bersamaan dengan barang lain di pesanan ini begitu semuanya selesai.',
+            $f === FasePesanan::SIAP && $order->dikirim() && ! $order->dikirim_pada => 'Sedang kami siapkan untuk diserahkan ke jasa kirim.',
             default => $f->catatan($order->dikirim()),
         };
     }
@@ -152,6 +151,28 @@ final class LinimasaItem
             ->all();
 
         return $log->whereIn('ke', $statusFase)->sortBy('created_at')->first()?->created_at;
+    }
+
+    /**
+     * Progres produksi dalam persen (KEP-126): subtahap yang selesai dihitung
+     * penuh, yang sedang dikerjakan setengah, supaya bilahnya bergerak begitu
+     * meja berikutnya mulai bekerja, bukan baru setelah ia selesai.
+     *
+     * @param  list<array{label: string, keadaan: string, waktu: ?Carbon}>  $subtahap
+     */
+    private static function persen(array $subtahap): ?int
+    {
+        if ($subtahap === []) {
+            return null;
+        }
+
+        $nilai = array_sum(array_map(fn (array $s) => match ($s['keadaan']) {
+            'lewat' => 1.0,
+            'kini' => 0.5,
+            default => 0.0,
+        }, $subtahap));
+
+        return (int) round($nilai / count($subtahap) * 100);
     }
 
     /** @return list<array{label: string, keadaan: string, waktu: ?Carbon}> */

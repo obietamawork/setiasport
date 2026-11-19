@@ -4520,6 +4520,28 @@ ikon panah di kanan.
 
 ---
 
+## KEP-126 — Progres produksi di bawah tahap pesanan pelanggan
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien untuk halaman progres pesanan (KEP-122): "di bagian produksi kan ada beberapa
+proses, bagaimana kalau prosesnya diletakkan di bawahnya?", dengan gambar contoh "Progres
+Produksi 40%" dan catatan "cuma diganti tata letaknya, tulisan kata-katanya seperti yang kamu
+buat kemarin".
+
+- Di bawah kartu tahap setiap barang, begitu tahap Produksi berjalan atau sudah lewat, tampil
+  kartu **Progres produksi**: persen di kanan, bilah kemajuan, dan lima meja produksi (Printing
+  Jersey, Press / Sublime, Potong Kain, Jahit, Finishing & Packing) dengan centang hijau dan
+  tanggal untuk yang selesai, ikon biru dan "Sedang dikerjakan" untuk yang berjalan, jam dan
+  "Menunggu" untuk yang belum. Menggantikan deret chip subtahap sebelumnya.
+- Label dan kalimatnya tetap yang lama (`OrderItemStatus::label()`, "Sedang dikerjakan"), sesuai
+  permintaan; teks di gambar contoh tidak dipakai.
+- **Persen** (`LinimasaItem`, kunci `persen` per fase): subtahap selesai dihitung penuh, yang
+  sedang dikerjakan setengah, dibagi jumlah subtahap. Press yang berjalan setelah Printing selesai
+  = 30%. Antrian produksi = 0%, setelah Finishing = 100%.
+- Di HP subtahapnya disusun menurun, di layar lebar lima kolom.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4649,3 +4671,4 @@ ikon panah di kanan.
 | KEP-123 | Model per pemain: kerah dan oblong dalam satu pesanan | TERKUNCI |
 | KEP-124 | Detail pesanan panel dirombak; Perbarui progres hanya langkah sah; penyesuaian berjenis dan beralasan | TERKUNCI |
 | KEP-125 | Kartu persetujuan desain: mockup besar, lipatan pemain, Setujui/Ajukan revisi, nama tetap diminta | TERKUNCI |
+| KEP-126 | Kartu Progres produksi: persen, bilah, lima meja produksi | TERKUNCI |
