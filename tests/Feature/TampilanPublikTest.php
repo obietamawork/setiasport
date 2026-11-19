@@ -113,6 +113,29 @@ class TampilanPublikTest extends TestCase
             ->assertSee('Salin tautan pesanan');
     }
 
+    public function test_tautan_pesanan_bisa_dibagikan_lewat_whatsapp(): void
+    {
+        $varian = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();
+
+        $this->post(route('keranjang.tambah'), ['variant_id' => $varian->id, 'qty' => 1]);
+        $this->post('/checkout', [
+            'nama' => 'Budi Santoso',
+            'email' => 'budi@contoh.test',
+            'no_hp' => '081234567890',
+            'setuju' => '1',
+        ]);
+
+        $order = Order::latest('id')->firstOrFail();
+        $tautan = route('lacak.token', $order->access_token);
+
+        // KEP-145: tanpa nomor tujuan, jadi pelanggan sendiri yang memilih
+        // kontak atau grup timnya; pesannya membawa tautan pesanan.
+        $this->get($tautan)
+            ->assertOk()
+            ->assertSee('Bagikan lewat WhatsApp')
+            ->assertSee('https://wa.me/?text='.rawurlencode('Pesanan '.$order->kode.' di Setia Sport: '.$tautan), false);
+    }
+
     /**
      * Ukuran dipilih lewat kotak, bukan dropdown (KEP-045). Ukuran yang habis
      * tetap tampil dalam keadaan mati, supaya pembeli tahu ukurannya memang ada

@@ -4999,6 +4999,22 @@ Klien mengganti kalimat di langkah Cek pesanan dan halaman checkout (Data pemesa
 
 ---
 
+## KEP-145 — Bagikan tautan pesanan lewat WhatsApp
+**Status:** TERKUNCI · 2026-11-19
+
+Pasangan KEP-144. Klien ingin tautan pesanan bisa sampai lewat WhatsApp, bukan hanya email.
+
+- Halaman pesanan pelanggan mendapat tombol **Bagikan lewat WhatsApp** di samping "Salin
+  tautan pesanan". Tombolnya membuka `https://wa.me/?text=...` **tanpa nomor tujuan**, jadi
+  pelanggan sendiri yang memilih kontak atau grup timnya. Isi pesannya: "Pesanan SS-... di
+  Setia Sport: <tautan pesanan>".
+- Pesan WhatsApp yang disiapkan untuk admin di detail pesanan panel sudah memuat tautan pesanan
+  sejak awal (`PengirimEmail::teksWhatsApp`), jadi tidak diubah.
+- Yang terkirim otomatis tetap hanya email. Sistem tidak mengirim WhatsApp sendiri; kalimat di
+  checkout ditulis sesuai kenyataan itu (KEP-144).
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5147,3 +5163,4 @@ Klien mengganti kalimat di langkah Cek pesanan dan halaman checkout (Data pemesa
 | KEP-142 | Kartu Semua/Ready Stock/Custom jadi penyaring; tab dobel dan kalimat di bawah judul jalur dihapus | TERKUNCI |
 | KEP-143 | Kolom sekunder menumpang di sel lain selama layar sempit; tidak ada halaman yang digeser ke samping mulai 768 px | TERKUNCI |
 | KEP-144 | Kalimat checkout dari klien; tautan pesanan tetap disebut lewat email, WhatsApp lewat tombol bagikan | TERKUNCI |
+| KEP-145 | Tombol wa.me tanpa nomor di halaman pesanan; pelanggan memilih kontak atau grup timnya | TERKUNCI |

@@ -31,14 +31,26 @@
          pelanggan sering perlu mengirimkannya ke bendahara tim atau menyimpannya
          sendiri. Menyalin dari bilah alamat di HP jauh lebih repot daripada
          satu tombol. --}}
+    {{-- Bagikan lewat WhatsApp (KEP-145): tanpa nomor tujuan, jadi pelanggan
+         sendiri yang memilih kontak atau grup timnya. --}}
+    @php
+        $tautanPesanan = route('lacak.token', $order->access_token);
+        $bagikanWa = 'https://wa.me/?text='.rawurlencode('Pesanan '.$order->kode.' di '.setting('toko_nama', 'Setia Sport').': '.$tautanPesanan);
+    @endphp
     <div class="mt-4" x-data="{ tersalin: false }">
-        <button type="button"
-                @click="navigator.clipboard.writeText(@js(route('lacak.token', $order->access_token)))
-                        .then(() => { tersalin = true; setTimeout(() => tersalin = false, 2500) })"
-                class="tombol tombol-garis tombol-sm">
-            <span x-show="!tersalin">Salin tautan pesanan</span>
-            <span x-show="tersalin" x-cloak>Tautan tersalin</span>
-        </button>
+        <div class="flex flex-wrap gap-2">
+            <button type="button"
+                    @click="navigator.clipboard.writeText(@js($tautanPesanan))
+                            .then(() => { tersalin = true; setTimeout(() => tersalin = false, 2500) })"
+                    class="tombol tombol-garis tombol-sm">
+                <span x-show="!tersalin">Salin tautan pesanan</span>
+                <span x-show="tersalin" x-cloak>Tautan tersalin</span>
+            </button>
+            <a href="{{ $bagikanWa }}" target="_blank" rel="noopener" class="tombol tombol-garis tombol-sm">
+                <x-ikon nama="whatsapp" ukuran="size-4" class="text-ok" />
+                Bagikan lewat WhatsApp
+            </a>
+        </div>
         <p class="mt-1.5 text-xs leading-relaxed text-muted">
             Boleh dibagikan ke anggota tim yang ingin ikut memantau; tidak ada data pribadi di sini.
         </p>
