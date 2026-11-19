@@ -65,8 +65,8 @@ class CheckoutController extends Controller
             'campuran' => $adaKustom
                 && $isi->contains(fn ($b) => $b['jalur'] === FulfillmentType::READY_STOCK),
             'persenDp' => (int) setting('dp_minimum_persen', 50),
-            // File desain kiriman sendiri hanya lewat WhatsApp (KEP-095), ke
-            // nomor yang diisi di halaman ini.
+            // File desain kiriman sendiri lewat WhatsApp ke nomor yang diisi di
+            // halaman ini (KEP-095), atau lewat tautan Drive/Dropbox (KEP-139).
             'desainLewatWa' => $isi->contains(fn ($b) => $b['desain_sumber'] === 'sendiri'),
             'biayaLayanan' => (int) setting('biaya_layanan', 0),
             /*
