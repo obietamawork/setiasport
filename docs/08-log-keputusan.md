@@ -4604,6 +4604,30 @@ Revisi klien untuk layar antrian per divisi (gambar "Antrian Printing Jersey").
 
 ---
 
+## KEP-130 — Serah terima bertab dan serah massal
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi klien untuk menu Serah terima: kotak "Scan / masukkan no. pesanan" dan tabel bertab Siap
+diserahkan / Sudah diserahkan / Semua dengan kolom No. pesanan, Penerima, Keterangan, Status,
+dan tombol Serah terima, plus kotak centang per baris.
+
+- Kotak cari dan detail hasil cari (pelunasan, nama pengambil, KEP-006) tetap. Daftar "Menunggu
+  diambil" yang lama diganti tabel bertab dengan penomoran halaman.
+- **Siap diserahkan**: semua pesanan berstatus Siap Diambil, dengan status "Selesai, lunas",
+  "Belum lunas", atau "Siap dikirim". Pesanan yang dikirim ikut tampil supaya jumlahnya sama
+  dengan angka di menu samping (yang sejak awal menghitung keduanya); aksinya "Catat resi" ke
+  halaman pesanan, karena paket tidak lewat meja kasir (KEP-026), dan ia tidak bisa dicentang.
+  **Sudah diserahkan**: pesanan selesai beserta nama pengambilnya, terbaru dulu. **Semua**:
+  keduanya.
+- Tombol **Serah terima** membuka detail pesanan itu di layar yang sama (lewat kode ambilnya).
+- **Centang** (`POST /panel/serah-terima/massal`, izin `serah_terima.proses`): menyerahkan
+  beberapa pesanan sekaligus kepada satu nama pengambil, misalnya reseller yang mengambil tiga
+  pesanan. Hanya pesanan yang boleh diserahkan satu per satu yang ikut: lunas, diambil di toko,
+  dan tanpa pengajuan pembatalan. Yang tidak memenuhi dilewati dan kodenya disebut. Pesanan yang
+  belum lunas tidak bisa dicentang.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4737,3 +4761,4 @@ Revisi klien untuk layar antrian per divisi (gambar "Antrian Printing Jersey").
 | KEP-127 | Riwayat lacak: garis waktu berikon, hanya yang sudah terjadi, tanpa catatan staf | TERKUNCI |
 | KEP-128 | Pembatalan: kartu terbuka dengan ketentuan toko; email keputusan disetujui/ditolak | TERKUNCI |
 | KEP-129 | Antrian divisi: tab semua divisi dengan jumlah, cari, foto, ringkasan ukuran | TERKUNCI |
+| KEP-130 | Serah terima: tab Siap/Sudah/Semua, pesanan kirim ikut tampil, serahkan beberapa sekaligus | TERKUNCI |

@@ -187,6 +187,8 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
         Route::get('serah-terima', [SerahTerimaController::class, 'form'])
             ->middleware('izin:serah_terima.proses')->name('serah-terima');
+        Route::post('serah-terima/massal', [SerahTerimaController::class, 'massal'])
+            ->middleware('izin:serah_terima.proses')->name('serah-terima.massal');
 
         // Roll kertas printing (KEP-051): satu roll, beberapa pesanan.
         Route::middleware('izin:produksi.print')->prefix('roll')->name('roll.')->group(function () {

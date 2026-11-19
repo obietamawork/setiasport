@@ -2,8 +2,8 @@
 @section('judul', 'Serah terima')
 
 @section('isi')
-<x-kop judul="Serah terima pesanan" ikon="serah-terima" warna="pink"
-       catatan="Cari pesanan untuk pengambilan atau penyerahan barang kepada pelanggan. Masukkan kode ambil yang dibawa pelanggan, atau kode pesanannya." />
+<x-kop judul="Serah terima" ikon="serah-terima" warna="pink"
+       catatan="Catat penyerahan pesanan yang sudah selesai kepada pelanggan. Pindai atau ketik kode ambil yang dibawa pelanggan, atau kode pesanannya." />
 
 {{-- Kotak kode dibuat besar dengan sengaja: ini satu-satunya isian di layar
      kasir, diketik sambil berdiri, sering dari layar sentuh, dan kodenya
@@ -12,9 +12,9 @@
 <form method="GET" class="flex flex-wrap items-center gap-2" role="search">
     <label class="sr-only" for="kode">Kode ambil atau kode pesanan</label>
     <div class="relative min-w-60 flex-1 sm:max-w-xl">
-        <x-ikon nama="cari" class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-navy-400" />
+        <x-ikon nama="qr" class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-navy-400" />
         <input type="text" id="kode" name="kode" value="{{ $kode }}" @if (! $order) autofocus @endif
-               placeholder="ABC-1234 atau SS-2609-0042"
+               placeholder="Scan / masukkan no. pesanan..."
                class="kotak-input tabular py-3 pr-12 pl-11 text-lg uppercase">
         @if ($kode !== '')
             <a href="{{ route('panel.serah-terima') }}" aria-label="Hapus pencarian" title="Hapus pencarian"
@@ -220,28 +220,117 @@
     </section>
 @endif
 
-@if ($siapHariIni->isNotEmpty())
-    <section class="mt-10 max-w-3xl">
-        <h2 class="text-lg font-extrabold">Menunggu diambil</h2>
-        <ul class="kartu mt-4 divide-y divide-line overflow-hidden text-sm">
-            @foreach ($siapHariIni as $o)
-                {{-- Seluruh baris jadi sasaran klik: di layar sentuh, kode ambil
-                     selebar delapan karakter terlalu kecil untuk jempol. --}}
-                <li class="relative flex flex-wrap items-center gap-3 px-4 py-3 hover:bg-navy-50">
-                    <a href="{{ route('panel.serah-terima', ['kode' => $o->kode_ambil]) }}"
-                       class="tabular font-semibold text-navy-700 before:absolute before:inset-0 before:content-['']">{{ $o->kode_ambil }}</a>
-                    <span class="min-w-32 flex-1">
-                        {{ $o->customer->nama }}
-                        @if ($o->dikirim())
-                            <span class="chip chip-kuning">Dikirim</span>
-                        @endif
-                    </span>
-                    <span class="text-muted tabular">
-                        siap {{ $o->siap_pada?->diffForHumans(short: true) }}
-                    </span>
-                </li>
-            @endforeach
-        </ul>
-    </section>
-@endif
+{{-- Daftar bertab seperti gambar klien (KEP-130). Centang menyerahkan
+     beberapa pesanan lunas sekaligus ke satu pengambil, misalnya reseller
+     yang mengambil tiga pesanan. Yang belum lunas tidak bisa dicentang. --}}
+<section class="mt-8" x-data="{ terpilih: 0 }">
+    <nav class="flex flex-wrap gap-2" aria-label="Daftar serah terima">
+        @foreach ([
+            'siap' => ['serah-terima', 'Siap diserahkan ('.$jumlahSiap.')'],
+            'sudah' => ['centang', 'Sudah diserahkan'],
+            'semua' => ['daftar', 'Semua'],
+        ] as $kunci => [$ikon, $label])
+            <a href="{{ route('panel.serah-terima', array_filter(['tab' => $kunci === 'siap' ? null : $kunci, 'kode' => $kode ?: null])) }}"
+               @class(['tombol tombol-sm', 'tombol-navy' => $tab === $kunci, 'tombol-garis' => $tab !== $kunci])
+               @if ($tab === $kunci) aria-current="page" @endif>
+                <x-ikon :nama="$ikon" ukuran="size-4" /> {{ $label }}
+            </a>
+        @endforeach
+    </nav>
+
+    <form method="POST" action="{{ route('panel.serah-terima.massal') }}" id="serah-massal"
+          class="mt-4 flex flex-wrap items-end gap-3 rounded-[12px] border border-biru-100 bg-biru-50 p-4"
+          x-show="terpilih > 0" x-cloak>
+        @csrf
+        <div class="min-w-56 flex-1">
+            <label for="massal-pengambil" class="label-form">Nama pengambil untuk <span x-text="terpilih"></span> pesanan</label>
+            <input type="text" id="massal-pengambil" name="diambil_oleh" maxlength="100" required class="kotak-input bg-field"
+                   placeholder="Misal: nama reseller atau perwakilan tim">
+        </div>
+        <button type="submit" class="tombol tombol-navy">
+            <x-ikon nama="serah-terima" ukuran="size-4" /> Serahkan terpilih (<span x-text="terpilih"></span>)
+        </button>
+    </form>
+
+    <div class="kartu mt-4 overflow-hidden">
+        @if ($daftar->isEmpty())
+            <p class="px-5 py-8 text-center text-sm text-muted">
+                {{ match ($tab) {
+                    'sudah' => 'Belum ada pesanan yang diserahkan.',
+                    'semua' => 'Belum ada pesanan yang siap atau sudah diserahkan.',
+                    default => 'Tidak ada pesanan yang menunggu diambil.',
+                } }}
+            </p>
+        @else
+            <div class="overflow-x-auto">
+                <table class="tabel min-w-[44rem] text-sm">
+                    <thead>
+                        <tr>
+                            <th class="w-10"><span class="sr-only">Pilih</span></th>
+                            <th>No. pesanan</th>
+                            <th>Penerima</th>
+                            <th>Keterangan</th>
+                            <th>Status</th>
+                            <th class="text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($daftar as $o)
+                            @php
+                                $sudah = $o->status === \App\Enums\OrderStatus::SELESAI;
+                                $kirim = ! $sudah && $o->dikirim();
+                                $bisa = $o->bolehDiserahkan();
+                                $keterangan = $o->items->map(fn ($i) => $i->nama_produk.' ('.$i->qty.' pcs)')->implode(', ');
+                            @endphp
+                            <tr>
+                                <td>
+                                    @if (! $sudah)
+                                        <input type="checkbox" name="pesanan[]" value="{{ $o->id }}" form="serah-massal"
+                                               class="kotak-centang" @disabled(! $bisa)
+                                               title="{{ $bisa ? 'Pilih untuk diserahkan sekaligus' : ($kirim ? 'Dikirim lewat kurir, catat resinya di halaman pesanan' : 'Belum lunas, catat pelunasannya dulu') }}"
+                                               @change="terpilih += $event.target.checked ? 1 : -1"
+                                               aria-label="Pilih pesanan {{ $o->kode }}">
+                                    @endif
+                                </td>
+                                <td class="tabular font-bold">
+                                    <a href="{{ route('panel.pesanan.show', $o) }}" class="hover:underline">{{ $o->kode }}</a>
+                                    @if (! $sudah && $o->kode_ambil)
+                                        <span class="block text-xs font-normal text-muted">Kode ambil {{ $o->kode_ambil }}</span>
+                                    @endif
+                                </td>
+                                <td>{{ $sudah ? $o->diambil_oleh : $o->customer->nama }}</td>
+                                <td class="max-w-64">{{ $keterangan }}</td>
+                                <td>
+                                    @if ($sudah)
+                                        <span class="chip chip-netral"><x-ikon nama="centang" ukuran="size-3.5" /> Diserahkan {{ $o->diambil_pada?->translatedFormat('j M') }}</span>
+                                    @elseif ($kirim)
+                                        <span class="chip chip-pink"><x-ikon nama="kirim" ukuran="size-3.5" /> Siap dikirim</span>
+                                    @elseif ($bisa)
+                                        <span class="chip chip-ok"><x-ikon nama="centang" ukuran="size-3.5" /> Selesai, lunas</span>
+                                    @else
+                                        <span class="chip chip-kuning"><x-ikon nama="dompet" ukuran="size-3.5" /> Belum lunas</span>
+                                    @endif
+                                </td>
+                                <td class="text-right">
+                                    @if ($sudah)
+                                        <a href="{{ route('panel.pesanan.show', $o) }}" class="tombol tombol-garis tombol-sm">Lihat</a>
+                                    @elseif ($kirim)
+                                        <a href="{{ route('panel.pesanan.show', $o) }}#pengambilan" class="tombol tombol-garis tombol-sm">
+                                            <x-ikon nama="kirim" ukuran="size-4" /> Catat resi
+                                        </a>
+                                    @else
+                                        <a href="{{ route('panel.serah-terima', ['kode' => $o->kode_ambil ?? $o->kode]) }}" class="tombol tombol-navy tombol-sm">
+                                            <x-ikon nama="serah-terima" ukuran="size-4" /> Serah terima
+                                        </a>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @include('panel.komponen.halaman', ['daftar' => $daftar, 'benda' => 'pesanan'])
+        @endif
+    </div>
+</section>
 @endsection
