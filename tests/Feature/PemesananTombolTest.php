@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\FulfillmentType;
 use App\Models\OptionValue;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -126,7 +125,6 @@ class PemesananTombolTest extends TestCase
 
         Setting::simpan('stok_siap_hari', 0);
         $this->get(route('produk', 'bola-futsal-mitre-ultimatch'))->assertSee('Siap diambil hari ini pada jam buka.');
-        $this->get(route('katalog'))->assertSee('siap hari ini. Diambil di toko atau dikirim.');
 
         // Kartu katalog menyebut ketersediaan seperti gambar klien (KEP-132);
         // waktu siapnya tetap di halaman produk dan keterangan katalog.
@@ -134,19 +132,18 @@ class PemesananTombolTest extends TestCase
         $this->get(route('katalog', ['jalur' => 'stok']))->assertSee('Stok tersedia');
     }
 
-    /** Waktu pengerjaan dari produknya, dan rentang kalau produknya berbeda-beda. */
-    public function test_waktu_pengerjaan_kustom_dari_data_produk(): void
+    /**
+     * Kartu produk memakai waktu pengerjaan produknya sendiri (KEP-132);
+     * perkiraan umum di beranda dan katalog adalah teks klien (KEP-137).
+     */
+    public function test_waktu_pengerjaan_kartu_dari_data_produk(): void
     {
-        $kustom = Product::whereIn('fulfillment_type', [FulfillmentType::PREORDER->value, FulfillmentType::BOTH->value]);
-        (clone $kustom)->update(['lead_time_hari' => 10]);
         $this->jerseyTier()->update(['lead_time_hari' => 21]);
 
-        $this->get(route('beranda'))->assertSee('Dikerjakan 10–21 hari kerja, lalu dilunasi');
-        $this->get(route('katalog'))->assertSee('Dikerjakan 10–21 hari kerja, dihitung sejak desain Anda setujui.');
-
-        // Tanpa produk kustom yang tayang: tidak ada angka karangan.
-        (clone $kustom)->update(['aktif' => false]);
-        $this->get(route('katalog'))->assertDontSee('7 hari kerja')->assertDontSee('Kustom · ');
+        $this->get(route('katalog', ['jalur' => 'kustom']))
+            ->assertSee('±21 hari kerja')
+            ->assertSee('±7 hari kerja');
+        $this->get(route('katalog'))->assertSee('Estimasi produksi 7–10 hari kerja setelah desain disetujui.');
     }
 
     public function test_kaki_halaman_punya_tombol_whatsapp_dan_petunjuk_arah(): void

@@ -64,7 +64,6 @@ class KatalogController extends Controller
                 ])
                 ->min('moq') ?: 12),
             // Pembeda dua jalur pindah ke sini dari halaman depan (KEP-024).
-            'waktuKustom' => Product::rentangWaktuKustom(),
             'semuaKategori' => Category::with('parent')
                 ->whereNotNull('parent_id')
                 ->where('aktif', true)
@@ -109,7 +108,7 @@ class KatalogController extends Controller
         }
 
         return match ($jalur) {
-            'stok' => ['Ready Stock (Siap Kirim)', 'Barang yang sudah ada di rak. '.(siap_stok() === 'hari ini'
+            'stok' => ['Ready Stock', 'Barang yang sudah ada di rak. '.(siap_stok() === 'hari ini'
                 ? 'Bayar dan ambil hari itu juga pada jam buka.'
                 : 'Bayar hari ini, ambil '.siap_stok().' pada jam buka.')],
             'kustom' => ['Custom jersey', 'Dibuat di workshop kami dengan desain, nama, dan nomor punggung tim Anda.'],

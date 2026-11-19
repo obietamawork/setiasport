@@ -38,7 +38,6 @@ class BerandaController extends Controller
             'portofolio' => Portofolio::tampilan()->take(4)->get(),
             'testimoni' => Testimoni::tampilan()->take(3)->get(),
 
-            'waktuKustom' => Product::rentangWaktuKustom(),
         ]);
     }
 

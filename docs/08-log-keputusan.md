@@ -4761,6 +4761,46 @@ proyek memilih seluruh lembar mengikuti gambar.
 
 ---
 
+## KEP-137 — Revisi teks halaman depan, katalog, dan kaki halaman
+**Status:** TERKUNCI · 2026-11-19
+
+Revisi teks dari klien untuk halaman depan, katalog, dan kaki halaman (tugas susulan putaran 4).
+Sebagian (deskripsi layanan custom, poin 3 dan 4, langkah 1) sudah disunting pemilik proyek
+langsung di `beranda.blade.php`; sisanya mengikuti teks yang sama.
+
+- **Layanan custom**: deskripsi "Seluruh proses produksi dikerjakan langsung di konveksi kami
+  tanpa melalui pihak ketiga ...", poin "Harga Transparan ..." dan "Gratis 3 Kali Revisi ...",
+  langkah "Pilih Produk & Ukuran", "Pembayaran Uang Muka (DP)", "Proses Desain", "Pesanan
+  diproduksi dalam waktu 7–10 hari kerja". Klien menulis "Proses Design"; ditulis "Desain"
+  seperti di seluruh situs.
+- **Kenapa Belanja di Setia Sport?**: Produk Olahraga Lengkap, Konveksi Sendiri, Toko Fisik
+  Terpercaya, Pesanan Mudah Dipantau, dengan kalimat klien.
+- **Tentang Setia Sport**: tiga paragraf klien (hadir lebih dari 15 tahun, layanan konveksi,
+  lokasi di pusat Kota Wonogiri). Teks ini pengaturan `tentang_lengkap`: diganti oleh migrasi
+  `teks_profil_dari_klien` hanya bila masih teks bawaan lama (baris baru CRLF dari formulir
+  Pengaturan disamakan dulu), dan seeder ikut diperbarui.
+- **Toko dan konveksi** (halaman depan dan kaki halaman): "Toko Olahraga & Lokasi Pengambilan
+  Pesanan" dan "Lokasi produksi jersey & konveksi Setia Sport" (nama toko ditulis dengan huruf
+  besar seperti di seluruh situs).
+- **Alamat konveksi** tidak lagi menulis "Donoharjo" dua kali: "Donoharjo, RT.02/RW.01,
+  Wuryorejo, ...". Yang dipertahankan yang di depan, sebagai nama dusun sebelum RT/RW;
+  diganti lewat migrasi yang sama dengan aturan yang sama.
+- **Ajakan penutup**: "Belanja perlengkapan olahraga dan pesan jersey custom langsung melalui
+  website."
+- **Katalog**: "Ready Stock" (tanpa "Siap Kirim") dengan "Produk tersedia dan siap dibeli.
+  Pesanan dapat dikirim atau diambil langsung di toko."; "Custom Apparel (Pre-Order)" dengan
+  "Estimasi produksi 7–10 hari kerja setelah desain disetujui." Judul katalog tersaring ikut
+  "Ready Stock".
+- **Kaki halaman**: deskripsi "Menyediakan berbagai perlengkapan olahraga dan layanan konveksi
+  jersey custom. Pesanan dapat diambil langsung di toko atau dikirim ke alamat tujuan.";
+  keterangan nomor dan jam balas di bawah tombol WhatsApp dihapus.
+- **Perkiraan waktu**: "7–10 hari kerja" di halaman depan dan katalog kini teks tetap dari
+  klien, menggantikan rentang yang dihitung dari waktu pengerjaan produk (KEP-091). Kartu produk
+  tetap memakai waktu per produk ("±7 hari kerja", KEP-132). Kalau waktu pengerjaan produk
+  kelak diubah jauh dari 7–10 hari, teks ini perlu ikut disesuaikan.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4901,3 +4941,4 @@ proyek memilih seluruh lembar mengikuti gambar.
 | KEP-134 | Halaman bayar: pilihan Transfer/QRIS dan Tunai di toko dengan alamat, kode, batas | TERKUNCI |
 | KEP-135 | Kartu Pengiriman seperti gambar; label formulir tebal di seluruh aplikasi | TERKUNCI |
 | KEP-136 | Lembar kerja baru: status desain, rekap ukuran, QR penuh sekotak, QC, petunjuk pindai di bawah | TERKUNCI |
+| KEP-137 | Teks klien: layanan custom, Kenapa Belanja, Tentang, toko/konveksi, katalog, kaki halaman; Donoharjo sekali | TERKUNCI |

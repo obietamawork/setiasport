@@ -25,7 +25,7 @@ class SettingSeeder extends Seeder
             ['toko_jam_buka', 'Senin-Sabtu 08.00-16.00
 Minggu 08.00-14.00', 'teks', 'toko', 'Jam Buka Toko',
                 'Satu baris per rentang hari.'],
-            ['konveksi_alamat', 'Donoharjo, RT.02/RW.01, Donoharjo, Wuryorejo, Kec. Wonogiri, Kabupaten Wonogiri, Jawa Tengah 57614', 'string', 'toko', 'Alamat Konveksi',
+            ['konveksi_alamat', 'Donoharjo, RT.02/RW.01, Wuryorejo, Kec. Wonogiri, Kabupaten Wonogiri, Jawa Tengah 57614', 'string', 'toko', 'Alamat Konveksi',
                 'Tempat jersey dikerjakan. Tampil di halaman depan.'],
             ['konveksi_jam_buka', 'Senin-Sabtu 08.00-16.00', 'teks', 'toko', 'Jam Buka Konveksi'],
             ['toko_telepon', '0851-6002-5810', 'string', 'toko', 'Nomor WhatsApp Toko'],
@@ -145,9 +145,9 @@ Pos Indonesia', 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
              * kutip tunggal, sehingga yang tersimpan garis miring dan huruf n
              * apa adanya, dan halaman depan menampilkan "\n\n" di tengah kalimat.
              */
-            ['tentang_lengkap', 'Setia Sport berdiri di Wonogiri sebagai toko perlengkapan olahraga, lalu tumbuh menjadi konveksi jersey karena permintaannya datang terus dari pelanggan sendiri: sekolah yang butuh seragam olahraga, klub futsal yang ingin jersey dengan nama dan nomor punggung, dan komunitas lari yang memesan kaos untuk acara.'
-                ."\n\n".'Jersey dikerjakan di workshop kami sendiri, bukan dilempar ke pihak lain. Itu yang membuat revisi desain bisa cepat, ukuran bisa dicampur dari anak SD sampai dewasa dalam satu pesanan, dan kalau ada yang kurang pas, kami perbaiki tanpa harus menunggu kiriman dari kota lain.'
-                ."\n\n".'Barang yang ada di rak bisa diambil hari itu juga di toko. Pesanan konveksi punya halaman sendiri di website ini: progres pengerjaan, tagihan, dan nomor resi bisa dilihat kapan saja tanpa perlu menelepon toko.', 'teks', 'profil', 'Tentang Usaha',
+            ['tentang_lengkap', 'Setia Sport Wonogiri adalah toko perlengkapan olahraga yang telah hadir selama lebih dari 15 tahun untuk memenuhi berbagai kebutuhan olahraga masyarakat. Kami menyediakan beragam produk, mulai dari sepatu, pakaian olahraga, peralatan, hingga aksesori untuk berbagai cabang olahraga.'
+                ."\n\n".'Seiring berkembangnya usaha, Setia Sport juga menghadirkan layanan konveksi yang melayani pembuatan jersey custom, seragam tim, dan berbagai kebutuhan apparel olahraga. Seluruh proses produksi dilakukan di konveksi kami sendiri, dengan pilihan desain, bahan, warna, dan ukuran yang dapat disesuaikan dengan kebutuhan pelanggan.'
+                ."\n\n".'Berlokasi di pusat Kota Wonogiri, Setia Sport melayani pembelian secara langsung di toko maupun pemesanan secara online. Kami terus berupaya memberikan pelayanan terbaik melalui produk yang lengkap, harga yang bersaing, serta kemudahan berbelanja bagi pelanggan dari berbagai daerah.', 'teks', 'profil', 'Tentang Usaha',
                 'Isi bagian "Tentang Setia Sport" di halaman depan: sejak kapan berdiri, siapa yang dilayani, apa yang membedakan. '
                 .'Pisahkan paragraf dengan satu baris kosong. Kosongkan untuk menyembunyikan bagian itu.'],
             /*

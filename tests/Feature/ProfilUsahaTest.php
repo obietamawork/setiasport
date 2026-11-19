@@ -62,7 +62,7 @@ class ProfilUsahaTest extends TestCase
 
         $halaman->assertSee('Konveksi jersey Wonogiri sejak 2011');
         $halaman->assertSee('Jalan Jenderal Sudirman 10, Wonogiri');
-        $halaman->assertSee('Desain dikirim, Anda setujui');
+        $halaman->assertSee('Proses Desain');
 
         $isi = $halaman->getContent();
 
@@ -263,15 +263,15 @@ class ProfilUsahaTest extends TestCase
     {
         $this->get(route('katalog'))
             ->assertOk()
-            ->assertSee('Ready Stock (Siap Kirim)')
-            ->assertSee('Custom Pakaian Olahraga (Pre-Order)')
-            ->assertSee('siap besok')
+            ->assertSee('Ready Stock')
+            ->assertSee('Custom Apparel (Pre-Order)')
+            ->assertSee('Produk tersedia dan siap dibeli.')
             ->assertSee('hari kerja');
 
         // Sudah menyaring berarti sudah tahu maunya; penjelasnya tidak perlu lagi.
         $this->get(route('katalog', ['jalur' => 'stok']))
             ->assertOk()
-            ->assertDontSee('siap besok');
+            ->assertDontSee('Produk tersedia dan siap dibeli.');
     }
 
     public function test_owner_menambah_portofolio_lengkap_dengan_foto(): void

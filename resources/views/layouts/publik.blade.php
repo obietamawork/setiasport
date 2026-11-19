@@ -276,8 +276,7 @@
         <div class="sm:col-span-2 md:col-span-1">
             <x-logo tinggi="h-9 sm:h-10" />
             <p class="mt-3 text-sm leading-relaxed text-muted">
-                Toko perlengkapan olahraga dan konveksi jersey di Wonogiri.
-                Pesanan diambil di toko atau dikirim ke alamat Anda.
+                Menyediakan berbagai perlengkapan olahraga dan layanan konveksi jersey custom. Pesanan dapat diambil langsung di toko atau dikirim ke alamat tujuan.
             </p>
 
             @if (tautan_wa())
@@ -286,10 +285,6 @@
                     <x-ikon nama="whatsapp" ukuran="size-4" />
                     Chat lewat WhatsApp
                 </a>
-                <p class="mt-2 text-xs leading-relaxed text-muted">
-                    <span class="tabular whitespace-nowrap">{{ setting('toko_telepon') }}</span> &middot;
-                    {{ cs_aktif() ? 'chat CS di website juga bisa, ' : 'dibalas ' }}{{ Str::lcfirst((string) setting('cs_jam_layanan')) }}.
-                </p>
             @endif
 
             @if ($sosial !== [])
@@ -308,9 +303,9 @@
             @endif
         </div>
         @foreach (array_filter([
-            ['Toko', 'Tempat pesanan diambil', setting('toko_alamat'), setting('toko_jam_buka'), setting('maps_embed') ?: tautan_peta((string) setting('toko_alamat'))],
+            ['Toko', 'Toko Olahraga & Lokasi Pengambilan Pesanan', setting('toko_alamat'), setting('toko_jam_buka'), setting('maps_embed') ?: tautan_peta((string) setting('toko_alamat'))],
             setting('konveksi_alamat')
-                ? ['Konveksi', 'Tempat jersey dikerjakan', setting('konveksi_alamat'), setting('konveksi_jam_buka'), tautan_peta((string) setting('konveksi_alamat'))]
+                ? ['Konveksi', 'Lokasi produksi jersey & konveksi '.setting('toko_nama', 'Setia Sport'), setting('konveksi_alamat'), setting('konveksi_jam_buka'), tautan_peta((string) setting('konveksi_alamat'))]
                 : null,
         ]) as [$judul, $tugas, $alamat, $jam, $peta])
             <div>

@@ -34,9 +34,9 @@
                     <x-ikon nama="toko" />
                 </span>
                 <span class="min-w-0 flex-1">
-                    <span class="block font-semibold">Ready Stock (Siap Kirim)</span>
+                    <span class="block font-semibold">Ready Stock</span>
                     <span class="block text-sm text-muted">
-                        Sudah ada di rak, siap {{ siap_stok() }}. Diambil di toko atau dikirim.
+                        Produk tersedia dan siap dibeli. Pesanan dapat dikirim atau diambil langsung di toko.
                     </span>
                 </span>
                 <x-ikon nama="lanjut" ukuran="size-4" class="text-navy-300 group-hover:text-navy" />
@@ -48,9 +48,9 @@
                     <x-ikon nama="kategori" />
                 </span>
                 <span class="min-w-0 flex-1">
-                    <span class="block font-semibold">Custom Pakaian Olahraga (Pre-Order)</span>
+                    <span class="block font-semibold">Custom Apparel (Pre-Order)</span>
                     <span class="block text-sm text-muted">
-                        Dikerjakan {{ $waktuKustom ? $waktuKustom.', ' : '' }}dihitung sejak desain Anda setujui.
+                        Estimasi produksi 7–10 hari kerja setelah desain disetujui.
                     </span>
                 </span>
                 <x-ikon nama="lanjut" ukuran="size-4" class="text-navy-300 group-hover:text-navy" />

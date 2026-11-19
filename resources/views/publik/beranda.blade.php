@@ -203,8 +203,8 @@
                 <p class="text-xs font-semibold tracking-[0.18em] text-white/55 uppercase">Layanan custom</p>
                 <p class="text-3xl leading-tight font-extrabold text-balance">Buat jersey tim sesuai keinginan</p>
                 <p class="leading-relaxed text-white/70">
-                    Dikerjakan sendiri di konveksi kami, bukan dilempar ke pihak lain.
-                    Ukurannya bisa dicampur anak sampai dewasa dalam satu pesanan.
+                    Seluruh proses produksi dikerjakan langsung di konveksi kami tanpa melalui pihak ketiga.
+                    Dalam satu pesanan, ukuran dapat dikombinasikan mulai dari anak-anak hingga dewasa.
                 </p>
             </div>
         </div>
@@ -214,8 +214,8 @@
                 @foreach ([
                     'Bebas pilih desain, bahan, dan warna',
                     'Nama dan nomor punggung per pemain',
-                    'Harga per potong terbaca langsung di web, tanpa perlu bertanya dulu',
-                    'Tiga kali revisi desain, semuanya gratis',
+                    'Harga Transparan ditampilkan di website tanpa perlu menghubungi admin',
+                    'Gratis 3 Kali Revisi desain tanpa biaya tambahan',
                 ] as $poin)
                     <li class="flex items-start gap-2.5">
                         <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-ok-50 text-ok">
@@ -229,11 +229,12 @@
             {{-- Empat langkah singkat: keberatan terbesar pemesan pertama kali
                  adalah tidak tahu uangnya dipegang siapa dan sampai kapan. --}}
             <ol class="mt-6 grid gap-x-4 gap-y-2 border-t border-line pt-5 text-sm text-muted sm:grid-cols-2">
+                {{-- Teks dari klien (KEP-137), termasuk perkiraan 7–10 hari kerja. --}}
                 @foreach ([
-                    'Pilih produk dan isi ukurannya',
-                    'Bayar uang muka '.setting('dp_minimum_persen', 50).'%',
-                    'Desain dikirim, Anda setujui',
-                    $waktuKustom ? 'Dikerjakan '.$waktuKustom.', lalu dilunasi' : 'Dikerjakan, lalu dilunasi',
+                    'Pilih Produk & Ukuran',
+                    'Pembayaran Uang Muka (DP)',
+                    'Proses Desain',
+                    'Pesanan diproduksi dalam waktu 7–10 hari kerja',
                 ] as $i => $langkah)
                     <li class="flex gap-2">
                         <span class="numeral font-bold text-navy">{{ $i + 1 }}.</span>
@@ -264,14 +265,14 @@
      keunggulan tidak pernah dibaca sampai habis. --}}
 <section class="border-y border-line bg-field">
     <div class="mx-auto max-w-6xl px-5 py-12 sm:py-14">
-        <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Kenapa belanja di {{ setting('toko_nama', 'Setia Sport') }}?</h2>
+        <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Kenapa Belanja di {{ setting('toko_nama', 'Setia Sport') }}?</h2>
 
         <div class="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             @foreach ([
-                ['produk', 'Produk lengkap', 'Bola, sepatu, apparel, aksesoris, sampai trofi, ada di satu toko.'],
-                ['kategori', 'Konveksi sendiri', 'Jersey dikerjakan di workshop kami, jadi revisinya cepat dan bisa diawasi.'],
-                ['toko', 'Tokonya bisa didatangi', 'Alamatnya jelas di Wonogiri, barangnya bisa dilihat dan dicoba dulu.'],
-                ['pesanan', 'Pesanan bisa dipantau', 'Setiap pesanan punya halamannya sendiri: progres, tagihan, dan resi.'],
+                ['produk', 'Produk Olahraga Lengkap', 'Berbagai kebutuhan olahraga, mulai dari sepatu, pakaian, perlengkapan, hingga aksesori tersedia dalam satu toko.'],
+                ['kategori', 'Konveksi Sendiri', 'Pesanan jersey dan apparel diproduksi langsung di konveksi kami, sehingga kualitas dan proses pengerjaan lebih terkontrol.'],
+                ['toko', 'Toko Fisik Terpercaya', 'Kunjungi toko kami di Wonogiri untuk melihat, memilih, dan mencoba produk secara langsung.'],
+                ['pesanan', 'Pesanan Mudah Dipantau', 'Pantau status pesanan, mulai dari proses pengerjaan hingga pengiriman, melalui website kami.'],
             ] as [$ikon, $judul, $isi])
                 <div class="flex gap-3">
                     <span class="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-navy-50 text-navy">
@@ -363,14 +364,14 @@
         @foreach ([
             [
                 'judul' => 'Toko',
-                'tugas' => 'Tempat pesanan diambil dan dilunasi',
+                'tugas' => 'Toko Olahraga & Lokasi Pengambilan Pesanan',
                 'alamat' => setting('toko_alamat'),
                 'jam' => setting('toko_jam_buka'),
                 'peta' => setting('maps_embed') ?: tautan_peta((string) setting('toko_alamat')),
             ],
             [
                 'judul' => 'Konveksi',
-                'tugas' => 'Tempat jersey dikerjakan. Pesanan tetap diambil di toko',
+                'tugas' => 'Lokasi produksi jersey & konveksi '.setting('toko_nama', 'Setia Sport'),
                 'alamat' => setting('konveksi_alamat'),
                 'jam' => setting('konveksi_jam_buka'),
                 'peta' => tautan_peta((string) setting('konveksi_alamat')),
@@ -405,7 +406,7 @@
         <div>
             <p class="text-2xl font-extrabold text-balance">Butuh perlengkapan olahraga atau jersey tim?</p>
             <p class="mt-2 leading-relaxed text-white/70">
-                Pesan langsung dari web, atau tanya dulu kalau masih ragu soal ukuran dan bahan.
+                Belanja perlengkapan olahraga dan pesan jersey custom langsung melalui website.
             </p>
             {{-- Nomornya ditulis, bukan hanya jadi tautan: sebagian orang menyimpan
                  nomornya dulu di kontak sebelum menghubungi, dan nomor yang hanya
