@@ -657,7 +657,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 2
 			path: app/Services/AlurPesanan.php
 
 		-
@@ -682,24 +682,6 @@ parameters:
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:lunas\(\)\.$#'
 			identifier: method.notFound
 			count: 1
-			path: app/Services/AlurPesanan.php
-
-		-
-			message: '#^Call to function abort_if\(\) with arguments false, 422 and ''Belum ada mockup…'' will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Services/AlurPesanan.php
-
-		-
-			message: '#^Call to function abort_if\(\) with arguments false, 422 and ''Hanya pelanggan…'' will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Services/AlurPesanan.php
-
-		-
-			message: '#^Call to function abort_if\(\) with arguments false, 422 and ''Item ini menunggu…'' will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 2
 			path: app/Services/AlurPesanan.php
 
 		-
@@ -765,7 +747,7 @@ parameters:
 		-
 			message: '#^Cannot call method labelStaf\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 2
+			count: 1
 			path: app/Services/AlurPesanan.php
 
 		-
@@ -813,7 +795,7 @@ parameters:
 		-
 			message: '#^Result of && is always false\.$#'
 			identifier: booleanAnd.alwaysFalse
-			count: 3
+			count: 2
 			path: app/Services/AlurPesanan.php
 
 		-
@@ -854,30 +836,6 @@ parameters:
 
 		-
 			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:ANTRIAN_PRODUKSI will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: app/Services/AlurPesanan.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:MENUNGGU_PELUNASAN will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: app/Services/AlurPesanan.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:MENUNGGU_PEMBAYARAN will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: app/Services/AlurPesanan.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:MENUNGGU_PERSETUJUAN will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: app/Services/AlurPesanan.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\OrderItemStatus\:\:PROSES_DESAIN will always evaluate to false\.$#'
 			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Services/AlurPesanan.php

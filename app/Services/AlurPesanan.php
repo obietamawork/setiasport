@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\DesignAssetType;
+use App\Enums\FulfillmentType;
 use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
@@ -279,6 +280,84 @@ class AlurPesanan
     }
 
     /**
+     * Kenapa barang ini tidak bisa dimajukan dari sisi toko, atau null kalau
+     * bisa (KEP-124). Satu sumber untuk penjagaan majukanItem() dan pop-up
+     * Perbarui progres di panel, supaya pilihan yang tampil aktif selalu
+     * pilihan yang diterima server.
+     */
+    public function alasanTidakBisaMaju(OrderItem $item): ?string
+    {
+        /** @var OrderItemStatus $status */
+        $status = $item->status_item;
+        /** @var FulfillmentType $jenis */
+        $jenis = $item->fulfillment_type;
+        $berikutnya = $status->berikutnya($jenis);
+
+        return match (true) {
+            $berikutnya === null => 'Item ini sudah berada di tahap terakhir.',
+
+            $berikutnya === OrderItemStatus::SELESAI => 'Item hanya berpindah ke Selesai lewat serah terima di kasir.',
+
+            /*
+             * Gerbang pembayaran awal juga tidak punya tombol. Tanpa penjagaan
+             * ini staf bisa mengetuk "maju" berkali-kali dan menerbitkan kode
+             * ambil untuk barang yang uangnya belum pernah diverifikasi.
+             */
+            $status === OrderItemStatus::MENUNGGU_PEMBAYARAN => 'Item ini menunggu pembayaran. Ia baru bisa diproses begitu pembayarannya dicatat atau diverifikasi.',
+
+            /*
+             * Gerbang persetujuan tidak boleh dilewati dari sisi toko. Kalau staf
+             * bisa memajukannya sendiri, catatan siapa yang menyetujui dan versi
+             * mockup mana akan kosong, dan justru itulah yang menyelesaikan
+             * sengketa berbulan-bulan kemudian (docs/02).
+             */
+            $status === OrderItemStatus::MENUNGGU_PERSETUJUAN => 'Hanya pelanggan yang bisa menyetujui desain, dari halaman pesanannya. '
+                .'Kirim ulang tautannya kalau mereka belum merespons.',
+
+            /*
+             * Gerbang pelunasan juga tidak punya tombol (KEP-028). Barang kustom
+             * dikerjakan dengan modal DP; kalau staf bisa menaikkannya ke Siap,
+             * kode ambil terbit dan barang bisa keluar sebelum uangnya masuk.
+             */
+            $status === OrderItemStatus::MENUNGGU_PELUNASAN => 'Item ini menunggu pelunasan. Ia naik ke Siap dengan sendirinya begitu '
+                .'pembayarannya dicatat atau diverifikasi.',
+
+            /*
+             * Tahap Desain tidak boleh "selesai" lewat tombol generik tanpa
+             * mockup yang benar-benar terunggah: pelanggan akan diminta
+             * menyetujui desain yang belum pernah mereka lihat. Mengirim mockup
+             * (MockupController) adalah SATU-SATUNYA jalan sah memajukan tahap ini.
+             */
+            $status === OrderItemStatus::PROSES_DESAIN
+                && $item->designAssets()->where('tipe', DesignAssetType::MOCKUP)->doesntExist() => 'Belum ada mockup yang diunggah. Kirim mockupnya dulu lewat formulir "Kirim untuk disetujui" '
+                    .'di Antrian Desain. Tombol ini tidak memajukan tahap Desain.',
+
+            default => null,
+        };
+    }
+
+    /**
+     * Kenapa barang ini tidak bisa dikembalikan satu tahap, atau null kalau
+     * bisa (KEP-098, KEP-124).
+     */
+    public function alasanTidakBisaMundur(OrderItem $item): ?string
+    {
+        /** @var OrderItemStatus $status */
+        $status = $item->status_item;
+        /** @var FulfillmentType $jenis */
+        $jenis = $item->fulfillment_type;
+        /** @var OrderStatus $statusPesanan */
+        $statusPesanan = $item->order->status;
+
+        return match (true) {
+            $statusPesanan->final() || $statusPesanan === OrderStatus::DIKIRIM => 'Pesanan ini sudah keluar dari toko atau dibatalkan.',
+            $status->sebelumnya($jenis) === null => 'Barang di tahap '.$status->labelStaf()
+                .' tidak bisa dikembalikan dari sini.',
+            default => null,
+        };
+    }
+
+    /**
      * Operator menyelesaikan satu tahap; status pelanggan naik sebagai akibatnya.
      *
      * $dari adalah tahap yang dilihat orang itu di layarnya saat menekan
@@ -291,69 +370,15 @@ class AlurPesanan
         ?int $olehUserId = null,
         ?int $pekerjaId = null,
         ?OrderItemStatus $dari = null,
+        ?string $catatan = null,
     ): OrderItemStatus {
         abort_if($dari !== null && $item->status_item !== $dari, 409, $this->sudahBerpindah($item));
 
+        if ($alasan = $this->alasanTidakBisaMaju($item)) {
+            abort(422, $alasan);
+        }
+
         $berikutnya = $item->status_item->berikutnya($item->fulfillment_type);
-
-        abort_if($berikutnya === null, 422, 'Item ini sudah berada di tahap terakhir.');
-        abort_if(
-            $berikutnya === OrderItemStatus::SELESAI,
-            422,
-            'Item hanya berpindah ke Selesai lewat serah terima di kasir.'
-        );
-
-        /*
-         * Gerbang pembayaran awal juga tidak punya tombol. Tanpa penjagaan ini
-         * staf bisa mengetuk "maju" berkali-kali dan menerbitkan kode ambil
-         * untuk barang yang uangnya belum pernah diverifikasi sama sekali.
-         */
-        abort_if(
-            $item->status_item === OrderItemStatus::MENUNGGU_PEMBAYARAN,
-            422,
-            'Item ini menunggu pembayaran. Ia baru bisa diproses begitu pembayarannya dicatat atau diverifikasi.'
-        );
-
-        /*
-         * Gerbang persetujuan tidak boleh dilewati dari sisi toko. Kalau staf
-         * bisa memajukannya sendiri, catatan siapa yang menyetujui dan versi
-         * mockup mana akan kosong, dan justru itulah yang menyelesaikan sengketa
-         * berbulan-bulan kemudian (docs/02).
-         */
-        abort_if(
-            $item->status_item === OrderItemStatus::MENUNGGU_PERSETUJUAN,
-            422,
-            'Hanya pelanggan yang bisa menyetujui desain, dari halaman pesanannya. '
-            .'Kirim ulang tautannya kalau mereka belum merespons.'
-        );
-
-        /*
-         * Gerbang pelunasan juga tidak punya tombol (KEP-028). Barang kustom
-         * dikerjakan dengan modal DP; kalau staf bisa menaikkannya ke Siap,
-         * kode ambil terbit dan barang bisa keluar sebelum uangnya masuk.
-         */
-        abort_if(
-            $item->status_item === OrderItemStatus::MENUNGGU_PELUNASAN,
-            422,
-            'Item ini menunggu pelunasan. Ia naik ke Siap dengan sendirinya begitu '
-            .'pembayarannya dicatat atau diverifikasi.'
-        );
-
-        /*
-         * Tahap Desain tidak boleh "selesai" lewat tombol generik (QR/PIN atau
-         * tombol Antrian) tanpa mockup yang benar-benar terunggah. Tanpa
-         * penjagaan ini, item lompat ke Menunggu Persetujuan Pelanggan dengan
-         * kotak persetujuan yang kosong -- pelanggan diminta menyetujui desain
-         * yang belum pernah mereka lihat sama sekali. Mengirim mockup (lewat
-         * MockupController) adalah SATU-SATUNYA jalan sah memajukan tahap ini.
-         */
-        abort_if(
-            $item->status_item === OrderItemStatus::PROSES_DESAIN
-                && $item->designAssets()->where('tipe', DesignAssetType::MOCKUP)->doesntExist(),
-            422,
-            'Belum ada mockup yang diunggah. Kirim mockupnya dulu lewat formulir "Kirim untuk disetujui" '
-            .'di Antrian Desain -- tombol ini tidak memajukan tahap Desain.'
-        );
 
         // Pesanan yang sudah lunas di muka tidak perlu berhenti di gerbang.
         if ($berikutnya === OrderItemStatus::MENUNGGU_PELUNASAN
@@ -361,7 +386,7 @@ class AlurPesanan
             $berikutnya = OrderItemStatus::SIAP;
         }
 
-        DB::transaction(function () use ($item, $berikutnya, $olehUserId, $pekerjaId) {
+        DB::transaction(function () use ($item, $berikutnya, $olehUserId, $pekerjaId, $catatan) {
             // Dua ketukan yang tiba bersamaan sama-sama lolos pembanding di
             // atas; baris yang terkunci membuat yang kedua melihat hasil yang
             // pertama.
@@ -369,7 +394,7 @@ class AlurPesanan
 
             // Tahap yang DITINGGALKAN-lah yang selesai; tahap yang dimasuki baru dimulai.
             $this->selesaikanJob($item, $item->status_item->tahapProduksi(), $olehUserId, $pekerjaId);
-            $this->setStatusItem($item, $berikutnya, null, $olehUserId);
+            $this->setStatusItem($item, $berikutnya, filled($catatan) ? $catatan : null, $olehUserId);
             $this->mulaiJob($item, $berikutnya->tahapProduksi(), $olehUserId);
 
             $this->sinkronkan($item->order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']));
@@ -415,13 +440,13 @@ class AlurPesanan
         ?OrderItemStatus $dari = null,
     ): OrderItemStatus {
         abort_if($dari !== null && $item->status_item !== $dari, 409, $this->sudahBerpindah($item));
-        abort_if($item->order->status->final() || $item->order->status === OrderStatus::DIKIRIM, 422,
-            'Pesanan ini sudah keluar dari toko atau dibatalkan.');
 
+        if ($alasanTolak = $this->alasanTidakBisaMundur($item)) {
+            abort(422, $alasanTolak);
+        }
+
+        /** @var OrderItemStatus $sebelumnya */
         $sebelumnya = $item->status_item->sebelumnya($item->fulfillment_type);
-
-        abort_if($sebelumnya === null, 422, 'Barang di tahap '.$item->status_item->labelStaf()
-            .' tidak bisa dikembalikan dari sini.');
 
         DB::transaction(function () use ($item, $sebelumnya, $alasan, $olehUserId) {
             $this->pastikanMasihDi($item);

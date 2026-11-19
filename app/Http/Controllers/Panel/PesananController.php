@@ -197,7 +197,12 @@ class PesananController extends Controller
             return $sudah;
         }
 
-        $baru = $this->alur->majukanItem($item, auth('web')->id());
+        // Catatan dari pop-up Perbarui progres (KEP-124), hanya dibaca staf.
+        $data = $request->validate([
+            'catatan' => ['nullable', 'string', 'max:200'],
+        ], [], ['catatan' => 'catatan']);
+
+        $baru = $this->alur->majukanItem($item, auth('web')->id(), catatan: $data['catatan'] ?? null);
 
         return back()->with('sukses', "{$item->nama_produk} sekarang: {$baru->labelStaf()}.");
     }
