@@ -140,7 +140,8 @@
         @endforeach
     </ol>
 
-    <form method="POST" action="{{ route('kustom.simpan', $produk) }}" class="mt-6 lg:grid lg:grid-cols-[1fr_20rem] lg:items-start lg:gap-8">
+    <form method="POST" action="{{ route('kustom.simpan', $produk) }}" class="mt-6 lg:grid lg:grid-cols-[1fr_20rem] lg:items-start lg:gap-8"
+          @keydown.enter="cegahKirimEnter($event)">
         @csrf
 
         <div class="min-w-0 space-y-6">
@@ -373,12 +374,14 @@
                                 <label class="col-span-2 block {{ $pakaiKategori && $opsiPemain ? '' : 'lg:col-span-1' }}">
                                     <span class="label-form">Nama punggung</span>
                                     <input type="text" x-model="b.nama_punggung" :name="`baris[${i}][nama_punggung]`"
-                                           maxlength="60" placeholder="Tanpa nama" class="kotak-input">
+                                           maxlength="60" placeholder="Tanpa nama" class="kotak-input"
+                                           :data-isian-nama="i" @keydown.enter.prevent="fokus('nomor', i)">
                                 </label>
                                 <label class="block">
                                     <span class="label-form">Nomor</span>
                                     <input type="text" x-model="b.nomor" :name="`baris[${i}][nomor]`"
-                                           maxlength="5" inputmode="numeric" class="kotak-input tabular">
+                                           maxlength="5" inputmode="numeric" class="kotak-input tabular"
+                                           :data-isian-nomor="i" @keydown.enter.prevent="lanjutBaris(i)">
                                 </label>
                                 @if ($pakaiKategori)
                                     <label class="block">
@@ -439,6 +442,10 @@
                     <button type="button" @click="tambahBaris()" class="tombol tombol-garis text-sm">
                         + Tambah baris
                     </button>
+                    <button type="button" @click="cepatBuka = !cepatBuka" :aria-expanded="cepatBuka.toString()"
+                            class="tombol tombol-garis text-sm">
+                        Isi cepat per ukuran
+                    </button>
                     <button type="button" @click="tempelBuka = !tempelBuka" class="tautan text-sm">
                         Tempel dari Excel
                     </button>
@@ -446,6 +453,67 @@
                         <span x-text="qty"></span> pcs
                         <span x-show="qty < moq"> &middot; minimal <span x-text="moq"></span></span>
                     </p>
+                </div>
+
+                {{-- Isi cepat per ukuran (KEP-147): untuk yang memesan dulu per ukuran,
+                     nama dan nomor punggung menyusul sebelum desain disetujui. Hitungannya
+                     disimpan per model dan kategori, jadi kerah dan oblong, SD dan
+                     Dewasa, bisa diisi sekaligus sebelum dimasukkan. Isiannya tanpa
+                     name: yang terkirim tetap baris daftar pemain. --}}
+                <div x-show="cepatBuka" x-cloak class="kartu p-5">
+                    <p class="font-semibold">Isi cepat per ukuran</p>
+                    <p class="mt-1 text-sm leading-relaxed text-muted">
+                        Ketuk + pada tiap ukuran, lalu masukkan ke daftar. Nama dan nomor punggung bisa dilengkapi nanti.
+                    </p>
+
+                    <template x-if="opsiPemain">
+                        <div class="mt-4">
+                            <p class="label-form" x-text="opsiPemain.nama"></p>
+                            <div class="flex flex-wrap gap-2">
+                                <template x-for="v in opsiPemain.values" :key="v.id">
+                                    <button type="button" @click="cepat.model = v.id" :aria-pressed="(cepat.model === v.id).toString()"
+                                            class="rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors"
+                                            :class="cepat.model === v.id ? 'border-navy bg-navy text-white' : 'border-line hover:border-navy-300'"
+                                            x-text="v.label + (cepatTotalModel(v.id) > 0 ? ' · ' + cepatTotalModel(v.id) : '')"></button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    @if ($pakaiKategori)
+                        <div class="mt-4">
+                            <p class="label-form">Kategori</p>
+                            <div class="flex flex-wrap gap-2">
+                                <template x-for="k in kategori" :key="k.value">
+                                    <button type="button" @click="cepat.kategori = k.value; ikutiPanduan(k.value)"
+                                            :aria-pressed="(cepat.kategori === k.value).toString()"
+                                            class="rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors"
+                                            :class="cepat.kategori === k.value ? 'border-navy bg-navy text-white' : 'border-line hover:border-navy-300'"
+                                            x-text="k.label + (cepatTotalKategori(k.value) > 0 ? ' · ' + cepatTotalKategori(k.value) : '')"></button>
+                                </template>
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        <template x-for="u in ukuranKategori(cepat.kategori)" :key="kunciCepat(u)">
+                            <div class="min-w-0" x-init="cepat.jumlah[kunciCepat(u)] ??= 0">
+                                <span class="label-form" aria-hidden="true" x-text="u"></span>
+                                <x-jumlah label="jumlah ukuran" min="0" max="5000"
+                                          x-model.number="cepat.jumlah[kunciCepat(u)]" ::aria-label="'Jumlah ukuran ' + u" />
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+                        <p class="text-sm text-muted">
+                            <span class="tabular font-semibold text-ink" x-text="cepatTotal"></span> pcs dipilih
+                        </p>
+                        <button type="button" @click="masukkanCepat()" :disabled="cepatTotal === 0"
+                                class="tombol tombol-navy text-sm disabled:cursor-not-allowed disabled:opacity-50">
+                            <span x-text="'Masukkan ' + cepatTotal + ' pcs ke daftar'">Masukkan ke daftar</span>
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Tempel, bukan unggah berkas: pelanggan menyalin dari Excel atau
@@ -725,9 +793,86 @@
             tempelBuka: false,
             tempelIsi: '',
             tempelGagal: '',
+            // Isi cepat per ukuran (KEP-147): jumlah per "model|kategori|ukuran".
+            cepatBuka: false,
+            cepat: { model: null, kategori: '', jumlah: {} },
 
             init() {
                 this.tambahBaris();
+                // Baris kosong bawaan dibuang saat isi cepat dimasukkan, selama
+                // belum disentuh pelanggan.
+                const awal = this.baris[0];
+                awal.bawaan = { kategori: awal.kategori, ukuran: awal.ukuran, model: awal.model };
+
+                this.cepat.model = this.opsiPemain?.values[0]?.id ?? null;
+                this.cepat.kategori = this.kategori[this.kategori.length - 1]?.value ?? '';
+            },
+
+            /** Enter di isian tidak boleh langsung mengirim pesanan sebelum Cek Pesanan (KEP-147). */
+            cegahKirimEnter(e) {
+                if (this.langkah < 4 && e.target.tagName === 'INPUT') e.preventDefault();
+            },
+
+            fokus(jenis, i) {
+                this.$nextTick(() => this.$root.querySelector(`[data-isian-${jenis}="${i}"]`)?.focus());
+            },
+
+            /** Enter di kolom Nomor: pindah ke pemain berikutnya, membuat barisnya bila perlu. */
+            lanjutBaris(i) {
+                if (i === this.baris.length - 1) this.tambahBaris();
+                this.fokus('nama', i + 1);
+            },
+
+            // ---------------------------------------------- isi cepat per ukuran
+
+            kunciCepat(u) {
+                return `${this.cepat.model}|${this.cepat.kategori}|${u}`;
+            },
+
+            jumlahCepat(saring) {
+                return Object.entries(this.cepat.jumlah)
+                    .filter(([kunci]) => saring(kunci.split('|')))
+                    .reduce((n, [, j]) => n + (parseInt(j, 10) || 0), 0);
+            },
+
+            get cepatTotal() {
+                return this.jumlahCepat(() => true);
+            },
+
+            cepatTotalModel(model) {
+                return this.jumlahCepat(([m]) => m === String(model));
+            },
+
+            cepatTotalKategori(kategori) {
+                return this.jumlahCepat(([m, k]) => m === String(this.cepat.model) && k === kategori);
+            },
+
+            masihBawaan(b) {
+                return b.bawaan && !b.nama_punggung && !b.nomor && (parseInt(b.jumlah, 10) || 0) === 1
+                    && b.kategori === b.bawaan.kategori && b.ukuran === b.bawaan.ukuran && b.model === b.bawaan.model;
+            },
+
+            masukkanCepat() {
+                const urutKategori = this.kategori.map(k => k.value);
+                const baru = Object.entries(this.cepat.jumlah)
+                    .map(([kunci, j]) => [kunci.split('|'), parseInt(j, 10) || 0])
+                    .filter(([, n]) => n > 0)
+                    .map(([[model, kategori, ukuran], n]) => ({
+                        nama_punggung: '', nomor: '', kategori, ukuran, jumlah: n,
+                        model: model === 'null' ? null : Number(model),
+                    }))
+                    // Urut per kategori lalu ukuran, bukan urutan ketukan.
+                    .sort((a, b) => (urutKategori.indexOf(a.kategori) - urutKategori.indexOf(b.kategori))
+                        || (this.ukuranKategori(a.kategori).indexOf(a.ukuran) - this.ukuranKategori(b.kategori).indexOf(b.ukuran)));
+
+                if (baru.length === 0) return;
+
+                this.baris = [...this.baris.filter(b => !this.masihBawaan(b)), ...baru];
+                this.ikutiPanduan(baru.at(-1).kategori);
+                // Dikosongkan ke 0, bukan objek baru: kotak yang sudah tergambar
+                // tetap terikat ke kuncinya masing-masing.
+                Object.keys(this.cepat.jumlah).forEach(k => { this.cepat.jumlah[k] = 0; });
+                this.cepatBuka = false;
             },
 
             rp(n) {
@@ -825,13 +970,17 @@
 
             tambahBaris() {
                 const k = this.kategori[this.kategori.length - 1];
+                const akhir = this.baris.at(-1);
 
                 this.baris.push({
                     nama_punggung: '', nomor: '',
-                    kategori: k.value, ukuran: k.ukuran[1] ?? k.ukuran[0], jumlah: 1,
-                    // Baris baru mengikuti model baris terakhir: tim biasanya
-                    // mengetik yang berkerah dulu, lalu yang oblong.
-                    model: this.baris.at(-1)?.model ?? this.opsiPemain?.values[0]?.id ?? null,
+                    // Baris baru meniru kategori, ukuran, dan model baris terakhir
+                    // (KEP-147): tim biasanya mengetik pemain sejenis berurutan,
+                    // misalnya yang berkerah dulu, lalu yang oblong.
+                    kategori: akhir?.kategori ?? k.value,
+                    ukuran: akhir?.ukuran ?? (k.ukuran[1] ?? k.ukuran[0]),
+                    jumlah: 1,
+                    model: akhir?.model ?? this.opsiPemain?.values[0]?.id ?? null,
                 });
             },
 

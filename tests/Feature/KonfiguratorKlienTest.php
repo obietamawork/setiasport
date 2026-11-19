@@ -45,6 +45,14 @@ class KonfiguratorKlienTest extends TestCase
             ->assertSee(route('portofolio'));
     }
 
+    public function test_ada_isi_cepat_per_ukuran(): void
+    {
+        // KEP-147: pesan dulu per ukuran, nama dan nomor punggung menyusul.
+        $this->halaman()
+            ->assertSee('Isi cepat per ukuran')
+            ->assertSee('Nama dan nomor punggung bisa dilengkapi nanti.');
+    }
+
     public function test_kalimat_dari_klien(): void
     {
         $this->halaman()

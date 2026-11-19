@@ -5042,6 +5042,37 @@ bersatuan cm. Pemilik proyek memilih versi yang **mengikuti pilihan**.
 
 ---
 
+## KEP-147 — Isi cepat per ukuran dan alur ketik data pemain
+**Status:** TERKUNCI · 2026-11-19
+
+Pertanyaan pemilik proyek: adakah cara cepat tapi manual, di luar tempel dari Excel, untuk
+mengisi Data Pemain? Panduan ukuran dan pilihan kerah/oblong per pemain (KEP-123) sudah berubah,
+jadi mengisi pemain satu per satu terasa lama. Disetujui: **isi per ukuran ditambah alur
+ketik**.
+
+- **Isi cepat per ukuran**: tombol baru di samping "+ Tambah baris" membuka panel berisi
+  pilihan model (kerah/oblong, bila produknya punya opsi per pemain), kategori (SD, SMP, SMA /
+  Dewasa), dan kotak − + per ukuran. Hitungannya disimpan per model dan kategori, jadi
+  "Oblong, Dewasa M 3" dan "Pakai Kerah, SD S 2" bisa diisi sekaligus. Angka di tiap tombol
+  model dan kategori menunjukkan berapa yang sudah dipilih di situ.
+- **Masukkan N pcs ke daftar** membuat satu baris per ukuran (tanpa nama, jumlah sesuai
+  hitungan), terurut per kategori lalu ukuran. Nama dan nomor punggung boleh menyusul sebelum
+  desain disetujui, seperti kalimat klien di langkah ini. Baris kosong bawaan yang belum
+  disentuh dibuang; baris yang sudah diisi tetap. Kotak hitungan kembali ke 0, jadi panel bisa
+  dipakai lagi untuk model lain.
+- Isian di panel tanpa `name`: yang terkirim tetap baris daftar pemain, dengan aturan dan
+  pemeriksaan server yang sama.
+- **Alur ketik**:
+  - Baris baru meniru kategori, ukuran, dan model baris terakhir (dulu kembali ke kategori
+    terakhir dan ukuran kedua).
+  - Enter di Nama punggung pindah ke Nomor; Enter di Nomor pindah ke nama pemain berikutnya,
+    membuat barisnya bila perlu.
+  - Enter di isian mana pun sebelum langkah Cek Pesanan tidak lagi mengirim formulir. Dulu
+    Enter di nama atau jumlah langsung memasukkan pesanan ke keranjang tanpa melewati Cek
+    Pesanan.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5192,3 +5223,4 @@ bersatuan cm. Pemilik proyek memilih versi yang **mengikuti pilihan**.
 | KEP-144 | Kalimat checkout dari klien; tautan pesanan tetap disebut lewat email, WhatsApp lewat tombol bagikan | TERKUNCI |
 | KEP-145 | Tombol wa.me tanpa nomor di halaman pesanan; pelanggan memilih kontak atau grup timnya | TERKUNCI |
 | KEP-146 | Tab SD/SMP/SMA-Dewasa ber-cm, ikut kategori pemain terakhir, ukuran yang dipesan ditandai; catatan klien | TERKUNCI |
+| KEP-147 | Panel - + per ukuran per model dan kategori; baris baru meniru sebelumnya; Enter berpindah isian, tidak mengirim formulir | TERKUNCI |
