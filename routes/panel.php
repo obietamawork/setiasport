@@ -12,6 +12,7 @@ use App\Http\Controllers\Panel\CariController;
 use App\Http\Controllers\Panel\ContohProfilController;
 use App\Http\Controllers\Panel\CsController;
 use App\Http\Controllers\Panel\DashboardController;
+use App\Http\Controllers\Panel\FaqBotController;
 use App\Http\Controllers\Panel\GambarProdukController;
 use App\Http\Controllers\Panel\HapusPesananController;
 use App\Http\Controllers\Panel\InvoiceController;
@@ -277,6 +278,15 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::post('{percakapan}/catatan', [CsController::class, 'catatan'])->whereNumber('percakapan')->name('catatan');
             Route::post('{percakapan}/tautkan', [CsController::class, 'tautkan'])->whereNumber('percakapan')->name('tautkan');
             Route::get('{percakapan}/lampiran/{pesan}', [CsController::class, 'lampiran'])->whereNumber('percakapan')->name('lampiran');
+        });
+
+        // FAQ chatbot CS dan kurasi pertanyaan yang belum terjawab (KEP-151).
+        Route::middleware('izin:cs.balas')->prefix('faq')->name('faq.')->group(function () {
+            Route::get('/', [FaqBotController::class, 'index'])->name('index');
+            Route::post('/', [FaqBotController::class, 'store'])->name('store');
+            Route::put('{faq}', [FaqBotController::class, 'update'])->whereNumber('faq')->name('update');
+            Route::delete('{faq}', [FaqBotController::class, 'destroy'])->whereNumber('faq')->name('destroy');
+            Route::post('log/{log}/abaikan', [FaqBotController::class, 'abaikan'])->whereNumber('log')->name('abaikan');
         });
 
         // Profil usaha: halaman depan bercerita lebih dulu, katalog belakangan (KEP-024).

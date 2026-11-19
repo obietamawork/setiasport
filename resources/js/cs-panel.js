@@ -85,11 +85,13 @@ export function notifikasiCs(awal) {
 
             const baru = new Set(this.belum);
 
-            if (e.pesan.pengirim === 'PELANGGAN') {
+            // Yang menunggu admin saja (KEP-151): tanya-jawab dengan asisten
+            // otomatis tidak membunyikan apa pun sampai asisten menyerahkannya.
+            if (['PELANGGAN', 'BOT'].includes(e.pesan.pengirim) && e.percakapan.menunggu_sejak) {
                 baru.add(id);
                 bunyi();
                 if (!document.hasFocus()) document.title = '(Chat baru) ' + this._judulAsli;
-            } else {
+            } else if (e.pesan.pengirim === 'STAF') {
                 baru.delete(id);
             }
 

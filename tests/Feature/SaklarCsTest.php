@@ -35,6 +35,8 @@ class SaklarCsTest extends TestCase
 
         // Yang diuji di sini saklar di Pengaturan, jadi fiturnya dipasang.
         config(['fitur.cs' => true]);
+        // Asisten otomatis diuji di AsistenCsTest (KEP-151).
+        Setting::simpan('bot_aktif', '0');
     }
 
     private function matikanCs(): void

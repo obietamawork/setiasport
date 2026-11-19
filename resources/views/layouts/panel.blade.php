@@ -85,6 +85,7 @@
             ['panel.banner.index', 'Banner beranda', 'profil.kelola', 'panel.banner.*', null, 'gambar'],
             ['panel.portofolio.index', 'Portofolio', 'profil.kelola', 'panel.portofolio.*', null, 'portofolio'],
             ['panel.testimoni.index', 'Testimoni', 'profil.kelola', 'panel.testimoni.*', null, 'testimoni'],
+            ...(cs_aktif() ? [['panel.faq.index', 'FAQ chatbot', 'cs.balas', 'panel.faq.*', null, 'bantuan']] : []),
             ['panel.pengguna.index', 'Pengguna', 'pengguna.kelola', 'panel.pengguna.*', null, 'orang'],
             ['panel.pekerja.index', 'Pekerja konveksi', 'pengguna.kelola', 'panel.pekerja.*', null, 'pekerja'],
             ['panel.kesiapan', 'Kesiapan tayang', 'pengaturan.kelola', 'panel.kesiapan', null, 'centang'],

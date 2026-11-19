@@ -226,6 +226,8 @@ export function ruangCs(awal) {
         /** Lencana status di daftar, seperti gambar klien: Baru, Diproses, Selesai. */
         labelStatus(p) {
             if (p.status === 'SELESAI') return ['Selesai', 'chip-ok'];
+            // Masih dijawab asisten otomatis (KEP-151): belum perlu admin.
+            if (p.ditangani === 'BOT') return ['Bot', 'chip-biru'];
             if (p.menunggu_sejak) return ['Baru', 'chip-merah'];
             return ['Diproses', 'chip-kuning'];
         },
@@ -508,7 +510,10 @@ export function ruangCs(awal) {
 
             this.pasangBaris(percakapan);
 
-            if (pesan.pengirim === 'PELANGGAN') {
+            // Bunyi hanya untuk yang menunggu admin: pesan pelanggan di percakapan
+            // yang ditangani admin, atau saat asisten menyerahkannya (KEP-151).
+            // Tanya-jawab dengan asisten otomatis tidak membunyikan apa pun.
+            if (['PELANGGAN', 'BOT'].includes(pesan.pengirim) && percakapan.menunggu_sejak) {
                 if (this.suara && (!sedangDibuka || document.hidden)) bunyi();
                 this.muatJumlah();
             }
@@ -588,6 +593,11 @@ export function ruangCs(awal) {
             const kemarin = new Date(hari); kemarin.setDate(hari.getDate() - 1);
             if (d.toDateString() === kemarin.toDateString()) return 'Kemarin';
             return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+        },
+
+        /** Pesan dari pihak toko: staf atau asisten otomatis. */
+        dariToko(p) {
+            return p.pengirim === 'STAF' || p.pengirim === 'BOT';
         },
 
         /** Nama pengirim hanya di pesan pertama dari rentetan orang yang sama. */

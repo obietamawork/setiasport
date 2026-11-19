@@ -20,7 +20,8 @@ class PercakapanCs extends Model
 
     protected $fillable = [
         'token_hash', 'customer_id', 'order_id', 'order_terverifikasi', 'nama', 'kontak',
-        'topik', 'catatan_internal', 'status', 'belum_dibaca_staf', 'belum_dibaca_pelanggan',
+        'topik', 'catatan_internal', 'status', 'ditangani', 'alasan_serah', 'gagal_bot',
+        'belum_dibaca_staf', 'belum_dibaca_pelanggan',
         'pesan_terakhir_pada', 'menunggu_sejak', 'diperingatkan_pada', 'ip',
     ];
 
@@ -108,6 +109,9 @@ class PercakapanCs extends Model
             'topik' => $this->topik->label(),
             'topik_kode' => $this->topik->value,
             'status' => $this->status,
+            // BOT selama asisten otomatis menjawab (KEP-151).
+            'ditangani' => $this->ditangani,
+            'alasan_serah' => $this->alasan_serah,
             'belum_dibaca' => $this->belum_dibaca_staf,
             'menunggu_sejak' => $this->menunggu_sejak?->toIso8601String(),
             'pesan_terakhir_pada' => ($this->pesan_terakhir_pada ?? $this->created_at)?->toIso8601String(),

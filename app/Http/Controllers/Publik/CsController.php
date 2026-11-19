@@ -4,14 +4,15 @@ namespace App\Http\Controllers\Publik;
 
 use App\Enums\TopikCs;
 use App\Http\Controllers\Controller;
-use Closure;
-use Illuminate\Routing\Controllers\HasMiddleware;
 use App\Models\Order;
 use App\Models\PercakapanCs;
 use App\Models\PesanCs;
+use App\Services\AsistenCs;
 use App\Services\LayananCs;
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -47,7 +48,10 @@ class CsController extends Controller implements HasMiddleware
         ];
     }
 
-    public function __construct(private LayananCs $cs) {}
+    public function __construct(
+        private LayananCs $cs,
+        private AsistenCs $asisten,
+    ) {}
 
     /** Keadaan widget saat dibuka: percakapan yang sedang berjalan, kalau ada. */
     public function status(Request $request): JsonResponse
@@ -59,11 +63,7 @@ class CsController extends Controller implements HasMiddleware
         }
 
         return response()->json([
-            'percakapan' => $percakapan ? [
-                'channel' => $percakapan->channel(),
-                'status' => $percakapan->status,
-                'nama' => $percakapan->nama,
-            ] : null,
+            'percakapan' => $percakapan ? $this->ringkas($percakapan) : null,
             'pesan' => $percakapan
                 ? $percakapan->pesan()->with(['percakapan', 'staf'])->orderByDesc('id')->limit(100)->get()
                     ->reverse()->values()->map->untukKlien('pelanggan')
@@ -103,10 +103,13 @@ class CsController extends Controller implements HasMiddleware
         [$percakapan, $token] = $this->cs->mulai($data, $customer, $dariTautan, (string) $request->ip());
 
         $pesan = $this->cs->kirimDariPelanggan($percakapan, $data['isi'] ?? null, $request->file('lampiran'));
+        $balasan = $this->asisten->tanggapi($percakapan, $pesan);
 
         return response()->json([
-            'percakapan' => ['channel' => $percakapan->channel(), 'status' => $percakapan->status, 'nama' => $percakapan->nama],
+            'percakapan' => $this->ringkas($percakapan),
             'pesan' => $pesan->untukKlien('pelanggan'),
+            // Balasan asisten otomatis langsung ikut, tanpa menunggu realtime (KEP-151).
+            'balasan' => array_map(fn (PesanCs $b) => $b->untukKlien('pelanggan'), $balasan),
         ], 201)->withCookie(cookie(
             self::COOKIE, $token, self::UMUR_COOKIE_MENIT,
             httpOnly: true, sameSite: 'lax', secure: $request->isSecure(),
@@ -125,8 +128,13 @@ class CsController extends Controller implements HasMiddleware
         ], ['isi.required_without' => 'Pesannya masih kosong.'], ['isi' => 'pesan']);
 
         $pesan = $this->cs->kirimDariPelanggan($percakapan, $data['isi'] ?? null, $request->file('lampiran'));
+        $balasan = $this->asisten->tanggapi($percakapan, $pesan);
 
-        return response()->json(['pesan' => $pesan->untukKlien('pelanggan')], 201);
+        return response()->json([
+            'pesan' => $pesan->untukKlien('pelanggan'),
+            'balasan' => array_map(fn (PesanCs $b) => $b->untukKlien('pelanggan'), $balasan),
+            'percakapan' => $this->ringkas($percakapan),
+        ], 201);
     }
 
     /**
@@ -154,6 +162,18 @@ class CsController extends Controller implements HasMiddleware
             'status' => $percakapan->status,
             'pesan' => $pesan->map->untukKlien('pelanggan'),
         ]);
+    }
+
+    /** @return array{channel: string, status: string, nama: string, ditangani: string} */
+    private function ringkas(PercakapanCs $percakapan): array
+    {
+        return [
+            'channel' => $percakapan->channel(),
+            'status' => $percakapan->status,
+            'nama' => $percakapan->nama,
+            // Widget menampilkan "Bicara dengan admin" selama bot yang menjawab (KEP-151).
+            'ditangani' => $percakapan->ditangani,
+        ];
     }
 
     /** Otorisasi channel privat: hanya channel percakapan milik cookie ini. */

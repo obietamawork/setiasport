@@ -79,6 +79,9 @@ class PengaturanController extends Controller
                 ['judul' => '', 'kunci' => ['cs_aktif']],
                 ['judul' => 'Saat chat CS menyala', 'hanyaSaatCs' => true,
                     'kunci' => ['cs_sapaan', 'cs_jam_mulai', 'cs_jam_selesai', 'cs_peringatan_menit']],
+                ['judul' => 'Asisten otomatis (chatbot)', 'hanyaSaatCs' => true,
+                    'catatan' => 'FAQ yang dipakai asisten dikelola di menu FAQ chatbot.',
+                    'kunci' => ['bot_aktif']],
             ],
         ],
     ];

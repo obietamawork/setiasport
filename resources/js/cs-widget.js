@@ -142,7 +142,8 @@ export function widgetCs(awal) {
             try {
                 const hasil = await minta(awal.url.mulai, { method: 'POST', body: data });
                 this.percakapan = hasil.percakapan;
-                this.pesan = [hasil.pesan];
+                // Balasan asisten otomatis ikut di jawaban yang sama (KEP-151).
+                this.pesan = [hasil.pesan, ...(hasil.balasan ?? [])];
                 this.tahap = 'obrolan';
                 this.form.isi = '';
                 this.lampiran = null;
@@ -168,15 +169,29 @@ export function widgetCs(awal) {
             try {
                 const hasil = await minta(awal.url.kirim, { method: 'POST', body: data });
                 this.tambah(hasil.pesan);
+                (hasil.balasan ?? []).forEach((b) => this.tambah(b));
                 this.form.isi = '';
                 this.lampiran = null;
                 if (this.$refs.berkas) this.$refs.berkas.value = '';
-                if (this.percakapan) this.percakapan.status = 'TERBUKA';
+                if (this.percakapan) this.percakapan = { ...this.percakapan, ...(hasil.percakapan ?? {}), status: 'TERBUKA' };
             } catch (e) {
                 this.galat = e.message;
             } finally {
                 this.mengirim = false;
             }
+        },
+
+        /** Tombol pilihan di bawah balasan asisten: dikirim seperti pesan biasa (KEP-151). */
+        pilih(teks) {
+            if (this.mengirim) return;
+            this.form.isi = teks;
+            this.kirim();
+        },
+
+        /** Pilihan hanya untuk balasan asisten yang paling akhir; yang lama sudah lewat. */
+        get pilihanTerakhir() {
+            const akhir = this.pesan[this.pesan.length - 1];
+            return akhir?.pengirim === 'BOT' ? (akhir.pilihan ?? []) : [];
         },
 
         // Enter mengirim, Shift+Enter membuat baris baru: kebiasaan aplikasi chat.
@@ -194,6 +209,8 @@ export function widgetCs(awal) {
             this.pesan.sort((a, b) => a.id - b.id);
 
             if (p.pengirim === 'SISTEM' && this.percakapan) this.percakapan.status = 'SELESAI';
+            // Balasan staf berarti admin sudah mengambil alih dari asisten.
+            if (p.pengirim === 'STAF' && this.percakapan) this.percakapan.ditangani = 'ADMIN';
             if (p.pengirim !== 'PELANGGAN' && !this.buka) this.belumDibaca++;
 
             this.gulir();

@@ -11,7 +11,15 @@ class PesanCs extends Model
 
     public const UPDATED_AT = null;
 
-    protected $fillable = ['percakapan_id', 'pengirim', 'user_id', 'isi', 'lampiran_path'];
+    protected $fillable = ['percakapan_id', 'pengirim', 'user_id', 'isi', 'lampiran_path', 'pilihan'];
+
+    protected function casts(): array
+    {
+        return [
+            // Tombol pilihan di bawah balasan asisten otomatis (KEP-151).
+            'pilihan' => 'array',
+        ];
+    }
 
     public function percakapan(): BelongsTo
     {
@@ -38,6 +46,7 @@ class PesanCs extends Model
             // Pelanggan melihat "CS Setia Sport", bukan nama pribadi staf.
             'nama' => match ($this->pengirim) {
                 'STAF' => $untuk === 'staf' ? ($this->staf?->name ?? 'Staf') : 'CS '.setting('toko_nama', 'Setia Sport'),
+                'BOT' => $untuk === 'staf' ? 'Asisten otomatis' : 'Asisten '.setting('toko_nama', 'Setia Sport'),
                 'SISTEM' => null,
                 default => $this->percakapan?->nama,
             },
@@ -47,6 +56,7 @@ class PesanCs extends Model
                     ? route('panel.cs.lampiran', [$this->percakapan_id, $this->id])
                     : route('cs.lampiran', $this->id))
                 : null,
+            'pilihan' => $this->pilihan,
             'waktu' => $this->created_at?->toIso8601String(),
         ];
     }

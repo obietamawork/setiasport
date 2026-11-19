@@ -141,18 +141,19 @@
                 </p>
             </form>
 
-            {{-- Percakapan. --}}
+            {{-- Percakapan. Pesan asisten otomatis (BOT) tampil seperti balasan CS,
+                 dengan namanya sendiri (KEP-151). --}}
             <ol x-show="tahap === 'obrolan'" class="space-y-3" aria-live="polite">
                 <template x-for="p in pesan" :key="p.id">
                     <li :class="{
                             'flex justify-end': p.pengirim === 'PELANGGAN',
-                            'flex': p.pengirim === 'STAF',
+                            'flex': p.pengirim === 'STAF' || p.pengirim === 'BOT',
                             'text-center': p.pengirim === 'SISTEM',
                         }">
                         <p x-show="p.pengirim === 'SISTEM'" class="mx-auto inline-block rounded-full bg-navy-50 px-3 py-1 text-xs text-muted" x-text="p.isi"></p>
 
                         <div x-show="p.pengirim !== 'SISTEM'" class="max-w-[85%]">
-                            <p x-show="p.pengirim === 'STAF'" class="mb-0.5 text-xs font-semibold text-navy" x-text="p.nama"></p>
+                            <p x-show="p.pengirim === 'STAF' || p.pengirim === 'BOT'" class="mb-0.5 text-xs font-semibold text-navy" x-text="p.nama"></p>
                             <div :class="p.pengirim === 'PELANGGAN'
                                     ? 'rounded-[12px] rounded-tr-[4px] bg-navy text-white'
                                     : 'rounded-[12px] rounded-tl-[4px] border border-line bg-field'"
@@ -169,10 +170,24 @@
                     </li>
                 </template>
             </ol>
+
+            {{-- Tombol pilihan dari balasan asisten yang terakhir (KEP-151). --}}
+            <div x-show="tahap === 'obrolan' && pilihanTerakhir.length" x-cloak class="mt-3 flex flex-wrap gap-1.5">
+                <template x-for="t in pilihanTerakhir" :key="t">
+                    <button type="button" @click="pilih(t)" :disabled="mengirim"
+                            class="rounded-full border border-navy-200 bg-field px-3 py-1.5 text-left text-sm text-navy-800 hover:border-navy hover:bg-navy-50"
+                            x-text="t"></button>
+                </template>
+            </div>
         </div>
 
         {{-- Kolom tulis. --}}
         <form x-show="tahap === 'obrolan'" @submit.prevent="kirim()" class="shrink-0 border-t border-line bg-field p-3">
+            {{-- Selama asisten otomatis yang menjawab, jalan ke admin selalu terlihat. --}}
+            <p x-show="percakapan && percakapan.ditangani === 'BOT' && percakapan.status !== 'SELESAI'" x-cloak class="mb-2 text-xs text-muted">
+                Dijawab asisten otomatis.
+                <button type="button" @click="pilih('Bicara dengan admin')" class="tautan font-semibold text-navy">Bicara dengan admin</button>
+            </p>
             <p x-show="percakapan && percakapan.status === 'SELESAI'" class="mb-2 text-xs text-muted">
                 Percakapan sudah ditutup. Kirim pesan untuk membukanya kembali.
             </p>

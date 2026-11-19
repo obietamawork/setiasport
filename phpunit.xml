@@ -37,5 +37,9 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Tes tidak bergantung pada .env pengembang: tes yang butuh chat CS
+             memasangnya sendiri lewat config(), KEP-036 dan KEP-149. -->
+        <env name="FITUR_CS" value="false"/>
+        <env name="OPENROUTER_API_KEY" value=""/>
     </php>
 </phpunit>

@@ -5175,6 +5175,74 @@ panel, kolom chat tersisa sekitar 430 px di laptop 1280 px (alasan KEP-031 tetap
 
 ---
 
+## KEP-151 — Chatbot CS berlapis: aturan pasti, FAQ, lalu admin
+**Status:** TERKUNCI · 2026-11-20
+
+Klien ingin chatbot yang menangani dan mengurasi FAQ umum, dengan CS manusia hanya bila benar-benar
+dibutuhkan. Pemilik proyek mengusulkan alur berlapis seperti chatbot enterprise: deterministik,
+lalu AI, baru manusia. Bagian ini lapis deterministik dan jalur ke manusia; lapis AI di KEP-152.
+
+**Alur setiap pesan pelanggan** (`AsistenCs`), selama percakapan ditangani bot:
+
+1. **Aturan pasti** (tanpa AI, dicek lebih dulu):
+   - langsung ke admin: permintaan admin ("Bicara dengan admin", "mau ke admin", "operator"),
+     kata komplain (rusak, robek, luntur, salah kirim, refund, belum sampai, ...), pembayaran
+     bermasalah (sudah transfer, bukti bayar, belum diverifikasi, ...), permintaan perubahan
+     ("mau revisi", "minta ganti", "batalkan"), dan pesan foto;
+   - salam ("halo kak, permisi") dijawab dengan menu topik;
+   - "terima kasih" / "Ya, terjawab" dijawab penutup;
+   - "Tidak membantu" dua kali berturut-turut diteruskan ke admin;
+   - status pesanan dijawab dari data (status, target selesai, sisa tagihan), **hanya untuk
+     percakapan yang pesanannya terverifikasi**; selain itu diarahkan ke halaman pesanan
+     (KEP-030).
+2. **FAQ** (`PencocokFaq`): frasa kunci per FAQ, dengan ejaan sehari-hari dirapikan ("brp",
+   "gimana", akhiran "-nya"). Satu FAQ yang jelas di depan dijawab, dengan pilihan "Ya,
+   terjawab", "Tidak membantu", "Bicara dengan admin". Beberapa FAQ yang skornya berdekatan
+   ditawarkan sebagai "Maksud Anda yang mana?". Cip yang diketuk selalu cocok dengan FAQ-nya.
+3. **AI**: KEP-152.
+4. **Admin**: sisanya diteruskan.
+
+**Komplain langsung ke admin**: percakapan bertopik Komplain tidak pernah dijawab bot.
+
+**Selama ditangani bot, admin tidak diganggu**: percakapan tidak menunggu (tanpa tanda Baru,
+bunyi, angka di menu, atau email peringatan). Begitu diserahkan, percakapan masuk kotak masuk
+seperti chat biasa dengan alasan serahnya ("Diteruskan asisten otomatis: Komplain"), dan pelanggan
+diberi tahu kapan admin membalas (sebentar lagi bila ada admin yang menerima chat, selain itu
+jam operasional). Balasan staf mengambil alih: bot berhenti di percakapan itu. Percakapan yang
+ditutup lalu dibuka lagi oleh pelanggan kembali dijawab bot lebih dulu.
+
+**Tampilan:**
+- Widget: pesan bot bernama "Asisten Setia Sport", tombol pilihan di bawah balasan bot yang
+  terakhir, dan "Dijawab asisten otomatis. Bicara dengan admin" di atas kolom tulis selama bot
+  yang menjawab. Balasan bot ikut di jawaban permintaan yang sama, tanpa menunggu realtime.
+- Ruang CS: pesan bot di sisi toko berwarna navy muda dengan label "Asisten otomatis" dan daftar
+  pilihan yang ditawarkan; lencana **Bot** di daftar; pita "Dijawab asisten otomatis" atau
+  "Diteruskan asisten otomatis: alasan".
+
+**FAQ chatbot** (menu Lainnya → FAQ chatbot, izin `cs.balas`): tambah, ubah, nonaktifkan, dan
+hapus FAQ; jawaban boleh memakai penanda dari Pengaturan (`{toko_alamat}`, `{toko_jam_buka}`,
+`{dp_persen}`, `{batas_bayar_jam}`, `{moq_terkecil}`, dan lainnya) supaya tetap benar ketika
+pengaturan berubah. Tab **Belum terjawab** berisi pertanyaan yang dijawab AI atau diteruskan
+karena bot tidak tahu jawabannya; "Jadikan FAQ" mengisi formulir dengan pertanyaannya (dan
+jawaban AI bila ada), "Abaikan" menyingkirkannya. Ringkasan bulan ini: dijawab FAQ, jawaban
+otomatis lain, dijawab AI beserta biayanya, dan diteruskan ke admin.
+
+**FAQ awal** (seeder, hanya bila tabel kosong) dari template balasan dan teks klien: cara pesan,
+minimal pemesanan, harga, lama pengerjaan, pembayaran, pengiriman, alamat dan jam buka, desain
+sendiri, revisi, ukuran, dan stok. Tidak ada nomor rekening di jawaban bot (KEP-029).
+
+**Pengaturan**: "Asisten otomatis menjawab lebih dulu" di tab Chat CS (menyala sebagai bawaan).
+Dimatikan, semua chat langsung ke admin seperti sebelumnya.
+
+**Konsekuensi teknis:**
+- Tabel `faq_bot` dan `log_bot` (setiap pertanyaan yang ditangani bot: lapis, FAQ, alasan, dan
+  untuk AI: model, token, biaya); kolom `ditangani`, `alasan_serah`, `gagal_bot` di
+  `percakapan_cs`; kolom `pilihan` (JSON) di `pesan_cs`; pengirim baru `BOT`.
+- `phpunit.xml` kini menetapkan `FITUR_CS=false` dan `OPENROUTER_API_KEY` kosong: tes tidak
+  bergantung pada `.env` pengembang dan tidak pernah memakai kunci asli.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5329,3 +5397,4 @@ panel, kolom chat tersisa sekitar 430 px di laptop 1280 px (alasan KEP-031 tetap
 | KEP-148 | Kalimat klien di tautan, batas, QRIS, catatan penting, unggah bukti; jam layanan bawaan ber-WIB | TERKUNCI |
 | KEP-149 | CS menyala lewat migrasi dan seeder; menu Customer Service di atas Antrian kerja dan Serah terima | TERKUNCI |
 | KEP-150 | Tab berangka, kepala dengan kode pesanan dan WhatsApp, Balasan Cepat, Detail Pelanggan, Detail Pesanan, Catatan Internal, Pusat Bantuan | TERKUNCI |
+| KEP-151 | Bot menjawab dulu dari FAQ panel; komplain, pembayaran, foto, dan yang tak terjawab ke admin; kurasi Belum terjawab | TERKUNCI |

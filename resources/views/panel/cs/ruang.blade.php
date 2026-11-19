@@ -130,7 +130,7 @@
                                 <span class="mt-0.5 flex items-center gap-2">
                                     <span class="min-w-0 flex-1 truncate text-sm"
                                           :class="p.belum_dibaca > 0 ? 'font-medium text-ink' : 'text-muted'">
-                                        <span x-show="p.cuplikan_dari === 'STAF'" class="text-muted">Anda: </span><span x-text="p.cuplikan"></span>
+                                        <span x-show="p.cuplikan_dari === 'STAF'" class="text-muted">Anda: </span><span x-show="p.cuplikan_dari === 'BOT'" class="text-muted">Bot: </span><span x-text="p.cuplikan"></span>
                                     </span>
                                     <span class="chip shrink-0" :class="labelStatus(p)[1]" x-text="labelStatus(p)[0]"></span>
                                 </span>
@@ -240,16 +240,18 @@
                                     <p x-show="p.pengirim === 'SISTEM'" class="my-3 text-center text-xs text-muted" x-text="p.isi"></p>
 
                                     <div x-show="p.pengirim !== 'SISTEM'" class="flex items-end gap-2"
-                                         :class="[p.pengirim === 'STAF' ? 'justify-end' : 'justify-start', awalRentetan(i) ? 'mt-3' : 'mt-1']">
-                                        <span x-show="p.pengirim !== 'STAF'" class="flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+                                         :class="[dariToko(p) ? 'justify-end' : 'justify-start', awalRentetan(i) ? 'mt-3' : 'mt-1']">
+                                        <span x-show="!dariToko(p)" class="flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
                                               :class="awalRentetan(i) ? 'bg-navy-100 text-navy-800' : 'invisible'" x-text="inisial(p.nama)" aria-hidden="true"></span>
                                         <div class="max-w-[78%]">
                                             <p x-show="awalRentetan(i)" class="mb-1 text-xs font-semibold"
-                                               :class="p.pengirim === 'STAF' ? 'text-right text-navy' : 'text-muted'" x-text="p.nama"></p>
+                                               :class="dariToko(p) ? 'text-right text-navy' : 'text-muted'" x-text="p.nama"></p>
                                             <div class="relative overflow-hidden text-[15px] leading-relaxed"
-                                                 :class="p.pengirim === 'STAF'
-                                                    ? 'rounded-[14px] rounded-br-[4px] bg-navy text-white'
-                                                    : 'rounded-[14px] rounded-bl-[4px] bg-field shadow-[0_0_0_1px_var(--color-line)]'">
+                                                 :class="{
+                                                    'rounded-[14px] rounded-br-[4px] bg-navy text-white': p.pengirim === 'STAF',
+                                                    'rounded-[14px] rounded-br-[4px] bg-navy-100 text-navy-900': p.pengirim === 'BOT',
+                                                    'rounded-[14px] rounded-bl-[4px] bg-field shadow-[0_0_0_1px_var(--color-line)]': !dariToko(p),
+                                                 }">
                                                 <template x-if="p.lampiran">
                                                     <div class="relative">
                                                         <a :href="p.lampiran" target="_blank" rel="noopener" class="block">
@@ -266,13 +268,26 @@
                                                 </template>
                                                 <p x-show="p.isi" class="px-3.5 py-2 break-words whitespace-pre-line" x-text="p.isi"></p>
                                             </div>
-                                            <p class="tabular mt-1 text-[11px] text-muted" :class="p.pengirim === 'STAF' && 'text-right'" x-text="jam(p.waktu)"></p>
+                                            <p x-show="p.pengirim === 'BOT' && p.pilihan?.length" class="mt-1 text-right text-[11px] text-muted"
+                                               x-text="'Pilihan: ' + (p.pilihan ?? []).join(' · ')"></p>
+                                            <p class="tabular mt-1 text-[11px] text-muted" :class="dariToko(p) && 'text-right'" x-text="jam(p.waktu)"></p>
                                         </div>
                                     </div>
                                 </li>
                             </template>
                         </ol>
                     </div>
+
+                    {{-- Siapa yang sedang menangani (KEP-151): asisten otomatis, atau admin
+                         karena diteruskan asisten dengan alasan tertentu. --}}
+                    <p x-show="terpilih.ditangani === 'BOT' && terpilih.status === 'TERBUKA'" x-cloak
+                       class="shrink-0 border-t border-biru-100 bg-biru-50 px-5 py-2 text-sm">
+                        Dijawab asisten otomatis. Balasan Anda akan mengambil alih percakapan ini.
+                    </p>
+                    <p x-show="terpilih.ditangani === 'ADMIN' && terpilih.alasan_serah && terpilih.menunggu_sejak" x-cloak
+                       class="shrink-0 border-t border-kuning/40 bg-kuning-50 px-5 py-2 text-sm">
+                        Diteruskan asisten otomatis: <strong x-text="terpilih.alasan_serah"></strong>.
+                    </p>
 
                     {{-- Pengingat tepat di atas kolom balasan, tempat mata admin berada. --}}
                     <p x-show="keadaanTunggu(terpilih) === 'terlambat'" x-cloak

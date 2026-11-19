@@ -127,6 +127,9 @@ Pos Indonesia', 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
             ['cs_jam_layanan', 'Setiap hari, 07.00–16.00 WIB', 'string', 'cs', 'Jam Operasional Website',
                 'Ditampilkan di jendela chat supaya pelanggan tahu kapan akan dibalas.'],
             ['cs_sapaan', 'Halo! Ada yang bisa kami bantu? Tulis pertanyaan Anda, CS kami akan membalas di sini.', 'teks', 'cs', 'Sapaan Pembuka'],
+            // Chatbot CS berlapis (KEP-151): FAQ dulu, admin bila perlu.
+            ['bot_aktif', '1', 'bool', 'cs', 'Asisten otomatis menjawab lebih dulu',
+                'Pertanyaan umum dijawab dari FAQ chatbot; komplain, pembayaran, foto, dan pertanyaan yang tidak ada jawabannya langsung diteruskan ke admin. Kalau dimatikan, semua chat langsung ke admin.'],
             ['cs_peringatan_menit', '15', 'int', 'cs', 'Peringatkan Staf Setelah (menit)',
                 'Chat yang belum dibalas selama ini dikirimkan ke email staf. Chat yang tidak dijawab lebih buruk daripada tidak ada chat.'],
 

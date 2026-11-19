@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             // berat pada produk yang baru saja dibuat CatalogSeeder.
             PanduanUkuranSeeder::class,
             TemplateBalasanSeeder::class,
+            // FAQ awal chatbot CS (KEP-151); hanya mengisi tabel yang kosong.
+            FaqBotSeeder::class,
         ]);
     }
 }

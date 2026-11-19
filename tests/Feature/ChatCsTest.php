@@ -47,6 +47,9 @@ class ChatCsTest extends TestCase
         // CS mati sebagai bawaan (KEP-034); tes ini menguji fiturnya saat dinyalakan.
         config(['fitur.cs' => true]);
         Setting::simpan('cs_aktif', '1');
+        // Yang diuji di sini jalur CS manusia (KEP-030); asisten otomatis yang
+        // menjawab lebih dulu diuji di AsistenCsTest (KEP-151).
+        Setting::simpan('bot_aktif', '0');
 
         // Widget memanggil server dengan credentials: 'same-origin', jadi cookie
         // selalu ikut. Permintaan JSON di tes tidak mengirimnya tanpa ini.

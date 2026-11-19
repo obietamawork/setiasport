@@ -47,6 +47,8 @@ class LayananCs
             'nama' => $customer?->nama ?? $data['nama'],
             'kontak' => $customer?->email ?? $data['kontak'],
             'topik' => TopikCs::from($data['topik']),
+            // Asisten otomatis menjawab lebih dulu; komplain langsung ke admin (KEP-151).
+            'ditangani' => AsistenCs::penanganAwal(TopikCs::from($data['topik'])),
             'ip' => $ip,
         ]);
 
@@ -62,13 +64,26 @@ class LayananCs
                 'lampiran_path' => $this->simpanLampiran($lampiran),
             ]);
 
-            $percakapan->update([
-                // Pelanggan yang menulis lagi membuka kembali percakapan yang ditutup.
-                'status' => 'TERBUKA',
-                'belum_dibaca_staf' => $percakapan->belum_dibaca_staf + 1,
-                'pesan_terakhir_pada' => now(),
-                'menunggu_sejak' => $percakapan->menunggu_sejak ?? now(),
-            ]);
+            // Pelanggan yang menulis lagi membuka kembali percakapan yang
+            // ditutup; asisten otomatis kembali menjawab lebih dulu (KEP-151).
+            if ($percakapan->status === 'SELESAI') {
+                $percakapan->fill([
+                    'ditangani' => AsistenCs::penanganAwal($percakapan->topik),
+                    'alasan_serah' => null,
+                    'gagal_bot' => 0,
+                ]);
+            }
+
+            // Selama ditangani bot, percakapan tidak menunggu admin: tanpa tanda
+            // "Baru", bunyi, atau email peringatan (KEP-151).
+            $percakapan->update($percakapan->ditangani === 'BOT'
+                ? ['status' => 'TERBUKA', 'pesan_terakhir_pada' => now()]
+                : [
+                    'status' => 'TERBUKA',
+                    'belum_dibaca_staf' => $percakapan->belum_dibaca_staf + 1,
+                    'pesan_terakhir_pada' => now(),
+                    'menunggu_sejak' => $percakapan->menunggu_sejak ?? now(),
+                ]);
 
             return $pesan;
         });
@@ -90,6 +105,8 @@ class LayananCs
 
             $percakapan->update([
                 'status' => 'TERBUKA',
+                // Balasan staf mengambil alih dari asisten otomatis (KEP-151).
+                'ditangani' => 'ADMIN',
                 'belum_dibaca_staf' => 0,
                 'belum_dibaca_pelanggan' => $percakapan->belum_dibaca_pelanggan + 1,
                 'pesan_terakhir_pada' => now(),
@@ -104,6 +121,50 @@ class LayananCs
         $this->siarkan($pesan, ['pelanggan', 'staf']);
 
         return $pesan;
+    }
+
+    /**
+     * Balasan asisten otomatis (KEP-151), dengan tombol pilihan opsional.
+     *
+     * @param  list<string>  $pilihan
+     */
+    public function kirimDariBot(PercakapanCs $percakapan, string $isi, array $pilihan = []): PesanCs
+    {
+        $pesan = DB::transaction(function () use ($percakapan, $isi, $pilihan) {
+            $pesan = $percakapan->pesan()->create([
+                'pengirim' => 'BOT',
+                'isi' => $isi,
+                'pilihan' => $pilihan !== [] ? $pilihan : null,
+            ]);
+
+            $percakapan->update([
+                'belum_dibaca_pelanggan' => $percakapan->belum_dibaca_pelanggan + 1,
+                'pesan_terakhir_pada' => now(),
+            ]);
+
+            return $pesan;
+        });
+
+        $this->siarkan($pesan, ['pelanggan', 'staf']);
+
+        return $pesan;
+    }
+
+    /**
+     * Asisten menyerahkan percakapan ke admin (KEP-151): sejak saat itu ia
+     * masuk kotak masuk seperti chat biasa, dengan alasan serahnya.
+     */
+    public function serahkanKeAdmin(PercakapanCs $percakapan, string $alasan, string $pesanUntukPelanggan): PesanCs
+    {
+        $percakapan->update([
+            'ditangani' => 'ADMIN',
+            'alasan_serah' => $alasan,
+            'belum_dibaca_staf' => max(1, $percakapan->belum_dibaca_staf),
+            'menunggu_sejak' => $percakapan->menunggu_sejak ?? now(),
+            'diperingatkan_pada' => null,
+        ]);
+
+        return $this->kirimDariBot($percakapan, $pesanUntukPelanggan);
     }
 
     public function tutup(PercakapanCs $percakapan, User $staf): void
