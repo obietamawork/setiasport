@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Enums\KategoriUkuran;
 use App\Models\OptionValue;
 use App\Models\Product;
 use App\Services\PriceCalculator;
@@ -182,7 +181,7 @@ class KatalogKustomTest extends TestCase
             ->assertOk()
             ->assertDontSee('>Kategori<', false)
             // Panduan ukuran dari klien ikut tampil, lengkap dengan sentimeternya.
-            ->assertSee('Lebar (cm)')
+            ->assertSee('35 cm')
             ->assertSee('2XL');
 
         $this->get(route('kustom.buat', $this->produk('CUST-JRS-ATASAN')))

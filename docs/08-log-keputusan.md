@@ -5015,6 +5015,33 @@ Pasangan KEP-144. Klien ingin tautan pesanan bisa sampai lewat WhatsApp, bukan h
 
 ---
 
+## KEP-146 — Panduan ukuran dalam tab yang mengikuti pemain
+**Status:** TERKUNCI · 2026-11-19
+
+Permintaan klien: panduan ukuran di langkah Data Pemain dibuat tab yang bisa diklik, supaya tidak
+terlalu penuh dan lebih mudah dipahami. Contoh klien: tab SD / SMP / Dewasa dengan tabel
+bersatuan cm. Pemilik proyek memilih versi yang **mengikuti pilihan**.
+
+- **Satu tab per kategori**, urutannya tetap SD, SMP, SMA / Dewasa. Ini tab sungguhan karena
+  panelnya ada di halaman yang sama (`role="tablist"`, `tab`, `tabpanel`, `aria-selected`,
+  panah kiri/kanan berpindah tab), beda dengan kartu jalur di katalog yang berpindah halaman
+  (KEP-104).
+- **Satuan di tiap sel** ("32 cm"), judul kolom tanpa "(cm)", seperti contoh klien.
+- **Tab mengikuti pemain**: tab yang terbuka sejak awal adalah kategori baris pemain pertama.
+  Begitu kategori atau ukuran seorang pemain diubah, tab berpindah ke kategori pemain itu.
+- **Ukuran yang sudah dipesan ditandai**: barisnya berlatar navy muda dan diberi jumlahnya,
+  misalnya "M 3 pcs".
+- Produk yang panduannya satu kelompok saja tetap tampil satu tabel tanpa tab. Produk yang
+  punya panduan umum dan panduan berkategori sekaligus menampilkan tab "Semua ukuran" lebih
+  dulu.
+- **Catatan** (teks klien): "Toleransi ukuran ±1–2 cm dapat terjadi selama proses produksi.
+  Untuk hasil yang lebih sesuai, bandingkan ukuran pada tabel dengan jersey yang biasa Anda
+  gunakan." Menggantikan "Ukuran bisa berbeda 1-2 cm ..." dan seluruh kalimat "Ragu ukurannya?
+  ...". Catatan hanya tampil bila ada tabel ukuran.
+- Lebar tab mengikuti labelnya, supaya "SMA / Dewasa" tidak terlipat di HP 360 px.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5164,3 +5191,4 @@ Pasangan KEP-144. Klien ingin tautan pesanan bisa sampai lewat WhatsApp, bukan h
 | KEP-143 | Kolom sekunder menumpang di sel lain selama layar sempit; tidak ada halaman yang digeser ke samping mulai 768 px | TERKUNCI |
 | KEP-144 | Kalimat checkout dari klien; tautan pesanan tetap disebut lewat email, WhatsApp lewat tombol bagikan | TERKUNCI |
 | KEP-145 | Tombol wa.me tanpa nomor di halaman pesanan; pelanggan memilih kontak atau grup timnya | TERKUNCI |
+| KEP-146 | Tab SD/SMP/SMA-Dewasa ber-cm, ikut kategori pemain terakhir, ukuran yang dipesan ditandai; catatan klien | TERKUNCI |

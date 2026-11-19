@@ -66,8 +66,25 @@
             'ukuran' => $produk->ukuranTersedia(null),
         ]]);
 
-    // Panduan ukuran dalam sentimeter, dikelompokkan per kategori.
-    $panduan = $produk->sizeCharts->groupBy(fn ($b) => $b->kategori?->label() ?? 'Semua ukuran');
+    // Panduan ukuran dalam sentimeter, satu tab per kategori (KEP-146). Kuncinya
+    // nilai kategori, sama dengan isian kategori di baris pemain, supaya tab
+    // bisa mengikuti pemain yang sedang diisi.
+    // Urutan tab tetap SD, SMP, SMA / Dewasa; urutan baris di basis data
+    // tidak menjamin itu karena tiap kategori mulai dari urutan 0.
+    $urutanKategori = collect($kategori)->pluck('value')->flip();
+    $panduan = $produk->sizeCharts
+        ->groupBy(fn ($b) => $b->kategori?->value ?? '')
+        ->sortBy(fn ($baris, $nilai) => $urutanKategori[$nilai] ?? -1)
+        ->map(fn ($baris) => [
+            'label' => $baris->first()->kategori?->label() ?? 'Semua ukuran',
+            'kolom' => $baris->first()->kolom(),
+            'baris' => $baris,
+        ]);
+    // Baris pemain pertama memakai kategori terakhir (tambahBaris), jadi tab itu
+    // yang terbuka sejak awal, tanpa berkedip dari tab pertama.
+    $panduanAwal = $panduan->has($dataKategori->last()['value'] ?? '')
+        ? $dataKategori->last()['value']
+        : (string) $panduan->keys()->first();
 
     $dataTambahan = $produk->sizeSurcharges->mapWithKeys(fn ($t) => [$t->ukuran => $t->tambahan_harga]);
 
@@ -84,6 +101,8 @@
         harga: @js($dataHarga),
         kategori: @js($dataKategori),
         tambahanUkuran: @js($dataTambahan),
+        panduanKategori: @js($panduan->keys()->map(fn ($k) => (string) $k)->values()),
+        panduanAktif: @js($panduanAwal),
         moq: {{ $produk->moq }},
         dpPersen: {{ (int) setting('dp_minimum_persen', 50) }},
         diskonMinQty: {{ $produk->diskon_min_qty }},
@@ -365,7 +384,7 @@
                                     <label class="block">
                                         <span class="label-form">Kategori</span>
                                         <select x-model="b.kategori" :name="`baris[${i}][kategori]`"
-                                                @change="betulkanUkuran(b)" class="kotak-input">
+                                                @change="betulkanUkuran(b); ikutiPanduan(b.kategori)" class="kotak-input">
                                             <template x-for="k in kategori" :key="k.value">
                                                 <option :value="k.value" x-text="k.label"></option>
                                             </template>
@@ -376,7 +395,8 @@
                                 @endif
                                 <label class="block">
                                     <span class="label-form">Ukuran</span>
-                                    <select x-model="b.ukuran" :name="`baris[${i}][ukuran]`" class="kotak-input">
+                                    <select x-model="b.ukuran" :name="`baris[${i}][ukuran]`" class="kotak-input"
+                                            @change="ikutiPanduan(b.kategori)">
                                         <template x-for="u in ukuranKategori(b.kategori)" :key="u">
                                             <option :value="u" x-text="u"></option>
                                         </template>
@@ -452,27 +472,55 @@
                     <p class="font-semibold">Panduan ukuran</p>
 
                     @if ($panduan->isNotEmpty())
-                        @foreach ($panduan as $namaKategori => $baris)
-                            @php $kolom = $baris->first()->kolom(); @endphp
-                            <div class="mt-3 overflow-x-auto">
-                                @if ($panduan->count() > 1)
-                                    <p class="mb-1 text-sm font-medium">{{ $namaKategori }}</p>
-                                @endif
-                                <table class="w-full min-w-72 text-sm">
+                        {{-- Satu tab per kategori (KEP-146): tiga tabel bertumpuk membuat
+                             langkah ini terlalu penuh. Ini tab sungguhan karena panelnya
+                             ada di halaman ini (beda dengan katalog, KEP-104). Tabnya
+                             mengikuti pemain yang terakhir diubah, dan ukuran yang sudah
+                             dipesan ditandai jumlahnya. --}}
+                        @if ($panduan->count() > 1)
+                            <div role="tablist" aria-label="Kategori panduan ukuran"
+                                 class="mt-3 flex gap-1 rounded-full bg-navy-50 p-1"
+                                 @keydown.right.prevent="geserPanduan(1)" @keydown.left.prevent="geserPanduan(-1)">
+                                @foreach ($panduan as $nilai => $grup)
+                                    <button type="button" role="tab" id="tab-panduan-{{ $loop->index }}"
+                                            aria-controls="panel-panduan-{{ $loop->index }}"
+                                            :aria-selected="(panduanAktif === @js((string) $nilai)).toString()"
+                                            :tabindex="panduanAktif === @js((string) $nilai) ? 0 : -1"
+                                            @click="panduanAktif = @js((string) $nilai)"
+                                            class="flex-auto rounded-full px-3 py-1.5 text-sm font-semibold whitespace-nowrap transition-colors"
+                                            :class="panduanAktif === @js((string) $nilai) ? 'bg-white text-navy shadow-sm' : 'text-muted hover:text-ink'">
+                                        {{ $grup['label'] }}
+                                    </button>
+                                @endforeach
+                            </div>
+                        @endif
+                        @foreach ($panduan as $nilai => $grup)
+                            <div class="mt-3 overflow-x-auto"
+                                 @if ($panduan->count() > 1)
+                                     role="tabpanel" id="panel-panduan-{{ $loop->index }}" aria-labelledby="tab-panduan-{{ $loop->index }}"
+                                     x-show="panduanAktif === @js((string) $nilai)" @if ((string) $nilai !== $panduanAwal) x-cloak @endif
+                                 @endif>
+                                <table class="w-full text-sm">
                                     <thead>
                                         <tr class="border-b border-line text-left">
-                                            <th class="py-1.5 pr-3 font-medium">Ukuran</th>
-                                            @foreach ($kolom as $k)
-                                                <th class="py-1.5 pr-3 font-medium">{{ $k }} (cm)</th>
+                                            <th class="py-2 pr-3 font-semibold">Ukuran</th>
+                                            @foreach ($grup['kolom'] as $k)
+                                                <th class="py-2 pr-3 font-semibold">{{ $k }}</th>
                                             @endforeach
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($baris as $b)
-                                            <tr class="border-b border-line last:border-0">
-                                                <td class="py-1.5 pr-3 font-medium">{{ $b->ukuran }}</td>
-                                                @foreach ($kolom as $k)
-                                                    <td class="tabular py-1.5 pr-3">{{ $b->nilai($k) ?? '-' }}</td>
+                                        @foreach ($grup['baris'] as $b)
+                                            <tr class="border-b border-line transition-colors last:border-0"
+                                                :class="dipesan(@js((string) $nilai), @js($b->ukuran)) > 0 && 'bg-navy-50'">
+                                                <td class="py-2 pr-3 font-medium whitespace-nowrap">
+                                                    {{ $b->ukuran }}
+                                                    <span x-show="dipesan(@js((string) $nilai), @js($b->ukuran)) > 0" x-cloak
+                                                          class="chip chip-navy tabular ml-1"
+                                                          x-text="dipesan(@js((string) $nilai), @js($b->ukuran)) + ' pcs'"></span>
+                                                </td>
+                                                @foreach ($grup['kolom'] as $k)
+                                                    <td class="tabular py-2 pr-3">{{ $b->nilai($k) !== null ? $b->nilai($k).' cm' : '-' }}</td>
                                                 @endforeach
                                             </tr>
                                         @endforeach
@@ -480,7 +528,12 @@
                                 </table>
                             </div>
                         @endforeach
-                        <p class="mt-2 text-xs text-muted">Ukuran bisa berbeda 1-2 cm karena proses produksi.</p>
+                        {{-- Teks klien (KEP-146). --}}
+                        <div class="mt-4 rounded-[10px] bg-paper px-3 py-2.5 text-xs leading-relaxed text-muted">
+                            <p class="font-semibold text-ink">Catatan</p>
+                            <p class="mt-0.5">Toleransi ukuran ±1–2 cm dapat terjadi selama proses produksi.</p>
+                            <p>Untuk hasil yang lebih sesuai, bandingkan ukuran pada tabel dengan jersey yang biasa Anda gunakan.</p>
+                        </div>
                     @else
                         <div class="mt-3 space-y-2 text-sm">
                             <template x-for="k in kategori" :key="k.value">
@@ -491,10 +544,6 @@
                             </template>
                         </div>
                     @endif
-                    <p class="mt-3 text-xs leading-relaxed text-muted">
-                        Ragu ukurannya? Tanyakan lewat tombol bantuan, atau datang ke toko untuk mencoba
-                        contoh ukurannya sebelum dicetak.
-                    </p>
                 </div>
             </section>
 
@@ -747,6 +796,26 @@
 
             ukuranKategori(nilai) {
                 return this.kategori.find(k => k.value === nilai)?.ukuran ?? [];
+            },
+
+            /** Tab panduan ukuran mengikuti kategori pemain yang terakhir diubah (KEP-146). */
+            ikutiPanduan(kategori) {
+                if (this.panduanKategori.includes(kategori ?? '')) this.panduanAktif = kategori ?? '';
+            },
+
+            /** Panah kiri/kanan di deretan tab, pola tab yang lazim untuk papan ketik. */
+            geserPanduan(arah) {
+                const n = this.panduanKategori.length;
+                const i = this.panduanKategori.indexOf(this.panduanAktif);
+                this.panduanAktif = this.panduanKategori[(i + arah + n) % n];
+                this.$nextTick(() => this.$root.querySelector('[role="tab"][aria-selected="true"]')?.focus());
+            },
+
+            /** Jumlah potong yang sudah dipesan untuk satu ukuran, untuk penanda di panduan. */
+            dipesan(kategori, ukuran) {
+                return this.baris
+                    .filter(b => (b.kategori ?? '') === kategori && b.ukuran === ukuran)
+                    .reduce((n, b) => n + (parseInt(b.jumlah, 10) || 0), 0);
             },
 
             betulkanUkuran(b) {
