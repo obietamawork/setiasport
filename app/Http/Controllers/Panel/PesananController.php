@@ -127,6 +127,9 @@ class PesananController extends Controller
         $pesanan->load([
             'customer', 'items.options', 'items.rosters', 'items.productionJobs',
             'items.product.prices', 'items.product.sizeCharts',
+            // Detail dirombak (KEP-124): foto, kategori, opsi per pemain, dan mockup.
+            'items.product.images', 'items.product.category', 'items.product.options.values',
+            'items.designAssets', 'items.approvedDesign',
             'adjustments.pembuat', 'payments.pencatat', 'payments.verifikator',
             'statusLogs.pelaku', 'statusLogs.orderItem', 'emailLogs',
         ]);

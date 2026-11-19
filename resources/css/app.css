@@ -1709,6 +1709,9 @@
    contoh klien, pilihan metode sebagai dua tombol besar, langkah bernomor. */
 @layer components {
     .kartu-bayar {
+        /* Di dalam grid, kartu tanpa min-width 0 melar mengikuti isi
+           terpanjangnya (tautan, tabel) dan mendorong halaman ke samping. */
+        min-width: 0;
         border: 1px solid var(--color-line);
         border-radius: 16px;
         background: var(--color-field);
@@ -1816,4 +1819,53 @@
     .tahap-datar-lewat .tahap-datar-bulat { background: var(--color-ok); color: #fff; }
     .tahap-datar-kini .tahap-datar-bulat { background: var(--color-biru-terang); color: #fff; }
     .tahap-datar-kini span:nth-child(2) { color: var(--color-biru-700); }
+}
+
+/* Detail pesanan panel (KEP-124): judul kartu berikon seperti gambar
+   karyawan, dan garis waktu riwayat aktivitas. */
+@layer components {
+    .judul-kartu {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 1.125rem;
+        font-weight: 800;
+        line-height: 1.3;
+    }
+
+    .garis-waktu { display: grid; }
+
+    .garis-waktu li {
+        position: relative;
+        padding: 0 0 1rem 1.75rem;
+    }
+
+    .garis-waktu li::before {
+        content: "";
+        position: absolute;
+        top: 0.3rem;
+        left: 0.3rem;
+        width: 0.65rem;
+        height: 0.65rem;
+        border-radius: 999px;
+        background: var(--color-line-strong);
+        z-index: 1;
+    }
+
+    .garis-waktu li:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        top: 0.9rem;
+        bottom: -0.3rem;
+        left: calc(0.3rem + 0.325rem - 1px);
+        width: 2px;
+        background: var(--color-line);
+    }
+
+    .garis-waktu li:first-child::before { background: var(--color-biru-terang); }
+
+    .garis-waktu .garis-waktu-kini::before {
+        background: var(--color-biru-terang);
+        box-shadow: 0 0 0 4px var(--color-biru-100);
+    }
 }

@@ -4450,6 +4450,52 @@ di bawah 12. Pemilik proyek memilih model dipilih **per pemain**.
 
 ---
 
+## KEP-124 — Detail pesanan panel mengikuti gambar karyawan
+**Status:** TERKUNCI · 2026-11-19
+
+Gambar dari karyawan (catatan berbahasa Jawa) menggambar ulang seluruh halaman detail pesanan
+di panel, dengan tiga catatan: tombol *Perbarui Progres* membuka pop-up, bagian *Penyesuaian
+Biaya* dibuat seperti gambar (letaknya bebas, di bawah Pembayaran pun boleh), dan isi pilihan
+alasannya. Pemilik proyek memilih seluruh halaman dirombak dan pop-up hanya menawarkan langkah
+yang sah.
+
+- **Tata letak** mengikuti gambar: kartu kepala (jenis, kode dengan tombol salin, tanggal dibuat,
+  total, deret tahap), Data pelanggan | Informasi pesanan, Detail jersey/barang dengan Data
+  pemain, File desain | Pembayaran, Penyesuaian biaya | Ringkasan total, Pengambilan, Riwayat
+  aktivitas | Catatan pelanggan, lalu bilah bawah (Kembali, Catat pembayaran, langkah berikut,
+  Cetak invoice). Halaman dipecah ke `resources/views/panel/pesanan/detail/`.
+- **Tidak ada yang hilang**: kalimat langkah berikut, pengajuan pembatalan (tetap paling atas),
+  pengiriman dan resi, kabar WhatsApp (pindah ke kartu Data pelanggan, tujuan "Kabari
+  pelanggan"), betulkan kontak dan penanda reseller (menu titik tiga), email terkirim (kartu
+  Catatan pelanggan), kirim mockup versi baru (kartu File desain), batalkan dan hangus.
+- **Deret tahap staf** (`App\Support\ProgresStaf::fase`): Menunggu pembayaran, Antrian desain,
+  Proses desain, Persetujuan desain, Produksi (dengan subtahap yang sedang berjalan), Siap,
+  Selesai; barang stok: Menunggu pembayaran, Disiapkan, Siap, Selesai. Satu deret per barang.
+- **Perbarui progres**: pop-up berisi semua status rinci barang itu, tetapi yang bisa dipilih
+  hanya satu tahap maju atau satu tahap mundur. Gerbang pembayaran, persetujuan desain,
+  pelunasan, desain tanpa mockup, dan Selesai lewat serah terima tampil nonaktif dengan
+  alasannya. Alasan itu berasal dari `AlurPesanan::alasanTidakBisaMaju()` dan
+  `alasanTidakBisaMundur()`, yang juga dipakai penjagaan server, jadi pilihan yang aktif selalu
+  diterima. Catatan (maks. 200) opsional untuk maju dan masuk log status; untuk mundur menjadi
+  alasan wajib (KEP-098). Catatan ini hanya dibaca staf. Pesanan berbarang banyak memilih
+  barangnya dulu di pop-up.
+- **Penyesuaian biaya**: isian Jenis (Tambah biaya / Potongan harga atau diskon), Alasan
+  (Perubahan spesifikasi, Tambahan desain, Diskon khusus, Lainnya), Keterangan, dan Nominal
+  positif. Disimpan seperti sebelumnya (KEP-007): deskripsi "Alasan: keterangan", atau
+  keterangan saja untuk Lainnya (wajib), dan jumlah bertanda. Diskon khusus selalu potongan.
+  Menghapus penyesuaian memakai pop-up konfirmasi.
+- **Ringkasan total** menggantikan kartu Uang: subtotal, penyesuaian, diskon, biaya layanan,
+  ongkir, Total tagihan, sudah dibayar, sisa, kelebihan bayar, kode ambil.
+- **Data pemain** dibaca dua kolom; Ubah data pemain membuka tabel isian (nama, nomor, kategori,
+  ukuran, model per pemain, jumlah, hapus baris) yang menyimpan lewat penyunting isi pesanan
+  (KEP-044, KEP-123).
+- **Riwayat aktivitas**: pesanan dibuat, setiap perpindahan tahap, dan penyesuaian biaya, dari
+  yang terlama, dengan nama staf pelakunya.
+- Data pelanggan di gambar disamarkan ("A*** R******"); itu penyamaran gambar contoh, bukan
+  permintaan. Panel tetap menampilkan data lengkap untuk staf.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -4577,3 +4623,4 @@ di bawah 12. Pemilik proyek memilih model dipilih **per pemain**.
 | KEP-121 | Halaman menunggu pembayaran: ringkasan, sisa waktu, QRIS/transfer | TERKUNCI |
 | KEP-122 | Progres pesanan: tahap mendatar, pemain berpensil, ubah catatan | TERKUNCI |
 | KEP-123 | Model per pemain: kerah dan oblong dalam satu pesanan | TERKUNCI |
+| KEP-124 | Detail pesanan panel dirombak; Perbarui progres hanya langkah sah; penyesuaian berjenis dan beralasan | TERKUNCI |
