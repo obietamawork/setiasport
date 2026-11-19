@@ -170,14 +170,20 @@
             @endforeach
         @endforeach
 
-        {{-- Di layar sentuh bilah atas hanya memuat ikon Bantuan; tautan
-             berlabel tetap disediakan di laci supaya tidak perlu menebak. --}}
-        <a href="{{ route('panel.bantuan') }}" @click="menu = false"
-           class="menu-panel mt-4 lg:hidden">
-            <x-ikon nama="bantuan" />
-            <span class="menu-teks">Bantuan</span>
-        </a>
     </nav>
+
+    {{-- Pusat Bantuan seperti gambar klien (KEP-150), di dasar sidebar dan di
+         laci HP (dulu tautan "Bantuan" khusus laci). Disembunyikan di mode rail. --}}
+    <div class="sidebar-bantuan">
+        <p class="flex items-center gap-2 font-semibold text-white">
+            <x-ikon nama="bantuan" ukuran="size-5" /> Pusat Bantuan
+        </p>
+        <p class="mt-1 text-xs text-white/70">Panduan penggunaan sistem admin.</p>
+        <a href="{{ route('panel.bantuan') }}" @click="menu = false"
+           class="mt-3 block rounded-[8px] border border-white/25 px-3 py-1.5 text-center text-sm font-semibold text-white hover:bg-white/10">
+            Lihat Panduan
+        </a>
+    </div>
 </aside>
 
 <div class="panel-utama">

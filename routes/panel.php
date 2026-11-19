@@ -273,6 +273,8 @@ Route::prefix('panel')->name('panel.')->group(function () {
             Route::get('{percakapan}/pesan', [CsController::class, 'pesanBaru'])->whereNumber('percakapan')->name('pesan');
             Route::post('{percakapan}/balas', [CsController::class, 'balas'])->whereNumber('percakapan')->name('balas');
             Route::post('{percakapan}/tutup', [CsController::class, 'tutup'])->whereNumber('percakapan')->name('tutup');
+            // Catatan internal staf (KEP-150).
+            Route::post('{percakapan}/catatan', [CsController::class, 'catatan'])->whereNumber('percakapan')->name('catatan');
             Route::post('{percakapan}/tautkan', [CsController::class, 'tautkan'])->whereNumber('percakapan')->name('tautkan');
             Route::get('{percakapan}/lampiran/{pesan}', [CsController::class, 'lampiran'])->whereNumber('percakapan')->name('lampiran');
         });

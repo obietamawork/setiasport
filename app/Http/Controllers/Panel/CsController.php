@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Panel;
 
+use App\Enums\TopikCs;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\PercakapanCs;
@@ -36,10 +37,11 @@ class CsController extends Controller
 
         return view('panel.cs.ruang', [
             'awal' => [
-                'daftar' => $this->kueri('terbuka', '')->get()->map->untukDaftar()->values(),
+                'daftar' => $this->kueri('semua', '')->get()->map->untukDaftar()->values(),
                 'jumlah' => $this->jumlah(),
                 'terpilih' => $percakapan ? $this->detailUntuk($percakapan) : null,
                 'template' => TemplateBalasan::orderBy('urutan')->orderBy('judul')->get(['id', 'judul', 'isi']),
+                'topik' => collect(TopikCs::cases())->map(fn (TopikCs $t) => ['nilai' => $t->value, 'label' => $t->label()])->values(),
                 'slaMenit' => (int) setting('cs_peringatan_menit', 15),
                 // CS dimatikan (KEP-033): ruang ini jadi arsip baca-saja.
                 'aktif' => cs_aktif(),
@@ -58,10 +60,12 @@ class CsController extends Controller
     {
         $saring = in_array($request->query('saring'), ['menunggu', 'terbuka', 'selesai', 'semua'], true)
             ? $request->query('saring')
-            : 'terbuka';
+            : 'semua';
+        // Tombol saring di samping pencarian (KEP-150): per topik percakapan.
+        $topik = TopikCs::tryFrom((string) $request->query('topik'));
 
         return response()->json([
-            'daftar' => $this->kueri($saring, trim((string) $request->query('q')))->get()->map->untukDaftar()->values(),
+            'daftar' => $this->kueri($saring, trim((string) $request->query('q')), $topik)->get()->map->untukDaftar()->values(),
             'jumlah' => $this->jumlah(),
         ]);
     }
@@ -86,6 +90,18 @@ class CsController extends Controller
             'pesan' => $pesan->untukKlien('staf'),
             'percakapan' => $percakapan->fresh()->untukDaftar($pesan),
         ], 201);
+    }
+
+    /** Catatan internal staf (KEP-150); tidak pernah dikirim ke pelanggan. */
+    public function catatan(Request $request, PercakapanCs $percakapan): JsonResponse
+    {
+        $data = $request->validate([
+            'catatan' => ['nullable', 'string', 'max:2000'],
+        ], [], ['catatan' => 'catatan internal']);
+
+        $percakapan->update(['catatan_internal' => $data['catatan'] ?? null]);
+
+        return response()->json(['percakapan' => $percakapan->fresh()?->untukDetail()]);
     }
 
     public function tutup(PercakapanCs $percakapan): JsonResponse
@@ -154,11 +170,15 @@ class CsController extends Controller
         return response()->json($auth);
     }
 
-    public function lampiran(PercakapanCs $percakapan, PesanCs $pesan): Response
+    public function lampiran(Request $request, PercakapanCs $percakapan, PesanCs $pesan): Response
     {
         abort_unless($pesan->percakapan_id === $percakapan->id && $pesan->lampiran_path, 404);
 
-        return Storage::disk('local')->response($pesan->lampiran_path, null, [
+        // Tombol unduh di Ruang CS (KEP-150): desain dari pelanggan disimpan
+        // sebagai berkas, bukan hanya dibuka di tab.
+        $cara = $request->boolean('unduh') ? 'download' : 'response';
+
+        return Storage::disk('local')->{$cara}($pesan->lampiran_path, null, [
             'Cache-Control' => 'private, no-store',
             'X-Content-Type-Options' => 'nosniff',
         ]);
@@ -178,12 +198,15 @@ class CsController extends Controller
         ];
     }
 
-    private function kueri(string $saring, string $cari): Builder
+    private function kueri(string $saring, string $cari, ?TopikCs $topik = null): Builder
     {
         return PercakapanCs::query()
             ->with('pesanTerakhir')
+            ->when($topik, fn ($q) => $q->where('topik', $topik))
+            // Tab "Baru" dan "Diproses" di gambar klien (KEP-150): yang menunggu
+            // balasan dan yang sedang ditangani tidak tumpang tindih.
             ->when($saring === 'menunggu', fn ($q) => $q->where('status', 'TERBUKA')->whereNotNull('menunggu_sejak'))
-            ->when($saring === 'terbuka', fn ($q) => $q->where('status', 'TERBUKA'))
+            ->when($saring === 'terbuka', fn ($q) => $q->where('status', 'TERBUKA')->whereNull('menunggu_sejak'))
             ->when($saring === 'selesai', fn ($q) => $q->where('status', 'SELESAI'))
             ->when($cari !== '', function ($q) use ($cari) {
                 $pola = '%'.$cari.'%';
@@ -195,12 +218,13 @@ class CsController extends Controller
             ->limit(100);
     }
 
-    /** @return array{menunggu: int, terbuka: int, selesai: int} */
+    /** @return array{semua: int, menunggu: int, terbuka: int, selesai: int} */
     private function jumlah(): array
     {
         return [
+            'semua' => PercakapanCs::count(),
             'menunggu' => PercakapanCs::where('status', 'TERBUKA')->whereNotNull('menunggu_sejak')->count(),
-            'terbuka' => PercakapanCs::where('status', 'TERBUKA')->count(),
+            'terbuka' => PercakapanCs::where('status', 'TERBUKA')->whereNull('menunggu_sejak')->count(),
             'selesai' => PercakapanCs::where('status', 'SELESAI')->count(),
         ];
     }

@@ -12,6 +12,12 @@
 const DENYUT_MS = 60000;
 const POLLING_MS = 10000;
 
+/** Emoji yang paling sering dipakai CS toko (KEP-150); cukup sebaris kecil, bukan pemilih lengkap. */
+const EMOJI = ['🙏', '😊', '👍', '✅', '🙂', '😁', '👌', '❤️', '🔥', '⚽', '🎉', '🙌'];
+
+/** Balasan Cepat yang tampil sebagai cip; sisanya lewat "Lainnya". */
+const CIP_TEMPLATE = 5;
+
 function csrf() {
     return document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 }
@@ -84,8 +90,13 @@ export function ruangCs(awal) {
     return {
         daftar: awal.daftar,
         jumlah: awal.jumlah,
-        saring: 'terbuka',
+        // Tab "Semua" terbuka lebih dulu seperti gambar klien (KEP-150); yang
+        // menunggu tetap di urutan teratas.
+        saring: 'semua',
         cari: '',
+        topik: '',
+        awalTopik: awal.topik ?? [],
+        saringBuka: false,
         memuatDaftar: false,
 
         terpilih: awal.terpilih?.percakapan ?? null,
@@ -104,6 +115,10 @@ export function ruangCs(awal) {
 
         kodeTautan: '',
         infoTerbuka: false,
+        catatan: awal.terpilih?.percakapan?.catatan_internal ?? '',
+        menyimpanCatatan: false,
+        emoji: EMOJI,
+        emojiBuka: false,
         menerima: simpanan('cs.menerima', true),
         suara: simpanan('cs.suara', true),
         realtime: 'mati',
@@ -173,7 +188,7 @@ export function ruangCs(awal) {
         async muatDaftar(diam = false) {
             if (!diam) this.memuatDaftar = true;
             try {
-                const q = new URLSearchParams({ saring: this.saring, q: this.cari });
+                const q = new URLSearchParams({ saring: this.saring, q: this.cari, topik: this.topik });
                 const data = await minta(`${awal.url.daftar}?${q}`);
                 this.daftar = data.daftar;
                 this.jumlah = data.jumlah;
@@ -190,14 +205,29 @@ export function ruangCs(awal) {
             this.muatDaftar();
         },
 
+        gantiTopik(t) {
+            this.topik = t;
+            this.saringBuka = false;
+            this.muatDaftar();
+        },
+
         cocokSaring(p) {
+            if (this.topik && p.topik_kode !== this.topik) return false;
             if (this.cari) return true;
             return {
                 menunggu: p.status === 'TERBUKA' && !!p.menunggu_sejak,
-                terbuka: p.status === 'TERBUKA',
+                // "Diproses": sedang ditangani, tidak tumpang tindih dengan "Baru".
+                terbuka: p.status === 'TERBUKA' && !p.menunggu_sejak,
                 selesai: p.status === 'SELESAI',
                 semua: true,
             }[this.saring];
+        },
+
+        /** Lencana status di daftar, seperti gambar klien: Baru, Diproses, Selesai. */
+        labelStatus(p) {
+            if (p.status === 'SELESAI') return ['Selesai', 'chip-ok'];
+            if (p.menunggu_sejak) return ['Baru', 'chip-merah'];
+            return ['Diproses', 'chip-kuning'];
         },
 
         /** Masukkan atau perbarui satu baris dari kabar realtime. */
@@ -221,6 +251,7 @@ export function ruangCs(awal) {
                 const data = await minta(`${awal.url.dasar}/${id}/detail`);
                 this.terpilih = data.percakapan;
                 this.pesan = data.pesan;
+                this.catatan = data.percakapan.catatan_internal ?? '';
                 this.isi = '';
                 this.lampiran = null;
                 this.infoTerbuka = false;
@@ -315,7 +346,42 @@ export function ruangCs(awal) {
             }
         },
 
+        /** Catatan internal staf (KEP-150); tidak pernah dikirim ke pelanggan. */
+        async simpanCatatan() {
+            if (!this.terpilih || this.menyimpanCatatan) return;
+            this.menyimpanCatatan = true;
+            try {
+                const data = new FormData();
+                data.append('catatan', this.catatan);
+                const hasil = await minta(`${awal.url.dasar}/${this.terpilih.id}/catatan`, { method: 'POST', body: data });
+                this.terpilih = { ...this.terpilih, catatan_internal: hasil.percakapan.catatan_internal };
+                this.catatan = hasil.percakapan.catatan_internal ?? '';
+            } catch (e) {
+                this.tangani(e);
+            } finally {
+                this.menyimpanCatatan = false;
+            }
+        },
+
         /* ---- Kolom balasan dan template ---------------------------------- */
+
+        get templateCepat() {
+            return this.template.slice(0, CIP_TEMPLATE);
+        },
+
+        /** Sisipkan emoji di posisi kursor, bukan selalu di akhir. */
+        sisipkan(teks) {
+            const el = this.$refs.isian;
+            const awalPilih = el?.selectionStart ?? this.isi.length;
+            const akhirPilih = el?.selectionEnd ?? this.isi.length;
+            this.isi = this.isi.slice(0, awalPilih) + teks + this.isi.slice(akhirPilih);
+            this.emojiBuka = false;
+            this.$nextTick(() => {
+                el?.focus();
+                el?.setSelectionRange(awalPilih + teks.length, awalPilih + teks.length);
+                this.ukurIsian();
+            });
+        },
 
         tombol(e) {
             if (this.popover) {
@@ -452,7 +518,7 @@ export function ruangCs(awal) {
 
         async muatJumlah() {
             try {
-                const q = new URLSearchParams({ saring: this.saring, q: this.cari });
+                const q = new URLSearchParams({ saring: this.saring, q: this.cari, topik: this.topik });
                 this.jumlah = (await minta(`${awal.url.daftar}?${q}`)).jumlah;
             } catch {
                 // Angka di tab diperbarui lagi pada kabar berikutnya.

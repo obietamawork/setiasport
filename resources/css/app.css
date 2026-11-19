@@ -723,6 +723,16 @@
         color: rgb(255 255 255 / 0.82);
     }
 
+    /* Kartu Pusat Bantuan di dasar sidebar (KEP-150). margin-top: auto
+       mendorongnya ke bawah selama menunya pendek. */
+    .sidebar-bantuan {
+        margin: auto 0.85rem 1.25rem;
+        border: 1px solid rgb(255 255 255 / 0.15);
+        border-radius: 12px;
+        background: rgb(255 255 255 / 0.06);
+        padding: 0.9rem 1rem;
+    }
+
     .sidebar-kepala {
         position: relative;
         display: flex;
@@ -950,6 +960,7 @@
 
         .sidebar-tutup .sidebar-merek-kecil { display: block; }
         .sidebar-tutup .sidebar-menu { padding-inline: 0.6rem; }
+        .sidebar-tutup .sidebar-bantuan { display: none; }
         .sidebar-tutup .menu-panel { justify-content: center; padding-inline: 0; }
 
         /* Di rail, penghitung tidak muat sebagai angka. Ia menyusut jadi titik

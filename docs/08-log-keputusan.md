@@ -5135,6 +5135,46 @@ ditaruh di bawah Customer Service" sebagai urutan menu.
 
 ---
 
+## KEP-150 — Ruang CS mengikuti gambar klien
+**Status:** TERKUNCI · 2026-11-20
+
+Klien mengirim gambar Ruang CS untuk karyawan dan meminta yang lebih baik bila mungkin, tetap
+berdasarkan gambar itu. Pemilik proyek memilih **layar penuh bergaya gambar klien**: di dalam
+panel, kolom chat tersisa sekitar 430 px di laptop 1280 px (alasan KEP-031 tetap berlaku).
+
+- **Daftar percakapan**: tab **Semua, Baru, Diproses, Selesai** dengan jumlah masing-masing,
+  terbuka di Semua seperti gambar. "Baru" = menunggu balasan; "Diproses" = sedang ditangani dan
+  sudah dibalas (tidak lagi tumpang tindih dengan Baru); "Selesai" = ditutup. Kotak cari diberi
+  tombol saring per topik (Tanya stok, Pesanan custom, Komplain, Lainnya). Tiap baris: nama,
+  waktu, topik, cuplikan, dan lencana status Baru/Diproses/Selesai. Garis kuning/merah untuk
+  pelanggan yang menunggu (KEP-031) tetap ada.
+- **Kepala percakapan**: inisial, nama, "Menunggu balasan 4 mnt" selama menunggu, cip kode
+  pesanan yang membuka pesanannya, tombol WhatsApp pelanggan, buka di tab baru, dan menu ⋯
+  (Tandai selesai, Kelola balasan cepat).
+- **Pesan**: inisial pelanggan di samping gelembung; foto dari pelanggan punya tombol unduh
+  (`?unduh=1`, disajikan sebagai lampiran berkas).
+- **Balasan Cepat**: lima template teratas tampil sebagai cip di atas kolom balasan; sisanya
+  lewat "Lainnya" atau `/` di awal kolom (KEP-031). Di HP cipnya sebaris yang bisa digeser.
+  Kolom balasan mendapat tombol emoji (12 emoji yang lazim dipakai CS) yang menyisip di posisi
+  kursor, dan tombol kirim berikon.
+- **Detail Pelanggan**: Nama, No. WhatsApp (dengan tombol WhatsApp), Email, Pelanggan sejak,
+  Total pesanan. Datanya hanya diambil dari akun pelanggan sendiri atau dari pesanan yang
+  tertaut **dan terverifikasi**: kode pesanan yang sekadar diketik tidak membuka nomor HP
+  pemesannya (KEP-030). Tamu tanpa akun tertulis "Tamu, tanpa akun". Panel belum punya halaman
+  profil pelanggan, jadi tombol "Lihat Profil Pelanggan" di gambar menjadi **"Lihat riwayat
+  pesanan"**: daftar Pesanan yang tersaring kontak pelanggan itu.
+- **Detail Pesanan**: kode dan status berwarna, Jenis (Ready Stock, Custom, atau Campuran,
+  beserta nama barang), Jumlah, Tanggal pesan, Target selesai, Sisa tagihan, tanda
+  terverifikasi, dan "Lihat detail pesanan". Menautkan kode pesanan tetap di kartu ini.
+- **Catatan Internal**: kolom baru `catatan_internal` di `percakapan_cs`, disimpan lewat
+  `POST /panel/cs/{percakapan}/catatan` (izin `cs.balas`). Tidak pernah dikirim ke pelanggan:
+  tidak ada di jawaban widget, dan disembunyikan dari serialisasi model.
+- **Pusat Bantuan**: kartu di dasar sidebar panel, seperti gambar klien, menuju halaman Bantuan.
+  Menggantikan tautan "Bantuan" yang dulu hanya ada di laci HP; disembunyikan di mode rail.
+- Judul halaman menjadi "Customer Service".
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5288,3 +5328,4 @@ ditaruh di bawah Customer Service" sebagai urutan menu.
 | KEP-147 | Panel - + per ukuran per model dan kategori; baris baru meniru sebelumnya; Enter berpindah isian, tidak mengirim formulir | TERKUNCI |
 | KEP-148 | Kalimat klien di tautan, batas, QRIS, catatan penting, unggah bukti; jam layanan bawaan ber-WIB | TERKUNCI |
 | KEP-149 | CS menyala lewat migrasi dan seeder; menu Customer Service di atas Antrian kerja dan Serah terima | TERKUNCI |
+| KEP-150 | Tab berangka, kepala dengan kode pesanan dan WhatsApp, Balasan Cepat, Detail Pelanggan, Detail Pesanan, Catatan Internal, Pusat Bantuan | TERKUNCI |
