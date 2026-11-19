@@ -179,7 +179,7 @@ class AlurInternalTest extends TestCase
 
         $this->actingAs($this->owner())
             ->post(route('panel.pesanan.penyesuaian.simpan', $order), [
-                'deskripsi' => 'Harga reseller', 'jumlah' => -10000,
+                'jenis' => 'potong', 'alasan' => 'Diskon khusus', 'keterangan' => 'Harga reseller', 'nominal' => 10000,
             ])->assertSessionHas('sukses');
 
         $this->assertSame($total - 10000, $tagihan->fresh()->jumlah);
@@ -205,7 +205,7 @@ class AlurInternalTest extends TestCase
 
         $this->actingAs($this->owner())
             ->post(route('panel.pesanan.penyesuaian.simpan', $order), [
-                'deskripsi' => 'Harga reseller', 'jumlah' => -10000,
+                'jenis' => 'potong', 'alasan' => 'Diskon khusus', 'keterangan' => 'Harga reseller', 'nominal' => 10000,
             ]);
 
         $this->assertSame($semula, $tagihan->fresh()->jumlah);
@@ -233,7 +233,7 @@ class AlurInternalTest extends TestCase
 
         $this->actingAs($this->owner())
             ->post(route('panel.pesanan.penyesuaian.simpan', $order), [
-                'deskripsi' => 'Kompensasi keterlambatan', 'jumlah' => -$sisa,
+                'jenis' => 'potong', 'alasan' => 'Lainnya', 'keterangan' => 'Kompensasi keterlambatan', 'nominal' => $sisa,
             ])->assertSessionHas('sukses');
 
         $order = $this->segar($order);

@@ -902,20 +902,25 @@
                           class="grid gap-4 bg-navy-50 p-4 sm:grid-cols-[minmax(0,1fr)_10rem]">
                         @csrf
                         <div>
-                            <label for="deskripsi" class="label-form">Deskripsi untuk pelanggan</label>
-                            <input type="text" id="deskripsi" name="deskripsi" class="kotak-input" required
-                                   placeholder="Tambah 2 pemain">
+                            <label for="alasan" class="label-form">Alasan</label>
+                            <select id="alasan" name="alasan" class="kotak-input">
+                                @foreach (\App\Http\Controllers\Panel\PenyesuaianController::ALASAN as $alasan)
+                                    <option>{{ $alasan }}</option>
+                                @endforeach
+                            </select>
+                            <input type="text" name="keterangan" class="kotak-input mt-2" maxlength="120"
+                                   placeholder="Keterangan untuk pelanggan">
                         </div>
                         <div>
                             <label for="nominal" class="label-form">Nominal</label>
-                            <input type="number" id="nominal" name="jumlah" class="kotak-input tabular" required
-                                   placeholder="240000">
+                            <input type="number" id="nominal" name="nominal" class="kotak-input tabular" required min="1">
+                            <select name="jenis" class="kotak-input mt-2">
+                                <option value="tambah">Tambah biaya</option>
+                                <option value="potong">Potongan harga</option>
+                            </select>
                         </div>
                         <div class="sm:col-span-2">
                             <button type="submit" class="tombol tombol-navy">Tambah penyesuaian</button>
-                            <span class="bantuan-form inline-block">
-                                Pakai angka negatif untuk potongan harga, misalnya -70000.
-                            </span>
                         </div>
                     </form>
                 </details>

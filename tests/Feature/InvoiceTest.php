@@ -93,8 +93,8 @@ class InvoiceTest extends TestCase
 
         $this->actingAs($this->owner())
             ->post(route('panel.pesanan.penyesuaian.simpan', $order), [
-                'deskripsi' => 'Potongan harga reseller',
-                'jumlah' => -50_000,
+                'jenis' => 'potong', 'alasan' => 'Lainnya',
+                'keterangan' => 'Potongan harga reseller', 'nominal' => 50_000,
             ])
             ->assertSessionHas('sukses');
 

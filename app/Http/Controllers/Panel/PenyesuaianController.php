@@ -9,6 +9,7 @@ use App\Models\OrderAdjustment;
 use App\Services\AlurPesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 /**
  * Perubahan pesanan setelah DP masuk (KEP-007).
@@ -21,17 +22,38 @@ class PenyesuaianController extends Controller
 {
     public function __construct(private AlurPesanan $alur) {}
 
+    /**
+     * Pilihan alasan dari gambar karyawan (KEP-124). Daftar tetap supaya
+     * laporan dan halaman pelanggan memakai kata yang sama; yang tidak
+     * masuk daftar ditulis sendiri lewat "Lainnya".
+     */
+    public const ALASAN = ['Perubahan spesifikasi', 'Tambahan desain', 'Diskon khusus', 'Lainnya'];
+
     public function store(Request $request, Order $pesanan): RedirectResponse
     {
         abort_if($pesanan->status->final(), 422, 'Pesanan ini sudah selesai atau dibatalkan.');
 
-        $data = $request->validate([
-            'deskripsi' => ['required', 'string', 'max:150'],
-            'jumlah' => ['required', 'integer', 'not_in:0', 'min:-99999999', 'max:99999999'],
+        $isian = $request->validate([
+            'jenis' => ['required', Rule::in(['tambah', 'potong'])],
+            'alasan' => ['required', Rule::in(self::ALASAN)],
+            'keterangan' => ['nullable', 'string', 'max:120', 'required_if:alasan,Lainnya'],
+            'nominal' => ['required', 'integer', 'min:1', 'max:99999999'],
         ], [
-            'deskripsi.required' => 'Tulis deskripsi yang bisa dimengerti pelanggan, misalnya "Tambah 2 pemain".',
-            'jumlah.not_in' => 'Nominal tidak boleh nol. Pakai angka negatif untuk potongan harga.',
-        ], ['deskripsi' => 'deskripsi', 'jumlah' => 'nominal']);
+            'keterangan.required_if' => 'Tulis keterangannya: pelanggan membaca kalimat ini di halaman pesanannya.',
+            'nominal.min' => 'Nominal minimal Rp1. Pilih "Potongan harga" untuk mengurangi tagihan.',
+        ], ['jenis' => 'jenis penyesuaian', 'alasan' => 'alasan', 'keterangan' => 'keterangan', 'nominal' => 'nominal']);
+
+        $keterangan = trim((string) ($isian['keterangan'] ?? ''));
+        $potong = $isian['jenis'] === 'potong' || $isian['alasan'] === 'Diskon khusus';
+
+        $data = [
+            'deskripsi' => match (true) {
+                $isian['alasan'] === 'Lainnya' => $keterangan,
+                $keterangan !== '' => $isian['alasan'].': '.$keterangan,
+                default => $isian['alasan'],
+            },
+            'jumlah' => $potong ? -$isian['nominal'] : $isian['nominal'],
+        ];
 
         $penyesuaian = $pesanan->adjustments()->create($data + ['dibuat_oleh' => auth('web')->id()]);
 

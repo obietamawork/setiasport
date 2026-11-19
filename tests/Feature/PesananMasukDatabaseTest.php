@@ -264,7 +264,7 @@ class PesananMasukDatabaseTest extends TestCase
 
         $this->actingAs($this->owner())
             ->post(route('panel.pesanan.penyesuaian.simpan', $order), [
-                'deskripsi' => 'Ongkos kirim JNE', 'jumlah' => 25_000,
+                'jenis' => 'tambah', 'alasan' => 'Lainnya', 'keterangan' => 'Ongkos kirim JNE', 'nominal' => 25_000,
             ])->assertRedirect();
 
         $this->assertDatabaseHas('order_adjustments', [

@@ -388,8 +388,8 @@ class PembayaranManualTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('panel.pesanan.penyesuaian.simpan', $order), [
-                'deskripsi' => 'Potongan penuh',
-                'jumlah' => -$tagihanLama->jumlah,
+                'jenis' => 'potong', 'alasan' => 'Lainnya', 'keterangan' => 'Potongan penuh',
+                'nominal' => $tagihanLama->jumlah,
             ])
             ->assertSessionHas('sukses');
 

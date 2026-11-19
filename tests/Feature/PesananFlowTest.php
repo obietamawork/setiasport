@@ -196,7 +196,7 @@ class PesananFlowTest extends TestCase
 
         // Pelanggan menambah barang setelah pesanan siap; tagihannya ikut naik (KEP-007).
         $this->actingAs($owner)->post(route('panel.pesanan.penyesuaian.simpan', $order), [
-            'deskripsi' => 'Tambah 1 bola', 'jumlah' => 285_000,
+            'jenis' => 'tambah', 'alasan' => 'Lainnya', 'keterangan' => 'Tambah 1 bola', 'nominal' => 285_000,
         ])->assertSessionHas('sukses');
 
         $order->refresh()->load(['items.options', 'adjustments', 'payments']);
