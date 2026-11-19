@@ -130,6 +130,15 @@ Pos Indonesia', 'teks', 'pengiriman', 'Jasa Kirim yang Dipakai',
             // Chatbot CS berlapis (KEP-151): FAQ dulu, admin bila perlu.
             ['bot_aktif', '1', 'bool', 'cs', 'Asisten otomatis menjawab lebih dulu',
                 'Pertanyaan umum dijawab dari FAQ chatbot; komplain, pembayaran, foto, dan pertanyaan yang tidak ada jawabannya langsung diteruskan ke admin. Kalau dimatikan, semua chat langsung ke admin.'],
+            // Lapis AI chatbot lewat OpenRouter (KEP-152); kunci API di .env.
+            ['ai_aktif', '1', 'bool', 'cs', 'AI menjawab pertanyaan di luar FAQ',
+                'Hanya dipakai bila tidak ada FAQ yang cocok, dan hanya bila OPENROUTER_API_KEY diisi di server. AI wajib menyerahkan ke admin bila jawabannya tidak ada di data toko.'],
+            ['ai_model', 'openai/gpt-6-luna', 'string', 'cs', 'Model AI utama',
+                'Nama model di OpenRouter, misalnya openai/gpt-6-luna.'],
+            ['ai_model_cadangan', 'deepseek/deepseek-v4.1-flash', 'string', 'cs', 'Model AI cadangan',
+                'Dipakai otomatis bila model utama sedang gangguan. Kosongkan bila tidak perlu.'],
+            ['ai_batas_bulanan', '2000', 'int', 'cs', 'Batas jawaban AI per bulan',
+                'Setelah batas ini, pertanyaan di luar FAQ langsung diteruskan ke admin sampai bulan berganti. Biaya per jawaban tercatat di menu FAQ chatbot.'],
             ['cs_peringatan_menit', '15', 'int', 'cs', 'Peringatkan Staf Setelah (menit)',
                 'Chat yang belum dibalas selama ini dikirimkan ke email staf. Chat yang tidak dijawab lebih buruk daripada tidak ada chat.'],
 

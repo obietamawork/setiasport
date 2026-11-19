@@ -54,6 +54,7 @@ class AsistenCs
     public function __construct(
         private LayananCs $cs,
         private PencocokFaq $pencocok,
+        private AsistenAi $ai,
     ) {}
 
     /** Bot menjawab lebih dulu bila CS menyala dan asisten tidak dimatikan di Pengaturan. */
@@ -131,15 +132,44 @@ class AsistenCs
                 [...array_map(fn (FaqBot $f) => $f->pertanyaan, $pilihan), self::PILIHAN_ADMIN])];
         }
 
+        // Lapis AI (KEP-152): hanya bila tidak ada FAQ yang cocok sama sekali.
+        if ($this->ai->siap()) {
+            return [$this->jawabanAi($percakapan, $pesan, $teks)];
+        }
+
         return [$this->serahkan($percakapan, $pesan, 'Tidak ada jawaban', $teks)];
+    }
+
+    private function jawabanAi(PercakapanCs $percakapan, PesanCs $pesan, string $teks): PesanCs
+    {
+        $hasil = $this->ai->jawab($percakapan, $teks);
+
+        if ($hasil === null) {
+            return $this->serahkan($percakapan, $pesan, 'AI tidak tersedia', $teks);
+        }
+
+        $catatan = array_intersect_key($hasil, array_flip(['model', 'token_masuk', 'token_keluar', 'biaya', 'durasi_ms']));
+
+        if ($hasil['serahkan']) {
+            return $this->serahkan($percakapan, $pesan, 'AI ragu', $teks, [...$catatan, 'jawaban' => $hasil['alasan'] ?: null]);
+        }
+
+        if (AsistenAi::mencurigakan($hasil['jawaban'])) {
+            return $this->serahkan($percakapan, $pesan, 'Jawaban AI ditahan', $teks, [...$catatan, 'jawaban' => $hasil['jawaban']]);
+        }
+
+        return $this->balas($percakapan, $pesan, $teks, 'ai', $hasil['jawaban'],
+            [self::PILIHAN_YA, self::PILIHAN_TIDAK, self::PILIHAN_ADMIN], null, $catatan);
     }
 
     /**
      * @param  list<string>  $pilihan
+     * @param  array<string, mixed>  $catatan  model, token, dan biaya untuk jawaban AI
      */
-    private function balas(PercakapanCs $percakapan, PesanCs $pesan, string $pertanyaan, string $lapis, string $jawaban, array $pilihan, ?int $faqId = null): PesanCs
+    private function balas(PercakapanCs $percakapan, PesanCs $pesan, string $pertanyaan, string $lapis, string $jawaban, array $pilihan, ?int $faqId = null, array $catatan = []): PesanCs
     {
         LogBot::create([
+            ...$catatan,
             'percakapan_id' => $percakapan->id,
             'pesan_id' => $pesan->id,
             'pertanyaan' => $pertanyaan,
@@ -151,9 +181,11 @@ class AsistenCs
         return $this->cs->kirimDariBot($percakapan, $jawaban, $pilihan);
     }
 
-    private function serahkan(PercakapanCs $percakapan, PesanCs $pesan, string $alasan, string $pertanyaan): PesanCs
+    /** @param  array<string, mixed>  $catatan  model, token, dan biaya bila AI sempat dipanggil */
+    private function serahkan(PercakapanCs $percakapan, PesanCs $pesan, string $alasan, string $pertanyaan, array $catatan = []): PesanCs
     {
         LogBot::create([
+            ...$catatan,
             'percakapan_id' => $percakapan->id,
             'pesan_id' => $pesan->id,
             'pertanyaan' => $pertanyaan !== '' ? $pertanyaan : '(foto)',

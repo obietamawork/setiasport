@@ -116,6 +116,7 @@ BITESHIP_KUNCI=biteship_live… # kunci LIVE di server; di lokal kunci test, tar
 ONGKIR_KURIR=jne,jnt          # hanya JNE dan J&T: dua kurir yang dilayani toko
 
 FITUR_CS=true                 # Customer Service resmi aktif (KEP-149)
+OPENROUTER_API_KEY=           # Lapis AI chatbot CS (KEP-152); kosong = tanpa AI
 # Chat CS realtime lewat Pusher, lihat "Customer Service".
 BROADCAST_CONNECTION=pusher
 PUSHER_APP_ID=
@@ -148,8 +149,13 @@ Saat pertama kali dirilis:
    **Customer Service** muncul di panel tepat di bawah Pesanan. Saklar ini tetap bisa
    dimatikan sementara dari Pengaturan. Tanpa kunci Pusher, chat sudah berfungsi, hanya
    dengan jeda sampai 15 detik
-3. Isi jam operasional dan template balasan di Pengaturan dan di Ruang CS
-4. Opsional, supaya pesan muncul seketika: isi kunci Pusher (langkah di bawah), lalu
+3. Asisten otomatis (chatbot) menjawab lebih dulu dari FAQ di **Panel → FAQ chatbot**
+   (KEP-151). Lapis AI-nya (KEP-152) baru bekerja setelah `OPENROUTER_API_KEY` diisi di
+   `.env` server lalu `php artisan config:cache`. Model, model cadangan, dan batas jawaban AI
+   per bulan diatur di **Pengaturan → Chat CS → Asisten otomatis**. Kredit OpenRouter dibeli
+   di openrouter.ai; biaya per jawaban tercatat di halaman FAQ chatbot
+4. Isi jam operasional dan template balasan di Pengaturan dan di Ruang CS
+5. Opsional, supaya pesan muncul seketika: isi kunci Pusher (langkah di bawah), lalu
    `php artisan config:cache` lagi
 
 Mematikannya sementara cukup lewat saklar di Pengaturan. Riwayat chat tidak ikut hilang;
