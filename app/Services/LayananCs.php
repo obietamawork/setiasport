@@ -11,7 +11,7 @@ use App\Models\Order;
 use App\Models\PercakapanCs;
 use App\Models\PesanCs;
 use App\Models\User;
-use Closure;
+use App\Rules\GambarBisaDiproses;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -45,21 +45,14 @@ class LayananCs
 
     /**
      * Aturan validasi foto chat untuk pelanggan dan staf. Gambar yang
-     * resolusinya tidak muat di memori ditolak dari kepala berkasnya, sebelum
-     * dibuka (KEP-153).
+     * resolusinya tidak muat di memori (KEP-153) atau isinya rusak (KEP-154)
+     * ditolak sebelum percakapan atau pesan apa pun dibuat.
      *
      * @return list<mixed>
      */
     public static function aturanLampiran(): array
     {
-        return [
-            'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(setting('upload_maks_mb', 10) * 1024),
-            function (string $atribut, mixed $nilai, Closure $gagal): void {
-                if ($nilai instanceof UploadedFile && PengunggahGambar::terlaluBesar((string) $nilai->getRealPath())) {
-                    $gagal('Resolusi foto terlalu besar. Kirim foto dengan resolusi lebih kecil, misalnya tangkapan layar.');
-                }
-            },
-        ];
+        return ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(setting('upload_maks_mb', 10) * 1024), new GambarBisaDiproses];
     }
 
     /**

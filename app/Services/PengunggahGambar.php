@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Exceptions\GambarTidakBisaDiproses;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use RuntimeException;
 
 /**
  * Mengubah foto dari kamera atau HP menjadi berkas yang layak ditayangkan.
@@ -25,6 +25,34 @@ class PengunggahGambar
 
     /** Resolusi tertinggi yang mau dibuka, berapa pun memorinya: 40 megapiksel. */
     public const MAKS_PIKSEL = 40_000_000;
+
+    private const PESAN_TERLALU_BESAR = 'Resolusi foto terlalu besar. Kirim foto dengan resolusi lebih kecil, misalnya tangkapan layar.';
+
+    private const PESAN_RUSAK = 'Foto tidak bisa dibuka; mungkin rusak atau terpotong saat diunggah. Coba kirim ulang fotonya.';
+
+    /**
+     * Kenapa gambar ini tidak bisa diproses, atau null bila bisa (KEP-154).
+     * Dipakai aturan validasi GambarBisaDiproses, supaya foto rusak ditolak
+     * dengan pesan sebelum apa pun disimpan. Gambar dibuka sekali untuk
+     * memastikannya; resolusinya sudah diperiksa lebih dulu, jadi pembukaan
+     * ini tidak bisa menghabiskan memori.
+     */
+    public static function masalah(string $path): ?string
+    {
+        if (self::terlaluBesar($path)) {
+            return self::PESAN_TERLALU_BESAR;
+        }
+
+        $gambar = @imagecreatefromstring((string) @file_get_contents($path));
+
+        if (! $gambar) {
+            return self::PESAN_RUSAK;
+        }
+
+        imagedestroy($gambar);
+
+        return null;
+    }
 
     /**
      * Gambar yang tidak muat di memori PHP saat dibuka GD (KEP-153). Hanya
@@ -127,14 +155,14 @@ class PengunggahGambar
     private function baca(UploadedFile $berkas): \GdImage
     {
         if (self::terlaluBesar($berkas->getRealPath())) {
-            throw new RuntimeException('Resolusi foto terlalu besar. Kirim foto dengan resolusi lebih kecil, misalnya tangkapan layar.');
+            throw new GambarTidakBisaDiproses(self::PESAN_TERLALU_BESAR);
         }
 
         $isi = file_get_contents($berkas->getRealPath());
         $gambar = @imagecreatefromstring($isi);
 
         if (! $gambar) {
-            throw new RuntimeException('Berkas itu bukan gambar yang bisa dibaca.');
+            throw new GambarTidakBisaDiproses(self::PESAN_RUSAK);
         }
 
         // Foto dari HP sering menyimpan arah lewat metadata EXIF, bukan lewat

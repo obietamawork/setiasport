@@ -43,6 +43,7 @@ class CsController extends Controller
                 'template' => TemplateBalasan::orderBy('urutan')->orderBy('judul')->get(['id', 'judul', 'isi']),
                 'topik' => collect(TopikCs::cases())->map(fn (TopikCs $t) => ['nilai' => $t->value, 'label' => $t->label()])->values(),
                 'slaMenit' => (int) setting('cs_peringatan_menit', 15),
+                'batasFotoMb' => (int) setting('upload_maks_mb', 10),
                 // CS dimatikan (KEP-033): ruang ini jadi arsip baca-saja.
                 'aktif' => cs_aktif(),
                 'realtime' => config('broadcasting.default') === 'pusher' ? config('broadcasting.klien') : null,

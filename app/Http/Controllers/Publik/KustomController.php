@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Publik;
 
 use App\Enums\KategoriUkuran;
 use App\Http\Controllers\Controller;
+use App\Models\Portofolio;
 use App\Models\Product;
 use App\Services\Keranjang;
 use Illuminate\Contracts\View\View;
@@ -30,6 +31,8 @@ class KustomController extends Controller
         return view('publik.kustom', [
             'produk' => $produk,
             'kategori' => KategoriUkuran::cases(),
+            // Tanpa galeri, "Pilih dari katalog" hanya menuju halaman 404 (KEP-154).
+            'adaGaleri' => Portofolio::tampilan()->exists(),
         ]);
     }
 

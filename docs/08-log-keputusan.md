@@ -5390,6 +5390,53 @@ sehingga tidak ada chat palsu di panel dan batas bulanan tidak terpakai.
 
 ---
 
+## KEP-154 — Uji siksaan produksi: gambar rusak, galeri kosong, batas foto
+**Status:** TERKUNCI · 2026-11-20
+
+Uji siksaan di server produksi atas permintaan pemilik proyek, dengan akun panel sementara dan
+pesanan uji yang dihapus sesudahnya. Yang diuji: perayapan 15 halaman publik, 14 halaman produk,
+dan 35 halaman panel di HP dan desktop; uji keamanan dari luar (berkas sensitif, header, panel
+tanpa login, IDOR, CSRF, injeksi di parameter, brute force login, unggahan besar); alur pelanggan
+ready stock dari keranjang sampai serah terima; alur custom sampai pengajuan pembatalan; verifikasi
+admin; dan chat realtime dua arah lewat Pusher (sekitar 0,2 detik ke tiap arah). Temuannya:
+
+**Gambar rusak berakhir 500.** Gambar yang kepalanya sah tetapi isinya rusak atau terpotong, misalnya
+foto yang terpotong saat diunggah lewat sinyal jelek, lolos aturan `image` bawaan lalu gagal saat
+dibuka. Hanya dua dari sembilan tempat unggah yang menangkapnya; sisanya (bukti bayar pelanggan, foto
+chat CS, QRIS, banner, bahan, portofolio, bukti di panel) menampilkan halaman galat 500. Perbaikan:
+- Aturan validasi `GambarBisaDiproses` di jalur publik (bukti bayar, foto chat pelanggan dan staf):
+  gambar dibuka sekali saat validasi, setelah resolusinya dipastikan muat (KEP-153), sehingga foto
+  rusak ditolak dengan pesan sebelum percakapan, pesan, atau pembayaran apa pun dibuat.
+- `PengunggahGambar` melempar `GambarTidakBisaDiproses`, yang ditangani di `bootstrap/app.php`
+  untuk semua tempat unggah lain: pesannya dikembalikan ke isian berkasnya (422 untuk JSON), tidak
+  dicatat sebagai galat aplikasi.
+
+**Tautan galeri 404 di wizard custom.** Pilihan desain bawaan adalah "Pilih dari katalog", yang
+menampilkan tautan "Lihat galeri desain" ke halaman portofolio. Selama portofolio masih kosong,
+halaman itu sengaja 404, jadi setiap pelanggan yang tiba di langkah 2 melihat tautan rusak. Kini
+pilihan itu dan tautannya hanya tampil bila galeri berisi; tanpa galeri bawaannya "Dibantu admin".
+
+**Foto di atas batas ukuran.** Server hosting memutus unggahan di atas batas tanpa jawaban apa pun,
+sehingga pelanggan hanya membaca "Pesan belum terkirim". Widget chat, Ruang CS, dan formulir bukti
+bayar kini memeriksa ukuran sebelum mengirim dan menyebut alasannya. Formulir bukti bayar hanya
+menerima JPG, PNG, dan WebP, sehingga iPhone mengirim JPG, bukan HEIC yang pasti ditolak.
+
+**Wizard custom.** Tombol Lanjut di langkah Data Pemain kini juga memeriksa batas 5.000 pcs per baris
+yang dipakai server, dan menyebut alasannya saat tidak bisa ditekan. Peringatan "Minimal pemesanan"
+di ringkasan baru tampil sejak langkah Data Pemain; di langkah pertama terbaca seperti galat.
+
+**Yang lolos tanpa perubahan**: berkas sensitif (`.env`, `.git`, log, cadangan SQL) 403/404, halaman
+galat tanpa jejak teknis, panel selalu dialihkan ke login, lampiran dan pesanan orang lain 404,
+CSRF 419, XSS di pencarian dan di nama pelanggan ter-escape di halaman, panel, dan email, brute force
+login terkunci pada percobaan ke-6, isian keranjang dan checkout yang ganjil ditolak dengan pesan,
+klik ganda checkout hanya membuat satu pesanan, PDF dan SVG yang menyamar sebagai bukti ditolak.
+
+**Dicatat, tidak diubah**: CSP masih memuat `unsafe-eval` karena build Alpine standar
+membutuhkannya; `/up` (cek kesehatan bawaan Laravel) terbuka tetapi tidak memuat data apa pun;
+pesan validasi bawaan diawali huruf kecil ("jumlah wajib setidaknya 1.").
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5547,3 +5594,4 @@ sehingga tidak ada chat palsu di panel dan batas bulanan tidak terpakai.
 | KEP-151 | Bot menjawab dulu dari FAQ panel; komplain, pembayaran, foto, dan yang tak terjawab ke admin; kurasi Belum terjawab | TERKUNCI |
 | KEP-152 | AI hanya bila FAQ tak cocok; JSON terstruktur, data_collection deny, pagar angka, batas bulanan; GPT-6 Luna terpilih lewat uji banding | TERKUNCI |
 | KEP-153 | FAQ menjawab sendiri hanya bila cocoknya kuat; prompt injection ditolak aturan pasti; jawaban AI dijaga dan dirapikan gayanya; foto beresolusi raksasa ditolak, 10 foto per jam, CSP sandbox | TERKUNCI |
+| KEP-154 | Gambar rusak ditolak dengan pesan, bukan 500; pilihan katalog disembunyikan saat galeri kosong; ukuran foto dicek di peramban; wizard custom menjelaskan tombol Lanjut yang mati | TERKUNCI |

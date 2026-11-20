@@ -125,8 +125,24 @@ export function widgetCs(awal) {
             }
         },
 
+        /**
+         * Foto di atas batas diputus server tanpa jawaban apa pun, sehingga
+         * pelanggan hanya melihat "belum terkirim". Ditolak di sini dengan
+         * alasan yang jelas (KEP-154).
+         */
         pilihLampiran(e) {
-            this.lampiran = e.target.files[0] ?? null;
+            const berkas = e.target.files[0] ?? null;
+            const batasMb = awal.batasFotoMb ?? 10;
+
+            if (berkas && berkas.size > batasMb * 1024 * 1024) {
+                this.galat = `Foto terlalu besar. Maksimal ${batasMb} MB; kirim tangkapan layar atau foto yang lebih kecil.`;
+                e.target.value = '';
+                this.lampiran = null;
+                return;
+            }
+
+            this.galat = '';
+            this.lampiran = berkas;
         },
 
         async mulai() {

@@ -19,6 +19,7 @@
         // Dibuka dari halaman pesanan bertoken: pesanannya ikut tertaut dan terverifikasi.
         'tokenPesanan' => request()->routeIs('lacak.token') ? request()->route('token') : null,
         'realtime' => config('broadcasting.default') === 'pusher' ? config('broadcasting.klien') : null,
+        'batasFotoMb' => (int) setting('upload_maks_mb', 10),
         'url' => [
             'status' => route('cs.status'),
             'mulai' => route('cs.mulai'),

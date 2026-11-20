@@ -8,6 +8,7 @@ use App\Enums\PaymentType;
 use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Rules\GambarBisaDiproses;
 use App\Services\PengunggahGambar;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,7 +42,7 @@ class BuktiBayarController extends Controller
             ->firstOrFail();
 
         $request->validate([
-            'bukti' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(setting('upload_maks_mb', 10) * 1024)],
+            'bukti' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(setting('upload_maks_mb', 10) * 1024), new GambarBisaDiproses],
         ], [
             'bukti.image' => 'Kirim foto atau tangkapan layar bukti transfernya (JPG atau PNG).',
             'bukti.mimes' => 'Kirim foto atau tangkapan layar bukti transfernya (JPG atau PNG).',

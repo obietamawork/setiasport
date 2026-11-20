@@ -353,11 +353,17 @@
         <form method="POST" action="{{ route('lacak.bukti', $order->access_token) }}"
               enctype="multipart/form-data" class="mt-4 flex flex-wrap items-end gap-3">
             @csrf
-            <div class="min-w-56 flex-1">
+            {{-- Foto di atas batas diputus server tanpa jawaban, jadi ditolak di sini
+                 dengan alasannya (KEP-154). Tipe JPG/PNG membuat iPhone mengirim JPG,
+                 bukan HEIC yang pasti ditolak. --}}
+            <div class="min-w-56 flex-1" x-data="{ besar: false }">
                 <label for="bukti" class="label-form">
                     {{ $buktiAda ? 'Salah kirim? Ganti buktinya' : 'Pilih file' }}
                 </label>
-                <input type="file" id="bukti" name="bukti" accept="image/*" class="kotak-input" required>
+                <input type="file" id="bukti" name="bukti" accept="image/jpeg,image/png,image/webp" class="kotak-input" required
+                       data-batas-mb="{{ (int) setting('upload_maks_mb', 10) }}"
+                       @change="besar = ($el.files[0]?.size ?? 0) > $el.dataset.batasMb * 1048576; if (besar) $el.value = ''">
+                <p x-show="besar" x-cloak class="mt-1 text-xs text-merah">Foto terlalu besar. Kirim tangkapan layar atau foto yang lebih kecil.</p>
                 <p class="mt-1 text-xs text-muted">JPG atau PNG, maksimal {{ setting('upload_maks_mb', 10) }} MB.</p>
             </div>
             <button type="submit" class="tombol {{ $buktiAda ? 'tombol-garis' : 'tombol-navy' }} mb-5">

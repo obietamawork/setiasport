@@ -96,6 +96,7 @@
 
 <div class="mx-auto max-w-6xl px-5 py-6"
      x-data="pesanKustom({
+        adaGaleri: @js($adaGaleri),
         opsi: @js($dataOpsi),
         opsiPemain: @js($dataPemain),
         harga: @js($dataHarga),
@@ -279,12 +280,13 @@
                     <p class="font-semibold">Desain</p>
                     {{-- Tiap pilihan membawa penjelasannya (KEP-138): klien sendiri
                          bingung "pilih dari katalog" itu maksudnya apa. --}}
-                    <div class="mt-3 grid gap-2 sm:grid-cols-3">
-                        @foreach ([
+                    {{-- Tanpa galeri, pilihan katalog hanya menuju halaman 404 (KEP-154). --}}
+                    <div class="mt-3 grid gap-2 {{ $adaGaleri ? 'sm:grid-cols-3' : 'sm:grid-cols-2' }}">
+                        @foreach (array_filter([
                             'katalog' => ['Pilih dari katalog', 'Pakai desain dari galeri kami. Sebutkan desain yang Anda suka di Permintaan desain; warna, nama tim, dan logo kami sesuaikan.'],
                             'sendiri' => ['Kirim desain sendiri', 'Sudah punya desain jadi? Kirim filenya, kami siapkan mockup-nya.'],
                             'admin' => ['Dibantu admin', 'Belum punya desain? Ceritakan keinginan Anda, desainer kami membuatkan dari awal.'],
-                        ] as $nilai => [$label, $penjelasan])
+                        ], fn ($nilai) => $adaGaleri || $nilai !== 'katalog', ARRAY_FILTER_USE_KEY) as $nilai => [$label, $penjelasan])
                             <button type="button" @click="desainSumber = '{{ $nilai }}'"
                                     class="rounded-[10px] border px-3 py-2.5 text-left text-sm transition-colors"
                                     :aria-pressed="(desainSumber === '{{ $nilai }}').toString()"
@@ -296,10 +298,12 @@
                             </button>
                         @endforeach
                     </div>
-                    <p x-show="desainSumber === 'katalog'" class="mt-3 text-sm">
-                        <a href="{{ route('portofolio') }}" target="_blank" rel="noopener" class="tautan">Lihat galeri desain</a>
-                        untuk memilih desain yang Anda suka.
-                    </p>
+                    @if ($adaGaleri)
+                        <p x-show="desainSumber === 'katalog'" class="mt-3 text-sm">
+                            <a href="{{ route('portofolio') }}" target="_blank" rel="noopener" class="tautan">Lihat galeri desain</a>
+                            untuk memilih desain yang Anda suka.
+                        </p>
+                    @endif
                     <input type="hidden" name="desain_sumber" :value="desainSumber">
 
                     {{-- Dijelaskan di sini, sebelum data pemesan dan pembayaran
@@ -692,6 +696,9 @@
                 <button type="button" @click="mundur()" x-show="langkah > 1" x-cloak
                         class="tombol tombol-garis">Kembali</button>
 
+                {{-- Tombol yang mati tanpa alasan membingungkan (uji siksaan, KEP-154). --}}
+                <p x-show="langkah === 3 && !bisaLanjut" x-cloak class="w-full text-right text-sm text-merah sm:order-last"
+                   x-text="qty < moq ? `Minimal pemesanan ${moq} pcs; saat ini ${qty} pcs.` : 'Jumlah tiap baris antara 1 dan 5.000 pcs.'"></p>
                 <button type="button" @click="maju()" x-show="langkah < 4"
                         class="tombol tombol-navy ml-auto" :disabled="!bisaLanjut"
                         data-izinkan-ganda>Lanjut</button>
@@ -761,7 +768,8 @@
                     </p>
                 </div>
 
-                <p x-show="qty < moq" x-cloak class="mt-3 text-xs text-merah">
+                {{-- Baru tampil saat jumlah diisi; di langkah 1 terbaca seperti galat (KEP-154). --}}
+                <p x-show="langkah >= 3 && qty < moq" x-cloak class="mt-3 text-xs text-merah">
                     Minimal pemesanan {{ $produk->moq }} pcs.
                 </p>
             </div>
@@ -795,7 +803,7 @@
                 cfg.opsi.map(o => [o.id, o.wajib ? (o.values[0]?.id ?? '') : ''])
             ),
             baris: [],
-            desainSumber: 'katalog',
+            desainSumber: cfg.adaGaleri ? 'katalog' : 'admin',
             catatanDesain: '',
             tempelBuka: false,
             tempelIsi: '',
@@ -940,7 +948,7 @@
             get bisaLanjut() {
                 // Langkah 3 adalah satu-satunya yang benar-benar bisa salah:
                 // jumlahnya kurang dari minimum pemesanan.
-                if (this.langkah === 3) return this.qty >= this.moq;
+                if (this.langkah === 3) return this.qty >= this.moq && this.baris.every(b => b.jumlah >= 1 && b.jumlah <= 5000);
                 return true;
             },
 

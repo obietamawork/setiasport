@@ -452,8 +452,20 @@ export function ruangCs(awal) {
             el.style.overflowY = el.scrollHeight > 160 ? 'auto' : 'hidden';
         },
 
+        /** Foto di atas batas ditolak sebelum dikirim, dengan alasannya (KEP-154). */
         pilihLampiran(e) {
-            this.lampiran = e.target.files[0] ?? null;
+            const berkas = e.target.files[0] ?? null;
+            const batasMb = awal.batasFotoMb ?? 10;
+
+            if (berkas && berkas.size > batasMb * 1024 * 1024) {
+                this.galat = `Foto terlalu besar. Maksimal ${batasMb} MB.`;
+                e.target.value = '';
+                this.lampiran = null;
+                return;
+            }
+
+            this.galat = '';
+            this.lampiran = berkas;
         },
 
         /* ---- Kehadiran, suara, realtime ---------------------------------- */

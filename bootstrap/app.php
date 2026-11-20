@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\GambarTidakBisaDiproses;
 use App\Http\Middleware\EnsurePermission;
 use App\Http\Middleware\HeaderKeamanan;
 use App\Http\Middleware\PastikanAkunLayak;
@@ -55,5 +56,23 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return back()->withErrors(['alur' => $e->getMessage()]);
+        });
+
+        /*
+         * Gambar unggahan yang rusak atau terlalu besar (KEP-154) dikembalikan
+         * sebagai pesan pada isian berkasnya, bukan halaman galat 500. Jalur
+         * publik sudah menolaknya lewat aturan GambarBisaDiproses; ini jaring
+         * pengaman untuk semua tempat unggah lain di panel. Bukan galat
+         * aplikasi, jadi tidak perlu memenuhi log.
+         */
+        $exceptions->dontReport(GambarTidakBisaDiproses::class);
+        $exceptions->render(function (GambarTidakBisaDiproses $e, Request $request) {
+            $isian = array_key_first($request->allFiles()) ?? 'berkas';
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $e->getMessage(), 'errors' => [$isian => [$e->getMessage()]]], 422);
+            }
+
+            return back()->withErrors([$isian => $e->getMessage()])->withInput($request->except(array_keys($request->allFiles())));
         });
     })->create();
