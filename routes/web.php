@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BuktiBayarController;
 use App\Http\Controllers\Publik\AkunController;
+use App\Http\Controllers\Publik\AkunSayaController;
 use App\Http\Controllers\Publik\BerandaController;
 use App\Http\Controllers\Publik\CheckoutController;
 use App\Http\Controllers\Publik\CsController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Publik\PembatalanController;
 use App\Http\Controllers\Publik\PesananItemController;
 use App\Http\Controllers\Publik\PesananSayaController;
 use App\Http\Controllers\Publik\RollController;
+use App\Http\Controllers\Publik\SandiPelangganController;
 use App\Http\Controllers\Publik\SitemapController;
 use App\Http\Controllers\Webhook\ResendController;
 use Illuminate\Support\Facades\Route;
@@ -101,7 +103,30 @@ Route::middleware('guest:pelanggan')->group(function () {
 Route::middleware('auth:pelanggan')->group(function () {
     Route::get('/pesanan-saya', PesananSayaController::class)->name('pesanan-saya');
     Route::post('/keluar', [AkunController::class, 'keluar'])->name('keluar');
+
+    // Akun saya: profil, kata sandi, dan buku alamat (KEP-157).
+    Route::get('/akun', [AkunSayaController::class, 'show'])->name('akun');
+    Route::middleware('throttle:30,1,akun-saya')->group(function () {
+        Route::put('/akun/profil', [AkunSayaController::class, 'profil'])->name('akun.profil');
+        Route::put('/akun/sandi', [AkunSayaController::class, 'sandi'])->name('akun.sandi');
+        Route::post('/akun/alamat', [AkunSayaController::class, 'simpanAlamat'])->name('akun.alamat.simpan');
+        Route::put('/akun/alamat/{alamat}', [AkunSayaController::class, 'ubahAlamat'])->whereNumber('alamat')->name('akun.alamat.ubah');
+        Route::delete('/akun/alamat/{alamat}', [AkunSayaController::class, 'hapusAlamat'])->whereNumber('alamat')->name('akun.alamat.hapus');
+        Route::post('/akun/alamat/{alamat}/utama', [AkunSayaController::class, 'jadikanUtama'])->whereNumber('alamat')->name('akun.alamat.utama');
+    });
 });
+
+/*
+ * Lupa kata sandi pelanggan (KEP-157). Di luar grup tamu: pelanggan yang
+ * sedang masuk di perangkat lain tetap bisa memakai tautannya.
+ */
+Route::get('/lupa-sandi', [SandiPelangganController::class, 'form'])->name('lupa-sandi');
+Route::post('/lupa-sandi', [SandiPelangganController::class, 'kirim'])
+    ->middleware('throttle:10,10,lupa-sandi')->name('lupa-sandi.kirim');
+Route::get('/atur-sandi/{token}', [SandiPelangganController::class, 'formAtur'])
+    ->middleware('throttle:20,1,atur-sandi-lihat')->name('atur-sandi');
+Route::post('/atur-sandi/{token}', [SandiPelangganController::class, 'atur'])
+    ->middleware('throttle:10,1,atur-sandi')->name('atur-sandi.simpan');
 
 // Halaman pesanan pelanggan: tanpa akun, tanpa kata sandi (KEP-008).
 Route::get('/lacak', [LacakController::class, 'form'])->name('lacak');

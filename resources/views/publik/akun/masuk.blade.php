@@ -23,10 +23,13 @@
                    class="kotak-input" required autocomplete="current-password">
         </div>
 
-        <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="ingat" value="1" class="size-4 accent-navy">
-            Ingat saya di perangkat ini
-        </label>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <label class="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="ingat" value="1" class="size-4 accent-navy">
+                Ingat saya di perangkat ini
+            </label>
+            <a href="{{ route('lupa-sandi') }}" class="tautan text-sm">Lupa kata sandi?</a>
+        </div>
 
         <button type="submit" class="tombol tombol-utama w-full">Masuk</button>
 

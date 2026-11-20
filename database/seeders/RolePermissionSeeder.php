@@ -48,6 +48,7 @@ class RolePermissionSeeder extends Seeder
             ],
             'cs' => [
                 'cs.balas' => 'Balas Chat CS',
+                'pelanggan.kelola' => 'Kelola Akun Pelanggan',
             ],
             'sistem' => [
                 'pengguna.kelola' => 'Kelola Pengguna & Peran',
@@ -77,7 +78,7 @@ class RolePermissionSeeder extends Seeder
                     'pembayaran.catat', 'pembayaran.verifikasi', 'serah_terima.proses',
                     'produksi.desain', 'produksi.print', 'produksi.press',
                     'produksi.potong', 'produksi.jahit', 'produksi.qc', 'produksi.packing',
-                    'katalog.kelola', 'stok.kelola', 'profil.kelola', 'cs.balas',
+                    'katalog.kelola', 'stok.kelola', 'profil.kelola', 'cs.balas', 'pelanggan.kelola',
                 ],
             ],
         ];

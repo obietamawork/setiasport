@@ -16,7 +16,7 @@
          tidak boleh diindeks, walau tautannya sempat tersebar di tempat umum. --}}
     {{-- Hasil pencarian katalog juga: isinya hanya susunan ulang halaman lain,
          dan kata yang diketik orang tidak layak jadi halaman di Google. --}}
-    @if (request()->routeIs('lacak.*', 'pesanan-saya', 'keranjang', 'checkout', 'masuk', 'daftar*')
+    @if (request()->routeIs('lacak.*', 'pesanan-saya', 'keranjang', 'checkout', 'masuk', 'daftar*', 'akun', 'lupa-sandi', 'atur-sandi*')
         || (request()->routeIs('katalog') && request()->filled('q')))
         <meta name="robots" content="noindex">
     @endif

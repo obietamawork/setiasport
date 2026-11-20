@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -16,6 +17,9 @@ use Illuminate\Support\Str;
  * Yang tanpa akun tetap membuka pesanannya lewat tautan bertoken di email,
  * persis seperti sebelumnya. Akun hanya menambah kemudahan bagi pelanggan
  * berulang, tidak pernah menjadi syarat.
+ *
+ * @property Carbon|null $token_dibuat_pada
+ * @property Carbon|null $token_atur_sandi_dibuat_pada
  */
 class Customer extends Authenticatable
 {
@@ -26,18 +30,88 @@ class Customer extends Authenticatable
         'reseller', 'catatan_reseller',
     ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', 'token_verifikasi', 'token_atur_sandi'];
+
+    /** Masa berlaku tautan atur ulang kata sandi (KEP-157). */
+    public const MENIT_ATUR_SANDI = 60;
 
     protected function casts(): array
     {
         return [
             'password' => 'hashed',
             'reseller' => 'boolean',
+            'aktif' => 'boolean',
             'akun_dibuat_pada' => 'datetime',
             'login_terakhir_pada' => 'datetime',
             'email_terverifikasi_pada' => 'datetime',
             'token_dibuat_pada' => 'datetime',
+            'token_atur_sandi_dibuat_pada' => 'datetime',
         ];
+    }
+
+    /**
+     * Token atur ulang kata sandi (KEP-157). Yang disimpan hanya hash-nya;
+     * tokennya sendiri hanya ada di tautan email.
+     */
+    public function siapkanAturUlangSandi(): string
+    {
+        $token = Str::random(64);
+
+        $this->forceFill([
+            'token_atur_sandi' => hash('sha256', $token),
+            'token_atur_sandi_dibuat_pada' => now(),
+        ])->save();
+
+        return $token;
+    }
+
+    public function aturSandiMasihBerlaku(): bool
+    {
+        return filled($this->token_atur_sandi)
+            && $this->token_atur_sandi_dibuat_pada?->gt(now()->subMinutes(self::MENIT_ATUR_SANDI));
+    }
+
+    /**
+     * Membuka tautan di email membuktikan penguasaan email, jadi pemesan tamu
+     * dan pendaftaran yang belum dikonfirmasi ikut menjadi akun aktif. Token
+     * "ingat saya" diganti, sehingga perangkat lain yang masih tersimpan ikut
+     * keluar.
+     */
+    public function aturUlangSandi(string $password): void
+    {
+        $this->forceFill([
+            'password' => $password,
+            'email_terverifikasi_pada' => $this->email_terverifikasi_pada ?? now(),
+            'akun_dibuat_pada' => $this->akun_dibuat_pada ?? now(),
+            'token_atur_sandi' => null,
+            'token_atur_sandi_dibuat_pada' => null,
+            'token_verifikasi' => null,
+            'token_dibuat_pada' => null,
+            'remember_token' => Str::random(60),
+        ])->save();
+    }
+
+    /** @return HasMany<AlamatPelanggan, $this> */
+    public function alamat(): HasMany
+    {
+        return $this->hasMany(AlamatPelanggan::class)->orderByDesc('utama')->orderBy('id');
+    }
+
+    /**
+     * Menambah alamat ke buku alamat; alamat pertama otomatis jadi utama.
+     * Null bila buku alamat sudah penuh (AlamatPelanggan::BATAS).
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function tambahAlamat(array $data): ?AlamatPelanggan
+    {
+        $jumlah = $this->alamat()->count();
+
+        if ($jumlah >= AlamatPelanggan::BATAS) {
+            return null;
+        }
+
+        return $this->alamat()->create([...$data, 'utama' => $jumlah === 0]);
     }
 
     /**

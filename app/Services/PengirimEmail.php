@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EmailStatus;
 use App\Enums\PaymentStatus;
+use App\Mail\AturUlangSandi;
 use App\Mail\EmailPesanan;
 use App\Mail\KonfirmasiAkun;
 use App\Models\Customer;
@@ -92,6 +93,18 @@ class PengirimEmail
     {
         try {
             Mail::to($pelanggan->email)->queue(new KonfirmasiAkun($pelanggan, $tautan));
+        } catch (Throwable $e) {
+            report($e);
+        }
+    }
+
+    /** Tautan atur ulang kata sandi pelanggan (KEP-157). */
+    public function kirimAturUlangSandi(Customer $pelanggan): void
+    {
+        $tautan = route('atur-sandi', $pelanggan->siapkanAturUlangSandi());
+
+        try {
+            Mail::to($pelanggan->email)->queue(new AturUlangSandi($pelanggan, $tautan));
         } catch (Throwable $e) {
             report($e);
         }

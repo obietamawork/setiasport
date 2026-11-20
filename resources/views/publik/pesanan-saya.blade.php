@@ -11,10 +11,13 @@
             <h1 class="text-3xl font-extrabold">Pesanan saya</h1>
             <p class="mt-1 text-sm text-muted">{{ $pelanggan->nama }}, {{ $pelanggan->email }}</p>
         </div>
-        <form method="POST" action="{{ route('keluar') }}">
-            @csrf
-            <button type="submit" class="tautan text-sm text-muted">Keluar</button>
-        </form>
+        <div class="flex items-center gap-4">
+            <a href="{{ route('akun') }}" class="tautan text-sm">Akun saya</a>
+            <form method="POST" action="{{ route('keluar') }}">
+                @csrf
+                <button type="submit" class="tautan text-sm text-muted">Keluar</button>
+            </form>
+        </div>
     </div>
 
     @if ($pesanan->isEmpty())

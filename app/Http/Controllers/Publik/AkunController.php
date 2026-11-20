@@ -77,6 +77,16 @@ class AkunController extends Controller
 
         $pelanggan = Auth::guard('pelanggan')->user();
 
+        // Dinonaktifkan staf (KEP-157). Diberitahukan hanya setelah kata
+        // sandinya cocok, jadi bukan celah untuk menebak email.
+        if ($pelanggan->aktif === false) {
+            Auth::guard('pelanggan')->logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun ini dinonaktifkan. Hubungi CS kami untuk bantuan.',
+            ]);
+        }
+
         // Kata sandinya benar, tapi penguasaan email belum pernah dibuktikan.
         // Diberitahukan hanya setelah kata sandi cocok, jadi bukan celah tebakan.
         if (! $pelanggan->akunAktif()) {
@@ -147,7 +157,8 @@ class AkunController extends Controller
          * Untuk yang belum aktif, kata sandi baru disiapkan sebagai pendaftaran
          * tertunda yang hanya bisa diselesaikan dari email itu sendiri.
          */
-        if (! $pelanggan->akunAktif()) {
+        // Akun yang dinonaktifkan staf (KEP-157) juga tidak dikirimi apa pun.
+        if (! $pelanggan->akunAktif() && $pelanggan->aktif !== false) {
             $this->kirimKonfirmasi($pelanggan, $data['password']);
         }
 

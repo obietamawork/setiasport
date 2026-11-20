@@ -18,6 +18,13 @@
              tarif: '{{ old('tarif') }}',
              urlArea: '{{ route('pengiriman.area') }}',
              urlTarif: '{{ route('pengiriman.tarif') }}',
+             namaArea: @js((string) old('area_nama')),
+             kodePos: @js((string) old('kode_pos')),
+             alamat: @js((string) old('alamat_kirim')),
+             tautanLokasi: @js((string) old('tautan_lokasi')),
+             isiUlang: @js(session()->hasOldInput()),
+             alamatTersimpan: @js($daftarAlamat->map->untukCheckout()->values()),
+             pilihanAlamat: @js(session()->hasOldInput() ? (string) old('alamat_tersimpan') : (string) $daftarAlamat->firstWhere('utama', true)?->id),
          })">
         {{-- Ringkasan tampil lebih dulu di HP (order-1) supaya pelanggan tahu
              persis angka yang disepakati sebelum mengisi formulir, bukan
@@ -36,8 +43,15 @@
 
             <div>
                 <label for="email" class="label-form">Email</label>
-                <input type="email" id="email" name="email" value="{{ old('email') }}"
-                       class="kotak-input" required autocomplete="email">
+                @if ($pelanggan)
+                    {{-- Email akun mengikat pesanan ke akun (KEP-020); server memakai
+                         email akun apa pun isian formulirnya, jadi tampilkan terkunci. --}}
+                    <input type="email" id="email" name="email" value="{{ $pelanggan->email }}"
+                           class="kotak-input bg-paper text-muted" readonly>
+                @else
+                    <input type="email" id="email" name="email" value="{{ old('email') }}"
+                           class="kotak-input" required autocomplete="email">
+                @endif
                 {{-- Klien menulis "dikirim melalui WhatsApp dan email", tetapi yang
                      terkirim otomatis hanya email; WhatsApp-nya lewat tombol Bagikan
                      di halaman pesanan (KEP-144). --}}
@@ -90,17 +104,35 @@
                 </div>
 
                 <div x-show="metode === 'KIRIM'" x-cloak class="mt-4 space-y-4 border-l-2 border-line-strong pl-4">
+                    @if ($daftarAlamat->isNotEmpty())
+                        {{-- Buku alamat (KEP-157): memilih alamat mengisi alamat,
+                             tautan lokasi, dan area tujuannya sekaligus. --}}
+                        <div>
+                            <label for="alamat_tersimpan" class="label-form">Alamat tersimpan</label>
+                            <select id="alamat_tersimpan" name="alamat_tersimpan" class="kotak-input"
+                                    x-model="pilihanAlamat" @change="pakaiAlamat()">
+                                @foreach ($daftarAlamat as $a)
+                                    <option value="{{ $a->id }}">{{ $a->label }}: {{ \Illuminate\Support\Str::limit($a->alamat, 60) }}</option>
+                                @endforeach
+                                <option value="">Alamat lain</option>
+                            </select>
+                            <p class="bantuan-form">
+                                Kelola alamat di <a href="{{ route('akun') }}#alamat" class="tautan">Akun saya</a>.
+                            </p>
+                        </div>
+                    @endif
+
                     <div>
                         <label for="alamat_kirim" class="label-form">Alamat lengkap</label>
                         <textarea id="alamat_kirim" name="alamat_kirim" rows="3" maxlength="500"
-                                  class="kotak-input leading-relaxed"
-                                  placeholder="Nama penerima, jalan, RT/RW, kelurahan, kecamatan, kota, kode pos">{{ old('alamat_kirim') }}</textarea>
+                                  class="kotak-input leading-relaxed" x-model="alamat"
+                                  placeholder="Nama penerima, jalan, RT/RW, kelurahan, kecamatan, kota, kode pos"></textarea>
                     </div>
 
                     <div>
                         <label for="tautan_lokasi" class="label-form">Tautan lokasi Google Maps (opsional)</label>
                         <input type="url" id="tautan_lokasi" name="tautan_lokasi" class="kotak-input"
-                               placeholder="https://maps.app.goo.gl/..." value="{{ old('tautan_lokasi') }}">
+                               placeholder="https://maps.app.goo.gl/..." x-model="tautanLokasi">
                         <p class="bantuan-form">
                             Cantumkan tautan lokasi Google Maps agar kurir dapat menemukan alamat pengiriman dengan tepat.
                             Buka Google Maps &rarr; Pilih lokasi &rarr; <strong>Bagikan</strong> &rarr; <strong>Salin tautan</strong>, lalu tempelkan di sini.
@@ -114,6 +146,8 @@
                                    placeholder="Contoh: Laweyan Solo, atau kode pos 57141"
                                    x-model="kata" @input.debounce.400ms="cariArea()">
                             <input type="hidden" name="area_tujuan" x-model="area">
+                            <input type="hidden" name="area_nama" x-model="namaArea">
+                            <input type="hidden" name="kode_pos" x-model="kodePos">
                             <p x-show="mencari" x-cloak class="bantuan-form">Mencari...</p>
                             <p x-show="belumKetemu && !mencari" x-cloak class="mt-1 text-sm text-merah">
                                 Alamat belum ketemu. Coba ketik nama kecamatan dan kotanya saja, atau kode posnya.
@@ -178,6 +212,19 @@
                         <p class="text-sm text-ok">
                             Belanja di atas {{ rupiah($gratisOngkirMulai) }} bebas ongkos kirim.
                         </p>
+                    @endif
+
+                    @if ($pelanggan && $daftarAlamat->count() < \App\Models\AlamatPelanggan::BATAS)
+                        {{-- Hanya untuk alamat yang diketik baru; alamat tersimpan
+                             tidak perlu disimpan lagi. --}}
+                        <label x-show="pilihanAlamat === ''" class="flex items-start gap-2 text-sm">
+                            <input type="checkbox" name="simpan_alamat" value="1" class="mt-0.5 size-4 accent-navy"
+                                   :disabled="pilihanAlamat !== ''"
+                                   @checked(session()->hasOldInput() ? old('simpan_alamat') : true)>
+                            <span>
+                                Simpan alamat ini di buku alamat saya{{ $daftarAlamat->isEmpty() ? ' sebagai alamat utama' : '' }}
+                            </span>
+                        </label>
                     @endif
                 </div>
             </fieldset>
@@ -360,9 +407,14 @@
      */
     function pilihPengiriman(cfg) {
         return {
+            namaArea: '',
+            kodePos: '',
+            alamat: '',
+            tautanLokasi: '',
+            alamatTersimpan: [],
+            pilihanAlamat: '',
             ...cfg,
             kata: '',
-            namaArea: '',
             daftarArea: [],
             daftarTarif: [],
             memuat: false,
@@ -414,6 +466,7 @@
             pilihArea(a) {
                 this.area = a.kode;
                 this.namaArea = a.nama;
+                this.kodePos = a.kode_pos ?? '';
                 this.daftarArea = [];
                 this.kata = '';
                 this.ambilTarif();
@@ -422,6 +475,7 @@
             gantiArea() {
                 this.area = '';
                 this.namaArea = '';
+                this.kodePos = '';
                 this.tarif = '';
                 this.daftarTarif = [];
             },
@@ -442,10 +496,45 @@
                 }
             },
 
+            /*
+             * Mengisi alamat dari buku alamat (KEP-157). Areanya ikut terpasang,
+             * tapi tarif baru ditanyakan saat "Dikirim" benar-benar dipilih:
+             * setiap pertanyaan tarif adalah panggilan berbayar ke penyedia.
+             */
+            pakaiAlamat() {
+                const a = this.alamatTersimpan.find(x => String(x.id) === String(this.pilihanAlamat));
+
+                this.gantiArea();
+
+                if (! a) {
+                    this.alamat = '';
+                    this.tautanLokasi = '';
+                    return;
+                }
+
+                this.alamat = a.alamat;
+                this.tautanLokasi = a.tautan_lokasi ?? '';
+
+                if (this.otomatis && a.area_kode) {
+                    this.area = a.area_kode;
+                    this.namaArea = a.area_nama ?? '';
+                    this.kodePos = a.kode_pos ?? '';
+                    if (this.metode === 'KIRIM') this.ambilTarif();
+                }
+            },
+
             init() {
                 // Formulir yang dikembalikan karena ada isian salah tidak boleh
                 // kehilangan pilihan kurir yang sudah susah payah dipilih.
-                if (this.area) this.ambilTarif();
+                if (this.isiUlang) {
+                    if (this.area) this.ambilTarif();
+                } else if (this.pilihanAlamat) {
+                    this.pakaiAlamat();
+                }
+
+                this.$watch('metode', m => {
+                    if (m === 'KIRIM' && this.area && ! this.daftarTarif.length && ! this.memuat) this.ambilTarif();
+                });
             },
         };
     }

@@ -5493,6 +5493,58 @@ Pencarian alamat berlapis dari KEP-155 tidak berubah.
 
 ---
 
+## KEP-157 — Lupa kata sandi, Akun saya, buku alamat, dan menu Pelanggan
+**Status:** TERKUNCI · 2026-11-20
+
+Akun pelanggan dilengkapi tiga hal yang sebelumnya tidak ada: lupa kata sandi, halaman Akun saya,
+dan menu Pelanggan di panel. Pemilik proyek memilih semuanya, dengan akses menu untuk Pemilik dan
+Admin.
+
+**Lupa kata sandi** (`/lupa-sandi`)
+
+- Tautan atur ulang dikirim ke email, berlaku **60 menit** dan **sekali pakai**. Yang disimpan hanya
+  hash sha256 tokennya, sama seperti token konfirmasi akun (KEP-020).
+- Jawabannya selalu sama, entah email itu terdaftar atau tidak, supaya formulir ini tidak bisa
+  dipakai menebak siapa saja pelanggan toko.
+- Paling banyak 3 email per alamat per jam, ditambah batas per jaringan.
+- Pelanggan tamu (pernah memesan tanpa akun) juga bisa memakai tautan ini untuk membuat kata sandi
+  pertamanya: emailnya sudah terbukti miliknya karena tautan sampai ke kotak masuknya.
+- Setelah sandi diganti, `remember_token` diputar sehingga sesi "ingat saya" di perangkat lain
+  ikut gugur.
+
+**Akun saya** (`/akun`)
+
+- Ubah nama dan nomor HP. **Email tidak bisa diubah sendiri** karena email yang mengikat pesanan ke
+  akun. Penggantiannya lewat CS.
+- Ganti kata sandi, wajib dengan kata sandi saat ini.
+- **Buku alamat**: paling banyak 10 alamat, satu menjadi alamat utama. Setiap alamat menyimpan area
+  Biteship dan kode posnya.
+- Di checkout, alamat utama langsung terisi saat "Dikirim" dipilih, beserta areanya, sehingga tarif
+  JNE/J&T langsung muncul. Tarif baru ditanyakan saat "Dikirim" dipilih karena setiap pertanyaan
+  tarif adalah panggilan ke Biteship.
+- Alamat yang diketik baru di checkout bisa langsung disimpan ke buku alamat; kotaknya tercentang
+  secara bawaan. Alamat yang teksnya sama persis tidak disimpan dua kali, dan buku alamat yang
+  penuh tidak menggagalkan pesanan.
+- Kolom email di checkout kini terisi email akun dan terkunci. Sebelumnya kolom itu kosong dan
+  wajib diisi, padahal server selalu memakai email akun apa pun yang diketik.
+
+**Menu Pelanggan di panel** (izin `pelanggan.kelola`, untuk Pemilik dan Admin)
+
+- Cari nama, email, atau nomor HP; saring akun, tamu, atau nonaktif. Detail pelanggan memuat
+  riwayat pesanan dan buku alamatnya.
+- Staf bisa mengubah nama, email, nomor HP, dan catatan internal.
+- **Staf tidak pernah melihat atau mengetik kata sandi pelanggan.** Bantuan yang tersedia hanya
+  mengirim tautan atur ulang ke email pelanggan itu sendiri.
+- **Nonaktifkan akun**: pelanggan tidak bisa masuk, dan sesi yang sedang terbuka langsung keluar
+  di permintaan berikutnya. Tautan pesanan bertoken di email tetap berlaku, karena pesanan yang
+  sudah dibayar tetap harus bisa dilacak.
+- Setiap tindakan staf tercatat di log aktivitas: `pelanggan.diubah` (dengan data sebelum dan
+  sesudah), `pelanggan.tautan-sandi`, `pelanggan.dinonaktifkan`, `pelanggan.diaktifkan`.
+
+Kalimat halaman setelah mendaftar juga dibuat lebih formal ("Verifikasi email Anda").
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5653,3 +5705,4 @@ Pencarian alamat berlapis dari KEP-155 tidak berubah.
 | KEP-154 | Gambar rusak ditolak dengan pesan, bukan 500; pilihan katalog disembunyikan saat galeri kosong; ukuran foto dicek di peramban; wizard custom menjelaskan tombol Lanjut yang mati | TERKUNCI |
 | KEP-155 | Kurir yang tampil diatur dari dasbor Biteship; alamat dicari lewat kode pos, teks utuh, teks berkoma, lalu kata demi kata; kode pos tunggal langsung dipilih | TERKUNCI |
 | KEP-156 | Hanya JNE dan J&T yang ditanyakan dan ditawarkan; tarif kurir lain dibuang walau aktif di Biteship | TERKUNCI |
+| KEP-157 | Lupa sandi via email, Akun saya + buku alamat ke checkout, menu Pelanggan (Pemilik/Admin) | TERKUNCI |

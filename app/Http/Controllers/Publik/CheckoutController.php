@@ -16,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -81,6 +82,9 @@ class CheckoutController extends Controller
                 * (int) setting('dp_minimum_persen', 50) / 100
             ),
             'pelanggan' => Auth::guard('pelanggan')->user(),
+            // Buku alamat (KEP-157): alamat utama langsung terpilih saat
+            // "Dikirim" dipilih, beserta areanya, jadi tarif langsung dimuat.
+            'daftarAlamat' => Auth::guard('pelanggan')->user()?->alamat()->get() ?? collect(),
 
             // Pengiriman (KEP-058). Saat penyedia ongkirnya belum dinyalakan,
             // pelanggan tetap boleh minta dikirim: alamatnya dicatat dan
@@ -182,6 +186,40 @@ class CheckoutController extends Controller
         return new PilihanKirim(MetodeAmbil::KIRIM, $alamat, $area, $tarif, $tautanLokasi);
     }
 
+    /**
+     * Alamat kiriman disimpan ke buku alamat pelanggan yang sedang masuk
+     * (KEP-157). Diam-diam dilewati bila buku alamatnya penuh atau alamat yang
+     * sama sudah ada: pesanan sudah jadi, jadi ini tidak boleh menggagalkannya.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function simpanKeBukuAlamat(array $data): void
+    {
+        /** @var Customer|null $pelanggan */
+        $pelanggan = Auth::guard('pelanggan')->user();
+        $alamat = trim((string) ($data['alamat_kirim'] ?? ''));
+
+        if ($pelanggan === null || $alamat === '' || $pelanggan->alamat()->where('alamat', $alamat)->exists()) {
+            return;
+        }
+
+        $areaKode = trim((string) ($data['area_tujuan'] ?? '')) ?: null;
+        $areaNama = $areaKode ? (trim((string) ($data['area_nama'] ?? '')) ?: null) : null;
+
+        // Label awal dari nama kecamatan ("Laweyan, Surakarta, ...") supaya
+        // mudah dikenali; bisa diganti dari halaman Akun saya.
+        $label = $areaNama ? trim(explode(',', $areaNama)[0]) : '';
+
+        $pelanggan->tambahAlamat([
+            'label' => Str::limit($label !== '' ? $label : 'Alamat '.($pelanggan->alamat()->count() + 1), 40, ''),
+            'alamat' => $alamat,
+            'area_kode' => $areaKode,
+            'area_nama' => $areaNama,
+            'kode_pos' => $areaKode ? ($data['kode_pos'] ?? null) : null,
+            'tautan_lokasi' => $data['tautan_lokasi'] ?? null,
+        ]);
+    }
+
     public function proses(Request $request): RedirectResponse
     {
         $this->isiOtomatis($request);
@@ -224,7 +262,10 @@ class CheckoutController extends Controller
             // jadi skema liar seperti javascript: tidak boleh pernah tersimpan.
             'tautan_lokasi' => ['nullable', 'url:https', 'max:500'],
             'area_tujuan' => ['nullable', 'string', 'max:60'],
+            'area_nama' => ['nullable', 'string', 'max:150'],
+            'kode_pos' => ['nullable', 'string', 'max:10', 'regex:/^\d+$/'],
             'tarif' => ['nullable', 'string', 'max:60'],
+            'simpan_alamat' => ['nullable', 'boolean'],
             // Longgar dengan sengaja: keranjang berisi barang stok saja tidak
             // menampilkan pilihan ini, dan lunas adalah satu-satunya arti yang
             // masuk akal di sana.
@@ -273,6 +314,10 @@ class CheckoutController extends Controller
 
         if ($kirim->dikirim() && $kirim->ongkir() === 0 && ! $this->pengiriman->otomatis()) {
             $pesan .= ' Ongkos kirimnya kami hitung dulu setelah paket ditimbang, lalu muncul di tagihan ini.';
+        }
+
+        if ($kirim->dikirim() && $request->boolean('simpan_alamat')) {
+            $this->simpanKeBukuAlamat($data);
         }
 
         if ($request->boolean('buat_akun')) {

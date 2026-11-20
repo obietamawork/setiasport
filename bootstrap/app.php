@@ -4,6 +4,7 @@ use App\Exceptions\GambarTidakBisaDiproses;
 use App\Http\Middleware\EnsurePermission;
 use App\Http\Middleware\HeaderKeamanan;
 use App\Http\Middleware\PastikanAkunLayak;
+use App\Http\Middleware\PastikanPelangganAktif;
 use App\Http\Middleware\TolakParameterArray;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -28,6 +29,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // ?q[]=x dulu menjatuhkan sepuluh halaman dengan galat 500 (KEP-104).
         $middleware->append(TolakParameterArray::class);
+
+        // Akun pelanggan yang dinonaktifkan staf keluar di halaman mana pun (KEP-157).
+        $middleware->web(append: [PastikanPelangganAktif::class]);
 
         // Staf dan pelanggan punya halaman masuk sendiri; jangan saling melempar.
         $middleware->redirectGuestsTo(

@@ -22,6 +22,7 @@ use App\Http\Controllers\Panel\KesiapanController;
 use App\Http\Controllers\Panel\LaporanController;
 use App\Http\Controllers\Panel\MockupController;
 use App\Http\Controllers\Panel\PekerjaController;
+use App\Http\Controllers\Panel\PelangganController;
 use App\Http\Controllers\Panel\PembatalanController;
 use App\Http\Controllers\Panel\PembayaranController;
 use App\Http\Controllers\Panel\PengaturanController;
@@ -195,6 +196,16 @@ Route::prefix('panel')->name('panel.')->group(function () {
         Route::middleware('izin:produksi.print')->prefix('roll')->name('roll.')->group(function () {
             Route::post('/', [RollCetakController::class, 'store'])->name('simpan');
             Route::get('{roll}', [RollCetakController::class, 'show'])->name('show');
+        });
+
+        // Akun pelanggan (KEP-157): Pemilik dan Admin.
+        Route::middleware('izin:pelanggan.kelola')->prefix('pelanggan')->name('pelanggan.')->group(function () {
+            Route::get('/', [PelangganController::class, 'index'])->name('index');
+            Route::get('{pelanggan}', [PelangganController::class, 'show'])->whereNumber('pelanggan')->name('show');
+            Route::put('{pelanggan}', [PelangganController::class, 'ubah'])->whereNumber('pelanggan')->name('ubah');
+            Route::post('{pelanggan}/atur-sandi', [PelangganController::class, 'aturSandi'])->whereNumber('pelanggan')->name('atur-sandi');
+            Route::post('{pelanggan}/nonaktifkan', [PelangganController::class, 'nonaktifkan'])->whereNumber('pelanggan')->name('nonaktifkan');
+            Route::post('{pelanggan}/aktifkan', [PelangganController::class, 'aktifkan'])->whereNumber('pelanggan')->name('aktifkan');
         });
 
         // Pekerja konveksi yang memindai QR lembar kerja (KEP-047).
