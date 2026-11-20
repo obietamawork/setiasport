@@ -119,10 +119,16 @@ class Biteship implements PenyediaOngkir
             return [];
         }
 
+        // Kata pencarian dikirim siapa saja dan tiap panggilan bisa berbiaya:
+        // teksnya dipotong dan jumlah panggilannya dibatasi (tinjauan
+        // keamanan KEP-155).
+        $kata = mb_substr(trim($kata), 0, self::PANJANG_MAKS_AREA);
+        $sisaPanggilan = self::MAKS_PANGGILAN_AREA;
         $kataPenting = $this->kataPenting($kata);
 
         // Kode pos lima angka paling pasti, di mana pun letaknya di alamat.
         if (preg_match('/\b(\d{5})\b/', $kata, $m)) {
+            $sisaPanggilan--;
             $hasil = $this->areaDari($m[1]);
 
             if ($hasil !== []) {
@@ -140,7 +146,7 @@ class Biteship implements PenyediaOngkir
             ...collect($kataPenting)->filter(fn (string $k) => mb_strlen($k) >= 4)->sortByDesc(fn (string $k) => mb_strlen($k))->all(),
         ]));
 
-        foreach (array_slice($percobaan, 0, self::MAKS_PERCOBAAN_AREA) as $teks) {
+        foreach (array_slice($percobaan, 0, $sisaPanggilan) as $teks) {
             $hasil = $this->areaDari($teks);
 
             if ($hasil !== []) {
@@ -151,7 +157,12 @@ class Biteship implements PenyediaOngkir
         return [];
     }
 
-    private const MAKS_PERCOBAAN_AREA = 5;
+    /** Panggilan ke Biteship per pencarian, termasuk pencarian kode pos. */
+    private const MAKS_PANGGILAN_AREA = 4;
+
+    private const PANJANG_MAKS_AREA = 100;
+
+    private const MAKS_KATA_AREA = 6;
 
     /** Nama populer ke nama resmi yang dipakai Biteship. */
     private const ALIAS_DAERAH = [
@@ -177,6 +188,7 @@ class Biteship implements PenyediaOngkir
             ->filter(fn (string $k) => mb_strlen($k) >= 3 && ! in_array($k, self::KATA_ALAMAT, true))
             ->map(fn (string $k) => self::ALIAS_DAERAH[$k] ?? $k)
             ->unique()
+            ->take(self::MAKS_KATA_AREA)
             ->values()
             ->all();
     }
@@ -207,7 +219,7 @@ class Biteship implements PenyediaOngkir
                 'countries' => 'ID',
                 'input' => trim($teks),
                 'type' => 'single',
-            ]));
+            ], ulangi: false));
 
         return collect($jawaban['areas'] ?? [])
             ->map(fn (array $a) => [
@@ -262,12 +274,14 @@ class Biteship implements PenyediaOngkir
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    private function panggil(string $cara, string $jalur, array $data = []): array
+    private function panggil(string $cara, string $jalur, array $data = [], bool $ulangi = true): array
     {
         try {
+            // Pencarian area tidak diulang: kata berikutnya dicoba lebih dulu,
+            // dan pengulangan melipatgandakan panggilan (KEP-155).
             $permintaan = Http::withHeaders(['authorization' => (string) $this->kunci])
                 ->timeout(8)
-                ->retry(2, 200);
+                ->retry($ulangi ? 2 : 1, 200);
 
             $jawaban = $cara === 'post'
                 ? $permintaan->post($this->url.$jalur, $data)

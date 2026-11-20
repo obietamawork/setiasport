@@ -5465,7 +5465,11 @@ ke pilihan tarif.
   3. teks yang sama dipisah koma;
   4. kata demi kata, yang terpanjang dulu.
   Hasil diurutkan menurut berapa banyak kata lain dari pencarian yang termuat di namanya, dibanding
-  tanpa spasi. Paling banyak lima panggilan per pencarian, masing-masing disimpan sehari.
+  tanpa spasi. Tiap jawaban disimpan sehari.
+- **Temuan tinjauan keamanan:** kata pencarian dikirim siapa saja, dan satu pencarian sempat bisa
+  memicu enam panggilan ke Biteship, masing-masing diulang bila gagal. Kini paling banyak empat
+  panggilan per pencarian termasuk kode pos, tanpa pengulangan otomatis, dengan teks dipotong
+  100 karakter dan paling banyak enam kata.
 - Checkout: label dan contoh menyebut kode pos; kode pos yang hanya cocok dengan satu area langsung
   dipilih dan tarifnya dimuat; tampil "Mencari..." selama menunggu, dan petunjuk bila alamat belum
   ketemu. Pencarian area asal di Pengaturan memakai pencarian yang sama.

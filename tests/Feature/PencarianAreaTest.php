@@ -19,10 +19,8 @@ class PencarianAreaTest extends TestCase
     /** @var list<string> */
     private array $dicari = [];
 
-    protected function setUp(): void
+    private function biteshipTiruan(): void
     {
-        parent::setUp();
-
         $area = fn (string $id, string $nama, string $pos) => ['id' => $id, 'name' => "$nama. $pos", 'postal_code' => (int) $pos];
         $laweyan = [$area('LWY1', 'Laweyan, Surakarta, Jawa Tengah', '57141'), $area('LWY2', 'Laweyan, Surakarta, Jawa Tengah', '57142')];
         $surakarta = [$area('BJS1', 'Banjarsari, Surakarta, Jawa Tengah', '57131'), ...$laweyan];
@@ -46,8 +44,12 @@ class PencarianAreaTest extends TestCase
         });
     }
 
-    private function cari(string $kata): array
+    private function cari(string $kata, bool $tiruan = true): array
     {
+        if ($tiruan) {
+            $this->biteshipTiruan();
+        }
+
         return (new Biteship('kunci-uji', 'https://api.biteship.test', 'ASAL', ['jne']))->cariArea($kata);
     }
 
@@ -85,9 +87,28 @@ class PencarianAreaTest extends TestCase
         $this->assertStringStartsWith('Laweyan, Surakarta', $area[0]['nama']);
     }
 
+    /**
+     * Temuan tinjauan keamanan (KEP-155): tiap panggilan ke Biteship bisa
+     * berbiaya, dan kata pencarian dikirim siapa saja. Satu pencarian paling
+     * banyak empat panggilan, termasuk kode pos, tanpa pengulangan otomatis.
+     */
     public function test_pencarian_yang_tidak_ketemu_dibatasi_jumlah_panggilannya(): void
     {
-        $this->assertSame([], $this->cari('Jl. Antah Berantah Kampung Tak Dikenal Sekali'));
-        $this->assertLessThanOrEqual(5, count($this->dicari));
+        $this->assertSame([], $this->cari('Jl. Antah Berantah Kampung Tak Dikenal Sekali 99999 '.str_repeat('panjang ', 200)));
+        $this->assertLessThanOrEqual(4, count($this->dicari));
+        $this->assertLessThanOrEqual(100, max(array_map('mb_strlen', $this->dicari)));
+    }
+
+    public function test_pencarian_area_tidak_diulang_saat_biteship_galat(): void
+    {
+        $panggilan = 0;
+        Http::fake(function () use (&$panggilan) {
+            $panggilan++;
+
+            return Http::response(['error' => 'galat'], 500);
+        });
+
+        $this->assertSame([], $this->cari('laweyan', tiruan: false));
+        $this->assertSame(1, $panggilan);
     }
 }
