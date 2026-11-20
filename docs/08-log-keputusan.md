@@ -5437,6 +5437,41 @@ pesan validasi bawaan diawali huruf kecil ("jumlah wajib setidaknya 1.").
 
 ---
 
+## KEP-155 — Semua kurir aktif Biteship dan pencarian alamat berlapis
+**Status:** TERKUNCI · 2026-11-20
+
+Pemilik proyek meminta semua tarif ekspedisi tampil, dan pencarian alamat tujuan dimaksimalkan:
+kode pos bisa diketik, dan bila satu cara gagal, cara lain dipakai, supaya pelanggan cepat sampai
+ke pilihan tarif.
+
+**Uji langsung API Biteship di produksi (20 Nov 2026):**
+- Dari 14 kurir yang ditanyakan (JNE, J&T, SiCepat, AnterAja, POS, TIKI, Ninja, ID Express, Lion,
+  SAP, Wahana, RPX, JDL, Sentral Cargo), hanya JNE yang menjawab, baik memakai ID area maupun kode
+  pos. Biteship hanya menjawab kurir yang aktif di akun toko; J&T tidak muncul bukan karena kode.
+- Kode pos dikenali langsung ("57141" menemukan Laweyan, Surakarta).
+- "Wonosari Gunungkidul" kosong karena Biteship menulisnya "Gunung Kidul"; "wonosari, gunung kidul"
+  menemukan 10 area. Alamat lengkap dengan nama jalan ("Jl. Slamet Riyadi Laweyan Solo") kosong, dan
+  "Solo" bukan nama resminya.
+
+**Keputusan:**
+- Daftar kurir yang ditanyakan dilebarkan ke 11 kurir umum (`ONGKIR_KURIR`). Kurir yang ditawarkan
+  ke pelanggan diatur dari dasbor Biteship: yang diaktifkan di sana langsung tampil di checkout
+  tanpa deploy. Tarif tetap disimpan sementara satu jam.
+- Pencarian area berlapis (`Biteship::cariArea`), berhenti di cara pertama yang berhasil:
+  1. kode pos lima angka, di mana pun letaknya dalam alamat;
+  2. teks utuh, setelah bagian alamat yang tidak pernah menjadi nama area dibuang (Jl, No, RT/RW,
+     Desa, Kec, Kab, angka) dan nama populer diganti nama resmi (Solo menjadi Surakarta, Jogja
+     menjadi Yogyakarta, Gunungkidul menjadi Gunung Kidul);
+  3. teks yang sama dipisah koma;
+  4. kata demi kata, yang terpanjang dulu.
+  Hasil diurutkan menurut berapa banyak kata lain dari pencarian yang termuat di namanya, dibanding
+  tanpa spasi. Paling banyak lima panggilan per pencarian, masing-masing disimpan sehari.
+- Checkout: label dan contoh menyebut kode pos; kode pos yang hanya cocok dengan satu area langsung
+  dipilih dan tarifnya dimuat; tampil "Mencari..." selama menunggu, dan petunjuk bila alamat belum
+  ketemu. Pencarian area asal di Pengaturan memakai pencarian yang sama.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5595,3 +5630,4 @@ pesan validasi bawaan diawali huruf kecil ("jumlah wajib setidaknya 1.").
 | KEP-152 | AI hanya bila FAQ tak cocok; JSON terstruktur, data_collection deny, pagar angka, batas bulanan; GPT-6 Luna terpilih lewat uji banding | TERKUNCI |
 | KEP-153 | FAQ menjawab sendiri hanya bila cocoknya kuat; prompt injection ditolak aturan pasti; jawaban AI dijaga dan dirapikan gayanya; foto beresolusi raksasa ditolak, 10 foto per jam, CSP sandbox | TERKUNCI |
 | KEP-154 | Gambar rusak ditolak dengan pesan, bukan 500; pilihan katalog disembunyikan saat galeri kosong; ukuran foto dicek di peramban; wizard custom menjelaskan tombol Lanjut yang mati | TERKUNCI |
+| KEP-155 | Kurir yang tampil diatur dari dasbor Biteship; alamat dicari lewat kode pos, teks utuh, teks berkoma, lalu kata demi kata; kode pos tunggal langsung dipilih | TERKUNCI |

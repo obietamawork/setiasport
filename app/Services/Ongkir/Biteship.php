@@ -106,6 +106,12 @@ class Biteship implements PenyediaOngkir
      * mensyaratkan area asal sudah terisi, padahal pencarian ini justru yang
      * dipakai mengisi area asal itu sendiri pertama kali (dari Pengaturan)
      * maupun area tujuan pelanggan saat checkout.
+     *
+     * Berlapis (KEP-155): Biteship hanya mengenali teks tertentu. "Wonosari
+     * Gunungkidul" kosong karena namanya "Gunung Kidul", alamat lengkap dengan
+     * nama jalan kosong, dan "Solo" bukan nama resminya. Bila satu cara gagal,
+     * cara berikutnya dicoba: kode pos, teks utuh, teks dipisah koma, lalu
+     * kata demi kata yang diurutkan menurut kecocokan dengan kata lainnya.
      */
     public function cariArea(string $kata): array
     {
@@ -113,10 +119,93 @@ class Biteship implements PenyediaOngkir
             return [];
         }
 
-        $jawaban = Cache::remember('area:'.mb_strtolower(trim($kata)), now()->addDay(),
+        $kataPenting = $this->kataPenting($kata);
+
+        // Kode pos lima angka paling pasti, di mana pun letaknya di alamat.
+        if (preg_match('/\b(\d{5})\b/', $kata, $m)) {
+            $hasil = $this->areaDari($m[1]);
+
+            if ($hasil !== []) {
+                return $this->urutkan($hasil, [...$kataPenting, $m[1]]);
+            }
+        }
+
+        if ($kataPenting === []) {
+            return [];
+        }
+
+        $percobaan = array_values(array_unique([
+            implode(' ', $kataPenting),
+            implode(', ', $kataPenting),
+            ...collect($kataPenting)->filter(fn (string $k) => mb_strlen($k) >= 4)->sortByDesc(fn (string $k) => mb_strlen($k))->all(),
+        ]));
+
+        foreach (array_slice($percobaan, 0, self::MAKS_PERCOBAAN_AREA) as $teks) {
+            $hasil = $this->areaDari($teks);
+
+            if ($hasil !== []) {
+                return $this->urutkan($hasil, $kataPenting);
+            }
+        }
+
+        return [];
+    }
+
+    private const MAKS_PERCOBAAN_AREA = 5;
+
+    /** Nama populer ke nama resmi yang dipakai Biteship. */
+    private const ALIAS_DAERAH = [
+        'solo' => 'surakarta', 'jogja' => 'yogyakarta', 'jogjakarta' => 'yogyakarta', 'yogya' => 'yogyakarta',
+        'djogja' => 'yogyakarta', 'gunungkidul' => 'gunung kidul', 'kulonprogo' => 'kulon progo',
+        'jaksel' => 'jakarta selatan', 'jakbar' => 'jakarta barat', 'jaktim' => 'jakarta timur',
+        'jakut' => 'jakarta utara', 'jakpus' => 'jakarta pusat',
+    ];
+
+    /** Bagian alamat yang tidak pernah menjadi nama area. */
+    private const KATA_ALAMAT = [
+        'jl', 'jln', 'jalan', 'gg', 'gang', 'no', 'nomor', 'rt', 'rw', 'blok', 'ds', 'desa', 'dsn', 'dusun',
+        'kel', 'kelurahan', 'kec', 'kecamatan', 'kab', 'kabupaten', 'kota', 'prov', 'provinsi', 'perum',
+        'perumahan', 'komplek', 'kompleks', 'raya', 'dan', 'di', 'kode', 'pos',
+    ];
+
+    /** @return list<string> kata yang mungkin nama daerah, alias sudah diganti */
+    private function kataPenting(string $kata): array
+    {
+        $kata = (string) preg_replace('/[^\p{L}\s]+/u', ' ', mb_strtolower($kata));
+
+        return collect(preg_split('/\s+/u', trim($kata)) ?: [])
+            ->filter(fn (string $k) => mb_strlen($k) >= 3 && ! in_array($k, self::KATA_ALAMAT, true))
+            ->map(fn (string $k) => self::ALIAS_DAERAH[$k] ?? $k)
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Yang paling banyak memuat kata lain dari pencarian di atas. Dibanding
+     * tanpa spasi, supaya "gunungkidul" cocok dengan "Gunung Kidul".
+     *
+     * @param  list<array{kode: string, nama: string, kode_pos: string}>  $area
+     * @param  list<string>  $kata
+     * @return list<array{kode: string, nama: string, kode_pos: string}>
+     */
+    private function urutkan(array $area, array $kata): array
+    {
+        $rapat = fn (string $s) => str_replace(' ', '', mb_strtolower($s));
+
+        return collect($area)
+            ->sortByDesc(fn (array $a) => collect($kata)->filter(fn (string $k) => str_contains($rapat($a['nama']), $rapat($k)))->count())
+            ->values()
+            ->all();
+    }
+
+    /** @return list<array{kode: string, nama: string, kode_pos: string}> */
+    private function areaDari(string $teks): array
+    {
+        $jawaban = Cache::remember('area:'.mb_strtolower(trim($teks)), now()->addDay(),
             fn () => $this->panggil('get', '/v1/maps/areas', [
                 'countries' => 'ID',
-                'input' => trim($kata),
+                'input' => trim($teks),
                 'type' => 'single',
             ]));
 
@@ -124,6 +213,7 @@ class Biteship implements PenyediaOngkir
             ->map(fn (array $a) => [
                 'kode' => (string) ($a['id'] ?? ''),
                 'nama' => (string) ($a['name'] ?? ''),
+                'kode_pos' => (string) ($a['postal_code'] ?? ''),
             ])
             ->filter(fn (array $a) => $a['kode'] !== '')
             ->values()

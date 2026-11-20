@@ -109,11 +109,15 @@
 
                     @if ($ongkirOtomatis)
                         <div>
-                            <label for="cari_area" class="label-form">Kota atau kecamatan tujuan</label>
+                            <label for="cari_area" class="label-form">Kecamatan, kota, atau kode pos tujuan</label>
                             <input type="text" id="cari_area" class="kotak-input" autocomplete="off"
-                                   placeholder="Ketik nama kecamatan, misalnya: Wonogiri"
+                                   placeholder="Contoh: Laweyan Solo, atau kode pos 57141"
                                    x-model="kata" @input.debounce.400ms="cariArea()">
                             <input type="hidden" name="area_tujuan" x-model="area">
+                            <p x-show="mencari" x-cloak class="bantuan-form">Mencari...</p>
+                            <p x-show="belumKetemu && !mencari" x-cloak class="mt-1 text-sm text-merah">
+                                Alamat belum ketemu. Coba ketik nama kecamatan dan kotanya saja, atau kode posnya.
+                            </p>
 
                             <ul x-show="daftarArea.length" x-cloak class="mt-2 divide-y divide-line border border-line bg-white text-sm">
                                 <template x-for="a in daftarArea" :key="a.kode">
@@ -362,6 +366,8 @@
             daftarArea: [],
             daftarTarif: [],
             memuat: false,
+            mencari: false,
+            belumKetemu: false,
 
             get ongkir() {
                 return this.daftarTarif.find(t => t.kode === this.tarif)?.harga ?? 0;
@@ -372,18 +378,36 @@
             },
 
             async cariArea() {
-                if (this.kata.trim().length < 3) {
+                const kata = this.kata.trim();
+                this.belumKetemu = false;
+
+                if (kata.length < 3) {
                     this.daftarArea = [];
                     return;
                 }
 
+                this.mencari = true;
+
                 try {
-                    const r = await fetch(this.urlArea + '?q=' + encodeURIComponent(this.kata));
+                    const r = await fetch(this.urlArea + '?q=' + encodeURIComponent(kata));
                     this.daftarArea = (await r.json()).area ?? [];
                 } catch (e) {
                     // Jaringan pelanggan putus. Dibiarkan kosong: formulirnya
                     // tetap bisa dikirim, ongkirnya menyusul dari admin.
                     this.daftarArea = [];
+                }
+
+                this.mencari = false;
+
+                // Kata sudah berganti selama menunggu jawaban: hasil ini basi.
+                if (kata !== this.kata.trim()) return;
+
+                this.belumKetemu = this.daftarArea.length === 0;
+
+                // Kode pos yang hanya cocok dengan satu area langsung dipilih
+                // dan tarifnya dimuat, tanpa klik lagi (KEP-155).
+                if (/^\d{5}$/.test(kata) && this.daftarArea.length === 1) {
+                    this.pilihArea(this.daftarArea[0]);
                 }
             },
 
