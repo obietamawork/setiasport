@@ -5476,6 +5476,23 @@ ke pilihan tarif.
 
 ---
 
+## KEP-156 — Kurir hanya JNE dan J&T
+**Status:** TERKUNCI · 2026-11-20
+
+Pemilik proyek memutuskan kurir yang ditawarkan hanya **JNE dan J&T**, dua kurir yang konternya
+didatangi toko. Daftar 11 kurir dari KEP-155 dikembalikan ke `jne,jnt`.
+
+- Hanya kedua kurir itu yang ditanyakan tarifnya ke Biteship.
+- Tarif kurir lain dibuang di kode walau Biteship mengirimkannya, misalnya karena kurir lain ikut
+  aktif di akun Biteship toko. Penawaran ke pelanggan tidak bergantung pada pengaturan dasbor
+  pihak ketiga.
+- J&T hanya tampil bila diaktifkan di dasbor Biteship toko; uji produksi 20 Nov 2026 menunjukkan
+  hanya JNE yang aktif di sana.
+
+Pencarian alamat berlapis dari KEP-155 tidak berubah.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5635,3 +5652,4 @@ ke pilihan tarif.
 | KEP-153 | FAQ menjawab sendiri hanya bila cocoknya kuat; prompt injection ditolak aturan pasti; jawaban AI dijaga dan dirapikan gayanya; foto beresolusi raksasa ditolak, 10 foto per jam, CSP sandbox | TERKUNCI |
 | KEP-154 | Gambar rusak ditolak dengan pesan, bukan 500; pilihan katalog disembunyikan saat galeri kosong; ukuran foto dicek di peramban; wizard custom menjelaskan tombol Lanjut yang mati | TERKUNCI |
 | KEP-155 | Kurir yang tampil diatur dari dasbor Biteship; alamat dicari lewat kode pos, teks utuh, teks berkoma, lalu kata demi kata; kode pos tunggal langsung dipilih | TERKUNCI |
+| KEP-156 | Hanya JNE dan J&T yang ditanyakan dan ditawarkan; tarif kurir lain dibuang walau aktif di Biteship | TERKUNCI |

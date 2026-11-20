@@ -66,7 +66,9 @@ class Biteship implements PenyediaOngkir
                     harga: (int) ($t['price'] ?? 0),
                     estimasi: $this->estimasi($t),
                 ))
-                ->filter(fn (TarifKirim $t) => $t->harga > 0 && $t->kurir !== '')
+                // Hanya kurir yang dilayani toko (KEP-156), walau kurir lain
+                // ikut aktif di akun Biteship.
+                ->filter(fn (TarifKirim $t) => $t->harga > 0 && in_array($t->kurir, $this->kurir, true))
                 ->values()
                 ->all();
         });

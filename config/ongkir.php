@@ -21,14 +21,12 @@ return [
     ],
 
     /*
-     * Kurir yang ditanyakan tarifnya. Pemilik toko ingin semua tarif ekspedisi
-     * tampil (KEP-155), jadi daftarnya lebar: Biteship hanya menjawab kurir
-     * yang AKTIF di akun Biteship toko, sehingga kurir diatur dari dasbor
-     * Biteship, bukan dari sini. Uji produksi 20 Nov 2026: dari 14 kurir yang
-     * ditanyakan, hanya JNE yang menjawab, karena hanya JNE yang aktif.
+     * Kurir yang ditawarkan ke pelanggan: hanya JNE dan J&T, dua kurir yang
+     * konternya didatangi toko (KEP-156). Biteship juga hanya menjawab kurir
+     * yang aktif di akun Biteship toko, jadi keduanya harus aktif di sana.
      */
     'kurir' => array_values(array_filter(
-        array_map('trim', explode(',', (string) env('ONGKIR_KURIR', 'jne,jnt,sicepat,anteraja,pos,tiki,ninja,idexpress,lion,sap,wahana')))
+        array_map('trim', explode(',', (string) env('ONGKIR_KURIR', 'jne,jnt')))
     )),
 
     // Batas wajar berat satu paket sebelum dipecah; dipakai memperingatkan admin.

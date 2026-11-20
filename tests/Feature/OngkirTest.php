@@ -77,6 +77,27 @@ class OngkirTest extends TestCase
         $this->assertSame(20_000, $tarif[1]->harga);
     }
 
+    /**
+     * Toko hanya melayani JNE dan J&T (KEP-156). Kurir lain yang kebetulan
+     * aktif di akun Biteship tidak boleh ikut ditawarkan ke pelanggan.
+     */
+    public function test_hanya_kurir_yang_dilayani_toko_yang_ditawarkan(): void
+    {
+        Http::fake(['*/v1/rates/couriers' => Http::response([
+            'pricing' => [
+                ['courier_code' => 'jne', 'courier_service_code' => 'REG', 'courier_name' => 'JNE', 'courier_service_name' => 'Reguler', 'price' => 22_000],
+                ['courier_code' => 'sicepat', 'courier_service_code' => 'REG', 'courier_name' => 'SiCepat', 'courier_service_name' => 'Reguler', 'price' => 18_000],
+                ['courier_code' => 'jnt', 'courier_service_code' => 'EZ', 'courier_name' => 'J&T', 'courier_service_name' => 'Ekonomi', 'price' => 20_000],
+                ['courier_code' => 'anteraja', 'courier_service_code' => 'REG', 'courier_name' => 'AnterAja', 'courier_service_name' => 'Reguler', 'price' => 17_000],
+            ],
+        ])]);
+
+        $kurir = array_map(fn ($t) => $t->kurir, $this->biteship()->tarif('IDNP6IDNC148IDND874', 1_250));
+
+        $this->assertSame(['jne', 'jnt'], $kurir);
+        Http::assertSent(fn ($r) => $r['couriers'] === 'jne,jnt');
+    }
+
     /** Bentuk jawaban Biteship yang sebenarnya, diambil dari rilis pertama (KEP-094). */
     public function test_jawaban_asli_biteship_dibaca_dalam_bahasa_pembeli(): void
     {

@@ -113,7 +113,7 @@ RESEND_WEBHOOK_SECRET=whsec_…
 # dicari lewat kotak pencarian karena kodenya tidak bisa ditebak.
 ONGKIR_PENYEDIA=biteship      # mati | biteship
 BITESHIP_KUNCI=biteship_live… # kunci LIVE di server; di lokal kunci test, tarifnya sama (KEP-094)
-ONGKIR_KURIR=jne,jnt,sicepat,anteraja,pos,tiki,ninja,idexpress,lion,sap,wahana  # hanya yang aktif di dasbor Biteship yang menjawab (KEP-155)
+ONGKIR_KURIR=jne,jnt          # hanya JNE dan J&T (KEP-156); keduanya wajib aktif di dasbor Biteship
 
 FITUR_CS=true                 # Customer Service resmi aktif (KEP-149)
 OPENROUTER_API_KEY=           # Lapis AI chatbot CS (KEP-152); kosong = tanpa AI
