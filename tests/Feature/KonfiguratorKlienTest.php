@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Portofolio;
 use App\Models\Product;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -37,6 +38,9 @@ class KonfiguratorKlienTest extends TestCase
 
     public function test_tiap_pilihan_desain_punya_penjelasan(): void
     {
+        // Pilihan katalog hanya tampil bila galeri berisi (KEP-154).
+        Portofolio::create(['judul' => 'Jersey SSB', 'slug' => 'jersey-ssb', 'tahun' => 2026, 'gambar_path' => 'portofolio/a.webp', 'aktif' => true]);
+
         $this->halaman()
             ->assertSeeInOrder(['Pilih dari katalog', 'Kirim desain sendiri', 'Dibantu admin'])
             ->assertSee('Pakai desain dari galeri kami.')
