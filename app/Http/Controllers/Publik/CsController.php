@@ -14,8 +14,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -31,6 +33,8 @@ class CsController extends Controller implements HasMiddleware
     private const COOKIE = 'cs_percakapan';
 
     private const UMUR_COOKIE_MENIT = 60 * 24 * 60;
+
+    private const FOTO_PER_JAM = 10;
 
     /*
      * SEMUA endpoint pelanggan ikut saklar, bukan hanya pembuka percakapan.
@@ -95,6 +99,8 @@ class CsController extends Controller implements HasMiddleware
             'isi.required_without' => 'Tulis pertanyaannya dulu.',
         ], ['kontak' => 'email atau nomor HP', 'isi' => 'pesan']);
 
+        $this->batasiFoto($request);
+
         // Kode yang diketik belum membuktikan apa-apa; tautan pesanan bertoken iya.
         $dariTautan = ! empty($data['token_pesanan'])
             ? Order::where('access_token', $data['token_pesanan'])->first()
@@ -126,6 +132,8 @@ class CsController extends Controller implements HasMiddleware
             'isi' => ['required_without:lampiran', 'nullable', 'string', 'max:2000'],
             'lampiran' => $this->aturanLampiran(),
         ], ['isi.required_without' => 'Pesannya masih kosong.'], ['isi' => 'pesan']);
+
+        $this->batasiFoto($request);
 
         $pesan = $this->cs->kirimDariPelanggan($percakapan, $data['isi'] ?? null, $request->file('lampiran'));
         $balasan = $this->asisten->tanggapi($percakapan, $pesan);
@@ -197,10 +205,7 @@ class CsController extends Controller implements HasMiddleware
 
         abort_unless($percakapan && $pesan->percakapan_id === $percakapan->id && $pesan->lampiran_path, 404);
 
-        return Storage::disk('local')->response($pesan->lampiran_path, null, [
-            'Cache-Control' => 'private, no-store',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return Storage::disk('local')->response($pesan->lampiran_path, null, LayananCs::HEADER_LAMPIRAN);
     }
 
     private function percakapan(Request $request): ?PercakapanCs
@@ -209,8 +214,31 @@ class CsController extends Controller implements HasMiddleware
     }
 
     /** Foto untuk komplain: barang cacat, ukuran salah. Hanya gambar, di-encode ulang. */
+    /** @return list<mixed> */
     private function aturanLampiran(): array
     {
-        return ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(setting('upload_maks_mb', 10) * 1024)];
+        return LayananCs::aturanLampiran();
+    }
+
+    /**
+     * Satu alamat IP paling banyak sekian foto per jam (KEP-153). Setiap foto
+     * tersimpan di disk shared hosting yang terbatas, dan setiap foto juga
+     * diteruskan ke admin.
+     */
+    private function batasiFoto(Request $request): void
+    {
+        if (! $request->hasFile('lampiran')) {
+            return;
+        }
+
+        $kunci = 'cs-foto:'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($kunci, self::FOTO_PER_JAM)) {
+            throw ValidationException::withMessages([
+                'lampiran' => 'Terlalu banyak foto dalam satu jam. Coba lagi nanti, atau kirim lewat WhatsApp toko.',
+            ]);
+        }
+
+        RateLimiter::hit($kunci, 3600);
     }
 }

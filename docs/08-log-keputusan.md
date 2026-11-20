@@ -5311,6 +5311,85 @@ OpenRouter saat membeli kredit.
 
 ---
 
+## KEP-153 — Chatbot CS diperketat: FAQ kuat, injeksi, gaya, unggahan
+**Status:** TERKUNCI · 2026-11-20
+
+Uji tekanan chatbot di server produksi (49 percakapan karangan dengan bahasa gaul, bahasa Jawa,
+salah ketik, di luar topik, jebakan keamanan, dan pertanyaan yang merepotkan) menemukan enam
+jawaban salah sasaran, semuanya dari lapis FAQ: satu kata kunci umum sudah cukup untuk
+menjawab. "bs cod ga kak?" dijawab FAQ pengiriman yang dibuka dengan "Bisa.", pertanyaan harga
+bola futsal dijawab harga jersey custom, dan "Aku wis transfer kok durung dikonfirmasi" dijawab
+info DP alih-alih diteruskan ke admin. Lapis AI sendiri lolos: semua angkanya benar dan semua
+jebakan keamanan aman. Pemilik proyek meminta ketiga lapis diuji ulang, gaya bahasa AI tanpa
+ciri khas AI, dan keamanan unggahan foto serta prompt injection diperketat.
+
+**Lapis pasti (deterministik)**, urut dari yang pertama diperiksa:
+- Foto selalu ke admin, juga yang disertai teks. Bot dan AI tidak pernah membaca gambar.
+- Upaya prompt injection ditolak dengan kalimat baku, tanpa memanggil AI (`PenjagaAi`):
+  perintah mengabaikan aturan (Indonesia, Inggris, Jawa), meminta isi prompt, berganti peran,
+  token model (`<|im_start|>`, `[INST]`), penanda peran palsu (`system:`), pesan yang mengaku
+  dari sistem (`[PESAN DARI SISTEM]`), dan kunci JSON jawaban. Pola juga diperiksa pada teks
+  yang dirapatkan dan dibaca ulang dari leetspeak, sehingga "a b a i k a n" dan "4b41k4n" ikut
+  tertangkap. Penolakan tidak diteruskan ke admin supaya orang iseng tidak membanjiri kotak
+  masuk staf; setelah 3 upaya di satu percakapan, AI tidak dipanggil lagi di percakapan itu.
+- Pesan lebih dari 700 karakter ke admin: biasanya permintaan rinci yang butuh manusia.
+- "Kamu manusia atau robot?" dijawab jujur: asisten otomatis.
+- Ke admin: minta admin, pelanggan memaki, komplain, masalah pembayaran, perubahan pesanan,
+  dan tawar-menawar (nego, diskon, potongan, promo, "bisa kurang").
+- Pertanyaan nomor rekening dijawab baku tanpa angka: rekening dan QRIS hanya di halaman
+  pesanan. Bentuk penipuan paling berbahaya tidak pernah diserahkan ke AI.
+- Normalisasi ditambah singkatan gaul dan bahasa Jawa sehari-hari (wis, durung, piye, pira,
+  regane, pinten, iso, bodol, matur nuwun), supaya aturan di atas ikut menangkapnya.
+
+**Lapis FAQ**: bila AI menyala, FAQ hanya menjawab sendiri bila cocoknya kuat: pertanyaannya
+persis FAQ, frasa kuncinya dua kata atau lebih, atau hampir semua kata pembedanya tercakup FAQ
+itu (`PencocokFaq::kuat`). Sisanya dijawab AI, yang juga membaca seluruh FAQ. Bila AI mati atau
+batasnya habis, perilakunya tetap seperti KEP-151. Kata kunci "cod" dibuang dari FAQ pengiriman
+(migrasi untuk instalasi yang sudah berjalan, hanya bila belum disunting staf).
+
+**Lapis AI**:
+- Keputusan model kini empat: `jawab`, `serahkan`, `di_luar_topik`, `manipulasi`. Di luar
+  topik (pengetahuan umum, resep, pantun, terjemahan, PR, politik) dan manipulasi dibalas
+  kalimat baku, bukan teks AI, dan tidak diteruskan ke admin.
+- Pesan pelanggan dibersihkan dari karakter tak terlihat dan token peran sebelum dikirim. Upaya
+  manipulasi yang sudah ditolak tidak ikut riwayat, sehingga perintah yang dipecah ke beberapa
+  pesan tidak bisa disusun kembali.
+- Petunjuk sistem membawa penanda rahasia acak per panggilan, diletakkan paling akhir supaya
+  awalan petunjuk tetap bisa di-cache penyedia.
+- Penjaga keluaran menahan jawaban yang memuat penanda itu atau kata "prompt", deret 8 angka atau
+  lebih maupun angka yang dieja ("nol delapan lima..."), tautan, email, domain selain situs toko,
+  nama bank atau dompet digital, janji diskon atau promo, kata kasar, atau lebih dari 600
+  karakter. Jawaban yang ditahan diteruskan ke admin beserta alasannya dan tidak pernah tampil.
+- Gaya bahasa: petunjuk meminta gaya CS manusia, lalu `PenjagaAi::rapikanGaya` menegakkannya:
+  tanda pisah panjang menjadi koma (rentang angka dan hari tetap tanda hubung), tanpa markdown,
+  emoji, kutip melengkung, tanda seru berderet, dan pembuka atau penutup khas AI ("Tentu!",
+  "Semoga membantu", "Jangan ragu"). Bila ditanya, AI mengaku asisten otomatis.
+- AI tetap tidak punya akses apa pun selain menulis teks: tidak bisa mengonfirmasi pembayaran,
+  mengubah pesanan, atau membaca data pelanggan lain.
+
+**Unggahan foto chat**:
+- Temuan: PNG seratus bait yang kepalanya mengaku 6000x5000 piksel menghabiskan memori 256 MB
+  saat dibuka GD dan menjatuhkan proses PHP. Kini kepala berkas diperiksa sebelum dibuka:
+  ditolak bila tidak muat di sisa memori (PNG 8 bait per piksel, lainnya 5) atau lebih dari
+  40 megapiksel. Berlaku untuk semua unggahan gambar, termasuk foto produk dan bukti bayar;
+  foto kamera 24 MP tetap diterima. Rotasi EXIF dilewati bila memori tidak cukup.
+- Satu alamat IP paling banyak 10 foto chat per jam, karena disk shared hosting terbatas dan
+  setiap foto diteruskan ke admin.
+- Foto disajikan dengan CSP `sandbox` dan `Cross-Origin-Resource-Policy: same-origin`, di sisi
+  pelanggan maupun panel. `HeaderKeamanan` tidak lagi menimpa CSP yang dibawa respons sendiri.
+- Yang sudah ada sejak KEP-030 tetap: hanya JPG, PNG, dan WebP yang diperiksa dari isinya, batas
+  ukuran berkas, gambar dikodekan ulang ke WebP (metadata dan muatan tersembunyi terbuang), nama
+  acak, disk privat, dan hanya pemilik percakapan atau staf yang bisa membukanya.
+
+**Uji ulang** dengan kunci OpenRouter sungguhan: 89 percakapan, yaitu 49 kasus lama ditambah 40
+simulasi tekanan ala manusia tanpa kata kunci injeksi yang jelas (membangun kepercayaan lalu
+meminta rekening, mengaku admin baru atau dinas, memelas, permainan peran, perintah yang dipecah,
+pesan sistem palsu, jebakan angka yang salah, mendesak janji tenggat). Hasil lokal dan produksi
+dicatat di laporan rilis; uji di produksi berjalan di dalam transaksi yang ditarik kembali,
+sehingga tidak ada chat palsu di panel dan batas bulanan tidak terpakai.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5467,3 +5546,4 @@ OpenRouter saat membeli kredit.
 | KEP-150 | Tab berangka, kepala dengan kode pesanan dan WhatsApp, Balasan Cepat, Detail Pelanggan, Detail Pesanan, Catatan Internal, Pusat Bantuan | TERKUNCI |
 | KEP-151 | Bot menjawab dulu dari FAQ panel; komplain, pembayaran, foto, dan yang tak terjawab ke admin; kurasi Belum terjawab | TERKUNCI |
 | KEP-152 | AI hanya bila FAQ tak cocok; JSON terstruktur, data_collection deny, pagar angka, batas bulanan; GPT-6 Luna terpilih lewat uji banding | TERKUNCI |
+| KEP-153 | FAQ menjawab sendiri hanya bila cocoknya kuat; prompt injection ditolak aturan pasti; jawaban AI dijaga dan dirapikan gayanya; foto beresolusi raksasa ditolak, 10 foto per jam, CSP sandbox | TERKUNCI |

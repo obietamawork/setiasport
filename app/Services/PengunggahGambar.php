@@ -23,6 +23,48 @@ class PengunggahGambar
 
     private const MUTU = 82;
 
+    /** Resolusi tertinggi yang mau dibuka, berapa pun memorinya: 40 megapiksel. */
+    public const MAKS_PIKSEL = 40_000_000;
+
+    /**
+     * Gambar yang tidak muat di memori PHP saat dibuka GD (KEP-153). Hanya
+     * kepala berkas yang dibaca: PNG seratus bait yang mengaku 6000x5000
+     * piksel dulu cukup untuk menghabiskan memori 256 MB dan menjatuhkan
+     * proses. GD membuka gambar utuh, 4 bait per piksel, dan PNG butuh
+     * salinan mentah lagi.
+     */
+    public static function terlaluBesar(string $path): bool
+    {
+        $info = @getimagesize($path);
+
+        if ($info === false) {
+            return false;
+        }
+
+        $piksel = $info[0] * $info[1];
+        $baitPerPiksel = $info[2] === IMAGETYPE_PNG ? 8 : 5;
+
+        return $piksel > self::MAKS_PIKSEL || $piksel * $baitPerPiksel > self::sisaMemori();
+    }
+
+    private static function sisaMemori(): int
+    {
+        $batas = trim((string) ini_get('memory_limit'));
+
+        if ($batas === '' || $batas === '-1') {
+            return PHP_INT_MAX;
+        }
+
+        $kali = match (strtolower(substr($batas, -1))) {
+            'g' => 1024 ** 3,
+            'm' => 1024 ** 2,
+            'k' => 1024,
+            default => 1,
+        };
+
+        return (int) $batas * $kali - memory_get_usage();
+    }
+
     /**
      * Bukti pembayaran memakai disk 'local' (privat) dan tanpa versi kecil
      * (KEP-029): isinya nama dan nomor rekening pelanggan, jadi tidak boleh bisa
@@ -84,6 +126,10 @@ class PengunggahGambar
 
     private function baca(UploadedFile $berkas): \GdImage
     {
+        if (self::terlaluBesar($berkas->getRealPath())) {
+            throw new RuntimeException('Resolusi foto terlalu besar. Kirim foto dengan resolusi lebih kecil, misalnya tangkapan layar.');
+        }
+
         $isi = file_get_contents($berkas->getRealPath());
         $gambar = @imagecreatefromstring($isi);
 
@@ -93,7 +139,11 @@ class PengunggahGambar
 
         // Foto dari HP sering menyimpan arah lewat metadata EXIF, bukan lewat
         // pikselnya. Tanpa koreksi ini, sebagian foto tampil terbaring.
-        if (function_exists('exif_read_data') && $berkas->getMimeType() === 'image/jpeg') {
+        // Memutar membuat salinan kedua; bila memori tidak cukup, foto tampil
+        // apa adanya daripada prosesnya jatuh.
+        $cukup = imagesx($gambar) * imagesy($gambar) * 4 < self::sisaMemori();
+
+        if ($cukup && function_exists('exif_read_data') && $berkas->getMimeType() === 'image/jpeg') {
             $exif = @exif_read_data($berkas->getRealPath());
             $arah = $exif['Orientation'] ?? 1;
 

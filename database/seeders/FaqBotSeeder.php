@@ -55,7 +55,7 @@ class FaqBotSeeder extends Seeder
             [
                 'Apakah pesanan bisa dikirim?',
                 'Bisa. Pesanan dapat diambil langsung di toko tanpa biaya pengiriman, atau dikirim ke alamat Anda; ongkos kirimnya dihitung saat checkout. Pesanan custom dikirim setelah produksi dan pelunasan selesai.',
-                'kirim, dikirim, pengiriman, ongkir, ongkos kirim, ekspedisi, kurir, diantar, luar kota, cod',
+                'kirim, dikirim, pengiriman, ongkir, ongkos kirim, ekspedisi, kurir, diantar, luar kota',
                 true,
             ],
             [

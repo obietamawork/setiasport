@@ -25,7 +25,20 @@ class PencocokFaq
         'bs' => 'bisa', 'bsa' => 'bisa', 'dmn' => 'dimana', 'tf' => 'transfer', 'trf' => 'transfer', 'pesen' => 'pesan',
         'psn' => 'pesan', 'hrg' => 'harga', 'krm' => 'kirim', 'jg' => 'juga', 'yg' => 'yang', 'utk' => 'untuk',
         'dgn' => 'dengan', 'sy' => 'saya', 'aq' => 'aku', 'mksh' => 'makasih', 'trims' => 'terima kasih',
-        'makasi' => 'makasih', 'thx' => 'thanks',
+        'makasi' => 'makasih', 'thx' => 'thanks', 'msh' => 'masih', 'trs' => 'terus', 'kpn' => 'kapan',
+        'skrg' => 'sekarang', 'y' => 'ya', 'dr' => 'dari', 'kmrn' => 'kemarin', 'almt' => 'alamat', 'tko' => 'toko',
+        'tp' => 'tapi', 'sm' => 'sama', 'lg' => 'lagi', 'aja' => 'saja', 'bgt' => 'banget', 'krn' => 'karena',
+        'norek' => 'rekening',
+        // Bahasa Jawa sehari-hari (uji tekanan KEP-153): supaya aturan pasti
+        // seperti "sudah transfer" dan "rusak" ikut menangkapnya.
+        'wis' => 'sudah', 'uwis' => 'sudah', 'wes' => 'sudah', 'durung' => 'belum', 'urung' => 'belum',
+        'piye' => 'bagaimana', 'kepiye' => 'bagaimana', 'pripun' => 'bagaimana', 'pira' => 'berapa', 'piro' => 'berapa',
+        'pinten' => 'berapa', 'sakpira' => 'berapa', 'regane' => 'harga', 'regine' => 'harga', 'rego' => 'harga',
+        'iso' => 'bisa', 'isa' => 'bisa', 'saged' => 'bisa', 'ora' => 'tidak', 'ra' => 'tidak', 'mboten' => 'tidak',
+        'nang' => 'di', 'ning' => 'di', 'teng' => 'di', 'ndi' => 'mana', 'pundi' => 'mana', 'dina' => 'hari',
+        'dinten' => 'hari', 'suwe' => 'lama', 'suwene' => 'lama', 'dangu' => 'lama', 'rampung' => 'selesai',
+        'tuku' => 'beli', 'tumbas' => 'beli', 'tokone' => 'toko', 'bodol' => 'rusak', 'ambrol' => 'rusak',
+        'suwek' => 'sobek', 'elek' => 'jelek', 'nuwun' => 'kasih', 'matur' => 'terima', 'suwun' => 'makasih',
     ];
 
     /** Kata yang tidak membedakan satu pertanyaan dari yang lain. */
@@ -61,7 +74,7 @@ class PencocokFaq
 
     /**
      * @param  Collection<int, FaqBot>  $faq
-     * @return list<array{faq: FaqBot, skor: float}> urut dari skor tertinggi
+     * @return list<array{faq: FaqBot, skor: float, frasa: list<string>}> urut dari skor tertinggi
      */
     public function cari(string $pertanyaan, Collection $faq): array
     {
@@ -73,14 +86,16 @@ class PencocokFaq
             // Pertanyaan yang sama persis dengan FAQ (cip yang diketuk pelanggan)
             // selalu menang.
             if (trim($teks) === self::normalisasi($f->pertanyaan)) {
-                return [['faq' => $f, 'skor' => 100.0]];
+                return [['faq' => $f, 'skor' => 100.0, 'frasa' => []]];
             }
 
             $skor = 0.0;
+            $cocok = [];
             foreach ($f->frasaKunci() as $frasa) {
                 $frasa = self::normalisasi($frasa);
                 if ($frasa !== '' && str_contains($teks, ' '.$frasa.' ')) {
                     $skor += count(explode(' ', $frasa));
+                    $cocok[] = $frasa;
                 }
             }
 
@@ -93,7 +108,7 @@ class PencocokFaq
                 $skor += 0.5 * count(array_intersect($tokenTanya, $tokenFaq)) / count($tokenFaq);
             }
 
-            $hasil[] = ['faq' => $f, 'skor' => $skor];
+            $hasil[] = ['faq' => $f, 'skor' => $skor, 'frasa' => $cocok];
         }
 
         usort($hasil, fn ($a, $b) => $b['skor'] <=> $a['skor']);
@@ -105,7 +120,7 @@ class PencocokFaq
      * Satu FAQ yang jelas di depan menjadi jawaban. Beberapa yang skornya
      * berdekatan menjadi pilihan "Maksud Anda yang mana?".
      *
-     * @param  list<array{faq: FaqBot, skor: float}>  $kandidat
+     * @param  list<array{faq: FaqBot, skor: float, frasa: list<string>}>  $kandidat
      * @return array{pasti: ?FaqBot, pilihan: list<FaqBot>}
      */
     public function putuskan(array $kandidat): array
@@ -122,5 +137,35 @@ class PencocokFaq
         }
 
         return ['pasti' => null, 'pilihan' => array_map(fn ($k) => $k['faq'], array_slice($kandidat, 0, 3))];
+    }
+
+    /**
+     * Cocok kuat (KEP-153): pertanyaannya persis FAQ, frasa kuncinya dua kata
+     * atau lebih, atau hampir semua kata pembedanya tercakup FAQ itu. Satu kata
+     * umum tidak cukup: "harga" di pertanyaan tentang bola futsal bukan alasan
+     * menjawab dengan harga jersey custom, dan "ukuran" di pertanyaan tentang
+     * sepatu bukan alasan menjawab dengan panduan ukuran jersey.
+     *
+     * @param  array{faq: FaqBot, skor: float, frasa: list<string>}  $kandidat
+     */
+    public function kuat(array $kandidat, string $pertanyaan): bool
+    {
+        if ($kandidat['skor'] >= 100) {
+            return true;
+        }
+
+        $tercakup = self::token($kandidat['faq']->pertanyaan);
+
+        foreach ($kandidat['frasa'] as $frasa) {
+            $kata = explode(' ', $frasa);
+
+            if (count($kata) > 1) {
+                return true;
+            }
+
+            $tercakup = [...$tercakup, ...$kata];
+        }
+
+        return count(array_diff(self::token($pertanyaan), $tercakup)) <= 1;
     }
 }

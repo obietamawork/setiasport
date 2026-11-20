@@ -67,7 +67,7 @@ class AsistenAiTest extends TestCase
 
     public function test_pertanyaan_tanpa_faq_dijawab_ai_dan_dicatat_biayanya(): void
     {
-        $this->palsukan(['jawaban' => 'Bisa, Kak. Jersey bisa diberi nama tim di dada.', 'serahkan_ke_admin' => false, 'alasan' => '']);
+        $this->palsukan(['jawaban' => 'Bisa, Kak. Jersey bisa diberi nama tim di dada.', 'jenis' => 'jawab', 'alasan' => '']);
 
         $res = $this->mulai('Apakah nama tim bisa ditaruh di bagian dada?');
 
@@ -105,7 +105,7 @@ class AsistenAiTest extends TestCase
 
     public function test_ai_ragu_diteruskan_ke_admin_dan_masuk_kurasi(): void
     {
-        $this->palsukan(['jawaban' => '', 'serahkan_ke_admin' => true, 'alasan' => 'Tidak ada di data']);
+        $this->palsukan(['jawaban' => '', 'jenis' => 'serahkan', 'alasan' => 'Tidak ada di data']);
 
         $this->mulai('Apakah bisa bordir topi untuk komunitas motor?');
 
@@ -128,7 +128,7 @@ class AsistenAiTest extends TestCase
 
     public function test_jawaban_ai_berisi_nomor_rekening_ditahan(): void
     {
-        $this->palsukan(['jawaban' => 'Silakan transfer ke 1234 5678 90 a.n. Setia Sport.', 'serahkan_ke_admin' => false, 'alasan' => '']);
+        $this->palsukan(['jawaban' => 'Silakan transfer ke 1234 5678 90 a.n. Setia Sport.', 'jenis' => 'jawab', 'alasan' => '']);
 
         $res = $this->mulai('Boleh titip uangnya ke siapa, Kak?');
 
@@ -192,7 +192,7 @@ class AsistenAiTest extends TestCase
 
     public function test_pesanan_terverifikasi_ikut_menjadi_konteks_ai(): void
     {
-        $this->palsukan(['jawaban' => 'Baik, Kak.', 'serahkan_ke_admin' => false, 'alasan' => '']);
+        $this->palsukan(['jawaban' => 'Baik, Kak.', 'jenis' => 'jawab', 'alasan' => '']);
         $varian = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();
         $this->post(route('keranjang.tambah'), ['variant_id' => $varian->id, 'qty' => 1]);
         $this->post('/checkout', ['nama' => 'Budi', 'email' => 'budi@contoh.test', 'no_hp' => '081234567890', 'setuju' => '1']);

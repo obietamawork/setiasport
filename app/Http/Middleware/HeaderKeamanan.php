@@ -41,7 +41,9 @@ class HeaderKeamanan
         // Halaman galat bawaan Laravel saat APP_DEBUG=true memakai skrip
         // sebaris tanpa nonce; tanpa pengecualian ini jejak galat di lokal
         // tidak bisa dibaca. Di produksi APP_DEBUG wajib false.
-        if (! (config('app.debug') && $response->isServerError())) {
+        // Respons yang membawa kebijakannya sendiri (lampiran chat CS dengan
+        // sandbox, KEP-153) tidak ditimpa: kebijakannya lebih ketat.
+        if (! $h->has('Content-Security-Policy') && ! (config('app.debug') && $response->isServerError())) {
             $h->set('Content-Security-Policy', $this->kebijakanKonten($nonce));
         }
 

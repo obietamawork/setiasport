@@ -32,7 +32,7 @@ class FaqBotController extends Controller
             'dariLog' => $request->filled('log') ? LogBot::find($request->integer('log')) : null,
             'statistik' => [
                 'faq' => (clone $bulanIni)->where('lapis', 'faq')->count(),
-                'otomatis' => (clone $bulanIni)->whereIn('lapis', ['menu', 'sistem'])->count(),
+                'otomatis' => (clone $bulanIni)->whereIn('lapis', ['menu', 'sistem', 'tolak'])->count(),
                 'ai' => (clone $bulanIni)->where('lapis', 'ai')->count(),
                 'admin' => (clone $bulanIni)->where('lapis', 'admin')->count(),
                 'biaya' => (float) (clone $bulanIni)->where('lapis', 'ai')->sum('biaya'),

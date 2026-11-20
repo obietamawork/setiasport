@@ -81,7 +81,7 @@ class CsController extends Controller
 
         $data = $request->validate([
             'isi' => ['required_without:lampiran', 'nullable', 'string', 'max:2000'],
-            'lampiran' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(setting('upload_maks_mb', 10) * 1024)],
+            'lampiran' => LayananCs::aturanLampiran(),
         ], ['isi.required_without' => 'Balasannya masih kosong.'], ['isi' => 'balasan']);
 
         $pesan = $this->cs->balasDariStaf($percakapan, $request->user('web'), $data['isi'] ?? null, $request->file('lampiran'));
@@ -178,10 +178,7 @@ class CsController extends Controller
         // sebagai berkas, bukan hanya dibuka di tab.
         $cara = $request->boolean('unduh') ? 'download' : 'response';
 
-        return Storage::disk('local')->{$cara}($pesan->lampiran_path, null, [
-            'Cache-Control' => 'private, no-store',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return Storage::disk('local')->{$cara}($pesan->lampiran_path, null, LayananCs::HEADER_LAMPIRAN);
     }
 
     private function detailUntuk(PercakapanCs $percakapan): array

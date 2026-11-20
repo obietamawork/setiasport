@@ -13,11 +13,14 @@ use App\Models\PesanCs;
  * umumnya: yang pasti dijawab pasti, AI hanya untuk sisanya, dan manusia
  * untuk yang memang butuh manusia.
  *
- *   1. Aturan pasti: minta admin, komplain, pembayaran bermasalah, perubahan
- *      pesanan, dan foto langsung ke admin. Salam dijawab dengan menu topik;
+ *   1. Aturan pasti: upaya prompt injection ditolak (KEP-153); minta admin,
+ *      komplain, pembayaran bermasalah, perubahan pesanan, tawar-menawar,
+ *      pelanggan kesal, pesan sangat panjang, dan foto langsung ke admin.
+ *      Salam dijawab dengan menu topik; pertanyaan rekening dijawab baku;
  *      status pesanan dijawab dari data, hanya untuk percakapan terverifikasi.
- *   2. FAQ: frasa kunci dari panel (PencocokFaq).
- *   3. AI (KEP-152): hanya bila tidak ada FAQ yang cocok.
+ *   2. FAQ: frasa kunci dari panel (PencocokFaq). Bila AI menyala, FAQ hanya
+ *      menjawab sendiri bila cocoknya kuat (KEP-153).
+ *   3. AI (KEP-152): sisanya, dijaga PenjagaAi sebelum dan sesudahnya.
  *   4. Admin: semua yang tersisa.
  *
  * Selama ditangani bot, percakapan tidak menunggu admin: tidak ada tanda
@@ -32,11 +35,29 @@ class AsistenCs
 
     public const PILIHAN_TIDAK = 'Tidak membantu';
 
-    private const POLA_ADMIN = '/\b(bicara (dengan|sama|ke) (admin|cs)|hubungi admin|hubungkan (ke|dengan) admin|minta admin|(mau|ingin) (ke|sama|dengan|bicara) admin|chat admin|ngobrol (dengan|sama) admin|cs manusia|orang asli|manusia|operator|customer service)\b/u';
+    private const POLA_ADMIN = '/\b(bicara (dengan|sama|ke) (admin|cs)|hubungi admin|hubungkan (ke |dengan )?admin|sambungkan (ke |dengan )?admin|panggil(kan)? admin|minta admin|mana admin|admin mana|(mau|ingin) (ke|sama|dengan|bicara) admin|chat admin|ngobrol (dengan|sama) admin|cs manusia|orang asli|manusia|operator|customer service)\b/u';
 
-    private const POLA_KOMPLAIN = '/\b(rusak|cacat|robek|sobek|luntur|pudar|bolong|salah kirim|salah ukuran|ukuran salah|kurang barang|barang kurang|komplain|keluhan|mengeluh|kecewa|refund|retur|uang kembali|dikembalikan|penipu|penipuan|ditipu|belum sampai|belum datang|belum diterima|telat|terlambat)\b/u';
+    private const POLA_KOMPLAIN = '/\b(rusak|cacat|robek|sobek|luntur|pudar|bolong|salah kirim|salah ukuran|ukuran salah|kurang barang|barang kurang|komplain|keluhan|mengeluh|kecewa|refund|retur|uang kembali|dikembalikan|penipu|penipuan|ditipu|belum sampai|belum datang|belum diterima|telat|terlambat|jelek)\b/u';
 
     private const POLA_PEMBAYARAN = '/\b(sudah transfer|sudah bayar|sudah dibayar|bukti transfer|bukti bayar|bukti pembayaran|belum diverifikasi|belum dikonfirmasi|salah transfer|transfer dobel|double transfer|kelebihan bayar|bayar dua kali)\b/u';
+
+    /** Tawar-menawar dan potongan harga selalu diputuskan admin (KEP-153). */
+    private const POLA_TAWAR = '/\b(nego|negosiasi|tawar|ditawar|tawarin|kurang dikit|kurangin|bisa kurang|harga teman|harga khusus|diskon|discount|potongan|promo|murahin)\b/u';
+
+    /** Pelanggan yang memaki tidak dilayani mesin (KEP-153). */
+    private const POLA_KESAL = '/\b(goblok|goblog|bodoh|tolol|bego|dungu|anjing|anjg|bangsat|bgst|kampret|brengsek|bajingan|keparat|sialan|asu|jancok|jancuk|taik|kontol|memek|ngentot|babi)\b/u';
+
+    /** Nomor rekening tidak pernah dibahas mesin; jawabannya baku (KEP-153). */
+    private const POLA_REKENING = '/\b(rekening|no rek|nomor rek|nomer rek|transfer (ke )?(mana|kemana)|bayar (ke )?(mana|kemana)|kirim uang (ke )?(mana|kemana))\b/u';
+
+    /** "Kamu manusia atau robot?" (KEP-153): asisten tidak pernah mengaku manusia. */
+    private const POLA_IDENTITAS = '/\b((kamu|anda|ini|km|lu|kowe) (itu |ini )?(manusia|robot|bot|ai|mesin)|(manusia|orang) (atau|apa|ato) (robot|bot|ai|mesin)|(robot|bot|ai|mesin) (atau|apa|ato) (manusia|orang))\b/u';
+
+    /** Pesan sepanjang ini biasanya permintaan rinci yang butuh manusia. */
+    private const PANJANG_MAKS_PESAN = 700;
+
+    /** Setelah sekian upaya manipulasi, AI tidak lagi dipanggil di percakapan itu. */
+    private const BATAS_MANIPULASI = 3;
 
     private const POLA_PERUBAHAN = '/\b(mau|minta|tolong|ingin) (revisi|ubah|ganti|tambah|kurangi|batal|batalkan)\b/u';
 
@@ -80,17 +101,36 @@ class AsistenCs
 
         $teks = trim((string) $pesan->isi);
 
-        if ($teks === '') {
-            return [$this->serahkan($percakapan, $pesan, 'Pelanggan mengirim foto', '')];
+        // Foto selalu dilihat manusia, juga yang disertai teks: bot dan AI
+        // tidak pernah membaca gambar.
+        if ($pesan->lampiran_path || $teks === '') {
+            return [$this->serahkan($percakapan, $pesan, 'Pelanggan mengirim foto', $teks)];
+        }
+
+        if (PenjagaAi::upayaManipulasi($teks)) {
+            return [$this->tolak($percakapan, $pesan, $teks, 'Upaya manipulasi')];
+        }
+
+        if (mb_strlen($teks) > self::PANJANG_MAKS_PESAN) {
+            return [$this->serahkan($percakapan, $pesan, 'Pesan panjang', $teks)];
         }
 
         $norm = PencocokFaq::normalisasi($teks);
 
+        // Ditanya manusia atau mesin: dijawab jujur, tidak dilempar ke admin.
+        if (preg_match(self::POLA_IDENTITAS, $norm)) {
+            return [$this->balas($percakapan, $pesan, $teks, 'sistem',
+                'Saya asisten otomatis '.setting('toko_nama', 'Setia Sport').'. Pertanyaan umum saya jawab langsung; kalau ingin dibantu admin, pilih Bicara dengan admin.',
+                [self::PILIHAN_ADMIN])];
+        }
+
         foreach ([
             [self::POLA_ADMIN, 'Pelanggan meminta admin'],
+            [self::POLA_KESAL, 'Pelanggan kesal'],
             [self::POLA_KOMPLAIN, 'Komplain'],
             [self::POLA_PEMBAYARAN, 'Pembayaran'],
             [self::POLA_PERUBAHAN, 'Perubahan pesanan atau desain'],
+            [self::POLA_TAWAR, 'Tawar-menawar'],
         ] as [$pola, $alasan]) {
             if (preg_match($pola, $norm)) {
                 return [$this->serahkan($percakapan, $pesan, $alasan, $teks)];
@@ -116,25 +156,32 @@ class AsistenCs
             return [$this->balas($percakapan, $pesan, $teks, 'sistem', $this->statusPesanan($percakapan), [self::PILIHAN_ADMIN])];
         }
 
-        ['pasti' => $pasti, 'pilihan' => $pilihan] = $this->pencocok->putuskan(
-            $this->pencocok->cari($teks, FaqBot::aktif()->orderBy('urutan')->get())
-        );
+        if (preg_match(self::POLA_REKENING, $norm)) {
+            return [$this->balas($percakapan, $pesan, $teks, 'sistem',
+                'Nomor rekening dan QRIS resmi hanya ditampilkan di halaman pesanan Anda setelah pesanan dibuat. Kami tidak pernah memberikan nomor rekening lewat chat, WhatsApp, atau telepon.',
+                [self::PILIHAN_ADMIN])];
+        }
 
-        if ($pasti) {
+        $kandidat = $this->pencocok->cari($teks, FaqBot::aktif()->orderBy('urutan')->get());
+        ['pasti' => $pasti, 'pilihan' => $pilihan] = $this->pencocok->putuskan($kandidat);
+        $aiBisa = $this->ai->siap() && ! $this->aiTerkunci($percakapan);
+
+        // Dengan AI menyala, FAQ hanya menjawab sendiri bila cocoknya kuat;
+        // sisanya dijawab AI, yang juga membaca seluruh FAQ (KEP-153).
+        if ($pasti && (! $aiBisa || $this->pencocok->kuat($kandidat[0], $teks))) {
             $pasti->increment('dipakai');
 
             return [$this->balas($percakapan, $pesan, $teks, 'faq', $pasti->jawabanTampil(),
                 [self::PILIHAN_YA, self::PILIHAN_TIDAK, self::PILIHAN_ADMIN], $pasti->id)];
         }
 
+        if ($aiBisa) {
+            return [$this->jawabanAi($percakapan, $pesan, $teks)];
+        }
+
         if ($pilihan !== []) {
             return [$this->balas($percakapan, $pesan, $teks, 'menu', 'Maksud Anda yang mana?',
                 [...array_map(fn (FaqBot $f) => $f->pertanyaan, $pilihan), self::PILIHAN_ADMIN])];
-        }
-
-        // Lapis AI (KEP-152): hanya bila tidak ada FAQ yang cocok sama sekali.
-        if ($this->ai->siap()) {
-            return [$this->jawabanAi($percakapan, $pesan, $teks)];
         }
 
         return [$this->serahkan($percakapan, $pesan, 'Tidak ada jawaban', $teks)];
@@ -152,16 +199,53 @@ class AsistenCs
             return $this->serahkan($percakapan, $pesan, 'AI tidak tersedia', $teks, $catatan);
         }
 
-        if ($hasil['serahkan']) {
-            return $this->serahkan($percakapan, $pesan, 'AI ragu', $teks, [...$catatan, 'jawaban' => $hasil['alasan'] ?: null]);
-        }
+        return match (true) {
+            $hasil['jenis'] === 'manipulasi' => $this->tolak($percakapan, $pesan, $teks, 'Upaya manipulasi', $catatan),
+            $hasil['jenis'] === 'di_luar_topik' => $this->tolak($percakapan, $pesan, $teks, 'Di luar topik', $catatan),
+            $hasil['jenis'] !== 'jawab' || $hasil['jawaban'] === '' => $this->serahkan($percakapan, $pesan, 'AI ragu', $teks,
+                [...$catatan, 'jawaban' => $hasil['alasan'] ?: null]),
+            // Jawaban yang ditahan penjaga tidak pernah sampai ke pelanggan;
+            // admin membacanya di log beserta alasannya (KEP-153).
+            $hasil['ditahan'] !== null => $this->serahkan($percakapan, $pesan, 'Jawaban AI ditahan', $teks,
+                [...$catatan, 'jawaban' => '['.$hasil['ditahan'].'] '.$hasil['jawaban_asli']]),
+            default => $this->balas($percakapan, $pesan, $teks, 'ai', $hasil['jawaban'],
+                [self::PILIHAN_YA, self::PILIHAN_TIDAK, self::PILIHAN_ADMIN], null, $catatan),
+        };
+    }
 
-        if (AsistenAi::mencurigakan($hasil['jawaban'])) {
-            return $this->serahkan($percakapan, $pesan, 'Jawaban AI ditahan', $teks, [...$catatan, 'jawaban' => $hasil['jawaban']]);
-        }
+    /**
+     * Penolakan baku untuk upaya manipulasi dan pertanyaan di luar toko. Tidak
+     * diteruskan ke admin, supaya orang iseng tidak bisa membanjiri kotak masuk
+     * staf; pelanggan sungguhan tetap bisa memilih "Bicara dengan admin".
+     *
+     * @param  array<string, mixed>  $catatan  model, token, dan biaya bila AI sempat dipanggil
+     */
+    private function tolak(PercakapanCs $percakapan, PesanCs $pesan, string $teks, string $alasan, array $catatan = []): PesanCs
+    {
+        $toko = setting('toko_nama', 'Setia Sport');
 
-        return $this->balas($percakapan, $pesan, $teks, 'ai', $hasil['jawaban'],
-            [self::PILIHAN_YA, self::PILIHAN_TIDAK, self::PILIHAN_ADMIN], null, $catatan);
+        $jawaban = $alasan === 'Upaya manipulasi'
+            ? "Maaf Kak, permintaan itu tidak bisa saya bantu. Saya hanya menjawab pertanyaan seputar produk, pemesanan, dan layanan {$toko}."
+            : "Maaf Kak, saya hanya bisa membantu soal produk, pemesanan, dan layanan {$toko}. Silakan tulis pertanyaan seputar itu, atau pilih topik di bawah.";
+
+        LogBot::create([
+            ...$catatan,
+            'percakapan_id' => $percakapan->id,
+            'pesan_id' => $pesan->id,
+            'pertanyaan' => $teks,
+            'lapis' => 'tolak',
+            'alasan' => $alasan,
+            'jawaban' => $jawaban,
+        ]);
+
+        return $this->cs->kirimDariBot($percakapan, $jawaban, $this->menu());
+    }
+
+    private function aiTerkunci(PercakapanCs $percakapan): bool
+    {
+        return LogBot::where('percakapan_id', $percakapan->id)
+            ->where('alasan', 'Upaya manipulasi')
+            ->count() >= self::BATAS_MANIPULASI;
     }
 
     /**
@@ -197,6 +281,9 @@ class AsistenCs
 
         $pembuka = match ($alasan) {
             'Komplain' => 'Mohon maaf atas kendalanya. Percakapan ini saya teruskan ke admin kami.',
+            'Pelanggan kesal' => 'Mohon maaf atas ketidaknyamanannya. Percakapan ini saya teruskan ke admin kami.',
+            'Tawar-menawar' => 'Untuk harga khusus atau potongan, admin kami yang akan membantu.',
+            'Pesan panjang' => 'Terima kasih atas penjelasannya. Supaya tidak ada yang terlewat, percakapan ini saya teruskan ke admin kami.',
             'Pembayaran' => 'Terima kasih. Admin kami akan memeriksa pembayaran Anda.',
             'Pelanggan mengirim foto' => 'Foto Anda sudah kami terima dan saya teruskan ke admin kami.',
             'Tidak ada jawaban' => 'Pertanyaan ini belum ada di jawaban otomatis saya, jadi saya teruskan ke admin kami.',

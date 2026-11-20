@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\PercakapanCs;
 use App\Models\PesanCs;
 use App\Models\User;
+use Closure;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +28,39 @@ class LayananCs
     /** Detik sebelum staf dianggap pergi tanpa pamit (tab ditutup, HP mati). */
     private const UMUR_DENYUT = 150;
 
+    /**
+     * Header untuk menyajikan foto chat, di sisi pelanggan maupun panel
+     * (KEP-153): tidak di-cache, tipenya tidak ditebak peramban, tidak bisa
+     * menjalankan apa pun bila dibuka langsung, dan tidak bisa disematkan
+     * situs lain.
+     */
+    public const HEADER_LAMPIRAN = [
+        'Cache-Control' => 'private, no-store',
+        'X-Content-Type-Options' => 'nosniff',
+        'Content-Security-Policy' => "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox",
+        'Cross-Origin-Resource-Policy' => 'same-origin',
+    ];
+
     public function __construct(private PengunggahGambar $pengunggah) {}
+
+    /**
+     * Aturan validasi foto chat untuk pelanggan dan staf. Gambar yang
+     * resolusinya tidak muat di memori ditolak dari kepala berkasnya, sebelum
+     * dibuka (KEP-153).
+     *
+     * @return list<mixed>
+     */
+    public static function aturanLampiran(): array
+    {
+        return [
+            'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:'.(setting('upload_maks_mb', 10) * 1024),
+            function (string $atribut, mixed $nilai, Closure $gagal): void {
+                if ($nilai instanceof UploadedFile && PengunggahGambar::terlaluBesar((string) $nilai->getRealPath())) {
+                    $gagal('Resolusi foto terlalu besar. Kirim foto dengan resolusi lebih kecil, misalnya tangkapan layar.');
+                }
+            },
+        ];
+    }
 
     /**
      * @param  array{nama: string, kontak: ?string, topik: string, kode_pesanan?: ?string}  $data
