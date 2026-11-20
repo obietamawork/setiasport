@@ -85,6 +85,22 @@ class PanelPelangganTest extends TestCase
         $this->assertTrue(ActivityLog::where('aksi', 'pelanggan.diubah')->exists());
     }
 
+    public function test_ganti_email_membatalkan_tautan_yang_terkirim_ke_email_lama(): void
+    {
+        $tokenSandi = $this->pelanggan->siapkanAturUlangSandi();
+        $this->pelanggan->forceFill(['remember_token' => 'token-ingat-lama'])->save();
+
+        $this->actingAs($this->staf())->put(route('panel.pelanggan.ubah', $this->pelanggan), [
+            'nama' => 'Budi', 'email' => 'budi.baru@contoh.test', 'no_hp' => '081234567890',
+        ])->assertRedirect();
+
+        $c = $this->pelanggan->fresh();
+        $this->assertNull($c->token_atur_sandi);
+        $this->assertNull($c->token_verifikasi);
+        $this->assertNotSame('token-ingat-lama', $c->remember_token);
+        $this->get(route('atur-sandi', $tokenSandi))->assertRedirect(route('lupa-sandi'));
+    }
+
     public function test_email_yang_sudah_dipakai_pelanggan_lain_ditolak(): void
     {
         Customer::create(['nama' => 'Siti', 'email' => 'siti@contoh.test', 'no_hp' => '085700000000']);

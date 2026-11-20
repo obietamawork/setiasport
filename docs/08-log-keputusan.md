@@ -5516,7 +5516,9 @@ Admin.
 
 - Ubah nama dan nomor HP. **Email tidak bisa diubah sendiri** karena email yang mengikat pesanan ke
   akun. Penggantiannya lewat CS.
-- Ganti kata sandi, wajib dengan kata sandi saat ini.
+- Ganti kata sandi, wajib dengan kata sandi saat ini. Setelah sandi diganti, lewat halaman ini
+  maupun lewat tautan lupa sandi, sesi di perangkat lain keluar pada permintaan berikutnya dan
+  cookie "ingat saya" dibatalkan. Perangkat yang mengganti sandi tetap masuk.
 - **Buku alamat**: paling banyak 10 alamat, satu menjadi alamat utama. Setiap alamat menyimpan area
   Biteship dan kode posnya.
 - Di checkout, alamat utama langsung terisi saat "Dikirim" dipilih, beserta areanya, sehingga tarif
@@ -5532,7 +5534,9 @@ Admin.
 
 - Cari nama, email, atau nomor HP; saring akun, tamu, atau nonaktif. Detail pelanggan memuat
   riwayat pesanan dan buku alamatnya.
-- Staf bisa mengubah nama, email, nomor HP, dan catatan internal.
+- Staf bisa mengubah nama, email, nomor HP, dan catatan internal. Saat email diganti, tautan atur
+  sandi dan konfirmasi akun yang terlanjur terkirim ke email lama dibatalkan, begitu juga cookie
+  "ingat saya".
 - **Staf tidak pernah melihat atau mengetik kata sandi pelanggan.** Bantuan yang tersedia hanya
   mengirim tautan atur ulang ke email pelanggan itu sendiri.
 - **Nonaktifkan akun**: pelanggan tidak bisa masuk, dan sesi yang sedang terbuka langsung keluar

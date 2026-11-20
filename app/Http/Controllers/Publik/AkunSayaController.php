@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -57,9 +58,12 @@ class AkunSayaController extends Controller
             throw ValidationException::withMessages(['sandi_lama' => 'Kata sandi saat ini tidak cocok.']);
         }
 
-        $pelanggan->forceFill(['password' => $data['password']])->save();
+        // Token "ingat saya" diputar dan sesi diperbarui; sesi di perangkat lain
+        // keluar sendiri lewat PastikanPelangganAktif.
+        $pelanggan->forceFill(['password' => $data['password'], 'remember_token' => Str::random(60)])->save();
+        $request->session()->regenerate();
 
-        return back()->with('sukses', 'Kata sandi baru tersimpan.');
+        return back()->with('sukses', 'Kata sandi baru tersimpan. Perangkat lain yang masuk ke akun ini sudah dikeluarkan.');
     }
 
     public function simpanAlamat(Request $request): RedirectResponse

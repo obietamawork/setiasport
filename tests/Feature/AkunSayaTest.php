@@ -134,6 +134,29 @@ class AkunSayaTest extends TestCase
         $this->assertSame(10, AlamatPelanggan::count());
     }
 
+    public function test_ganti_sandi_memutar_token_ingat_dan_perangkat_ini_tetap_masuk(): void
+    {
+        $this->actingAs($this->pelanggan, 'pelanggan')->get(route('akun'))->assertOk();
+
+        $this->put(route('akun.sandi'), [
+            'sandi_lama' => 'sandi-lama-123', 'password' => 'sandi-baru-456', 'password_confirmation' => 'sandi-baru-456',
+        ])->assertSessionHasNoErrors();
+
+        $this->get(route('akun'))->assertOk();
+        $this->assertNotNull($this->pelanggan->fresh()->remember_token);
+    }
+
+    public function test_sesi_lain_keluar_setelah_sandi_diganti_di_tempat_lain(): void
+    {
+        $this->actingAs($this->pelanggan, 'pelanggan')->get(route('akun'))->assertOk();
+
+        // Sandi diganti dari perangkat lain atau lewat tautan lupa sandi.
+        $this->pelanggan->forceFill(['password' => 'sandi-baru-456'])->save();
+
+        $this->get(route('akun'))->assertRedirect(route('masuk'));
+        $this->assertGuest('pelanggan');
+    }
+
     public function test_checkout_mengisi_email_akun_dan_menguncinya(): void
     {
         $varian = ProductVariant::where('sku', 'BOLA-MITRE-01')->firstOrFail();

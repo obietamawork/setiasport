@@ -65,6 +65,19 @@ class PelangganController extends Controller
         $sebelum = $pelanggan->only(array_keys($data));
         $pelanggan->update($data);
 
+        // Tautan atur sandi dan konfirmasi akun yang terlanjur terkirim ke email
+        // lama tidak boleh lagi bisa dipakai: pemegang email lama bukan lagi
+        // pemilik akun ini. Cookie "ingat saya" yang beredar juga dibatalkan.
+        if ($pelanggan->wasChanged('email')) {
+            $pelanggan->forceFill([
+                'token_atur_sandi' => null,
+                'token_atur_sandi_dibuat_pada' => null,
+                'token_verifikasi' => null,
+                'token_dibuat_pada' => null,
+                'remember_token' => Str::random(60),
+            ])->save();
+        }
+
         ActivityLog::catat('pelanggan.diubah', $pelanggan, [
             'sebelum' => $sebelum,
             'sesudah' => $pelanggan->only(array_keys($data)),
