@@ -5535,8 +5535,9 @@ Admin.
 - Cari nama, email, atau nomor HP; saring akun, tamu, atau nonaktif. Detail pelanggan memuat
   riwayat pesanan dan buku alamatnya.
 - Staf bisa mengubah nama, email, nomor HP, dan catatan internal. Saat email diganti, tautan atur
-  sandi dan konfirmasi akun yang terlanjur terkirim ke email lama dibatalkan, begitu juga cookie
-  "ingat saya".
+  sandi dan konfirmasi akun yang terlanjur terkirim ke email lama dibatalkan, cookie "ingat saya"
+  dibatalkan, dan semua sesi akun itu keluar. Email adalah identitas masuk, dan penggantiannya
+  biasanya karena akun berpindah tangan.
 - **Staf tidak pernah melihat atau mengetik kata sandi pelanggan.** Bantuan yang tersedia hanya
   mengirim tautan atur ulang ke email pelanggan itu sendiri.
 - **Nonaktifkan akun**: pelanggan tidak bisa masuk, dan sesi yang sedang terbuka langsung keluar

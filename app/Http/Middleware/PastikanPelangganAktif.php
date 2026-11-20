@@ -18,6 +18,8 @@ use Symfony\Component\HttpFoundation\Response;
  * - Setelah kata sandi diganti, sesi di perangkat lain ikut keluar. Pelanggan
  *   yang mengganti sandi karena curiga ada orang lain ikut masuk harus benar-benar
  *   mengusir orang itu. Perangkat yang mengganti sandi tetap masuk.
+ * - Setelah staf mengganti email akun, semua sesinya keluar: email adalah
+ *   identitas masuk, dan penggantiannya biasanya karena akun berpindah tangan.
  */
 class PastikanPelangganAktif
 {
@@ -39,7 +41,7 @@ class PastikanPelangganAktif
 
             if (is_array($tersimpan) && ($tersimpan['id'] ?? null) === $pelanggan->id
                 && ! hash_equals((string) ($tersimpan['sidik'] ?? ''), $this->sidik($pelanggan))) {
-                return $this->keluarkan($request, 'Kata sandi akun ini baru saja diganti. Silakan masuk dengan kata sandi yang baru.');
+                return $this->keluarkan($request, 'Kata sandi atau email akun ini baru saja diganti. Silakan masuk lagi.');
             }
         }
 
@@ -56,10 +58,10 @@ class PastikanPelangganAktif
         return $respons;
     }
 
-    /** Turunan hash kata sandi; hash aslinya tidak ikut disimpan di sesi. */
+    /** Turunan hash kata sandi dan email; hash aslinya tidak ikut disimpan di sesi. */
     private function sidik(Customer $pelanggan): string
     {
-        return hash_hmac('sha256', (string) $pelanggan->getAuthPassword(), (string) config('app.key'));
+        return hash_hmac('sha256', $pelanggan->getAuthPassword().'|'.$pelanggan->email, (string) config('app.key'));
     }
 
     private function keluarkan(Request $request, string $pesan): RedirectResponse

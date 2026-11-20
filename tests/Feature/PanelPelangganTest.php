@@ -85,6 +85,22 @@ class PanelPelangganTest extends TestCase
         $this->assertTrue(ActivityLog::where('aksi', 'pelanggan.diubah')->exists());
     }
 
+    public function test_ganti_email_mengeluarkan_sesi_pelanggan_yang_sedang_masuk(): void
+    {
+        $this->actingAs($this->pelanggan, 'pelanggan')->get(route('pesanan-saya'))->assertOk();
+
+        $this->actingAs($this->staf(), 'web')->put(route('panel.pelanggan.ubah', $this->pelanggan), [
+            'nama' => 'Budi', 'email' => 'budi.baru@contoh.test', 'no_hp' => '081234567890',
+        ])->assertSessionHasNoErrors();
+        $this->assertSame('budi.baru@contoh.test', $this->pelanggan->fresh()->email);
+
+        // Penjaga sesi memuat ulang pelanggan dari basis data di setiap permintaan.
+        $this->pelanggan->refresh();
+
+        $this->get(route('pesanan-saya'))->assertRedirect(route('masuk'));
+        $this->assertGuest('pelanggan');
+    }
+
     public function test_ganti_email_membatalkan_tautan_yang_terkirim_ke_email_lama(): void
     {
         $tokenSandi = $this->pelanggan->siapkanAturUlangSandi();
