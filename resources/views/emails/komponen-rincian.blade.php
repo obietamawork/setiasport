@@ -54,11 +54,22 @@
     <td style="padding:10px 0;text-align:right;font-weight:bold;">{{ rupiah($order->total) }}</td>
   </tr>
 
-  @if ($order->sudah_dibayar > 0)
-    <tr>
-      <td style="padding:2px 0;color:#5c6b64;">Sudah dibayar</td>
-      <td style="padding:2px 0;text-align:right;color:#5c6b64;">{{ rupiah($order->sudah_dibayar) }}</td>
-    </tr>
+  @if ($order->sudah_dibayar > 0 || $order->dikembalikan > 0)
+    @if ($order->dikembalikan > 0)
+      <tr>
+        <td style="padding:2px 0;color:#5c6b64;">Dibayar</td>
+        <td style="padding:2px 0;text-align:right;color:#5c6b64;">{{ rupiah($order->sudah_dibayar + $order->dikembalikan) }}</td>
+      </tr>
+      <tr>
+        <td style="padding:2px 0;color:#5c6b64;">Dikembalikan ke Anda</td>
+        <td style="padding:2px 0;text-align:right;color:#5c6b64;">&minus; {{ rupiah($order->dikembalikan) }}</td>
+      </tr>
+    @else
+      <tr>
+        <td style="padding:2px 0;color:#5c6b64;">Sudah dibayar</td>
+        <td style="padding:2px 0;text-align:right;color:#5c6b64;">{{ rupiah($order->sudah_dibayar) }}</td>
+      </tr>
+    @endif
     <tr>
       <td style="padding:2px 0;font-weight:bold;">Sisa tagihan</td>
       <td style="padding:2px 0;text-align:right;font-weight:bold;color:#ff5a1f;">

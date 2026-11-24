@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\MetodeAmbil;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\PaymentType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -49,6 +50,7 @@ class Order extends Model
             'lacak_riwayat' => 'array',
             'lacak_pada' => 'datetime',
             'diskon' => 'integer',
+            'total_dikabarkan' => 'integer',
             'target_siap_pada' => 'date',
             'kadaluarsa_pada' => 'datetime',
             'siap_pada' => 'datetime',
@@ -109,9 +111,32 @@ class Order extends Model
             - $this->diskon;
     }
 
+    /**
+     * Uang pelanggan yang dipegang toko: pembayaran yang diterima dikurangi
+     * kelebihan bayar yang sudah dikembalikan (KEP-158). Sisa tagihan,
+     * kelebihan bayar, dan hitungan pembatalan semuanya berpijak di sini.
+     */
     public function getSudahDibayarAttribute(): int
     {
-        return (int) $this->payments->where('status', PaymentStatus::LUNAS)->sum('jumlah');
+        $lunas = $this->payments->where('status', PaymentStatus::LUNAS);
+
+        return (int) $lunas->where('jenis', '!==', PaymentType::PENGEMBALIAN)->sum('jumlah')
+            - (int) $lunas->where('jenis', PaymentType::PENGEMBALIAN)->sum('jumlah');
+    }
+
+    /** Kelebihan bayar yang sudah dikembalikan ke pelanggan (KEP-158). */
+    public function getDikembalikanAttribute(): int
+    {
+        return (int) $this->payments
+            ->where('status', PaymentStatus::LUNAS)
+            ->where('jenis', PaymentType::PENGEMBALIAN)
+            ->sum('jumlah');
+    }
+
+    /** Uang pelanggan yang masih harus dikembalikan, misalnya setelah potongan. */
+    public function getKelebihanBayarAttribute(): int
+    {
+        return max(0, $this->sudah_dibayar - $this->total);
     }
 
     public function getSisaTagihanAttribute(): int

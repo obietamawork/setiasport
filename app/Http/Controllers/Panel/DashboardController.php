@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Panel;
 use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\PaymentType;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
@@ -37,6 +38,7 @@ class DashboardController extends Controller
              */
             'pesananHariIni' => Order::whereDate('created_at', $hariIni)->count(),
             'uangHariIni' => (int) Payment::where('status', PaymentStatus::LUNAS)
+                ->where('jenis', '!=', PaymentType::PENGEMBALIAN->value)
                 ->whereDate('dibayar_pada', $hariIni)
                 ->sum('jumlah'),
             // Kartu "Siap diambil/kirim" dari gambar contoh: yang menunggu

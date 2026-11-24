@@ -190,16 +190,29 @@
         <td class="garis">Total</td>
         <td class="garis angka">{{ rupiah($pesanan->total) }}</td>
     </tr>
+    @if ($pesanan->dikembalikan > 0)
+        <tr>
+            <td></td>
+            <td>Dibayar</td>
+            <td class="angka">{{ rupiah($pesanan->sudah_dibayar + $pesanan->dikembalikan) }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>Dikembalikan</td>
+            <td class="angka">&minus; {{ rupiah($pesanan->dikembalikan) }}</td>
+        </tr>
+    @else
+        <tr>
+            <td></td>
+            <td>Sudah dibayar</td>
+            <td class="angka">{{ rupiah($pesanan->sudah_dibayar) }}</td>
+        </tr>
+    @endif
     <tr>
         <td></td>
-        <td>Sudah dibayar</td>
-        <td class="angka">{{ rupiah($pesanan->sudah_dibayar) }}</td>
-    </tr>
-    <tr>
-        <td></td>
-        <td class="garis">{{ $pesanan->sudah_dibayar > $pesanan->total ? 'Kelebihan bayar' : 'Sisa tagihan' }}</td>
+        <td class="garis">{{ $pesanan->kelebihan_bayar > 0 ? 'Kelebihan bayar' : 'Sisa tagihan' }}</td>
         <td class="garis angka">
-            {{ rupiah(abs($pesanan->total - $pesanan->sudah_dibayar)) }}
+            {{ rupiah($pesanan->kelebihan_bayar > 0 ? $pesanan->kelebihan_bayar : $pesanan->sisa_tagihan) }}
         </td>
     </tr>
 </table>

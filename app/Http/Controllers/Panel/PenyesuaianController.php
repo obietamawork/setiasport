@@ -10,6 +10,7 @@ use App\Services\AlurPesanan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Perubahan pesanan setelah DP masuk (KEP-007).
@@ -46,6 +47,25 @@ class PenyesuaianController extends Controller
         $keterangan = trim((string) ($isian['keterangan'] ?? ''));
         $potong = $isian['jenis'] === 'potong' || $isian['alasan'] === 'Diskon khusus';
 
+        // Paket yang sudah berangkat tidak bisa ditagih lagi: barangnya sudah
+        // di tangan pelanggan dan tidak ada yang bisa menahannya (KEP-158).
+        if (! $potong && $pesanan->dikirim_pada !== null) {
+            throw ValidationException::withMessages([
+                'jenis' => 'Paketnya sudah berangkat, jadi tagihan tidak bisa ditambah lagi. Potongan tetap bisa.',
+            ]);
+        }
+
+        // Salah ketik satu nol tidak boleh membuat total pesanan minus (KEP-158).
+        if ($potong) {
+            $total = $pesanan->load(['items.options', 'items.rosters', 'payments', 'adjustments'])->total;
+
+            if ($isian['nominal'] > $total) {
+                throw ValidationException::withMessages([
+                    'nominal' => 'Potongan melebihi total pesanan '.rupiah($total).'.',
+                ]);
+            }
+        }
+
         $data = [
             'deskripsi' => match (true) {
                 $isian['alasan'] === 'Lainnya' => $keterangan,
@@ -71,6 +91,14 @@ class PenyesuaianController extends Controller
     {
         abort_unless($penyesuaian->order_id === $pesanan->id, 404);
         abort_if($pesanan->status->final(), 422, 'Pesanan ini sudah selesai atau dibatalkan.');
+
+        // Menghapus potongan menaikkan tagihan, dan itu tertutup begitu paket
+        // berangkat (KEP-158).
+        if ($penyesuaian->jumlah < 0 && $pesanan->dikirim_pada !== null) {
+            throw ValidationException::withMessages([
+                'penyesuaian' => 'Paketnya sudah berangkat. Menghapus potongan ini akan menaikkan tagihan, jadi tidak bisa lagi.',
+            ]);
+        }
 
         ActivityLog::catat('penyesuaian.dihapus', $pesanan, [
             'deskripsi' => $penyesuaian->deskripsi,

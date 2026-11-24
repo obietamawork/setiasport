@@ -6,6 +6,7 @@
 @php
     use App\Enums\PaymentMethod;
     use App\Enums\PaymentStatus;
+    use App\Enums\PaymentType;
 @endphp
 
 <section id="pembayaran" class="kartu-bayar scroll-mt-32">
@@ -33,16 +34,21 @@
                     <dt class="text-muted">Metode</dt>
                     <dd class="font-medium">{{ $bayar->metode->label() }}</dd>
                     <dt class="text-muted">Jumlah</dt>
-                    <dd class="tabular font-semibold">{{ rupiah($bayar->jumlah) }}</dd>
+                    {{-- Pengembalian kelebihan bayar adalah uang keluar (KEP-158). --}}
+                    <dd class="tabular font-semibold">{{ $bayar->jenis === PaymentType::PENGEMBALIAN ? '−' : '' }}{{ rupiah($bayar->jumlah) }}</dd>
                     <dt class="text-muted">Jenis</dt>
                     <dd>{{ $bayar->jenis->label() }}</dd>
                     <dt class="text-muted">Status</dt>
                     <dd>
-                        <span class="chip {{ match ($bayar->status) {
-                            PaymentStatus::LUNAS => 'chip-ok',
-                            PaymentStatus::MENUNGGU => 'chip-kuning',
-                            PaymentStatus::GAGAL, PaymentStatus::KADALUARSA => 'chip-netral',
-                        } }}">{{ $bayar->status->label() }}</span>
+                        @if ($bayar->jenis === PaymentType::PENGEMBALIAN)
+                            <span class="chip chip-netral">Sudah dikembalikan</span>
+                        @else
+                            <span class="chip {{ match ($bayar->status) {
+                                PaymentStatus::LUNAS => 'chip-ok',
+                                PaymentStatus::MENUNGGU => 'chip-kuning',
+                                PaymentStatus::GAGAL, PaymentStatus::KADALUARSA => 'chip-netral',
+                            } }}">{{ $bayar->status->label() }}</span>
+                        @endif
                     </dd>
                 </dl>
 

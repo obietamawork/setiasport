@@ -12,6 +12,7 @@ use App\Enums\PaymentType;
 use App\Enums\ProductionStage;
 use App\Enums\ProductionStatus;
 use App\Enums\StatusPembatalan;
+use App\Jobs\KabarkanTagihanDiperbarui;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatusLog;
@@ -259,6 +260,11 @@ class AlurPesanan
             $this->sinkronkan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']));
             $this->rapikanTagihan($order->fresh(['items.options', 'items.rosters', 'payments', 'adjustments']));
         });
+
+        // Pelanggan dikabari setelah jeda, supaya beberapa perubahan beruntun
+        // sampai sebagai satu email berisi keadaan terakhir (KEP-158).
+        KabarkanTagihanDiperbarui::dispatch($order->id)
+            ->delay(now()->addMinutes(KabarkanTagihanDiperbarui::JEDA_MENIT));
     }
 
     /**

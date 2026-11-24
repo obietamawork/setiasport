@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Panel;
 use App\Enums\FulfillmentType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\PaymentType;
 use App\Enums\StatusPembatalan;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
@@ -37,8 +38,11 @@ class LaporanController extends Controller
 
         // Uang yang benar-benar diterima, bukan nilai pesanan. Inilah angka yang
         // bisa dicocokkan dengan rekening dan laci kasir.
+        // Pengembalian kelebihan bayar (KEP-158) adalah uang keluar; ia masuk
+        // angka "dikembalikan", bukan uang masuk.
         $pembayaran = Payment::query()
             ->where('status', PaymentStatus::LUNAS)
+            ->where('jenis', '!=', PaymentType::PENGEMBALIAN->value)
             ->whereBetween('dibayar_pada', [$dari, $sampai])
             ->get();
 
@@ -68,7 +72,12 @@ class LaporanController extends Controller
             'dikembalikan' => (int) Pembatalan::query()
                 ->where('status', StatusPembatalan::DISETUJUI->value)
                 ->whereBetween('diputuskan_pada', [$dari, $sampai])
-                ->sum('refund_jumlah'),
+                ->sum('refund_jumlah')
+                + (int) Payment::query()
+                    ->where('status', PaymentStatus::LUNAS)
+                    ->where('jenis', PaymentType::PENGEMBALIAN->value)
+                    ->whereBetween('dibayar_pada', [$dari, $sampai])
+                    ->sum('jumlah'),
             'perMetode' => $pembayaran->groupBy(fn (Payment $p) => $p->metode->label())
                 ->map(fn ($g) => ['jumlah' => (int) $g->sum('jumlah'), 'transaksi' => $g->count()])
                 ->sortByDesc('jumlah'),

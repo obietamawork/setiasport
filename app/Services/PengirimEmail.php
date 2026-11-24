@@ -33,6 +33,7 @@ class PengirimEmail
         'pesanan-dikirim' => 'Pesanan %s sudah dikirim, ini nomor resinya',
         'pengingat-ambil' => 'Pengingat: pesanan %s masih menunggu diambil',
         'pembatalan-diputuskan' => 'Keputusan pengajuan pembatalan pesanan %s',
+        'tagihan-diperbarui' => 'Tagihan pesanan %s diperbarui',
     ];
 
     /** Template yang masih dikenal, untuk tombol kirim ulang (KEP-098). */

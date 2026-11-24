@@ -5550,6 +5550,53 @@ Kalimat halaman setelah mendaftar juga dibuat lebih formal ("Verifikasi email An
 
 ---
 
+## KEP-158 — Tagihan yang berubah: kabar email, pengembalian, dan batas
+**Status:** TERKUNCI · 2026-11-25
+
+Pemilik proyek menyetujui empat penutup celah pada tagihan yang berubah setelah pesanan dibuat.
+Biaya layanan tetap berlaku untuk semua pesanan, termasuk pesanan manual pembeli tunai di toko
+(KEP-048 tidak berubah).
+
+**1. Pelanggan dikabari saat tagihannya berubah**
+
+- Setiap kali staf menambah atau menghapus penyesuaian, mengisi ongkir, atau mengubah isi
+  pesanan, email **"Tagihan pesanan diperbarui"** dijadwalkan **10 menit** kemudian.
+- Perubahan beruntun dalam jeda itu menumpang pada satu email yang sama, dan isinya dibaca saat
+  dikirim: rincian terbaru, total, yang sudah dibayar, sisa atau kelebihan, dan kapan membayarnya.
+- Email dilewati bila total sama dengan yang terakhir dikabarkan (`orders.total_dikabarkan`),
+  misalnya penyesuaian yang ditambah lalu dihapus lagi. Pesanan yang sudah selesai atau batal
+  tidak dikabari.
+- Janji di checkout "kami kabari ongkirnya lewat email" kini benar-benar ditepati.
+- Rekening tetap tidak ditulis di email (KEP-029).
+
+**2. Pengembalian kelebihan bayar dicatat**
+
+- Kelebihan bayar (misalnya potongan pada pesanan yang sudah lunas) bisa dicatat sudah
+  dikembalikan dari ringkasan pesanan di panel: nominal (paling banyak sebesar kelebihannya),
+  tunai atau transfer, dan catatan. Izinnya sama dengan mencatat pembayaran.
+- Dicatat sebagai baris pembayaran berjenis **Pengembalian** dengan nominal positif.
+  `sudah_dibayar` kini berarti uang bersih yang dipegang toko, jadi sisa tagihan, kelebihan
+  bayar, dan hitungan pembatalan otomatis benar. Tambahan biaya sesudah pengembalian dihitung dari
+  uang bersih itu.
+- Laporan memasukkannya ke angka **Dikembalikan**, bukan uang masuk; dasbor "uang hari ini" juga
+  tidak menghitungnya.
+- Pelanggan melihat baris "Dikembalikan ke Anda" di halaman pesanan, email, dan invoice. Kelebihan
+  yang belum dikembalikan tertulis terbuka, dan halaman serah terima mengingatkan kasir.
+
+**3. Potongan tidak boleh melebihi total pesanan**
+
+Salah ketik satu nol tidak lagi bisa membuat total pesanan minus.
+
+**4. Tidak ada tambahan tagihan setelah paket berangkat**
+
+- Paket hanya berangkat setelah lunas (sudah begitu sejak awal), dan kini tagihannya juga tidak
+  bisa ditambah lagi setelah berangkat: penyesuaian tambah ditolak, potongan tidak bisa dihapus,
+  dan isi pesanan tidak bisa diubah.
+- Potongan tetap boleh, misalnya kompensasi barang rusak di jalan; kelebihannya dicatat lewat
+  nomor 2.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5711,3 +5758,4 @@ Kalimat halaman setelah mendaftar juga dibuat lebih formal ("Verifikasi email An
 | KEP-155 | Kurir yang tampil diatur dari dasbor Biteship; alamat dicari lewat kode pos, teks utuh, teks berkoma, lalu kata demi kata; kode pos tunggal langsung dipilih | TERKUNCI |
 | KEP-156 | Hanya JNE dan J&T yang ditanyakan dan ditawarkan; tarif kurir lain dibuang walau aktif di Biteship | TERKUNCI |
 | KEP-157 | Lupa sandi via email, Akun saya + buku alamat ke checkout, menu Pelanggan (Pemilik/Admin) | TERKUNCI |
+| KEP-158 | Email tagihan diperbarui, catat pengembalian kelebihan bayar, potongan maks total, tagihan terkunci setelah paket berangkat | TERKUNCI |

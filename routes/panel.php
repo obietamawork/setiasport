@@ -26,6 +26,7 @@ use App\Http\Controllers\Panel\PelangganController;
 use App\Http\Controllers\Panel\PembatalanController;
 use App\Http\Controllers\Panel\PembayaranController;
 use App\Http\Controllers\Panel\PengaturanController;
+use App\Http\Controllers\Panel\PengembalianController;
 use App\Http\Controllers\Panel\PenggunaController;
 use App\Http\Controllers\Panel\PengirimanController;
 use App\Http\Controllers\Panel\PenyesuaianController;
@@ -168,6 +169,9 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
             Route::post('pembayaran', [PembayaranController::class, 'catat'])
                 ->middleware('izin:pembayaran.catat')->name('pembayaran.catat');
+            // Kelebihan bayar yang dikembalikan (KEP-158).
+            Route::post('pengembalian', [PengembalianController::class, 'store'])
+                ->middleware('izin:pembayaran.catat')->name('pengembalian.simpan');
             Route::post('pembayaran/{pembayaran}/verifikasi', [PembayaranController::class, 'verifikasi'])
                 ->middleware('izin:pembayaran.verifikasi')->name('pembayaran.verifikasi');
             Route::post('pembayaran/{pembayaran}/tolak', [PembayaranController::class, 'tolak'])

@@ -363,17 +363,36 @@
                 <dt class="font-semibold">Total</dt>
                 <dd class="tabular font-semibold">{{ rupiah($order->total) }}</dd>
             </div>
-            @if ($order->sudah_dibayar > 0)
-                <div class="flex justify-between gap-3 text-muted">
-                    <dt>Sudah dibayar</dt>
-                    <dd class="tabular">{{ rupiah($order->sudah_dibayar) }}</dd>
-                </div>
+            @if ($order->sudah_dibayar > 0 || $order->dikembalikan > 0)
+                {{-- Kelebihan bayar yang sudah dikembalikan ditulis terbuka (KEP-158). --}}
+                @if ($order->dikembalikan > 0)
+                    <div class="flex justify-between gap-3 text-muted">
+                        <dt>Dibayar</dt>
+                        <dd class="tabular">{{ rupiah($order->sudah_dibayar + $order->dikembalikan) }}</dd>
+                    </div>
+                    <div class="flex justify-between gap-3 text-muted">
+                        <dt>Dikembalikan ke Anda</dt>
+                        <dd class="tabular">−{{ rupiah($order->dikembalikan) }}</dd>
+                    </div>
+                @else
+                    <div class="flex justify-between gap-3 text-muted">
+                        <dt>Sudah dibayar</dt>
+                        <dd class="tabular">{{ rupiah($order->sudah_dibayar) }}</dd>
+                    </div>
+                @endif
                 <div class="flex justify-between gap-3">
                     <dt class="font-semibold">Sisa tagihan</dt>
                     <dd class="tabular font-semibold {{ $order->sisa_tagihan > 0 ? 'text-merah' : 'text-ok' }}">
                         {{ $order->sisa_tagihan > 0 ? rupiah($order->sisa_tagihan) : 'Lunas' }}
                     </dd>
                 </div>
+                @if ($order->kelebihan_bayar > 0)
+                    <div class="flex justify-between gap-3">
+                        <dt class="font-semibold">Kelebihan bayar</dt>
+                        <dd class="tabular font-semibold">{{ rupiah($order->kelebihan_bayar) }}</dd>
+                    </div>
+                    <p class="text-xs leading-relaxed text-muted">Kelebihan ini akan kami kembalikan. Kami hubungi Anda untuk caranya.</p>
+                @endif
             @endif
         </dl>
     </section>

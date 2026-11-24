@@ -200,6 +200,21 @@ class BantuanController extends Controller
                             .'halaman pesanannya, jadi tulis apa adanya.',
                     ],
                     [
+                        't' => 'Apakah pelanggan tahu kalau tagihannya berubah',
+                        'j' => 'Ya. Sepuluh menit setelah Anda menambah penyesuaian, mengisi ongkir, atau '
+                            .'mengubah isi pesanan, pelanggan menerima email "Tagihan pesanan diperbarui" '
+                            .'berisi rincian terbaru dan kapan membayarnya. Beberapa perubahan dalam '
+                            .'sepuluh menit itu digabung jadi satu email. Setelah paket berangkat, tagihan '
+                            .'tidak bisa ditambah lagi; yang masih bisa hanya potongan.',
+                    ],
+                    [
+                        't' => 'Pelanggan kelebihan bayar setelah ada potongan',
+                        'j' => 'Ringkasan pesanan menampilkan "Kelebihan bayar". Kembalikan uangnya ke '
+                            .'pelanggan, tunai atau transfer, lalu tekan "Catat sudah dikembalikan" di '
+                            .'kotak yang sama. Tanpa catatan itu, laporan menghitung uang yang sebenarnya '
+                            .'sudah keluar, dan tidak ada jejak siapa yang mengembalikannya.',
+                    ],
+                    [
                         't' => 'Ongkos kirim masuk di mana',
                         'j' => 'Ongkir punya barisnya sendiri di tagihan, bukan penyesuaian biaya. Kalau '
                             .'pelanggan memilih dikirim saat memesan dan hitungan otomatisnya menyala, '

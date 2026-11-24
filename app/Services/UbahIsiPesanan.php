@@ -7,6 +7,7 @@ use App\Enums\KategoriUkuran;
 use App\Enums\PriceBasis;
 use App\Models\ActivityLog;
 use App\Models\OptionValue;
+use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemRoster;
 use App\Models\OrderStatusLog;
@@ -231,6 +232,12 @@ class UbahIsiPesanan
     private function pastikanBisaDiubah(OrderItem $item): void
     {
         abort_if($item->order->status->final(), 422, 'Pesanan ini sudah selesai atau dibatalkan.');
+
+        /** @var Order $order */
+        $order = $item->order;
+
+        // Isi paket yang sudah berangkat tidak bisa diubah lagi (KEP-158).
+        abort_if($order->dikirim_pada !== null, 422, 'Paketnya sudah berangkat, isi pesanan tidak bisa diubah lagi.');
     }
 
     /**

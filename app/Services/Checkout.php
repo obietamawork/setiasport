@@ -180,6 +180,9 @@ class Checkout
                 'kadaluarsa_pada' => $order->kadaluarsa_pada,
             ]);
 
+            // Total inilah yang dikabarkan email pesanan dibuat (KEP-158).
+            $order->forceFill(['total_dikabarkan' => $order->total])->save();
+
             OrderStatusLog::create([
                 'order_id' => $order->id,
                 'ke' => OrderStatus::MENUNGGU_PEMBAYARAN->value,

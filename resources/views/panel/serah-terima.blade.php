@@ -148,6 +148,15 @@
                                 {{ $lunas ? 'Lunas' : 'Belum lunas' }}
                             </span>
                         </div>
+                        {{-- Pelanggan sedang berdiri di depan kasir: saat paling tepat
+                             mengembalikan kelebihannya (KEP-158). --}}
+                        @if ($order->kelebihan_bayar > 0)
+                            <p class="mt-3 border-t border-line pt-3 text-sm leading-relaxed">
+                                <strong>Ada kelebihan bayar {{ rupiah($order->kelebihan_bayar) }}.</strong>
+                                Kembalikan ke pelanggan, lalu catat di
+                                <a href="{{ route('panel.pesanan.show', $order) }}" class="tautan">halaman pesanan</a>.
+                            </p>
+                        @endif
                     </div>
                 </div>
             </div>
