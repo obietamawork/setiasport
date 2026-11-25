@@ -187,6 +187,21 @@ class TagihanDiperbaruiTest extends TestCase
         $this->assertDatabaseMissing('payments', ['jenis' => PaymentType::PENGEMBALIAN->value]);
     }
 
+    public function test_pesanan_batal_tidak_bisa_dicatati_pengembalian_kelebihan_bayar(): void
+    {
+        $order = $this->pesananLunas();
+        $this->actingAs($this->admin())->post(route('panel.pesanan.batal', $order), [
+            'alasan' => 'Pelanggan membatalkan', 'refund_jumlah' => 0,
+        ])->assertSessionHasNoErrors();
+
+        $this->actingAs($this->admin())->post(route('panel.pesanan.pengembalian.simpan', $order), [
+            'jumlah' => 1_000, 'metode' => 'TUNAI',
+        ])->assertSessionHasErrors(['jumlah' => 'Pesanan ini dibatalkan. Pengembalian uangnya diatur lewat keputusan pembatalan.']);
+
+        $this->assertDatabaseMissing('payments', ['jenis' => PaymentType::PENGEMBALIAN->value]);
+        $this->assertSame(0, $this->segar($order)->kelebihan_bayar);
+    }
+
     public function test_staf_tanpa_izin_pembayaran_tidak_bisa_mencatat_pengembalian(): void
     {
         $order = $this->pesananLunas();

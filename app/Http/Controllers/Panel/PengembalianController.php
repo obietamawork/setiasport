@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Panel;
 
+use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
@@ -36,6 +37,14 @@ class PengembalianController extends Controller
             // Dua pencatatan bersamaan tidak boleh sama-sama lolos pemeriksaan.
             $order = Order::whereKey($pesanan->id)->lockForUpdate()->firstOrFail()
                 ->load(['items.options', 'items.rosters', 'adjustments', 'payments']);
+
+            // Jalur ini bukan untuk pembatalan: di sana jumlah yang dikembalikan
+            // sudah diputuskan menurut tahapnya, termasuk uang muka yang hangus.
+            if (in_array($order->status, [OrderStatus::DIBATALKAN, OrderStatus::KADALUARSA], true)) {
+                throw ValidationException::withMessages([
+                    'jumlah' => 'Pesanan ini dibatalkan. Pengembalian uangnya diatur lewat keputusan pembatalan.',
+                ]);
+            }
 
             if ($order->kelebihan_bayar < 1) {
                 throw ValidationException::withMessages(['jumlah' => 'Pesanan ini tidak punya kelebihan bayar.']);

@@ -5582,6 +5582,10 @@ Biaya layanan tetap berlaku untuk semua pesanan, termasuk pesanan manual pembeli
   tidak menghitungnya.
 - Pelanggan melihat baris "Dikembalikan ke Anda" di halaman pesanan, email, dan invoice. Kelebihan
   yang belum dikembalikan tertulis terbuka, dan halaman serah terima mengingatkan kasir.
+- Tidak berlaku untuk pesanan **dibatalkan atau kedaluwarsa**: uangnya diatur keputusan pembatalan
+  (KEP-098), yang bisa menahan uang muka. Tanpa batas ini, seluruh pembayaran pesanan batal terbaca
+  sebagai "kelebihan" dan bisa dikembalikan dua kali. Pesanan Selesai tetap boleh, karena
+  pengembalian sering baru dicatat setelah serah terima.
 
 **3. Potongan tidak boleh melebihi total pesanan**
 

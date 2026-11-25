@@ -133,9 +133,19 @@ class Order extends Model
             ->sum('jumlah');
     }
 
-    /** Uang pelanggan yang masih harus dikembalikan, misalnya setelah potongan. */
+    /**
+     * Uang pelanggan yang masih harus dikembalikan, misalnya setelah potongan.
+     *
+     * Nol untuk pesanan yang dibatalkan atau kedaluwarsa: uangnya diatur oleh
+     * keputusan pembatalan (KEP-098), yang bisa saja menahan uang muka, bukan
+     * dikembalikan utuh sebagai "kelebihan".
+     */
     public function getKelebihanBayarAttribute(): int
     {
+        if (in_array($this->status, [OrderStatus::DIBATALKAN, OrderStatus::KADALUARSA], true)) {
+            return 0;
+        }
+
         return max(0, $this->sudah_dibayar - $this->total);
     }
 
