@@ -63,6 +63,8 @@ export function widgetCs(awal) {
         lampiran: null,
         mengirim: false,
         galat: '',
+        // Pelanggan memilih meneruskan percakapan yang sudah ditutup (KEP-163).
+        lanjutkanLama: false,
         realtime: 'mati',
         _echo: null,
         _polling: null,
@@ -190,6 +192,41 @@ export function widgetCs(awal) {
                 this.lampiran = null;
                 if (this.$refs.berkas) this.$refs.berkas.value = '';
                 if (this.percakapan) this.percakapan = { ...this.percakapan, ...(hasil.percakapan ?? {}), status: 'TERBUKA' };
+            } catch (e) {
+                this.galat = e.message;
+            } finally {
+                this.mengirim = false;
+            }
+        },
+
+        /**
+         * Mulai percakapan baru (KEP-163). Yang masih terbuka ditutup di server
+         * dengan catatan untuk CS; widget kembali ke formulir awal dengan nama
+         * dan kontak yang sama, supaya pelanggan cukup memilih topik baru.
+         */
+        async mulaiBaru() {
+            if (this.mengirim) return;
+
+            const masihTerbuka = this.percakapan && this.percakapan.status !== 'SELESAI';
+            if (masihTerbuka && !window.confirm('Akhiri percakapan ini dan mulai yang baru? Riwayatnya tetap tersimpan di toko.')) return;
+
+            this.galat = '';
+            this.mengirim = true;
+
+            try {
+                await minta(awal.url.akhiri, { method: 'POST' });
+
+                const { nama = '', kontak = '' } = this.percakapan ?? {};
+                this.form = { topik: '', nama, kontak: kontak ?? '', kode_pesanan: '', isi: '' };
+                this.percakapan = null;
+                this.pesan = [];
+                this.lampiran = null;
+                this.lanjutkanLama = false;
+                this.hentikanPolling();
+                this._echo?.disconnect();
+                this._echo = null;
+                this.realtime = 'mati';
+                this.tahap = 'mulai';
             } catch (e) {
                 this.galat = e.message;
             } finally {

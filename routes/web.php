@@ -154,6 +154,7 @@ Route::get('/lacak/{token}/pembayaran/{pembayaran}/bukti', [BuktiBayarController
 Route::prefix('/cs')->name('cs.')->group(function () {
     Route::get('/', [CsController::class, 'status'])->middleware('throttle:30,1,cs-status')->name('status');
     Route::post('/mulai', [CsController::class, 'mulai'])->middleware('throttle:5,60,cs-mulai')->name('mulai');
+    Route::post('/akhiri', [CsController::class, 'akhiri'])->middleware('throttle:10,1,cs-akhiri')->name('akhiri');
     Route::post('/pesan', [CsController::class, 'kirim'])->middleware('throttle:20,1,cs-kirim')->name('kirim');
     Route::get('/pesan', [CsController::class, 'pesanBaru'])->middleware('throttle:20,1,cs-pesan')->name('pesan');
     Route::post('/auth', [CsController::class, 'otorisasi'])->middleware('throttle:20,1,cs-auth')->name('auth');

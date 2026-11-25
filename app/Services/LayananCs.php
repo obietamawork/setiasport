@@ -103,9 +103,10 @@ class LayananCs
             // Selama ditangani bot, percakapan tidak menunggu admin: tanpa tanda
             // "Baru", bunyi, atau email peringatan (KEP-151).
             $percakapan->update($percakapan->ditangani === 'BOT'
-                ? ['status' => 'TERBUKA', 'pesan_terakhir_pada' => now()]
+                ? ['status' => 'TERBUKA', 'ditutup_pada' => null, 'pesan_terakhir_pada' => now()]
                 : [
                     'status' => 'TERBUKA',
+                    'ditutup_pada' => null,
                     'belum_dibaca_staf' => $percakapan->belum_dibaca_staf + 1,
                     'pesan_terakhir_pada' => now(),
                     'menunggu_sejak' => $percakapan->menunggu_sejak ?? now(),
@@ -199,7 +200,7 @@ class LayananCs
             $pesan = $percakapan->pesan()->create([
                 'pengirim' => 'SISTEM',
                 'user_id' => $staf->id,
-                'isi' => 'Percakapan ditutup. Kirim pesan lagi kapan saja untuk membukanya kembali.',
+                'isi' => 'Percakapan ditutup. Anda bisa melanjutkannya atau memulai percakapan baru kapan saja.',
             ]);
 
             $percakapan->update([
@@ -207,6 +208,7 @@ class LayananCs
                 'belum_dibaca_staf' => 0,
                 'menunggu_sejak' => null,
                 'diperingatkan_pada' => null,
+                'ditutup_pada' => now(),
             ]);
 
             return $pesan;
@@ -215,6 +217,37 @@ class LayananCs
         ActivityLog::catat('cs.ditutup', $percakapan);
 
         $this->siarkan($pesan, ['pelanggan', 'staf']);
+    }
+
+    /**
+     * Pelanggan menekan "Mulai percakapan baru" (KEP-163). Percakapan yang
+     * masih terbuka ditutup dengan catatan, supaya CS tahu kenapa chat itu
+     * berhenti; riwayatnya tetap tersimpan sebagai catatan resmi.
+     */
+    public function akhiriOlehPelanggan(PercakapanCs $percakapan): void
+    {
+        if ($percakapan->status === 'SELESAI') {
+            return;
+        }
+
+        $pesan = DB::transaction(function () use ($percakapan) {
+            $pesan = $percakapan->pesan()->create([
+                'pengirim' => 'SISTEM',
+                'isi' => 'Pelanggan memulai percakapan baru. Percakapan ini ditutup.',
+            ]);
+
+            $percakapan->update([
+                'status' => 'SELESAI',
+                'belum_dibaca_staf' => 0,
+                'menunggu_sejak' => null,
+                'diperingatkan_pada' => null,
+                'ditutup_pada' => now(),
+            ]);
+
+            return $pesan;
+        });
+
+        $this->siarkan($pesan, ['staf']);
     }
 
     /**

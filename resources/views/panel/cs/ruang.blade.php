@@ -509,6 +509,22 @@
                         </form>
                     </section>
 
+                    {{-- Pelanggan kini bisa memulai percakapan baru (KEP-163); yang lama
+                         dari akun atau kontak yang sama tetap bisa dibuka untuk konteks. --}}
+                    <template x-if="terpilih.percakapan_sebelumnya?.length">
+                        <section class="rounded-[12px] border border-line bg-field p-4">
+                            <h2 class="flex items-center gap-2 font-bold"><x-ikon nama="chat" ukuran="size-5" class="text-navy-400" /> Percakapan sebelumnya</h2>
+                            <ul class="mt-3 space-y-1.5 text-sm">
+                                <template x-for="p in terpilih.percakapan_sebelumnya" :key="p.id">
+                                    <li class="flex items-center justify-between gap-3">
+                                        <button type="button" @click="pilih(p.id)" class="tautan truncate text-left" x-text="p.topik + ' · ' + p.tanggal"></button>
+                                        <span class="shrink-0 text-xs text-muted" x-text="p.status === 'SELESAI' ? 'Selesai' : 'Terbuka'"></span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </section>
+                    </template>
+
                     {{-- Catatan Internal: hanya untuk staf, tidak pernah sampai ke pelanggan. --}}
                     <section class="rounded-[12px] border border-line bg-field p-4">
                         <h2 class="flex items-center gap-2 font-bold"><x-ikon nama="daftar" ukuran="size-5" class="text-navy-400" /> Catatan Internal</h2>

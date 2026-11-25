@@ -5717,6 +5717,29 @@ pemilik dan admin, jadi panduan konveksi dibaca keduanya dan bisa dicetak.
 
 ---
 
+## KEP-163 — Pelanggan bisa memulai percakapan CS baru
+**Status:** TERKUNCI · 2026-11-25
+
+Pelanggan yang membuka chat CS selalu masuk ke percakapan lama (cookie berlaku 60 hari): topik,
+nama, kontak, dan pesanan dari chat pertama ikut terbawa, riwayatnya menumpuk, dan di perangkat
+yang dipakai bersama orang berikutnya melihat chat orang sebelumnya. Tidak ada cara memulai dari
+awal.
+
+- Widget punya tombol **Mulai baru** di kepalanya. Percakapan yang masih terbuka ditutup dengan
+  catatan sistem "Pelanggan memulai percakapan baru" (setelah konfirmasi), cookie-nya dilupakan,
+  dan widget kembali ke formulir awal dengan nama dan kontak sudah terisi. Riwayatnya tetap
+  tersimpan di panel sebagai catatan resmi.
+- Saat percakapan sudah ditutup CS, kotak ketik diganti dua pilihan: **Mulai percakapan baru**
+  (utama) atau **Lanjutkan yang ini**. Catatan penutup dari CS menyebut kedua pilihan itu.
+- Percakapan yang **ditutup lebih dari 7 hari** tidak dimuat lagi: widget langsung membuka
+  formulir baru dan perangkat itu berhenti menampilkan chat lama. Waktu tutup dicatat di kolom
+  `ditutup_pada` (yang sudah ditutup sebelumnya diisi dari waktu perubahan terakhirnya) dan
+  dikosongkan lagi kalau pelanggan membukanya kembali.
+- Panel info di ruang CS menampilkan **Percakapan sebelumnya** dari akun yang sama atau kontak yang
+  sama, supaya CS tetap punya konteks walau pelanggan memulai percakapan baru.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5883,3 +5906,4 @@ pemilik dan admin, jadi panduan konveksi dibaca keduanya dan bisa dicetak.
 | KEP-160 | Lembar kerja ikut gambar klien, tombol garis tiga di ruang CS, kalimat Lacak pesanan baru | TERKUNCI |
 | KEP-161 | Opsi potongan Pria/Wanita +Rp0 di jersey kustom, dengan gambar pembanding dan pola wanita | TERKUNCI |
 | KEP-162 | Panduan berkelompok sesuai izin, alur bernomor, lihat sebagai peran lain, panduan konveksi siap cetak A4 | TERKUNCI |
+| KEP-163 | Tombol Mulai baru, pilihan saat percakapan selesai, otomatis baru setelah 7 hari ditutup, percakapan sebelumnya di panel | TERKUNCI |

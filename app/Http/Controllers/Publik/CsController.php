@@ -62,11 +62,18 @@ class CsController extends Controller implements HasMiddleware
     {
         $percakapan = $this->percakapan($request);
 
+        // Ditutup lebih dari seminggu lalu: widget mulai dari formulir baru, dan
+        // perangkat itu berhenti menampilkan chat lama (KEP-163).
+        $lupakan = $percakapan?->sudahLamaDitutup() ?? false;
+        if ($lupakan) {
+            $percakapan = null;
+        }
+
         if ($percakapan && $percakapan->belum_dibaca_pelanggan > 0) {
             $percakapan->update(['belum_dibaca_pelanggan' => 0]);
         }
 
-        return response()->json([
+        $respons = response()->json([
             'percakapan' => $percakapan ? $this->ringkas($percakapan) : null,
             'pesan' => $percakapan
                 ? $percakapan->pesan()->with(['percakapan', 'staf'])->orderByDesc('id')->limit(100)->get()
@@ -78,6 +85,22 @@ class CsController extends Controller implements HasMiddleware
             // memperbarui token CSRF yang basi, lalu mengulang permintaannya.
             'csrf' => csrf_token(),
         ]);
+
+        return $lupakan ? $respons->withCookie(cookie()->forget(self::COOKIE)) : $respons;
+    }
+
+    /**
+     * Pelanggan memulai percakapan baru (KEP-163). Yang masih terbuka ditutup
+     * dengan catatan untuk CS; cookie-nya dilupakan, jadi perangkat ini tidak
+     * lagi menampilkan chat lama. Riwayatnya tetap ada di panel.
+     */
+    public function akhiri(Request $request): JsonResponse
+    {
+        if ($percakapan = $this->percakapan($request)) {
+            $this->cs->akhiriOlehPelanggan($percakapan);
+        }
+
+        return response()->json(['ok' => true])->withCookie(cookie()->forget(self::COOKIE));
     }
 
     /** Pesan pertama sekaligus membuka percakapan. */
@@ -179,6 +202,8 @@ class CsController extends Controller implements HasMiddleware
             'channel' => $percakapan->channel(),
             'status' => $percakapan->status,
             'nama' => $percakapan->nama,
+            // Mengisi ulang formulir saat pelanggan memulai percakapan baru (KEP-163).
+            'kontak' => $percakapan->kontak,
             // Widget menampilkan "Bicara dengan admin" selama bot yang menjawab (KEP-151).
             'ditangani' => $percakapan->ditangani,
         ];

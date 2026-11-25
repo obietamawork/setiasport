@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -20,6 +21,7 @@ use Illuminate\Support\Str;
  * @property int $gagal_bot
  * @property ?string $catatan_internal
  * @property bool $order_terverifikasi
+ * @property ?Carbon $ditutup_pada
  * @property-read ?Order $order
  * @property-read ?Customer $customer
  */
@@ -31,8 +33,14 @@ class PercakapanCs extends Model
         'token_hash', 'customer_id', 'order_id', 'order_terverifikasi', 'nama', 'kontak',
         'topik', 'catatan_internal', 'status', 'ditangani', 'alasan_serah', 'gagal_bot',
         'belum_dibaca_staf', 'belum_dibaca_pelanggan',
-        'pesan_terakhir_pada', 'menunggu_sejak', 'diperingatkan_pada', 'ip',
+        'pesan_terakhir_pada', 'menunggu_sejak', 'diperingatkan_pada', 'ditutup_pada', 'ip',
     ];
+
+    /**
+     * Percakapan yang ditutup lebih lama dari ini tidak dimuat lagi di widget
+     * pelanggan; pertanyaan berikutnya dimulai sebagai percakapan baru (KEP-163).
+     */
+    public const HARI_MULAI_BARU = 7;
 
     // Catatan internal hanya untuk staf (KEP-150): tidak ikut serialisasi bawaan.
     protected $hidden = ['token_hash', 'catatan_internal'];
@@ -45,6 +53,7 @@ class PercakapanCs extends Model
             'pesan_terakhir_pada' => 'datetime',
             'menunggu_sejak' => 'datetime',
             'diperingatkan_pada' => 'datetime',
+            'ditutup_pada' => 'datetime',
         ];
     }
 
@@ -100,6 +109,45 @@ class PercakapanCs extends Model
     public function terbuka(): bool
     {
         return $this->status === 'TERBUKA';
+    }
+
+    /** Sudah ditutup lebih dari HARI_MULAI_BARU hari: widget memulai yang baru (KEP-163). */
+    public function sudahLamaDitutup(): bool
+    {
+        return $this->status === 'SELESAI'
+            && $this->ditutup_pada !== null
+            && $this->ditutup_pada->lt(now()->subDays(self::HARI_MULAI_BARU));
+    }
+
+    /**
+     * Percakapan lain dari pelanggan yang sama, untuk konteks CS (KEP-163):
+     * dari akun yang sama, atau dari kontak yang sama persis.
+     *
+     * @return list<array{id: int, topik: string, status: string, tanggal: ?string}>
+     */
+    public function percakapanSebelumnya(): array
+    {
+        $kontak = mb_strtolower(trim((string) $this->kontak));
+
+        if ($this->customer_id === null && $kontak === '') {
+            return [];
+        }
+
+        return static::query()
+            ->whereKeyNot($this->id)
+            ->where(fn ($q) => $q
+                ->when($this->customer_id !== null, fn ($q) => $q->orWhere('customer_id', $this->customer_id))
+                ->when($kontak !== '', fn ($q) => $q->orWhereRaw('LOWER(TRIM(kontak)) = ?', [$kontak])))
+            ->orderByDesc('id')
+            ->limit(5)
+            ->get()
+            ->map(fn (self $p) => [
+                'id' => $p->id,
+                'topik' => $p->topik->label(),
+                'status' => $p->status,
+                'tanggal' => $p->created_at?->translatedFormat('j M Y'),
+            ])
+            ->all();
     }
 
     /** Nama channel realtime-nya. Aksesnya diperiksa di endpoint otorisasi. */
@@ -173,6 +221,7 @@ class PercakapanCs extends Model
             'catatan_internal' => $this->catatan_internal,
             'pelanggan' => $this->kartuPelanggan(),
             'order' => $this->order ? [...$kartu($this->order), 'terverifikasi' => $this->order_terverifikasi] : null,
+            'percakapan_sebelumnya' => $this->percakapanSebelumnya(),
             'pesanan_lain' => $this->customer
                 ? $this->customer->orders
                     ->reject(fn (Order $o) => $o->id === $this->order_id)

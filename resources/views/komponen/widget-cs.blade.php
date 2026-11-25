@@ -8,6 +8,10 @@
 --}}
 @php
     $csPercakapan = \App\Models\PercakapanCs::dariToken(request()->cookie('cs_percakapan'));
+    // Yang sudah lama ditutup diperlakukan seperti belum ada (KEP-163).
+    if ($csPercakapan?->sudahLamaDitutup()) {
+        $csPercakapan = null;
+    }
     $csPelanggan = auth('pelanggan')->user();
 
     $csAwal = [
@@ -23,6 +27,7 @@
         'url' => [
             'status' => route('cs.status'),
             'mulai' => route('cs.mulai'),
+            'akhiri' => route('cs.akhiri'),
             'kirim' => route('cs.kirim'),
             'pesan' => route('cs.pesan'),
             'auth' => route('cs.auth'),
@@ -67,12 +72,19 @@
                         {{ Str::lcfirst((string) setting('cs_jam_layanan')) }}.
                     </p>
                 </div>
-                <button type="button" @click="bukaTutup(false)" class="-mr-1 rounded-[7px] p-1.5 text-white/80 hover:bg-white/10 hover:text-white"
+                <div class="-mr-1 flex shrink-0 items-center gap-1">
+                {{-- Mulai dari awal (KEP-163): topik, nama, dan kontak bisa diisi ulang. --}}
+                <button type="button" x-show="tahap === 'obrolan'" x-cloak @click="mulaiBaru()" :disabled="mengirim"
+                        class="rounded-[7px] px-2 py-1.5 text-xs font-semibold text-white/85 hover:bg-white/10 hover:text-white">
+                    Mulai baru
+                </button>
+                <button type="button" @click="bukaTutup(false)" class="rounded-[7px] p-1.5 text-white/80 hover:bg-white/10 hover:text-white"
                         aria-label="Tutup chat">
                     <svg class="size-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
                         <path d="M5 5l10 10M15 5L5 15"/>
                     </svg>
                 </button>
+                </div>
             </div>
         </header>
 
@@ -182,15 +194,29 @@
             </div>
         </div>
 
+        {{-- Percakapan sudah ditutup CS (KEP-163): pertanyaan baru biasanya
+             topik baru, jadi "mulai baru" yang jadi tombol utama. --}}
+        <div x-show="tahap === 'obrolan' && percakapan?.status === 'SELESAI' && !lanjutkanLama" x-cloak
+             class="shrink-0 border-t border-line bg-field p-3">
+            <p class="text-sm text-muted">Percakapan sebelumnya sudah selesai.</p>
+            <div class="mt-2 flex flex-wrap items-center gap-3">
+                <button type="button" @click="mulaiBaru()" :disabled="mengirim" class="tombol tombol-navy tombol-sm">
+                    Mulai percakapan baru
+                </button>
+                <button type="button" @click="lanjutkanLama = true" class="tautan text-sm">Lanjutkan yang ini</button>
+            </div>
+        </div>
+
         {{-- Kolom tulis. --}}
-        <form x-show="tahap === 'obrolan'" @submit.prevent="kirim()" class="shrink-0 border-t border-line bg-field p-3">
+        <form x-show="tahap === 'obrolan' && (percakapan?.status !== 'SELESAI' || lanjutkanLama)"
+              @submit.prevent="kirim()" class="shrink-0 border-t border-line bg-field p-3">
             {{-- Selama asisten otomatis yang menjawab, jalan ke admin selalu terlihat. --}}
             <p x-show="percakapan && percakapan.ditangani === 'BOT' && percakapan.status !== 'SELESAI'" x-cloak class="mb-2 text-xs text-muted">
                 Dijawab asisten otomatis.
                 <button type="button" @click="pilih('Bicara dengan admin')" class="tautan font-semibold text-navy">Bicara dengan admin</button>
             </p>
             <p x-show="percakapan && percakapan.status === 'SELESAI'" class="mb-2 text-xs text-muted">
-                Percakapan sudah ditutup. Kirim pesan untuk membukanya kembali.
+                Pesan berikutnya membuka kembali percakapan ini.
             </p>
 
             <div class="flex items-end gap-2">
