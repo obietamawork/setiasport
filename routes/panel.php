@@ -43,6 +43,7 @@ use App\Http\Controllers\Panel\TemplateBalasanController;
 use App\Http\Controllers\Panel\TestimoniController;
 use App\Http\Controllers\Panel\TindakLanjutController;
 use App\Http\Controllers\Panel\WorksheetController;
+use App\Support\IsiPanduan;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('panel')->name('panel.')->group(function () {
@@ -80,6 +81,9 @@ Route::prefix('panel')->name('panel.')->group(function () {
         // Bantuan dibuka semua orang yang boleh masuk panel, tanpa izin khusus:
         // yang paling butuh penjelasan justru yang perannya paling sempit.
         Route::get('/bantuan', BantuanController::class)->name('bantuan');
+        // Versi cetak panduan konveksi (KEP-162), untuk yang mengajari karyawan.
+        Route::get('/bantuan/konveksi', [BantuanController::class, 'konveksi'])
+            ->middleware('izin:'.implode(',', IsiPanduan::IZIN_PRODUKSI))->name('bantuan.konveksi');
 
         // Kotak cari di bilah atas (KEP-111). Hasilnya disaring izin di dalam
         // controller, jadi siapa pun yang boleh masuk panel boleh mencari.

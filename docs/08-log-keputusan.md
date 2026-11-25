@@ -5690,6 +5690,33 @@ Pelanggan sering lupa bahwa jersey wanita dipotong berbeda. Klien meminta piliha
 
 ---
 
+## KEP-162 — Panduan internal A sampai Z per peran
+**Status:** TERKUNCI · 2026-11-25
+
+Klien meminta panduan internal lengkap dari awal sampai akhir, dengan bacaan yang berbeda untuk
+pemilik, admin, dan karyawan. Karyawan konveksi tidak punya akun panel; yang mengajari mereka adalah
+pemilik dan admin, jadi panduan konveksi dibaca keduanya dan bisa dicetak.
+
+- Halaman **Bantuan** menjadi panduan berkelompok: Mulai di sini, Alur pesanan A sampai Z, Tugas
+  harian, Khusus pemilik, Mengajari karyawan, dan Kamus. Isinya dipindah dari controller ke
+  `App\Support\IsiPanduan`.
+- **Alur A sampai Z** ditulis sebagai langkah bernomor: pesanan barang stok, pesanan kustom dengan
+  DP, dan pesanan dari toko atau WhatsApp. Tanya jawab lama tetap ada, ditambah bagian baru:
+  pembayaran, serah terima dan pengiriman, chat CS, akun pelanggan, banner dan portofolio,
+  pengaturan toko, laporan, serta pengguna dan PIN pekerja.
+- **Setiap bagian punya izin.** Bagian tampil kalau pembacanya punya salah satu izinnya, jadi
+  pemilik melihat semuanya, admin tidak melihat Pengaturan toko, Laporan, dan Pengguna, dan staf
+  tanpa peran hanya melihat bagian umum. Peran baru kelak otomatis mendapat bacaan sesuai izinnya.
+- Pemilik bisa **melihat panduan sebagai peran lain** ("Lihat sebagai"), misalnya sebelum mengajari
+  admin baru. Peran lain tidak bisa meminjam tampilan siapa pun.
+- **Panduan karyawan konveksi** (izin meja produksi, jadi pemilik dan admin): delapan langkah
+  memakai QR dan PIN divisi, ditambah halaman **cetak A4** berisi langkah itu dan tabel kapan tiap
+  meja menandai selesai, untuk ditempel di workshop.
+- Tes memastikan setiap izin yang disebut panduan benar-benar ada, supaya salah ketik tidak
+  menyembunyikan satu bagian dari semua orang.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5855,3 +5882,4 @@ Pelanggan sering lupa bahwa jersey wanita dipotong berbeda. Klien meminta piliha
 | KEP-159 | Token diperbarui otomatis, 419 dimuat ulang dengan pesan, berkas besar ditolak di peramban, keterangan rasio di tiap unggahan | TERKUNCI |
 | KEP-160 | Lembar kerja ikut gambar klien, tombol garis tiga di ruang CS, kalimat Lacak pesanan baru | TERKUNCI |
 | KEP-161 | Opsi potongan Pria/Wanita +Rp0 di jersey kustom, dengan gambar pembanding dan pola wanita | TERKUNCI |
+| KEP-162 | Panduan berkelompok sesuai izin, alur bernomor, lihat sebagai peran lain, panduan konveksi siap cetak A4 | TERKUNCI |
