@@ -45,6 +45,20 @@ class SesiDanUnggahTest extends TestCase
             ->assertSessionHasInput('judul', 'Promo lebaran');
     }
 
+    public function test_isian_rahasia_tidak_ikut_disimpan_saat_token_basi(): void
+    {
+        Route::post('/uji-token-basi', fn () => throw new TokenMismatchException('CSRF token mismatch.'))->middleware('web');
+
+        $this->from('/panel/akun')->post('/uji-token-basi', [
+            'name' => 'Admin Toko', 'password_sekarang' => 'sandi-lama-123', 'password' => 'baru-456',
+            'sandi_lama' => 'x', 'pin' => '1234', 'api_key' => 'rahasia',
+        ])->assertSessionHasInput('name', 'Admin Toko');
+
+        foreach (['password_sekarang', 'password', 'sandi_lama', 'pin', 'api_key'] as $rahasia) {
+            $this->assertNull(session()->getOldInput($rahasia), "{$rahasia} tidak boleh tersimpan di sesi.");
+        }
+    }
+
     public function test_permintaan_fetch_dengan_token_basi_tetap_dijawab_419(): void
     {
         Route::post('/uji-token-basi', fn () => throw new TokenMismatchException('CSRF token mismatch.'))->middleware('web');

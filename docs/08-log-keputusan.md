@@ -5618,7 +5618,8 @@ otorisasi chat realtime yang gagal berulang kali.
 - Otorisasi chat realtime membaca token saat setiap otorisasi, bukan sekali saat terhubung.
 - Kalau 419 tetap terjadi, halaman yang sama dimuat ulang dengan pesan "Halaman ini sudah terlalu
   lama terbuka, jadi kami muat ulang. Silakan ulangi tindakan tadi.", dan isian teksnya
-  dipertahankan (kecuali kata sandi dan PIN). Permintaan fetch tetap dijawab 419 JSON.
+  dipertahankan. Isian rahasia dikenali dari namanya (password, sandi, secret, token, api key, PIN)
+  dan tidak pernah ditulis ke sesi. Permintaan fetch tetap dijawab 419 JSON.
 
 **413 (berkas terlalu besar).** Server menolak kiriman di atas 10 MB sebelum aplikasi sempat
 menjawab, padahal batas di Pengaturan juga 10 MB dan banner mengirim dua gambar sekaligus.

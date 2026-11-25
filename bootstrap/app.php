@@ -74,8 +74,15 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
+            // Isian rahasia dikenali dari namanya, bukan daftar manual yang bisa
+            // tertinggal saat formulir baru ditambahkan: tidak pernah ditulis ke sesi.
+            $aman = Arr::where(
+                Arr::except($request->input(), ['_token']),
+                fn ($nilai, $kunci) => ! preg_match('/password|sandi|secret|token|api_?key|^pin$|_pin$/i', (string) $kunci),
+            );
+
             return back()
-                ->withInput(Arr::except($request->input(), ['_token', 'password', 'password_confirmation', 'sandi_lama', 'pin']))
+                ->withInput($aman)
                 ->withErrors(['sesi' => 'Halaman ini sudah terlalu lama terbuka, jadi kami muat ulang. Silakan ulangi tindakan tadi.']);
         });
 
