@@ -180,7 +180,8 @@
                              menulis "belum disetujui". --}}
                         <div class="ket">
                             <strong>Desain sudah disetujui, gambarnya tidak ada di sistem</strong><br>
-                            Minta file siap cetaknya ke admin konveksi sebelum mulai.
+                            Admin: unggah gambarnya di halaman pesanan, bagian Desain, lalu cetak ulang lembar ini.
+                            Sementara itu, minta file siap cetaknya ke admin konveksi sebelum mulai.
                             @if ($item->approvedDesign?->external_url)
                                 <br>{{ $item->approvedDesign->external_url }}
                             @endif

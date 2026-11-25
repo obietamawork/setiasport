@@ -127,6 +127,9 @@ Route::prefix('panel')->name('panel.')->group(function () {
 
         Route::post('item/{item}/mockup', [MockupController::class, 'store'])
             ->middleware('izin:produksi.desain')->name('mockup.simpan');
+        // Gambar desain yang disetujui lewat tautan saja (KEP-164).
+        Route::post('item/{item}/desain-disetujui/gambar', [MockupController::class, 'lengkapi'])
+            ->middleware('izin:produksi.desain')->name('desain.lengkapi');
 
         Route::prefix('pesanan/{pesanan}')->name('pesanan.')->group(function () {
             Route::post('item/{item}/maju', [PesananController::class, 'majukanItem'])

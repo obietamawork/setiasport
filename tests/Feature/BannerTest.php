@@ -11,6 +11,7 @@ use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -136,7 +137,7 @@ class BannerTest extends TestCase
 
         $html = $this->get(route('beranda'))->getContent();
 
-        $this->assertStringNotContainsString('<h2', substr($html, strpos($html, 'banner-jalur'), 3000));
+        $this->assertStringNotContainsString('<h2', Str::betweenFirst($html, 'banner-jalur', '</section>'));
         $this->assertStringContainsString('<span class="sr-only">Promo Canva</span>', $html);
     }
 

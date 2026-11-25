@@ -5741,6 +5741,37 @@ awal.
 
 ---
 
+## KEP-164 — Banner penuh, pembatalan kustom sampai desain, gambar desain wajib
+**Status:** TERKUNCI · 2026-11-26
+
+Revisi klien, 26 Nov 2026.
+
+**Banner penuh.** Strip empat keunggulan di bawah hero ("Produk original & berkualitas", "Harga
+terjangkau", "Bisa custom jersey sesuai desain", "Melayani ecer & grosir") dihapus. Batas tinggi
+36rem pada banner juga dilepas, karena memotong bagian bawah gambar 8:3 di layar lebar; kini
+banner tampil utuh.
+
+**Pembatalan pesanan kustom hanya sampai tahap desain.** Pelanggan bisa mengajukan pembatalan
+selama pesanan belum dikerjakan atau masih di tahap desain. Begitu desain disetujui atau barang
+masuk produksi, pengajuan ditolak dengan pesan yang jelas, dan halaman pesanan menampilkan
+"Pembatalan tidak tersedia" beserta alasannya, bukan formulir pengajuan. Kain yang sudah dicetak
+dengan nama tim tidak bisa dipakai pesanan lain. Pesanan barang stok tidak terpengaruh, dan staf
+tetap bisa membatalkan dari panel bila perlu. Sebelumnya pengajuan saat produksi diperbolehkan
+dengan uang muka hangus.
+
+**Gambar desain wajib di mockup.** Lembar kerja SS-2611-0006 hanya berisi tautan Drive karena
+mockup-nya dikirim sebagai tautan saja: pelanggan menyetujui desain tanpa melihat gambarnya, dan
+lembar kerja tidak punya gambar untuk dicetak.
+
+- Mengirim mockup ke pelanggan kini wajib menyertakan gambar. Tautan file siap cetak tetap boleh
+  ditambahkan dan ikut tercetak di lembar kerja.
+- Desain lama yang disetujui lewat tautan saja bisa dilengkapi gambarnya dari halaman pesanan,
+  bagian Desain. Persetujuan dan versinya tidak berubah, gambar yang sudah ada tidak bisa
+  ditimpa, dan tindakan itu tercatat di log aktivitas (`desain.gambar_dilengkapi`). Lembar kerja
+  yang dicetak ulang langsung memuat gambarnya.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5908,3 +5939,4 @@ awal.
 | KEP-161 | Opsi potongan Pria/Wanita +Rp0 di jersey kustom, dengan gambar pembanding dan pola wanita | TERKUNCI |
 | KEP-162 | Panduan berkelompok sesuai izin, alur bernomor, lihat sebagai peran lain, panduan konveksi siap cetak A4 | TERKUNCI |
 | KEP-163 | Tombol Mulai baru, pilihan saat percakapan selesai, otomatis baru setelah 7 hari ditutup, percakapan sebelumnya di panel | TERKUNCI |
+| KEP-164 | Strip hero dihapus, pembatalan kustom hanya sampai tahap desain, mockup wajib bergambar dan gambar desain lama bisa dilengkapi | TERKUNCI |

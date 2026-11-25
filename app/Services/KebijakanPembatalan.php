@@ -83,11 +83,32 @@ class KebijakanPembatalan
 
     public function bolehDiajukan(Order $order): bool
     {
-        // Paket yang sudah berangkat tidak bisa ditarik lewat tombol di web;
-        // itu urusan retur, dan retur selalu lewat percakapan dengan toko.
+        return $this->alasanTidakBisaDiajukan($order) === null;
+    }
+
+    /** Kenapa pelanggan tidak bisa mengajukan pembatalan, atau null kalau bisa. */
+    public function alasanTidakBisaDiajukan(Order $order): ?string
+    {
+        return match (true) {
+            // Paket yang sudah berangkat tidak bisa ditarik lewat tombol di web;
+            // itu urusan retur, dan retur selalu lewat percakapan dengan toko.
+            $order->status->final(), $order->status === OrderStatus::DIKIRIM => 'Pesanan ini tidak bisa diajukan pembatalan. Hubungi toko untuk membicarakannya.',
+            $this->pengajuanTertunda($order) !== null => 'Pengajuan pembatalan pesanan ini sedang kami periksa.',
+            // Pesanan kustom hanya bisa diajukan batal sampai tahap desain
+            // (KEP-164): setelah disetujui, kain dicetak dengan nama tim.
+            $this->tahap($order) === TahapPembatalan::PRODUKSI => 'Desain pesanan ini sudah disetujui dan masuk produksi, jadi pesanan tidak bisa dibatalkan lagi. '
+                .'Hubungi toko kalau ada kendala.',
+            default => null,
+        };
+    }
+
+    /** Pesanan masih berjalan, tetapi pengajuannya tertutup karena sudah lewat tahap desain. */
+    public function tertutupKarenaProduksi(Order $order): bool
+    {
         return ! $order->status->final()
             && $order->status !== OrderStatus::DIKIRIM
-            && $this->pengajuanTertunda($order) === null;
+            && $this->pengajuanTertunda($order) === null
+            && $this->tahap($order) === TahapPembatalan::PRODUKSI;
     }
 
     public function pengajuanTertunda(Order $order): ?Pembatalan
@@ -100,8 +121,8 @@ class KebijakanPembatalan
 
     public function ajukan(Order $order, string $alasan): Pembatalan
     {
-        abort_unless($this->bolehDiajukan($order), 422,
-            'Pesanan ini tidak bisa diajukan pembatalan. Hubungi toko untuk membicarakannya.');
+        $penolakan = $this->alasanTidakBisaDiajukan($order);
+        abort_if($penolakan !== null, 422, (string) $penolakan);
 
         return $order->pembatalans()->create([
             'status' => StatusPembatalan::DIAJUKAN,

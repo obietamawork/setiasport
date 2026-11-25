@@ -42,7 +42,7 @@ class TampilanPublikTest extends TestCase
 
     /**
      * Permintaan klien (KEP-102): tombol kedua di hero "Hubungi Kami", bukan
-     * "Buat jersey custom", dan strip keunggulan tanpa kalimat penjelas.
+     * "Buat jersey custom". Strip keunggulannya kemudian dihapus (KEP-164).
      */
     public function test_hero_beranda_mengajak_menghubungi_toko(): void
     {
@@ -51,7 +51,9 @@ class TampilanPublikTest extends TestCase
 
         // CS mati (bawaan instalasi): tautan WhatsApp toko yang benar-benar terbuka.
         $this->assertMatchesRegularExpression('#<a href="https://wa\.me/6285160025810[^"]*" target="_blank"[^>]*>\s*<svg[\s\S]*?</svg>\s*Hubungi Kami#', $hero);
-        $this->assertStringContainsString('Melayani ecer &amp; grosir', $hero);
+        // Strip keunggulan di bawah hero dihapus atas permintaan klien (KEP-164):
+        // banner tampil penuh tanpa bilah di bawahnya.
+        $this->assertStringNotContainsString('Melayani ecer &amp; grosir', $hero);
         $this->assertStringNotContainsString('Buat jersey custom', $html);
         $this->assertStringNotContainsString('dipertanggungjawabkan', $html);
 

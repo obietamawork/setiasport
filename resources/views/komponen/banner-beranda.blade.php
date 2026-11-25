@@ -33,7 +33,7 @@
                          alt="{{ $b->teks_di_atas || $tautan ? '' : $b->judul }}"
                          width="1920" height="720"
                          @if ($i === 0) fetchpriority="high" @else loading="lazy" @endif
-                         class="block aspect-square w-full object-cover sm:aspect-[8/3] sm:max-h-[36rem]">
+                         class="block aspect-square w-full object-cover sm:aspect-[8/3]">
                 </picture>
 
                 @if ($b->teks_di_atas)

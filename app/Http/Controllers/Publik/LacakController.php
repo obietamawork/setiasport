@@ -138,6 +138,9 @@ class LacakController extends Controller
             // tombol, bukan sesudahnya.
             'pembatalan' => [
                 'boleh' => $this->kebijakan->bolehDiajukan($order),
+                // Tertutup karena desain sudah disetujui (KEP-164): pelanggan
+                // diberi tahu kenapa tombolnya tidak ada, bukan dibiarkan mencari.
+                'tertutup' => $this->kebijakan->tertutupKarenaProduksi($order),
                 'tahap' => $this->kebijakan->tahap($order),
                 'usulan' => $this->kebijakan->refundUsulan($order),
                 'terakhir' => $order->pembatalans->first(),

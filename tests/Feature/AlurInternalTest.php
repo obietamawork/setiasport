@@ -397,14 +397,14 @@ class AlurInternalTest extends TestCase
         $item = $this->keTahap($order->items()->firstOrFail(), OrderItemStatus::PROSES_DESAIN);
 
         $this->actingAs($this->owner())
-            ->post(route('panel.mockup.simpan', $item), ['tautan' => 'https://contoh.test/v1'])
+            ->post(route('panel.mockup.simpan', $item), ['preview' => UploadedFile::fake()->image('v1.jpg'), 'tautan' => 'https://contoh.test/v1'])
             ->assertSessionHas('sukses');
 
         Mail::assertQueued(EmailPesanan::class, fn (EmailPesanan $m) => $m->template === 'mockup-siap');
 
         $item->update(['jumlah_revisi' => 3]);
 
-        $this->post(route('panel.mockup.simpan', $item), ['tautan' => 'https://contoh.test/v2'])
+        $this->post(route('panel.mockup.simpan', $item), ['preview' => UploadedFile::fake()->image('v2.jpg'), 'tautan' => 'https://contoh.test/v2'])
             ->assertSessionHas('sukses');
 
         $item = $item->fresh();
@@ -418,7 +418,7 @@ class AlurInternalTest extends TestCase
 
         // Yang sudah disetujui tidak bisa diganti lagi.
         $this->keTahap($item, OrderItemStatus::ANTRIAN_PRODUKSI);
-        $this->post(route('panel.mockup.simpan', $item), ['tautan' => 'https://contoh.test/v3'])
+        $this->post(route('panel.mockup.simpan', $item), ['preview' => UploadedFile::fake()->image('v3.jpg'), 'tautan' => 'https://contoh.test/v3'])
             ->assertSessionHasErrors('alur');
     }
 
@@ -433,8 +433,8 @@ class AlurInternalTest extends TestCase
         $item = $this->keTahap($order->items()->firstOrFail(), OrderItemStatus::PROSES_DESAIN);
 
         $this->actingAs($this->owner());
-        $this->post(route('panel.mockup.simpan', $item), ['tautan' => 'https://contoh.test/v1']);
-        $this->post(route('panel.mockup.simpan', $item), ['tautan' => 'https://contoh.test/v2']);
+        $this->post(route('panel.mockup.simpan', $item), ['preview' => UploadedFile::fake()->image('v1.jpg'), 'tautan' => 'https://contoh.test/v1']);
+        $this->post(route('panel.mockup.simpan', $item), ['preview' => UploadedFile::fake()->image('v2.jpg'), 'tautan' => 'https://contoh.test/v2']);
         auth('web')->logout();
 
         $this->post(route('lacak.item.setujui', [$order->access_token, $item]), [

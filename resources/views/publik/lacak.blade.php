@@ -461,10 +461,24 @@
         </section>
     @endif
 
+    @if ($pembatalan['tertutup'])
+        {{-- Pesanan kustom hanya bisa diajukan batal sampai tahap desain (KEP-164). --}}
+        <section class="kartu mt-8 p-5">
+            <h2 class="flex items-center gap-2.5 font-bold">
+                <x-ikon nama="peringatan" class="text-navy-400" /> Pembatalan tidak tersedia
+            </h2>
+            <p class="mt-1 text-sm leading-relaxed text-muted">
+                Desain pesanan ini sudah disetujui dan masuk produksi. Kain dicetak khusus dengan desain dan
+                nama tim Anda, jadi pesanan tidak bisa dibatalkan lagi. Kalau ada kendala, hubungi kami lewat
+                {{ kanal_kontak() }}.
+            </p>
+        </section>
+    @endif
+
     @if ($pembatalan['boleh'])
         {{-- Kartu terbuka seperti gambar klien (KEP-128). Kalimat di bawah
-             judulnya ketentuan toko untuk tahap ini, bukan kalimat di gambar:
-             pembatalan saat produksi tetap boleh, hanya uang mukanya hangus. --}}
+             judulnya ketentuan toko untuk tahap ini. Pesanan kustom hanya bisa
+             diajukan sampai tahap desain (KEP-164). --}}
         <section class="kartu-bayar mt-8">
             <h2 class="flex items-center gap-2.5 text-xl font-extrabold">
                 <x-ikon nama="chat" class="text-navy-700" /> Ajukan pembatalan pesanan

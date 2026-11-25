@@ -140,6 +140,32 @@
                     </div>
                 @endif
 
+                {{-- Disetujui lewat tautan saja (KEP-164): gambarnya dilengkapi supaya
+                     tercetak di lembar kerja. Persetujuannya tidak berubah. --}}
+                @if ($item->sudahDisetujui() && $item->approvedDesign && ! $item->approvedDesign->path && $izin->punyaIzin('produksi.desain'))
+                    <form method="POST" action="{{ route('panel.desain.lengkapi', $item) }}" enctype="multipart/form-data"
+                          class="mt-3 rounded-[10px] border border-kuning/50 bg-kuning-50 p-3 text-sm">
+                        @csrf
+                        <p class="font-semibold">Gambar desain yang disetujui belum ada</p>
+                        <p class="mt-0.5 leading-relaxed text-muted">
+                            Desain ini disetujui pelanggan lewat tautan saja, jadi lembar kerja tidak punya gambar.
+                            Unggah gambar desain versi {{ $item->approvedDesign->versi }} yang disetujui, lalu cetak ulang lembar kerjanya.
+                        </p>
+                        <div class="mt-2 flex flex-wrap items-end gap-2">
+                            <div class="min-w-56 flex-1">
+                                <label for="gambar-disetujui-{{ $item->id }}" class="sr-only">Gambar desain yang disetujui</label>
+                                <input type="file" id="gambar-disetujui-{{ $item->id }}" name="gambar"
+                                       accept=".jpg,.jpeg,.png,.webp" required class="kotak-input bg-field">
+                            </div>
+                            <button type="submit" class="tombol tombol-navy tombol-sm">Simpan gambar</button>
+                        </div>
+                        <x-keterangan-unggah rasio="bebas, tidak dipotong" ukuran="lebar 1200–1400 px" />
+                        @error('gambar')
+                            <p class="mt-1 text-merah">{{ $message }}</p>
+                        @enderror
+                    </form>
+                @endif
+
                 {{-- Mockup versi baru selama pelanggan belum menyetujui (KEP-098). --}}
                 @if ($menunggu && $izin->punyaIzin('produksi.desain'))
                     <details class="mt-3 border-t border-line pt-3">
@@ -148,11 +174,11 @@
                               enctype="multipart/form-data" class="mt-3 flex flex-wrap items-end gap-3">
                             @csrf
                             <div class="w-56">
-                                <label for="preview-{{ $item->id }}" class="label-form">Preview mockup</label>
+                                <label for="preview-{{ $item->id }}" class="label-form">Gambar mockup</label>
                                 <input type="file" id="preview-{{ $item->id }}" name="preview"
-                                       accept=".jpg,.jpeg,.png,.webp" class="kotak-input">
+                                       accept=".jpg,.jpeg,.png,.webp" required class="kotak-input">
                                 <x-keterangan-unggah rasio="bebas, tidak dipotong" ukuran="lebar 1200–1400 px">
-                                    Depan dan belakang boleh dalam satu gambar.
+                                    Wajib: pelanggan menyetujui dari gambar ini, dan gambar ini yang tercetak di lembar kerja.
                                 </x-keterangan-unggah>
                             </div>
                             <div class="min-w-56 flex-1">

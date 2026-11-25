@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentType;
+use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -449,6 +450,77 @@ class KustomFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Desain sudah disetujui, gambarnya tidak ada di sistem')
             ->assertDontSee('Desain belum disetujui pelanggan');
+    }
+
+    /**
+     * Mockup yang dikirim hanya berupa tautan membuat pelanggan menyetujui
+     * desain tanpa melihat gambarnya, dan lembar kerja tidak punya gambar untuk
+     * dicetak (KEP-164). Gambar wajib; tautan file siap cetak tetap boleh.
+     */
+    public function test_mockup_tanpa_gambar_ditolak_walau_ada_tautan(): void
+    {
+        $order = $this->buatPesanan(12);
+        app(AlurPesanan::class)->terimaPembayaran($order->payments->first());
+        $item = $order->items()->first();
+        $this->isiRoster($order, $item, 12);
+
+        $this->actingAs($this->staf('admin@setiasport.test'))
+            ->post(route('panel.mockup.simpan', $item), ['tautan' => 'https://drive.contoh/desain'])
+            ->assertSessionHasErrors(['preview' => 'Unggah gambar mockup: pelanggan menyetujui desain dari gambar ini, '
+                .'dan gambar ini yang tercetak di lembar kerja. Tautan file siap cetak boleh ditambahkan.']);
+
+        $this->assertSame(0, $item->designAssets()->count());
+    }
+
+    /**
+     * Pesanan lama yang disetujui lewat tautan saja (KEP-164): gambarnya bisa
+     * dilengkapi tanpa mengubah persetujuan, lalu tercetak di lembar kerja.
+     */
+    public function test_gambar_desain_yang_disetujui_bisa_dilengkapi_lalu_tercetak(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+        $this->setujui($item);
+        $item->fresh()->approvedDesign->update(['path' => null, 'external_url' => 'https://drive.contoh/desain']);
+        $disetujuiPada = $item->fresh()->approved_at;
+
+        $this->actingAs($this->staf('admin@setiasport.test'))
+            ->post(route('panel.desain.lengkapi', $item), ['gambar' => UploadedFile::fake()->image('desain-final.jpg')])
+            ->assertSessionHas('sukses');
+
+        $item = $item->fresh(['approvedDesign']);
+        $this->assertNotNull($item->approvedDesign->path);
+        $this->assertSame('https://drive.contoh/desain', $item->approvedDesign->external_url);
+        $this->assertEquals($disetujuiPada, $item->approved_at);
+        $this->assertTrue(ActivityLog::where('aksi', 'desain.gambar_dilengkapi')->exists());
+
+        $this->get(route('panel.pesanan.worksheet', $item->order))
+            ->assertOk()
+            ->assertSee($item->approvedDesign->path)
+            ->assertDontSee('gambarnya tidak ada di sistem');
+    }
+
+    public function test_gambar_desain_yang_sudah_ada_tidak_bisa_ditimpa(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+        $this->setujui($item);
+        $lama = $item->fresh()->approvedDesign->path;
+
+        $this->actingAs($this->staf('admin@setiasport.test'))
+            ->post(route('panel.desain.lengkapi', $item), ['gambar' => UploadedFile::fake()->image('lain.jpg')])
+            ->assertSessionHasErrors('alur');
+
+        $this->assertSame($lama, $item->fresh()->approvedDesign->path);
+    }
+
+    public function test_melengkapi_gambar_desain_butuh_izin_desain(): void
+    {
+        $item = $this->siapkanMenungguPersetujuan();
+        $this->setujui($item);
+        $tanpaPeran = User::create(['name' => 'Kasir', 'email' => 'kasir@contoh.test', 'password' => 'rahasia-123', 'aktif' => true]);
+
+        $this->actingAs($tanpaPeran)
+            ->post(route('panel.desain.lengkapi', $item), ['gambar' => UploadedFile::fake()->image('desain.jpg')])
+            ->assertForbidden();
     }
 
     /** Menjalankan antrian produksi sampai item meninggalkan Finishing & Packing. */

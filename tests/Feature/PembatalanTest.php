@@ -110,8 +110,12 @@ class PembatalanTest extends TestCase
         );
     }
 
-    /** Ketentuan ketiga: kain sudah tercetak dengan nama tim, uang muka hangus. */
-    public function test_setelah_masuk_produksi_tidak_ada_pengembalian(): void
+    /**
+     * Pesanan kustom hanya bisa diajukan batal sampai tahap desain (KEP-164):
+     * setelah desain disetujui, kain dicetak dengan nama tim dan tidak bisa
+     * dipakai pesanan lain.
+     */
+    public function test_pesanan_kustom_yang_melewati_desain_tidak_bisa_diajukan(): void
     {
         $order = $this->pesananDibayar();
         $order->items->first()->update([
@@ -119,10 +123,28 @@ class PembatalanTest extends TestCase
             'approved_at' => now(),
         ]);
 
-        $pembatalan = $this->ajukan($order->fresh(['items.options', 'payments', 'adjustments']));
+        $this->post(route('lacak.pembatalan', $order->access_token), ['alasan' => 'Turnamennya diundur.'])
+            ->assertSessionHasErrors(['alur' => 'Desain pesanan ini sudah disetujui dan masuk produksi, jadi pesanan tidak bisa dibatalkan lagi. Hubungi toko kalau ada kendala.']);
 
-        $this->assertSame(TahapPembatalan::PRODUKSI, $pembatalan->tahap);
-        $this->assertSame(0, $pembatalan->refund_usulan);
+        $this->assertSame(0, Pembatalan::count());
+        $this->get(route('lacak.token', $order->access_token))
+            ->assertDontSee('Ajukan pembatalan pesanan')
+            ->assertSee('Pembatalan tidak tersedia');
+    }
+
+    /** Desain yang baru disetujui, sebelum kainnya dicetak, juga sudah melewati tahap desain. */
+    public function test_desain_disetujui_menutup_pengajuan_walau_produksi_belum_mulai(): void
+    {
+        $order = $this->pesananDibayar();
+        $order->items->first()->update([
+            'status_item' => OrderItemStatus::ANTRIAN_PRODUKSI,
+            'approved_at' => now(),
+        ]);
+
+        $this->post(route('lacak.pembatalan', $order->access_token), ['alasan' => 'Batal ikut lomba.'])
+            ->assertSessionHasErrors('alur');
+
+        $this->assertSame(0, Pembatalan::count());
     }
 
     /**
@@ -244,13 +266,11 @@ class PembatalanTest extends TestCase
     public function test_ketentuan_terbaca_pelanggan_sebelum_menekan_tombol(): void
     {
         $order = $this->pesananDibayar();
-        $order->items->first()->update([
-            'status_item' => OrderItemStatus::PRINTING,
-            'approved_at' => now(),
-        ]);
+        $order->items->first()->update(['status_item' => OrderItemStatus::PROSES_DESAIN]);
 
         $this->get(route('lacak.token', $order->access_token))
             ->assertOk()
-            ->assertSee('uang muka tidak dapat dikembalikan');
+            ->assertSee('Ajukan pembatalan pesanan')
+            ->assertSee('Desain sudah dikerjakan, jadi pengembalian dipotong biaya desain.');
     }
 }

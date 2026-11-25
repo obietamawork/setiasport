@@ -100,28 +100,6 @@
     </div>
     @endif
 
-    {{-- Empat alasan singkat di kaki hero, mengikuti contoh klien (KEP-102):
-         ikon dan satu label, sebaris di layar lebar, tanpa kalimat penjelas.
-         Versi sebelumnya berupa empat kotak bergaris selebar layar dengan
-         keterangan dua baris, dan terbaca sebagai bagian terpisah dari hero.
-         Di HP kisi 2×2 yang pendek. --}}
-    <div class="relative mx-auto max-w-6xl px-5 pb-8 sm:pb-10">
-        <ul class="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-white/10 pt-6 text-sm lg:grid-cols-4 lg:gap-x-0">
-            @foreach ([
-                ['produk', 'Produk original & berkualitas'],
-                ['uang', 'Harga terjangkau'],
-                ['kategori', 'Bisa custom jersey sesuai desain'],
-                ['toko', 'Melayani ecer & grosir'],
-            ] as $i => [$ikon, $label])
-                <li class="flex items-center gap-2.5 leading-snug font-medium text-white/85
-                           {{ $i === 0 ? '' : 'lg:border-l lg:border-white/15' }} {{ $i === 0 ? 'lg:pr-5' : 'lg:px-5' }}">
-                    <x-ikon :nama="$ikon" class="shrink-0 text-white/80" />
-                    {{-- Seimbang, bukan "Bisa custom jersey sesuai" lalu "desain" sendirian. --}}
-                    <span class="text-balance">{{ $label }}</span>
-                </li>
-            @endforeach
-        </ul>
-    </div>
 </section>
 
 {{-- Kategori: jalan tercepat ke barang yang dicari. Fotonya diambil dari salah

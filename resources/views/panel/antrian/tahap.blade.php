@@ -205,10 +205,10 @@
                           enctype="multipart/form-data"
                           class="flex flex-wrap items-end gap-3 border-t border-line bg-paper p-4">
                         @csrf
-                        <div class="w-56"><label for="mockup-{{ $item->id }}" class="label-form">Preview mockup</label>
-                            <input type="file" id="mockup-{{ $item->id }}" name="preview" accept=".jpg,.jpeg,.png,.webp" class="kotak-input">
+                        <div class="w-56"><label for="mockup-{{ $item->id }}" class="label-form">Gambar mockup</label>
+                            <input type="file" id="mockup-{{ $item->id }}" name="preview" accept=".jpg,.jpeg,.png,.webp" required class="kotak-input">
                             <x-keterangan-unggah rasio="bebas, tidak dipotong" ukuran="lebar 1200–1400 px">
-                                Depan dan belakang boleh dalam satu gambar.
+                                Wajib: pelanggan menyetujui dari gambar ini, dan gambar ini yang tercetak di lembar kerja.
                             </x-keterangan-unggah></div>
                         <div class="min-w-56 flex-1"><label for="tautan-{{ $item->id }}" class="label-form">Tautan file siap cetak</label>
                             <input type="url" id="tautan-{{ $item->id }}" name="tautan" class="kotak-input"
