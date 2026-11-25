@@ -99,6 +99,18 @@ export function ruangCs(awal) {
         saringBuka: false,
         memuatDaftar: false,
 
+        // Tombol hamburger (KEP-160): di layar lebar menyembunyikan kolom
+        // daftar supaya percakapan lega, dan pilihannya diingat peramban ini;
+        // di HP membuka daftar di atas percakapan yang sedang dibuka.
+        daftarTampil: (() => {
+            try {
+                return localStorage.getItem('cs-daftar-tampil') !== '0';
+            } catch {
+                return true;
+            }
+        })(),
+        daftarHp: false,
+
         terpilih: awal.terpilih?.percakapan ?? null,
         pesan: awal.terpilih?.pesan ?? [],
         memuatPercakapan: false,
@@ -240,7 +252,25 @@ export function ruangCs(awal) {
 
         /* ---- Percakapan ------------------------------------------------ */
 
+        alihDaftar() {
+            if (window.matchMedia('(min-width: 768px)').matches) {
+                this.daftarTampil = !this.daftarTampil;
+
+                try {
+                    localStorage.setItem('cs-daftar-tampil', this.daftarTampil ? '1' : '0');
+                } catch {
+                    // Penyimpanan peramban mati: pilihannya berlaku sampai halaman dimuat ulang.
+                }
+
+                return;
+            }
+
+            this.daftarHp = !this.daftarHp;
+        },
+
         async pilih(id, catatRiwayat = true) {
+            this.daftarHp = false;
+
             if (this.terpilih?.id === id && !this.memuatPercakapan) {
                 this.infoTerbuka = false;
                 return;

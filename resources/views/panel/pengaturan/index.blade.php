@@ -131,9 +131,9 @@
                                         {{ setting('qris_path') ? 'Ganti dengan gambar lain' : 'Unggah gambar QRIS' }}
                                     </label>
                                     <input type="file" id="qris" name="qris" accept="image/*" class="kotak-input" required>
-                                    <p class="mt-1 text-xs text-muted">
-                                        JPG, PNG, atau WebP, maksimal {{ setting('upload_maks_mb', 10) }} MB.
-                                    </p>
+                                    <x-keterangan-unggah rasio="bebas, tidak dipotong" ukuran="lebar minimal 800 px">
+                                        Pastikan kode QR utuh dan tajam: gambar inilah yang dipindai pelanggan.
+                                    </x-keterangan-unggah>
                                 </div>
                                 <button type="submit" class="tombol tombol-garis">Simpan gambar</button>
                             </form>

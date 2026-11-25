@@ -21,10 +21,14 @@ use App\Http\Controllers\Publik\PesananSayaController;
 use App\Http\Controllers\Publik\RollController;
 use App\Http\Controllers\Publik\SandiPelangganController;
 use App\Http\Controllers\Publik\SitemapController;
+use App\Http\Controllers\TokenSesiController;
 use App\Http\Controllers\Webhook\ResendController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', BerandaController::class)->name('beranda');
+
+// Token CSRF terkini untuk halaman yang lama terbuka (KEP-159).
+Route::get('/token-sesi', TokenSesiController::class)->middleware('throttle:60,1,token-sesi')->name('token-sesi');
 
 // Untuk mesin pencari (KEP-089). public/robots.txt sengaja tidak ada lagi:
 // berkas statis tidak bisa menyebut alamat sitemap yang bergantung pada domain.

@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-BkCbYwBg.css",
+    "file": "assets/app-GtF3oh9d.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -17,7 +17,7 @@
     "src": "resources/fonts/plus-jakarta-sans/latin.woff2"
   },
   "resources/js/app.js": {
-    "file": "assets/app-DfVkFN-G.js",
+    "file": "assets/app-BsAtFGo7.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -28,7 +28,7 @@
     ]
   },
   "resources/js/realtime.js": {
-    "file": "assets/realtime-CbGCkMWt.js",
+    "file": "assets/realtime-CfC0z_rO.js",
     "name": "realtime",
     "src": "resources/js/realtime.js",
     "isDynamicEntry": true

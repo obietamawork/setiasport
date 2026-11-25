@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="batas-unggah-mb" content="{{ batas_unggah_mb() }}">
     @hasSection('judul_lengkap')
         <title>@yield('judul_lengkap')</title>
     @else

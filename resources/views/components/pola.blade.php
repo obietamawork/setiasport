@@ -3,6 +3,7 @@
     'tampak' => 'lengkap',
     'reaktif' => false,
     'celanaOpsional' => false,
+    'model' => 'pria',
 ])
 
 @php
@@ -17,8 +18,9 @@
      *   produk. Satu bagian: depan dan belakang. Dua bagian: depan masing-masing.
      *
      * reaktif: bentuknya mengikuti pilihan di langkah pesan kustom lewat getter
-     * Alpine polaLeher, polaLenganPanjang, polaSaku, dan polaCelana. Tanpa itu
-     * yang digambar adalah bentuk bawaan polanya.
+     * Alpine polaLeher, polaLenganPanjang, polaSaku, polaCelana, dan polaWanita.
+     * Tanpa itu yang digambar adalah bentuk bawaan polanya, dengan potongan
+     * atasan dari model="pria" atau model="wanita" (KEP-161).
      *
      * @var \App\Enums\PolaPakaian $pola
      */
@@ -60,12 +62,31 @@
 
     // Badan dan lengan atasan. Lengan panjang miring 45 derajat seperti
     // gambar teknis pada umumnya; tergantung lurus, lengannya terlihat kurus.
-    $badanPendek = 'M102,18 L77,29 L44,58 L61,84 L73,68 L74,150 Q120,153 166,150 L167,68 L179,84 L196,58 L163,29 L138,18 Q120,24 102,18 Z';
-    $badanPanjang = 'M102,18 L77,29 L12,94 L6.3,99.7 L20.3,113.7 L26,108 L73,68 L74,150 Q120,153 166,150 L167,68 L214,108 L219.7,113.7 L233.7,99.7 L228,94 L163,29 L138,18 Q120,24 102,18 Z';
-    $jahitPendek = '<path class="j" d="M48,55 L65,81"/><path class="j" d="M192,55 L175,81"/>';
-    $jahitPanjang = '<path class="g" d="M12,94 L26,108"/><path class="g" d="M228,94 L214,108"/>';
-    $ketiak = '<path class="g" d="M77,29 Q70,48 73,68"/><path class="g" d="M163,29 Q170,48 167,68"/>';
-    $kelim = '<path class="j" d="M74,144 Q120,147 166,144"/>';
+    //
+    // Potongan wanita (KEP-161): bahu lebih sempit, lengan lebih pendek,
+    // pinggang mengecil lalu melebar di panggul, dan badan sedikit lebih pendek.
+    $potongan = [
+        'pria' => [
+            'pendek' => 'M102,18 L77,29 L44,58 L61,84 L73,68 L74,150 Q120,153 166,150 L167,68 L179,84 L196,58 L163,29 L138,18 Q120,24 102,18 Z',
+            'panjang' => 'M102,18 L77,29 L12,94 L6.3,99.7 L20.3,113.7 L26,108 L73,68 L74,150 Q120,153 166,150 L167,68 L214,108 L219.7,113.7 L233.7,99.7 L228,94 L163,29 L138,18 Q120,24 102,18 Z',
+            'jahitPendek' => '<path class="j" d="M48,55 L65,81"/><path class="j" d="M192,55 L175,81"/>',
+            'jahitPanjang' => '<path class="g" d="M12,94 L26,108"/><path class="g" d="M228,94 L214,108"/>',
+            'ketiak' => '<path class="g" d="M77,29 Q70,48 73,68"/><path class="g" d="M163,29 Q170,48 167,68"/>',
+            'kelim' => '<path class="j" d="M74,144 Q120,147 166,144"/>',
+        ],
+        'wanita' => [
+            'pendek' => 'M102,18 L81,27 L54,52 L68,72 L77,64 Q90,102 78,144 Q120,148 162,144 Q150,102 163,64 L172,72 L186,52 L159,27 L138,18 Q120,24 102,18 Z',
+            'panjang' => 'M102,18 L81,27 L22,86 L17,91 L30,104 L35,99 L77,64 Q90,102 78,144 Q120,148 162,144 Q150,102 163,64 L205,99 L210,104 L223,91 L218,86 L159,27 L138,18 Q120,24 102,18 Z',
+            'jahitPendek' => '<path class="j" d="M58,49 L72,69"/><path class="j" d="M182,49 L168,69"/>',
+            'jahitPanjang' => '<path class="g" d="M22,86 L35,99"/><path class="g" d="M218,86 L205,99"/>',
+            'ketiak' => '<path class="g" d="M81,27 Q74,46 77,64"/><path class="g" d="M159,27 Q166,46 163,64"/>',
+            'kelim' => '<path class="j" d="M79,138 Q120,142 161,138"/>',
+        ],
+    ];
+    $badanPanjang = $potongan['pria']['panjang'];
+    $jahitPanjang = $potongan['pria']['jahitPanjang'];
+    $ketiak = $potongan['pria']['ketiak'];
+    $model = $model === 'wanita' ? 'wanita' : 'pria';
 
     $leher = [
         'bulat' => [
@@ -111,12 +132,17 @@
                  @class(['pola', 'h-full w-full' => $tampak === 'ringkas', 'h-auto w-full' => $tampak === 'lengkap'])>
                 @if ($b === 'atasan')
                     @if ($reaktif)
-                        <g x-show="!polaLenganPanjang"><path d="{{ $badanPendek }}"/>{!! $jahitPendek !!}</g>
-                        <g x-show="polaLenganPanjang" x-cloak><path d="{{ $badanPanjang }}"/>{!! $jahitPanjang !!}</g>
+                        @foreach ($potongan as $jenisPotongan => $p)
+                            <g x-show="{{ $jenisPotongan === 'wanita' ? 'polaWanita' : '!polaWanita' }}" @if ($jenisPotongan === 'wanita') x-cloak @endif>
+                                <g x-show="!polaLenganPanjang"><path d="{{ $p['pendek'] }}"/>{!! $p['jahitPendek'] !!}</g>
+                                <g x-show="polaLenganPanjang" x-cloak><path d="{{ $p['panjang'] }}"/>{!! $p['jahitPanjang'] !!}</g>
+                                {!! $p['ketiak'] !!}{!! $p['kelim'] !!}
+                            </g>
+                        @endforeach
                     @else
-                        <path d="{{ $badanPendek }}"/>{!! $jahitPendek !!}
+                        <path d="{{ $potongan[$model]['pendek'] }}"/>{!! $potongan[$model]['jahitPendek'] !!}
+                        {!! $potongan[$model]['ketiak'] !!}{!! $potongan[$model]['kelim'] !!}
                     @endif
-                    {!! $ketiak !!}{!! $kelim !!}
 
                     @if ($reaktif)
                         @foreach ($leher as $jenis => $bentuk)

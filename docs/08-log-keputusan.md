@@ -5601,6 +5601,94 @@ Salah ketik satu nol tidak lagi bisa membuat total pesanan minus.
 
 ---
 
+## KEP-159 — Halaman yang lama terbuka dan batas unggah yang nyata
+**Status:** TERKUNCI · 2026-11-25
+
+Laporan klien 23 Nov 2026: unggah media di panel kadang gagal pada percobaan pertama. Log server
+menunjukkan dua sebab berbeda.
+
+**419 (token basi).** Sesi berakhir setelah 120 menit didiamkan, lalu cookie "ingat saya"
+memasukkan staf kembali secara diam-diam dengan sesi dan token baru. Halaman yang dibuka sebelum
+itu masih membawa token lama, jadi setiap kirimannya ditolak 419 ("Page Expired"), termasuk
+otorisasi chat realtime yang gagal berulang kali.
+
+- `app.js` meminta token terkini ke `GET /token-sesi` saat tab dibuka lagi (bila sudah lebih dari
+  semenit) dan setiap 10 menit selama tab terlihat, lalu memasangnya di meta dan semua isian
+  `_token` di halaman. Permintaan berkala itu juga menjaga sesinya tetap hidup.
+- Otorisasi chat realtime membaca token saat setiap otorisasi, bukan sekali saat terhubung.
+- Kalau 419 tetap terjadi, halaman yang sama dimuat ulang dengan pesan "Halaman ini sudah terlalu
+  lama terbuka, jadi kami muat ulang. Silakan ulangi tindakan tadi.", dan isian teksnya
+  dipertahankan (kecuali kata sandi dan PIN). Permintaan fetch tetap dijawab 419 JSON.
+
+**413 (berkas terlalu besar).** Server menolak kiriman di atas 10 MB sebelum aplikasi sempat
+menjawab, padahal batas di Pengaturan juga 10 MB dan banner mengirim dua gambar sekaligus.
+
+- Batas efektif `batas_unggah_mb()` = terkecil dari pengaturan toko, batas kiriman server dikurangi
+  1 MB, dan batas per berkas server. Di produksi hasilnya 9 MB.
+- Peramban menolak berkas di atas batas itu sebelum dikirim, dengan pesan di bawah isiannya, dan
+  menolak formulir yang total berkasnya melewati batas.
+
+**Keterangan unggah.** Setiap tempat unggah gambar menyebut rasio dan ukuran yang pas untuk tempat
+gambar itu tampil, format, dan batas efektifnya:
+
+- banner 8:3 (1920 × 720 px), banner HP 1:1 (900 × 900 px);
+- foto produk dan portofolio 1:1 (1200 × 1200 px), foto bahan 1:1 (minimal 600 × 600 px), karena
+  katalog dan beranda memotongnya persegi;
+- QRIS dan mockup tidak dipotong (lebar minimal 800 px dan 1200 sampai 1400 px);
+- bukti bayar berupa tangkapan layar utuh;
+- tombol lampiran chat menyebut batasnya.
+
+---
+
+## KEP-160 — Lembar kerja baru, daftar chat bisa disembunyikan, kalimat lacak
+**Status:** TERKUNCI · 2026-11-25
+
+Revisi tampilan dari klien, 25 Nov 2026.
+
+**Lembar kerja setelah pindai QR** mengikuti gambar klien:
+
+- kartu **Tahap Pekerjaan Saat Ini** dengan gambar alat tiap meja (desain, printer, mesin press,
+  gunting, mesin jahit, lencana finishing, kardus), nama tahap besar, dan chip "Sedang Dikerjakan";
+- isian **PIN Divisi** berikon gembok dengan tombol mata untuk melihat PIN, lalu tombol navy
+  "Tandai … Selesai" dan catatan "Hanya divisi yang berwenang dapat memperbarui progres.";
+- kartu **Progres Produksi**: centang hijau untuk tahap selesai beserta waktunya, jam biru untuk
+  tahap berjalan, lingkaran kosong untuk yang menunggu;
+- **Daftar Ukuran** yang bisa dibuka-tutup dan kotak kuning **Catatan Pesanan**.
+
+Nama pekerja yang menyelesaikan tahap tidak lagi tampil di lembar kerja, mengikuti gambar klien;
+catatannya tetap ada di panel.
+
+**Ruang CS** mendapat tombol garis tiga di bilah atas. Di layar lebar tombol itu menyembunyikan
+atau menampilkan kolom daftar chat, dan pilihannya diingat peramban. Di HP tombol itu membuka
+daftar di atas percakapan yang sedang dibuka, lalu menutup sendiri begitu chat lain dipilih.
+
+**Lacak pesanan**: kalimat di atas isian menjadi "Cara termudah adalah melalui tautan di email
+konfirmasi. Jika tidak ditemukan, masukkan nomor pesanan dan email yang digunakan saat pemesanan.",
+dan label isiannya menjadi "Nomor pesanan".
+
+---
+
+## KEP-161 — Model Jersey Pria / Wanita
+**Status:** TERKUNCI · 2026-11-25
+
+Pelanggan sering lupa bahwa jersey wanita dipotong berbeda. Klien meminta pilihan potongan
+**Pria / Wanita** di jersey kustom, dengan harga sama.
+
+- Opsi **Model Jersey** (Pria +Rp0, Wanita +Rp0) dipasang di **Custom Jersey Atasan** dan
+  **Custom Setelan Jersey**, wajib dan di urutan paling atas. Wizard memilih Pria lebih dulu,
+  jadi setiap lembar kerja menyebut potongannya dengan jelas.
+- Dipasang lewat migrasi data yang berjalan sekali, bukan lewat langkah seeder yang berjalan di
+  setiap rilis: opsi yang sengaja dihapus atau diubah pemilik toko tidak boleh muncul lagi. Produk
+  lain bisa diberi opsi yang sama dari panel (nilai "Pria" dan "Wanita").
+- Di wizard opsi ini tampil sebagai dua tombol lebar berikon kaos, diikuti **gambar pembanding**:
+  potongan pria di atas dan wanita di bawah, tampak depan dan belakang. Opsi apa pun yang nilainya
+  Pria dan Wanita ditampilkan dengan cara ini.
+- Gambar pola di atas wizard ikut berganti ke potongan wanita: bahu lebih sempit, lengan lebih
+  pendek, pinggang mengecil lalu melebar di panggul, dan badan sedikit lebih pendek. Berlaku untuk
+  lengan pendek maupun panjang.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5763,3 +5851,6 @@ Salah ketik satu nol tidak lagi bisa membuat total pesanan minus.
 | KEP-156 | Hanya JNE dan J&T yang ditanyakan dan ditawarkan; tarif kurir lain dibuang walau aktif di Biteship | TERKUNCI |
 | KEP-157 | Lupa sandi via email, Akun saya + buku alamat ke checkout, menu Pelanggan (Pemilik/Admin) | TERKUNCI |
 | KEP-158 | Email tagihan diperbarui, catat pengembalian kelebihan bayar, potongan maks total, tagihan terkunci setelah paket berangkat | TERKUNCI |
+| KEP-159 | Token diperbarui otomatis, 419 dimuat ulang dengan pesan, berkas besar ditolak di peramban, keterangan rasio di tiap unggahan | TERKUNCI |
+| KEP-160 | Lembar kerja ikut gambar klien, tombol garis tiga di ruang CS, kalimat Lacak pesanan baru | TERKUNCI |
+| KEP-161 | Opsi potongan Pria/Wanita +Rp0 di jersey kustom, dengan gambar pembanding dan pola wanita | TERKUNCI |

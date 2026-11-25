@@ -117,6 +117,7 @@
                                         ? 'Pelanggan sudah mengunggah bukti. Kosongkan untuk memakainya.'
                                         : (cs_aktif() ? 'Untuk bukti yang diterima lewat chat CS atau di toko.' : 'Untuk bukti yang diterima di toko.').' Boleh dikosongkan.' }}
                                 </p>
+                                <x-keterangan-unggah>Tangkapan layar utuh, nominal dan tanggalnya terbaca.</x-keterangan-unggah>
                             </div>
 
                             {{-- Bukti bisa diedit dalam semenit; mutasi tidak (KEP-029). --}}

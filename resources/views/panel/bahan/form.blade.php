@@ -46,13 +46,12 @@
                 <input type="file" id="gambar" name="gambar" accept="image/*" class="kotak-input"
                        @change="pratinjau = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : @js($bahan->thumb_url)"
                        @unless ($bahan->gambar_path) required @endunless>
-                <p class="mt-1 text-xs leading-relaxed text-muted">
+                <x-keterangan-unggah rasio="1:1 (persegi)" ukuran="minimal 600 × 600 px">
                     Foto dekat permukaan kain di cahaya terang, supaya emboss dan teksturnya terlihat.
-                    JPG, PNG, atau WebP, maksimal {{ setting('upload_maks_mb', 10) }} MB. Dikecilkan otomatis.
-                    @if ($bahan->exists && ! $bahan->gambar_path)
-                        <strong class="mt-1 block text-warn">Bahan ini belum berfoto. Fotonya wajib diisi sebelum disimpan.</strong>
-                    @endif
-                </p>
+                </x-keterangan-unggah>
+                @if ($bahan->exists && ! $bahan->gambar_path)
+                    <strong class="mt-1 block text-xs text-warn">Bahan ini belum berfoto. Fotonya wajib diisi sebelum disimpan.</strong>
+                @endif
             </div>
         </div>
     </div>

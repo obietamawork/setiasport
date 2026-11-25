@@ -5,8 +5,8 @@
 <div class="mx-auto max-w-lg px-5 py-14">
     <h1 class="text-3xl font-extrabold">Lacak pesanan</h1>
     <p class="mt-3 leading-relaxed text-muted">
-        Cara tercepat adalah membuka tautan di email konfirmasi Anda. Kalau emailnya
-        tidak ketemu, masukkan kode pesanan dan email yang dipakai saat memesan.
+        Cara termudah adalah melalui tautan di email konfirmasi. Jika tidak ditemukan,
+        masukkan nomor pesanan dan email yang digunakan saat pemesanan.
     </p>
 
     <form method="POST" action="{{ route('lacak.cari') }}" class="mt-8 space-y-4 border border-line bg-field p-6">
@@ -17,7 +17,7 @@
         @endif
 
         <div>
-            <label for="kode" class="label-form">Kode pesanan</label>
+            <label for="kode" class="label-form">Nomor pesanan</label>
             <input type="text" id="kode" name="kode" value="{{ old('kode') }}"
                    class="kotak-input tabular" placeholder="SS-2609-0042" required autofocus>
         </div>

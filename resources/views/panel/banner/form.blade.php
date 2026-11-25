@@ -29,10 +29,9 @@
         @endif
         <input type="file" id="gambar" name="gambar" accept="image/*" class="kotak-input"
                @unless ($banner->gambar_path) required @endunless>
-        <p class="mt-1 text-xs leading-relaxed text-muted">
-            Paling pas 1920 &times; 720 px (perbandingan 8:3). JPG, PNG, atau WebP, maksimal
-            {{ setting('upload_maks_mb', 10) }} MB; dikecilkan otomatis.
-        </p>
+        <x-keterangan-unggah rasio="8:3 (melebar)" ukuran="ideal 1920 × 720 px">
+            Letakkan tulisan penting di bagian tengah gambar.
+        </x-keterangan-unggah>
     </div>
 
     <div>
@@ -46,10 +45,10 @@
             </label>
         @endif
         <input type="file" id="gambar_hp" name="gambar_hp" accept="image/*" class="kotak-input">
-        <p class="mt-1 text-xs leading-relaxed text-muted">
-            900 &times; 900 px (persegi). Kalau kosong, di HP gambar utama dipotong bagian tengahnya, jadi
-            tulisan di tepi kiri-kanan gambar bisa terpotong.
-        </p>
+        <x-keterangan-unggah rasio="1:1 (persegi)" ukuran="ideal 900 × 900 px">
+            Kalau kosong, di HP gambar utama dipotong bagian tengahnya, jadi tulisan di tepi kiri-kanan
+            gambar bisa terpotong.
+        </x-keterangan-unggah>
     </div>
 
     <label class="flex items-start gap-2 text-sm">

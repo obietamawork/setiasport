@@ -224,6 +224,9 @@
                         {{-- Foto bahan di tiap tombol (KEP-140): pelanggan membandingkan
                              tekstur sebelum memilih. Opsi tanpa foto sama sekali (model,
                              lengan) tetap berupa tombol teks. --}}
+                        @if ($opsi->potonganBadan())
+                            @include('publik.kustom.potongan', ['opsi' => $opsi])
+                        @else
                         @php $adaFoto = $opsi->values->contains(fn ($v) => $v->material?->thumb_url); @endphp
                         <div class="mt-3 {{ $adaFoto ? 'grid grid-cols-2 gap-2 sm:grid-cols-3' : 'flex flex-wrap gap-2' }}">
                             @foreach ($opsi->values as $v)
@@ -253,6 +256,7 @@
                                 </button>
                             @endforeach
                         </div>
+                        @endif
 
                         {{-- Kamus bahan (KEP-072): penjelasan bahan yang dipilih, dengan
                              fotonya lebih besar (KEP-140); diketuk untuk ukuran penuh. --}}
@@ -1113,6 +1117,11 @@
 
             get polaCelana() {
                 return this.terpilih.some(v => /celana/i.test(v.opsiNama) && !/tanpa|tidak/i.test(v.label));
+            },
+
+            // Potongan wanita (KEP-161): pinggang mengecil, lengan lebih pendek.
+            get polaWanita() {
+                return this.terpilih.some(v => /^\s*wanita\s*$/i.test(v.label));
             },
 
             get bahanId() {

@@ -19,7 +19,7 @@
         // Dibuka dari halaman pesanan bertoken: pesanannya ikut tertaut dan terverifikasi.
         'tokenPesanan' => request()->routeIs('lacak.token') ? request()->route('token') : null,
         'realtime' => config('broadcasting.default') === 'pusher' ? config('broadcasting.klien') : null,
-        'batasFotoMb' => (int) setting('upload_maks_mb', 10),
+        'batasFotoMb' => batas_unggah_mb(),
         'url' => [
             'status' => route('cs.status'),
             'mulai' => route('cs.mulai'),
@@ -130,7 +130,7 @@
                 <div class="flex items-center justify-between gap-3">
                     <label class="cursor-pointer text-sm text-muted hover:text-ink">
                         <input type="file" accept="image/*" class="sr-only" x-ref="berkasAwal" @change="pilihLampiran($event)">
-                        <span x-text="lampiran ? lampiran.name : '+ Lampirkan foto'"></span>
+                        <span x-text="lampiran ? lampiran.name : '+ Lampirkan foto (maks {{ batas_unggah_mb() }} MB)'"></span>
                     </label>
                     <button type="submit" class="tombol tombol-utama" :disabled="mengirim">
                         <span x-text="mengirim ? 'Mengirim...' : 'Kirim'">Kirim</span>

@@ -30,7 +30,25 @@ export function sambung(konfig, authEndpoint, saatBerubah = () => {}) {
         cluster: konfig.cluster,
         forceTLS: konfig.tls,
         authEndpoint,
-        auth: { headers: { 'X-CSRF-TOKEN': csrf(), Accept: 'application/json' } },
+        // Token dibaca saat setiap otorisasi, bukan sekali saat terhubung: token
+        // halaman bisa diperbarui app.js setelah sesinya berganti (KEP-159).
+        channelAuthorization: {
+            customHandler: ({ socketId, channelName }, callback) => {
+                fetch(authEndpoint, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-CSRF-TOKEN': csrf(),
+                        Accept: 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ socket_id: socketId, channel_name: channelName }),
+                })
+                    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`Otorisasi chat gagal (${r.status})`))))
+                    .then((data) => callback(null, data))
+                    .catch((galat) => callback(galat, null));
+            },
+        },
     };
 
     // Reverb di lokal: alamatnya ditentukan sendiri, bukan klaster Pusher.

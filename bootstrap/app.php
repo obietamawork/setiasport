@@ -10,6 +10,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -60,6 +61,22 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return back()->withErrors(['alur' => $e->getMessage()]);
+        });
+
+        /*
+         * Token CSRF basi (KEP-159): halaman yang lama terbuka, sementara sesinya
+         * sudah berganti. Bukan layar "Page Expired" tanpa jalan kembali,
+         * melainkan halaman yang sama dimuat ulang dengan token baru, isian
+         * teksnya dipertahankan, dan satu kalimat untuk mengulang.
+         */
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
+            if ($e->getStatusCode() !== 419 || $request->expectsJson()) {
+                return null;
+            }
+
+            return back()
+                ->withInput(Arr::except($request->input(), ['_token', 'password', 'password_confirmation', 'sandi_lama', 'pin']))
+                ->withErrors(['sesi' => 'Halaman ini sudah terlalu lama terbuka, jadi kami muat ulang. Silakan ulangi tindakan tadi.']);
         });
 
         /*

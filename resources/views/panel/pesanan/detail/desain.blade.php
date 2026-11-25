@@ -151,6 +151,9 @@
                                 <label for="preview-{{ $item->id }}" class="label-form">Preview mockup</label>
                                 <input type="file" id="preview-{{ $item->id }}" name="preview"
                                        accept=".jpg,.jpeg,.png,.webp" class="kotak-input">
+                                <x-keterangan-unggah rasio="bebas, tidak dipotong" ukuran="lebar 1200–1400 px">
+                                    Depan dan belakang boleh dalam satu gambar.
+                                </x-keterangan-unggah>
                             </div>
                             <div class="min-w-56 flex-1">
                                 <label for="tautan-{{ $item->id }}" class="label-form">Tautan file siap cetak</label>

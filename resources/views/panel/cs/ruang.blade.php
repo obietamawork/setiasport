@@ -10,6 +10,13 @@
     {{-- Bilah atas. Tipis: yang penting di sini hanya dua saklar yang menentukan
          apakah pelanggan akan dilayani, yaitu "Menerima chat" dan suara. --}}
     <header class="flex h-12 shrink-0 items-center gap-3 bg-navy-900 px-3 text-white sm:px-4">
+        {{-- Buka-tutup daftar chat (KEP-160). --}}
+        <button type="button" @click="alihDaftar()" class="-ml-1 rounded-[7px] p-1.5 hover:bg-white/10"
+                :aria-expanded="(daftarTampil || daftarHp).toString()" aria-controls="daftar-chat"
+                :title="daftarTampil ? 'Sembunyikan daftar chat' : 'Tampilkan daftar chat'">
+            <x-ikon nama="menu" ukuran="size-5" />
+            <span class="sr-only">Tampilkan atau sembunyikan daftar chat</span>
+        </button>
         <a href="{{ route('panel.dashboard') }}" class="flex items-center gap-3" title="Kembali ke panel">
             <x-logo :terang="true" />
         </a>
@@ -57,10 +64,14 @@
 
     {{-- grid-cols-1 di dasar WAJIB: tanpa kolom eksplisit, satu-satunya kolom
          di HP melebar mengikuti isinya dan teks yang dipotong ikut meluber. --}}
-    <div class="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[20rem_minmax(0,1fr)] xl:grid-cols-[20rem_minmax(0,1fr)_20rem]">
+    <div class="grid min-h-0 flex-1 grid-cols-1"
+         :class="daftarTampil
+             ? 'md:grid-cols-[20rem_minmax(0,1fr)] xl:grid-cols-[20rem_minmax(0,1fr)_20rem]'
+             : 'md:grid-cols-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_20rem]'">
 
         {{-- ================= Daftar percakapan ================= --}}
-        <aside class="flex min-h-0 flex-col border-r border-line bg-field" :class="terpilih ? 'hidden md:flex' : 'flex'">
+        <aside id="daftar-chat" class="min-h-0 flex-col border-r border-line bg-field"
+               :class="[(terpilih && !daftarHp) ? 'hidden' : 'flex', daftarTampil ? 'md:flex' : 'md:hidden']">
             <div class="space-y-3 border-b border-line p-3">
                 {{-- Tab berangka seperti gambar klien: Baru = menunggu balasan,
                      Diproses = sedang ditangani, Selesai = ditutup. --}}
@@ -155,13 +166,16 @@
         </aside>
 
         {{-- ================= Percakapan ================= --}}
-        <main class="flex min-h-0 flex-col bg-paper" :class="terpilih ? 'flex' : 'hidden md:flex'">
+        <main class="min-h-0 flex-col bg-paper md:flex" :class="(terpilih && !daftarHp) ? 'flex' : 'hidden'">
 
             <template x-if="!terpilih">
                 <div class="m-auto max-w-sm px-6 text-center">
                     <p class="text-lg font-bold" x-text="jumlah.menunggu ? jumlah.menunggu + ' pelanggan menunggu balasan' : 'Semua pelanggan sudah dibalas'"></p>
-                    <p class="mt-2 text-sm leading-relaxed text-muted">
+                    <p class="mt-2 text-sm leading-relaxed text-muted" x-show="daftarTampil">
                         Pilih percakapan di kiri untuk mulai membalas. Yang paling lama menunggu ada di urutan teratas.
+                    </p>
+                    <p class="mt-2 text-sm leading-relaxed text-muted" x-show="!daftarTampil" x-cloak>
+                        Daftar chat sedang disembunyikan. Buka lagi lewat tombol garis tiga di kiri atas.
                     </p>
                 </div>
             </template>
@@ -347,7 +361,7 @@
                         </p>
 
                         <div class="flex items-end gap-2">
-                            <label class="shrink-0 cursor-pointer rounded-[8px] border border-line-strong p-2 text-muted hover:border-navy-300 hover:text-ink" title="Lampirkan foto">
+                            <label class="shrink-0 cursor-pointer rounded-[8px] border border-line-strong p-2 text-muted hover:border-navy-300 hover:text-ink" title="Lampirkan foto, maksimal {{ batas_unggah_mb() }} MB">
                                 <input type="file" accept="image/*" class="sr-only" x-ref="berkas" @change="pilihLampiran($event)">
                                 <svg class="size-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
                                     <path d="M16.5 9.5 10 16a4 4 0 0 1-5.7-5.7l7-7a2.6 2.6 0 0 1 3.7 3.7l-6.9 6.9a1.3 1.3 0 0 1-1.9-1.8L12.5 6"/>

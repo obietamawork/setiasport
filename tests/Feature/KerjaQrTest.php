@@ -166,7 +166,7 @@ class KerjaQrTest extends TestCase
 
         $this->get(route('kerja', $item->tokenKerja()))
             ->assertOk()
-            ->assertSee('Tandai Printing Jersey selesai');
+            ->assertSee('Tandai Printing Jersey Selesai')->assertSee('PIN Divisi Printing Jersey');
 
         $this->post(route('kerja.selesai', $item->tokenKerja()), ['pin' => '1234', 'dari' => 'ANTRIAN_PRODUKSI'])
             ->assertSessionHas('sukses');
@@ -224,7 +224,7 @@ class KerjaQrTest extends TestCase
             ->assertOk()
             ->assertSee('Pesanan dibatalkan')
             ->assertSee('Hentikan pengerjaannya')
-            ->assertDontSee('PIN Anda');
+            ->assertDontSee('PIN Divisi');
 
         $this->actingAs($this->owner())
             ->get(route('panel.pesanan.worksheet', $item->order))

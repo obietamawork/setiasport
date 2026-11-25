@@ -238,3 +238,41 @@ if (! function_exists('kanal_kontak')) {
         return $wa ? 'WhatsApp toko '.$wa : 'telepon toko';
     }
 }
+
+if (! function_exists('batas_unggah_mb')) {
+    /**
+     * Ukuran berkas terbesar yang benar-benar bisa diunggah, dalam MB (KEP-159).
+     *
+     * Pengaturan toko (upload_maks_mb) saja tidak cukup: server menolak kiriman
+     * di atas post_max_size sebelum aplikasi sempat menjawab, dan pengguna hanya
+     * melihat halaman galat server. Satu megabita disisakan untuk isian lain
+     * dalam kiriman yang sama.
+     */
+    function batas_unggah_mb(): int
+    {
+        $keMb = function (string $nilai): ?int {
+            $angka = (int) $nilai;
+
+            if ($angka <= 0) {
+                return null;
+            }
+
+            $byte = match (strtoupper(substr(trim($nilai), -1))) {
+                'G' => $angka * 1_073_741_824,
+                'M' => $angka * 1_048_576,
+                'K' => $angka * 1024,
+                default => $angka,
+            };
+
+            return (int) floor($byte / 1_048_576);
+        };
+
+        $batas = array_filter([
+            (int) setting('upload_maks_mb', 10),
+            ($kiriman = $keMb((string) ini_get('post_max_size'))) !== null ? $kiriman - 1 : null,
+            $keMb((string) ini_get('upload_max_filesize')),
+        ], fn (?int $mb) => $mb !== null);
+
+        return max(1, min($batas));
+    }
+}

@@ -68,9 +68,9 @@
 
         <input type="file" id="gambar" name="gambar" accept="image/*" class="kotak-input"
                @unless ($portofolio->gambar_path) required @endunless>
-        <p class="mt-1 text-xs text-muted">
-            JPG, PNG, atau WebP, maksimal {{ setting('upload_maks_mb', 10) }} MB. Dikecilkan otomatis.
-        </p>
+        <x-keterangan-unggah rasio="1:1 (persegi)" ukuran="ideal 1200 × 1200 px">
+            Beranda dan galeri memotong foto jadi persegi, jadi letakkan jersey di tengah.
+        </x-keterangan-unggah>
     </div>
 
     <div>

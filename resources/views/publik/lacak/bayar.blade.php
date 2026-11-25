@@ -361,10 +361,13 @@
                     {{ $buktiAda ? 'Salah kirim? Ganti buktinya' : 'Pilih file' }}
                 </label>
                 <input type="file" id="bukti" name="bukti" accept="image/jpeg,image/png,image/webp" class="kotak-input" required
-                       data-batas-mb="{{ (int) setting('upload_maks_mb', 10) }}"
+                       data-batas-mb="{{ batas_unggah_mb() }}"
                        @change="besar = ($el.files[0]?.size ?? 0) > $el.dataset.batasMb * 1048576; if (besar) $el.value = ''">
                 <p x-show="besar" x-cloak class="mt-1 text-xs text-merah">Foto terlalu besar. Kirim tangkapan layar atau foto yang lebih kecil.</p>
-                <p class="mt-1 text-xs text-muted">JPG atau PNG, maksimal {{ setting('upload_maks_mb', 10) }} MB.</p>
+                <p class="mt-1 text-xs text-muted">
+                    Tangkapan layar utuh dari aplikasi bank, nominal dan tanggalnya terbaca.
+                    JPG atau PNG, maksimal {{ batas_unggah_mb() }} MB.
+                </p>
             </div>
             <button type="submit" class="tombol {{ $buktiAda ? 'tombol-garis' : 'tombol-navy' }} mb-5">
                 <x-ikon nama="unggah" ukuran="size-4" />

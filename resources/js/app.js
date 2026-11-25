@@ -37,6 +37,125 @@ Alpine.data('carouselBanner', (jumlah) => ({
 Alpine.start();
 
 /*
+ * Token CSRF untuk halaman yang lama terbuka (KEP-159).
+ *
+ * Sesi berakhir setelah lama didiamkan, lalu "ingat saya" memasukkan staf
+ * kembali dengan sesi baru. Halaman yang dibuka sebelumnya masih memegang token
+ * lama, dan setiap kirimannya ditolak 419. Token diperbarui saat tab dibuka
+ * lagi dan berkala selama tab terlihat; permintaan berkala itu juga menjaga
+ * sesinya tetap hidup.
+ */
+const metaToken = document.querySelector('meta[name="csrf-token"]');
+let tokenDiperiksa = Date.now();
+
+async function segarkanToken() {
+    if (!metaToken) return;
+
+    try {
+        const r = await fetch('/token-sesi', {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+            cache: 'no-store',
+        });
+        if (!r.ok) return;
+
+        const { token } = await r.json();
+        if (typeof token !== 'string' || token === '') return;
+
+        tokenDiperiksa = Date.now();
+        if (token === metaToken.content) return;
+
+        metaToken.content = token;
+        document.querySelectorAll('input[name="_token"]').forEach((isian) => { isian.value = token; });
+    } catch {
+        // Jaringan putus: kiriman berikutnya ditangani penangan 419 di server.
+    }
+}
+
+if (metaToken) {
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && Date.now() - tokenDiperiksa > 60_000) segarkanToken();
+    });
+    setInterval(() => {
+        if (document.visibilityState === 'visible') segarkanToken();
+    }, 10 * 60_000);
+}
+
+/*
+ * Berkas yang terlalu besar ditolak sebelum dikirim (KEP-159). Kiriman di atas
+ * batas server ditolak server sebelum aplikasi sempat menjawab, dan yang
+ * terlihat hanya halaman galat server. Batasnya dari <meta name="batas-unggah-mb">.
+ *
+ * Didaftarkan paling awal dan di fase capture: berkasnya sudah dikosongkan
+ * sebelum pratinjau Alpine membacanya, dan konfirmasi serta penjaga kirim
+ * ganda tidak berjalan untuk kiriman yang toh akan ditolak. Isian yang punya
+ * pemeriksaan sendiri (data-batas-mb) dan formulir non-multipart (chat CS,
+ * dikirim lewat fetch) dilewati.
+ */
+const batasUnggahMb = Number(document.querySelector('meta[name="batas-unggah-mb"]')?.content || 0);
+
+const keMb = (byte) => (byte / 1048576).toLocaleString('id-ID', { maximumFractionDigits: 1 });
+
+function tulisGalatBerkas(isian, pesan) {
+    let galat = isian.parentElement?.querySelector(':scope > [data-galat-berkas]');
+
+    if (!pesan) {
+        galat?.remove();
+        return;
+    }
+
+    if (!galat) {
+        galat = document.createElement('p');
+        galat.dataset.galatBerkas = '';
+        galat.className = 'mt-1 text-sm text-merah';
+        galat.setAttribute('role', 'alert');
+        isian.insertAdjacentElement('afterend', galat);
+    }
+
+    galat.textContent = pesan;
+}
+
+function diperiksaUmum(isian) {
+    return batasUnggahMb > 0
+        && isian instanceof HTMLInputElement
+        && isian.type === 'file'
+        && isian.dataset.batasMb === undefined
+        && isian.form?.enctype === 'multipart/form-data';
+}
+
+document.addEventListener('change', (e) => {
+    const isian = e.target;
+    if (!diperiksaUmum(isian)) return;
+
+    const besar = [...isian.files].find((berkas) => berkas.size > batasUnggahMb * 1048576);
+
+    if (besar) {
+        tulisGalatBerkas(isian, `${besar.name} berukuran ${keMb(besar.size)} MB, melebihi batas ${batasUnggahMb} MB. `
+            + 'Kecilkan dulu fotonya, atau pilih foto lain.');
+        isian.value = '';
+    } else {
+        tulisGalatBerkas(isian, null);
+    }
+}, true);
+
+document.addEventListener('submit', (e) => {
+    const form = e.target;
+    if (!(form instanceof HTMLFormElement)) return;
+
+    const isian = [...form.querySelectorAll('input[type="file"]')].filter(diperiksaUmum);
+    const total = isian.reduce((n, i) => n + [...i.files].reduce((m, berkas) => m + berkas.size, 0), 0);
+    if (total <= batasUnggahMb * 1048576) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    const terakhir = isian.filter((i) => i.files.length > 0).pop();
+    tulisGalatBerkas(terakhir, `Semua berkas di formulir ini berjumlah ${keMb(total)} MB, melebihi batas ${batasUnggahMb} MB `
+        + 'sekali kirim. Unggah satu per satu, atau kecilkan fotonya.');
+    terakhir.focus();
+}, true);
+
+/*
  * Konfirmasi sebelum aksi yang tidak bisa diurungkan (hapus, batalkan, hanguskan):
  *
  *   <form data-konfirmasi="Hapus varian X?" data-konfirmasi-pesan="..." data-konfirmasi-tombol="Hapus">

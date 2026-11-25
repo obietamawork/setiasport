@@ -305,10 +305,10 @@
             <div x-show="sumber === 'unggah'" x-cloak>
                 <label for="berkas" class="label-form">Berkas gambar</label>
                 <input type="file" id="berkas" name="berkas" accept=".jpg,.jpeg,.png,.webp" class="kotak-input">
-                <p class="bantuan-form">
-                    JPG, PNG, atau WebP sampai {{ setting('upload_maks_mb', 10) }} MB.
-                    Foto dari HP boleh langsung, nanti dikecilkan sendiri.
-                </p>
+                <x-keterangan-unggah rasio="1:1 (persegi)" ukuran="ideal 1200 × 1200 px">
+                    Katalog memotong foto jadi persegi, jadi letakkan barang di tengah dengan latar polos.
+                    Foto dari HP boleh langsung.
+                </x-keterangan-unggah>
             </div>
 
             <div x-show="sumber === 'cdn'" x-cloak>

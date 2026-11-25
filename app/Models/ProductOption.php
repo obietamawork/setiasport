@@ -20,8 +20,21 @@ class ProductOption extends Model
         return $this->belongsTo(Product::class);
     }
 
+    /** @return HasMany<OptionValue, $this> */
     public function values(): HasMany
     {
         return $this->hasMany(OptionValue::class)->where('aktif', true)->orderBy('urutan');
+    }
+
+    /**
+     * Opsi potongan badan Pria / Wanita (KEP-161). Wizard menampilkannya dengan
+     * gambar pembanding, karena pelanggan sering lupa jersey wanita dipotong
+     * berbeda. Dikenali dari labelnya: opsi diisi pemilik toko sendiri.
+     */
+    public function potonganBadan(): bool
+    {
+        $label = $this->values->map(fn (OptionValue $v) => mb_strtolower(trim($v->label)));
+
+        return $label->contains('pria') && $label->contains('wanita');
     }
 }

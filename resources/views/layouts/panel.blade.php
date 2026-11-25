@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="batas-unggah-mb" content="{{ batas_unggah_mb() }}">
     {{-- "Panel" ikut di akhiran: tanpa itu tab "Pesanan SS-..." di panel sama
          persis dengan tab halaman pelacakan pelanggan, dan tab ubah produk sama
          dengan halaman produknya di etalase. Staf sering membuka keduanya. --}}
