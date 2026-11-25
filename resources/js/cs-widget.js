@@ -65,6 +65,8 @@ export function widgetCs(awal) {
         galat: '',
         // Pelanggan memilih meneruskan percakapan yang sudah ditutup (KEP-163).
         lanjutkanLama: false,
+        // Lembar konfirmasi "Mulai percakapan baru?" di dalam jendela chat.
+        konfirmasiBaru: false,
         realtime: 'mati',
         _echo: null,
         _polling: null,
@@ -204,12 +206,19 @@ export function widgetCs(awal) {
          * dengan catatan untuk CS; widget kembali ke formulir awal dengan nama
          * dan kontak yang sama, supaya pelanggan cukup memilih topik baru.
          */
-        async mulaiBaru() {
+        async mulaiBaru(yakin = false) {
             if (this.mengirim) return;
 
+            // Percakapan yang masih berjalan ditanyakan dulu lewat lembar di
+            // dalam jendela chat, bukan dialog bawaan peramban.
             const masihTerbuka = this.percakapan && this.percakapan.status !== 'SELESAI';
-            if (masihTerbuka && !window.confirm('Akhiri percakapan ini dan mulai yang baru? Riwayatnya tetap tersimpan di toko.')) return;
+            if (masihTerbuka && !yakin) {
+                this.konfirmasiBaru = true;
+                this.$nextTick(() => this.$refs.batalBaru?.focus());
+                return;
+            }
 
+            this.konfirmasiBaru = false;
             this.galat = '';
             this.mengirim = true;
 

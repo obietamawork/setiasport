@@ -5725,8 +5725,9 @@ nama, kontak, dan pesanan dari chat pertama ikut terbawa, riwayatnya menumpuk, d
 yang dipakai bersama orang berikutnya melihat chat orang sebelumnya. Tidak ada cara memulai dari
 awal.
 
-- Widget punya tombol **Mulai baru** di kepalanya. Percakapan yang masih terbuka ditutup dengan
-  catatan sistem "Pelanggan memulai percakapan baru" (setelah konfirmasi), cookie-nya dilupakan,
+- Widget punya tombol **+ Chat baru** di kepalanya. Percakapan yang masih terbuka ditutup dengan
+  catatan sistem "Pelanggan memulai percakapan baru" setelah konfirmasi lewat lembar yang muncul
+  dari bawah di dalam jendela chat (bukan dialog bawaan peramban), cookie-nya dilupakan,
   dan widget kembali ke formulir awal dengan nama dan kontak sudah terisi. Riwayatnya tetap
   tersimpan di panel sebagai catatan resmi.
 - Saat percakapan sudah ditutup CS, kotak ketik diganti dua pilihan: **Mulai percakapan baru**

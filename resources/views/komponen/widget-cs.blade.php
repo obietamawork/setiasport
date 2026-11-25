@@ -35,7 +35,7 @@
     ];
 @endphp
 
-<div x-data="widgetCs(@js($csAwal))" @keydown.escape.window="buka && bukaTutup(false)" class="print:hidden">
+<div x-data="widgetCs(@js($csAwal))" @keydown.escape.window="konfirmasiBaru ? (konfirmasiBaru = false) : (buka && bukaTutup(false))" class="print:hidden">
 
     {{-- Tombol. Di layar sempit cukup ikon dan satu kata: ia mengambang di
          atas konten, jadi tidak boleh menutupi lebih dari yang perlu. --}}
@@ -75,8 +75,12 @@
                 <div class="-mr-1 flex shrink-0 items-center gap-1">
                 {{-- Mulai dari awal (KEP-163): topik, nama, dan kontak bisa diisi ulang. --}}
                 <button type="button" x-show="tahap === 'obrolan'" x-cloak @click="mulaiBaru()" :disabled="mengirim"
-                        class="rounded-[7px] px-2 py-1.5 text-xs font-semibold text-white/85 hover:bg-white/10 hover:text-white">
-                    Mulai baru
+                        title="Mulai percakapan baru"
+                        class="inline-flex items-center gap-1 rounded-full bg-white/10 py-1 pr-2.5 pl-2 text-xs font-semibold text-white ring-1 ring-white/15 transition-colors hover:bg-white/20">
+                    <svg class="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                        <path d="M8 3.5v9M3.5 8h9"/>
+                    </svg>
+                    Chat baru
                 </button>
                 <button type="button" @click="bukaTutup(false)" class="rounded-[7px] p-1.5 text-white/80 hover:bg-white/10 hover:text-white"
                         aria-label="Tutup chat">
@@ -253,5 +257,7 @@
         <p class="shrink-0 border-t border-line bg-field px-4 py-2 text-[11px] leading-snug text-muted">
             CS resmi kami hanya di sini. Pembayaran hanya ke rekening yang tertera di halaman pesanan Anda.
         </p>
+
+        @include('komponen.widget-cs-konfirmasi')
     </section>
 </div>
