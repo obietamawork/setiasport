@@ -21,28 +21,33 @@
 @endphp
 
 <article class="kartu-bayar" id="item-{{ $item->id }}">
-    <div class="flex flex-wrap items-center gap-4">
+    {{-- Di HP chip tahap turun ke bawah nama barang. Dulu nama dan tanggalnya
+         terhimpit jadi satu-dua kata per baris karena kolom teks boleh menyusut
+         sampai nol sebelum chip mau turun baris. --}}
+    <div class="flex items-center gap-3 sm:gap-4">
         @if ($gambar)
-            <img src="{{ $gambar }}" alt="" width="64" height="64" class="size-16 shrink-0 rounded-full border border-line object-cover">
+            <img src="{{ $gambar }}" alt="" width="64" height="64" class="size-12 shrink-0 rounded-full border border-line object-cover sm:size-16">
         @else
-            <span class="flex size-16 shrink-0 items-center justify-center rounded-full bg-navy-50 text-navy-300">
-                <x-ikon :nama="$item->kustom() ? 'kaos' : 'produk'" ukuran="size-7" />
+            <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-navy-50 text-navy-300 sm:size-16">
+                <x-ikon :nama="$item->kustom() ? 'kaos' : 'produk'" ukuran="size-6 sm:size-7" />
             </span>
         @endif
-        <div class="min-w-0 flex-1">
-            <h3 class="text-lg font-extrabold">{{ $item->nama_produk }}</h3>
-            <p class="mt-0.5 flex items-center gap-1.5 text-sm text-muted">
-                <x-ikon nama="kalender" ukuran="size-4" />
-                Pesanan dibuat: <span class="tabular">{{ $order->created_at->translatedFormat('j M Y, H.i') }}</span>
-            </p>
+        <div class="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <div class="min-w-0 flex-1 basis-52">
+                <h3 class="text-base leading-snug font-extrabold sm:text-lg">{{ $item->nama_produk }}</h3>
+                <p class="mt-0.5 text-sm text-muted">
+                    <x-ikon nama="kalender" ukuran="size-4" class="mr-1 inline-block align-[-3px]" />Pesanan dibuat:
+                    <span class="tabular whitespace-nowrap">{{ $order->created_at->translatedFormat('j M Y, H.i') }}</span>
+                </p>
+            </div>
+            @if ($linimasa['batal'])
+                <span class="chip chip-merah shrink-0 px-3 py-1.5 text-sm"><x-ikon nama="silang" ukuran="size-4" /> Dibatalkan</span>
+            @elseif ($kini)
+                <span class="chip chip-biru shrink-0 px-3 py-1.5 text-sm"><x-ikon nama="pengaturan" ukuran="size-4" /> {{ $kini['label'] }}</span>
+            @else
+                <span class="chip chip-ok shrink-0 px-3 py-1.5 text-sm"><x-ikon nama="centang" ukuran="size-4" /> Selesai</span>
+            @endif
         </div>
-        @if ($linimasa['batal'])
-            <span class="chip chip-merah px-3 py-1.5 text-sm"><x-ikon nama="silang" ukuran="size-4" /> Dibatalkan</span>
-        @elseif ($kini)
-            <span class="chip chip-biru px-3 py-1.5 text-sm"><x-ikon nama="pengaturan" ukuran="size-4" /> {{ $kini['label'] }}</span>
-        @else
-            <span class="chip chip-ok px-3 py-1.5 text-sm"><x-ikon nama="centang" ukuran="size-4" /> Selesai</span>
-        @endif
     </div>
 
     @if ($linimasa['batal'])
@@ -163,7 +168,7 @@
                     $item->kustom() ? ['Estimasi selesai', $order->target_siap_pada?->translatedFormat('j M Y') ?? 'Ditentukan setelah desain disetujui'] : null,
                 ]) as [$label, $nilai])
                     @continue($nilai === null || $nilai === '')
-                    <div class="grid grid-cols-[8.5rem_minmax(0,1fr)] gap-3 py-2.5">
+                    <div class="grid grid-cols-[6.75rem_minmax(0,1fr)] gap-3 py-2.5 sm:grid-cols-[8.5rem_minmax(0,1fr)]">
                         <dt class="text-muted">{{ $label }}</dt>
                         <dd class="font-semibold">{{ $nilai }}</dd>
                     </div>
@@ -190,8 +195,9 @@
                 <table class="tabel mt-4 text-sm" x-show="! ubah">
                     <thead>
                         <tr>
-                            <th class="w-12">No.</th>
-                            <th>Nama pemain</th>
+                            {{-- Nomor urut disembunyikan di HP: nama dan ukuran lebih perlu tempat. --}}
+                            <th class="hidden w-12 sm:table-cell">No.</th>
+                            <th class="whitespace-nowrap">Nama pemain</th>
                             <th class="text-center">Nomor</th>
                             <th class="text-center">Ukuran</th>
                             @unless ($terkunci)
@@ -202,7 +208,7 @@
                     <tbody>
                         @foreach ($item->rosters as $r)
                             <tr @if ($loop->index >= 5) x-show="semua" x-cloak @endif>
-                                <td class="tabular text-muted">{{ $loop->iteration }}</td>
+                                <td class="tabular hidden text-muted sm:table-cell">{{ $loop->iteration }}</td>
                                 <td class="font-medium">{{ $r->nama_punggung ?: '-' }}</td>
                                 <td class="tabular text-center font-semibold">{{ $r->nomor ?: '-' }}</td>
                                 <td class="text-center">{{ $r->labelUkuran() }}{{ $r->jumlah > 1 ? ' × '.$r->jumlah : '' }}</td>

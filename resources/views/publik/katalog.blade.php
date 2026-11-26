@@ -27,7 +27,11 @@
          itulah penyaringnya, dan penjelasnya tetap terbaca setelah dipilih.
          Tautan berpindah halaman, jadi nav dengan aria-current, bukan
          role="tab" yang menjanjikan panel tab yang tidak ada (KEP-104). --}}
-    @php $jalurAktif = request()->string('jalur')->toString(); @endphp
+    @php
+        $jalurAktif = request()->string('jalur')->toString();
+        // Urutan bawaan tidak perlu ikut di tautan; yang dipilih pelanggan ikut terbawa.
+        $urutDibawa = $urut === array_key_first(App\Http\Controllers\Publik\KatalogController::URUTAN) ? null : $urut;
+    @endphp
     <nav class="mt-6 grid gap-2 sm:grid-cols-3 sm:gap-3" aria-label="Cara belanja">
         @foreach ([
             ['', 'Semua produk', 'Perlengkapan olahraga siap beli dan jersey custom dalam satu daftar.', 'produk', 'bg-navy-50 text-navy'],
@@ -35,7 +39,7 @@
             ['kustom', 'Custom Apparel (Pre-Order)', 'Estimasi produksi 7–10 hari kerja setelah desain disetujui.', 'kategori', 'bg-merah-50 text-merah'],
         ] as [$nilai, $label, $penjelasan, $ikon, $warnaIkon])
             @php $aktif = $jalurAktif === $nilai; @endphp
-            <a href="{{ route('katalog', array_filter(['jalur' => $nilai, 'kategori' => request('kategori'), 'q' => request('q')])) }}"
+            <a href="{{ route('katalog', array_filter(['jalur' => $nilai, 'kategori' => request('kategori'), 'q' => request('q'), 'urut' => $urutDibawa])) }}"
                @if ($aktif) aria-current="page" @endif
                class="kartu flex items-start gap-3 p-3 transition-colors sm:p-4
                       {{ $aktif ? 'border-navy bg-navy-50 ring-1 ring-navy' : 'hover:border-navy-300 hover:bg-navy-50' }}">
@@ -54,7 +58,7 @@
          formulirnya sendiri saat dipilih: tombol "Terapkan" yang berdiri
          terpisah dari kotak pencarian membuat orang mengira keduanya dua
          pencarian yang berbeda. --}}
-    <form method="GET" action="{{ route('katalog') }}" class="mt-5 flex flex-wrap items-center gap-2">
+    <form method="GET" action="{{ route('katalog') }}" id="saring-katalog" class="mt-5 flex flex-wrap items-center gap-2">
         {{-- Cara belanja yang sedang dipilih ikut terbawa saat filter dikirim. --}}
         <input type="hidden" name="jalur" value="{{ request('jalur') }}">
 
@@ -80,7 +84,7 @@
         <button type="submit" class="tombol tombol-navy">Cari</button>
 
         @if (request()->hasAny(['q', 'kategori']))
-            <a href="{{ route('katalog', array_filter(['jalur' => request('jalur')])) }}"
+            <a href="{{ route('katalog', array_filter(['jalur' => request('jalur'), 'urut' => $urutDibawa])) }}"
                class="tombol tombol-halus">Hapus filter</a>
         @endif
     </form>
@@ -89,20 +93,36 @@
 
     <div @if ($modeJumlah) x-data="katalogJumlah({{ $qtyAwal }})" @endif>
 
-        <div class="mt-6 flex flex-wrap items-center justify-between gap-4">
+        <div class="mt-6 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
             <p class="tabular text-sm text-muted">{{ $produk->total() }} produk</p>
 
-            @if ($modeJumlah && $produk->isNotEmpty())
-                {{-- Satu kolom ini mengubah katalog dari daftar menjadi alat
-                     penawaran: kapten tim mengetik jumlah timnya, dan semua
-                     harga langsung menyesuaikan. --}}
-                <div class="flex items-center gap-2">
-                    <label for="qty-katalog" class="text-sm font-semibold whitespace-nowrap">
-                        Untuk berapa pcs?
-                    </label>
-                    <x-jumlah id="qty-katalog" x-model.number="qty" max="100000" class="w-20" />
-                </div>
-            @endif
+            <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+                @if ($modeJumlah && $produk->isNotEmpty())
+                    {{-- Satu kolom ini mengubah katalog dari daftar menjadi alat
+                         penawaran: kapten tim mengetik jumlah timnya, dan semua
+                         harga langsung menyesuaikan. --}}
+                    <div class="flex items-center gap-2">
+                        <label for="qty-katalog" class="text-sm font-semibold whitespace-nowrap">
+                            Untuk berapa pcs?
+                        </label>
+                        <x-jumlah id="qty-katalog" x-model.number="qty" max="100000" class="w-20" />
+                    </div>
+                @endif
+
+                {{-- Urutan (KEP-165) ikut formulir penyaring lewat atribut form,
+                     jadi kata pencarian dan kategori tetap terbawa saat diganti. --}}
+                @if ($produk->total() > 1)
+                    <div class="flex items-center gap-2">
+                        <label for="urut" class="text-sm font-semibold whitespace-nowrap">Urutkan</label>
+                        <select id="urut" name="urut" form="saring-katalog" class="kotak-input w-auto py-2 text-sm"
+                                data-kirim-saat-ubah>
+                            @foreach (App\Http\Controllers\Publik\KatalogController::URUTAN as $nilai => $label)
+                                <option value="{{ $nilai }}" @selected($urut === $nilai)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+            </div>
         </div>
 
     @if ($produk->isEmpty())

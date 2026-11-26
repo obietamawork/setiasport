@@ -11,8 +11,23 @@ use Illuminate\Http\Request;
 
 class KatalogController extends Controller
 {
+    /**
+     * Pilihan urutan katalog (KEP-165). Kunci pertama adalah bawaan: nama A
+     * sampai Z, seperti sebelum pilihan ini ada.
+     *
+     * @var array<string, string>
+     */
+    public const URUTAN = [
+        'nama' => 'Nama A–Z',
+        'terbaru' => 'Terbaru',
+    ];
+
     public function index(Request $request): View
     {
+        $urut = array_key_exists($request->string('urut')->toString(), self::URUTAN)
+            ? $request->string('urut')->toString()
+            : 'nama';
+
         $kategoriTerpilih = $request->filled('kategori')
             ? Category::where('slug', $request->string('kategori'))->first()
             : null;
@@ -41,13 +56,18 @@ class KatalogController extends Controller
                 $cari = '%'.addcslashes($request->string('q')->toString(), '%_\\').'%';
                 $q->where(fn ($w) => $w->where('nama', 'like', $cari)->orWhere('sku', 'like', $cari));
             })
-            ->orderBy('nama')
+            ->when(
+                $urut === 'terbaru',
+                fn ($q) => $q->latest()->orderByDesc('id'),
+                fn ($q) => $q->orderBy('nama'),
+            )
             ->paginate(24);
 
         [$judul, $keterangan] = $this->judul($request, $kategoriTerpilih, $jalur);
 
         return view('publik.katalog', [
             'produk' => $produk,
+            'urut' => $urut,
             'judul' => $judul,
             // Judul besar kategori anak cukup namanya; induknya tampil sebagai
             // jejak tepat di atasnya.

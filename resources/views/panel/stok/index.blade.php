@@ -148,8 +148,8 @@
                         <td class="hidden xl:table-cell">
                             <span class="chip chip-netral tabular border border-line">{{ $tunggal ? $grup->first()->sku : $produk->sku }}</span>
                         </td>
-                        <td class="tabular text-right font-bold whitespace-nowrap">
-                            {{ $grup->sum('stok') }} pcs
+                        <td class="tabular text-right font-bold">
+                            <span class="whitespace-nowrap">{{ $grup->sum('stok') }} pcs</span>
                             <span class="block text-xs font-semibold sm:hidden {{ ['aman' => 'text-ok', 'sebagian' => 'text-warn', 'habis' => 'text-merah-tua'][$statusProduk] }}">{{ $chip[$statusProduk][1] }}</span>
                             @if ($grup->sum('stok_dipesan') > 0)
                                 <span class="block text-xs font-normal text-muted">{{ $grup->sum('stok_dipesan') }} dipesan</span>
@@ -158,7 +158,7 @@
                         <td class="hidden sm:table-cell"><span class="chip {{ $chip[$statusProduk][0] }}">{{ $chip[$statusProduk][1] }}</span></td>
                         <td>
                             <div class="flex items-center justify-end gap-1.5">
-                                <button type="button" class="tombol tombol-garis tombol-sm" @click="buka({{ $produk->id }}, {{ $tunggal ? $grup->first()->id : 'null' }})">
+                                <button type="button" class="tombol tombol-garis tombol-sm whitespace-nowrap" @click="buka({{ $produk->id }}, {{ $tunggal ? $grup->first()->id : 'null' }})">
                                     <x-ikon nama="tambah" ukuran="size-4" />
                                     <span class="sr-only sm:not-sr-only">Barang masuk</span>
                                 </button>

@@ -24,8 +24,10 @@
 @else
     <div class="kartu mt-6 divide-y divide-line overflow-hidden">
         @foreach ($daftar as $t)
-            <div class="flex items-start gap-4 px-4 py-3">
-                <div class="min-w-0 flex-1">
+            {{-- Di HP bintang, chip, dan "Ubah" turun ke bawah teks, supaya nama
+                 dan isinya tidak terhimpit jadi kolom sempit. --}}
+            <div class="flex flex-wrap items-start gap-x-4 gap-y-2 px-4 py-3">
+                <div class="min-w-0 flex-1 basis-64">
                     <p class="font-semibold">
                         {{ $t->nama }}
                         @if ($t->peran)
@@ -35,18 +37,20 @@
                     <p class="mt-1 line-clamp-2 text-sm leading-relaxed text-muted">{{ $t->isi }}</p>
                 </div>
 
-                @if ($t->bintang)
-                    <span class="tabular shrink-0 text-sm text-muted">{{ $t->bintang }}/5</span>
-                @endif
+                <div class="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5">
+                    @if ($t->bintang)
+                        <span class="tabular text-sm text-muted">{{ $t->bintang }}/5</span>
+                    @endif
 
-                @if ($t->contoh)
-                    <span class="chip chip-kuning shrink-0">Contoh</span>
-                @endif
-                @unless ($t->aktif)
-                    <span class="chip chip-netral shrink-0">Disembunyikan</span>
-                @endunless
+                    @if ($t->contoh)
+                        <span class="chip chip-kuning">Contoh</span>
+                    @endif
+                    @unless ($t->aktif)
+                        <span class="chip chip-netral">Disembunyikan</span>
+                    @endunless
 
-                <a href="{{ route('panel.testimoni.edit', $t) }}" class="tautan shrink-0 text-sm">Ubah</a>
+                    <a href="{{ route('panel.testimoni.edit', $t) }}" class="tautan text-sm">Ubah</a>
+                </div>
             </div>
         @endforeach
     </div>

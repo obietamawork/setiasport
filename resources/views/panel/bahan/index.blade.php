@@ -49,9 +49,14 @@
                     @else
                         <p class="mt-0.5 text-sm text-muted italic">Belum ada deskripsi</p>
                     @endif
+                    {{-- Di HP jumlah pemakaian pindah ke bawah deskripsi; di kanan ia
+                         memakan sepertiga lebar dan menghimpit deskripsinya. --}}
+                    <p class="mt-1 text-xs text-muted tabular sm:hidden">
+                        {{ $b->option_values_count > 0 ? 'Dipakai '.$b->option_values_count.'×' : 'Belum dipakai' }}
+                    </p>
                 </div>
 
-                <span class="shrink-0 text-sm text-muted tabular">
+                <span class="hidden shrink-0 text-sm text-muted tabular sm:inline">
                     @if ($b->option_values_count > 0)
                         dipakai {{ $b->option_values_count }}×
                     @else

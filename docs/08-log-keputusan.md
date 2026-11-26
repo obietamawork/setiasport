@@ -5772,6 +5772,41 @@ lembar kerja tidak punya gambar untuk dicetak.
 
 ---
 
+## KEP-165 — Tampilan HP dirapikan, urutan Terbaru di katalog
+**Status:** TERKUNCI · 2026-11-26
+
+Revisi klien, 26 Nov 2026: kartu barang di halaman Lacak pesanan terhimpit di HP (nama produk dan
+tanggal pecah jadi satu-dua kata per baris), lalu diminta audit tampilan HP seluruh situs.
+
+**Penyebab utama.** Baris `flex-wrap` dengan kolom teks `min-w-0 flex-1` tidak pernah turun
+baris: kolom teks dihitung boleh menyusut sampai nol, jadi chip atau tombol di sebelahnya tetap
+sebaris dan teksnya yang terhimpit. Polanya diperbaiki dengan memberi kolom teks lebar dasar
+(`basis-*`), seperti yang sudah dipakai di kotak pencarian panel. Ditemukan di Lacak pesanan,
+Cari (panel), Bantuan, dan Kesiapan.
+
+**Audit.** Seluruh halaman publik (termasuk akun pelanggan, keranjang, checkout) dan panel
+diperiksa di lebar 320, 360, 390, dan 768 piksel: halaman yang bisa digeser ke samping, teks yang
+terhimpit, tombol yang patah baris, dan isi yang keluar dari kotaknya. Yang diperbaiki:
+
+- Lacak pesanan: chip tahap turun ke bawah nama barang di HP; kolom No. di daftar pemain
+  disembunyikan di HP; label detail pesanan dipersempit.
+- Tabel di HP: jarak samping sel 1rem menjadi 0,625rem.
+- Bilah atas panel: di bawah 360 piksel logo disembunyikan, karena bilah atas lebih lebar dari
+  layar dan seluruh panel bisa digeser ke samping. Navigasi halaman di lebar itu cukup panah.
+- Kepala halaman panel yang menempel: tombolnya seukuran tombol kecil di HP supaya dua tombol
+  muat sebaris dan kepala tidak menutupi seperlima layar.
+- Stok: tabel tidak lagi lebih lebar dari layar. Bahan dan Testimoni: keterangan di kanan turun
+  ke bawah di HP. Riwayat aktivitas digeser ke samping, tidak diperas. Ubin antrean produksi di
+  dashboard dirapatkan supaya labelnya tidak keluar kotak. Tombol "Catat resi", "Barang masuk",
+  dan "Chat lewat WhatsApp" tidak patah baris.
+
+**Urutan katalog.** Katalog punya pilihan "Urutkan": Nama A–Z (bawaan, seperti sebelumnya) dan
+Terbaru (produk yang terakhir ditambahkan lebih dulu). Pilihan ikut terbawa saat pelanggan
+mencari, memilih kategori, berpindah cara belanja, atau membuka halaman berikutnya. Nilai lain
+kembali ke Nama A–Z. Tautan kanonik tidak memuat urutan, karena isinya sama.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5940,3 +5975,4 @@ lembar kerja tidak punya gambar untuk dicetak.
 | KEP-162 | Panduan berkelompok sesuai izin, alur bernomor, lihat sebagai peran lain, panduan konveksi siap cetak A4 | TERKUNCI |
 | KEP-163 | Tombol Mulai baru, pilihan saat percakapan selesai, otomatis baru setelah 7 hari ditutup, percakapan sebelumnya di panel | TERKUNCI |
 | KEP-164 | Strip hero dihapus, pembatalan kustom hanya sampai tahap desain, mockup wajib bergambar dan gambar desain lama bisa dilengkapi | TERKUNCI |
+| KEP-165 | Audit tampilan HP (320–768px): teks terhimpit, tabel dan bilah atas yang melebar; pilihan urutan Terbaru di katalog | TERKUNCI |

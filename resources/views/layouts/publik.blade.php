@@ -282,7 +282,7 @@
 
             @if (tautan_wa())
                 <a href="{{ tautan_wa() }}" target="_blank" rel="noopener"
-                   class="tombol tombol-garis mt-4 w-full sm:w-auto">
+                   class="tombol tombol-garis mt-4 w-full whitespace-nowrap sm:w-auto md:text-sm">
                     <x-ikon nama="whatsapp" ukuran="size-4" />
                     Chat lewat WhatsApp
                 </a>

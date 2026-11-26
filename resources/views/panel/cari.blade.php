@@ -49,7 +49,7 @@
                             <a href="{{ route('panel.pesanan.show', $o) }}"
                                class="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3 hover:bg-navy-50">
                                 <span class="tabular font-semibold text-navy-700">{{ $o->kode }}</span>
-                                <span class="min-w-0 flex-1">{{ $o->customer->nama }}
+                                <span class="min-w-0 flex-1 basis-40">{{ $o->customer->nama }}
                                     <span class="tabular text-muted">{{ $o->customer->no_hp }}</span></span>
                                 <span class="chip {{ $o->status->warna() }}">{{ $o->status->label() }}</span>
                                 <span class="tabular text-muted">{{ $o->created_at->translatedFormat('j M Y') }}</span>

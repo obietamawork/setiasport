@@ -154,11 +154,11 @@
                 <a href="{{ route('panel.antrian.index') }}" class="tautan-lihat ml-auto">Lihat semua <x-ikon nama="lanjut" ukuran="size-4" /></a>
             @endif
         </div>
-        <div class="grid grid-cols-3 gap-3 p-4">
+        <div class="grid gap-2 p-3 min-[22.5rem]:grid-cols-3 sm:gap-3 sm:p-4">
             @foreach ([
                 ['ungu', 'daftar', 'Menunggu desain', $antreanJersey['desain']],
                 ['jingga', 'pengaturan', 'Sedang produksi', $antreanJersey['produksi']],
-                ['pink', 'kirim', 'Siap diambil/kirim', $antreanJersey['siap']],
+                ['pink', 'kirim', 'Siap diambil / kirim', $antreanJersey['siap']],
             ] as [$warna, $ikon, $label, $angka])
                 <x-kartu-angka :warna="$warna" :ikon="$ikon" :label="$label" :angka="$angka" class="kartu-angka-ringkas" />
             @endforeach

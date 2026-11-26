@@ -320,7 +320,7 @@
                                         <span class="chip chip-kuning"><x-ikon nama="dompet" ukuran="size-3.5" /> Belum lunas</span>
                                     @endif
                                 </td>
-                                <td class="text-right">
+                                <td class="text-right whitespace-nowrap">
                                     @if ($sudah)
                                         <a href="{{ route('panel.pesanan.show', $o) }}" class="tombol tombol-garis tombol-sm">Lihat</a>
                                     @elseif ($kirim)

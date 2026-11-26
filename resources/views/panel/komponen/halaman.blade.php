@@ -35,11 +35,11 @@
             <div class="flex items-center gap-1.5">
                 @if ($daftar->onFirstPage())
                     <span class="tombol tombol-garis tombol-sm cursor-default text-navy-300 hover:bg-field" aria-disabled="true">
-                        <x-ikon nama="kembali" ukuran="size-4" /> Sebelumnya
+                        <x-ikon nama="kembali" ukuran="size-4" /> <span class="max-[22.5rem]:sr-only">Sebelumnya</span>
                     </span>
                 @else
                     <a href="{{ $daftar->previousPageUrl() }}" rel="prev" class="tombol tombol-garis tombol-sm">
-                        <x-ikon nama="kembali" ukuran="size-4" /> Sebelumnya
+                        <x-ikon nama="kembali" ukuran="size-4" /> <span class="max-[22.5rem]:sr-only">Sebelumnya</span>
                     </a>
                 @endif
 
@@ -53,11 +53,11 @@
 
                 @if ($daftar->hasMorePages())
                     <a href="{{ $daftar->nextPageUrl() }}" rel="next" class="tombol tombol-garis tombol-sm">
-                        Selanjutnya <x-ikon nama="lanjut" ukuran="size-4" />
+                        <span class="max-[22.5rem]:sr-only">Selanjutnya</span> <x-ikon nama="lanjut" ukuran="size-4" />
                     </a>
                 @else
                     <span class="tombol tombol-garis tombol-sm cursor-default text-navy-300 hover:bg-field" aria-disabled="true">
-                        Selanjutnya <x-ikon nama="lanjut" ukuran="size-4" />
+                        <span class="max-[22.5rem]:sr-only">Selanjutnya</span> <x-ikon nama="lanjut" ukuran="size-4" />
                     </span>
                 @endif
             </div>

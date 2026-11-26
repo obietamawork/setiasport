@@ -45,7 +45,9 @@
          bukan membuat seluruh halaman bisa digeser ke samping di HP. --}}
     <section class="kartu mt-6 overflow-hidden">
         <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Daftar riwayat aktivitas">
-        <table class="tabel">
+        {{-- Lebar minimum: di HP tabelnya digeser ke samping, tidak diperas
+             sampai tiap kolom tinggal satu kata per baris. --}}
+        <table class="tabel min-w-[44rem]">
             <thead>
                 <tr>
                     <th>Waktu</th>

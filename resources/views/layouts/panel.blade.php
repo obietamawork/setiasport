@@ -200,8 +200,10 @@
             <x-ikon nama="menu" />
         </button>
 
-        {{-- Di HP sidebar tersembunyi, jadi logo pindah ke bilah atas. --}}
-        <a href="{{ route('panel.dashboard') }}" class="shrink-0 lg:hidden">
+        {{-- Di HP sidebar tersembunyi, jadi logo pindah ke bilah atas. Di HP
+             yang sangat sempit (di bawah 360px) logo mengalah: tanpa itu bilah
+             atas lebih lebar dari layar dan seluruh panel bisa digeser ke samping. --}}
+        <a href="{{ route('panel.dashboard') }}" class="shrink-0 max-[22.5rem]:hidden lg:hidden">
             <x-logo tinggi="h-7" />
         </a>
 

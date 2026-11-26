@@ -100,7 +100,7 @@
                          x-show="{{ Js::from($teks) }}.toLowerCase().includes(kunci)">
                     <div class="kartu-kop flex flex-wrap items-start gap-2.5">
                         <x-ikon :nama="$b['ikon']" class="mt-0.5 text-navy-400" />
-                        <span class="min-w-0 flex-1">
+                        <span class="min-w-0 flex-1 basis-52">
                             {{ $b['judul'] }}
                             <span class="block text-sm leading-relaxed font-normal text-muted">
                                 {{ $b['catatan'] }}
