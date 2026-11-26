@@ -130,6 +130,31 @@ class BannerTest extends TestCase
             ->assertSee('loading="lazy"', false);
     }
 
+    /**
+     * Dua banner atau lebih bergeser sendiri (KEP-166), dengan tombol jeda
+     * yang diwajibkan WCAG 2.2.2 untuk gerakan otomatis.
+     */
+    public function test_dua_banner_bergeser_sendiri_dengan_tombol_jeda(): void
+    {
+        $this->banner(['judul' => 'Pertama', 'urutan' => 1]);
+        $this->banner(['judul' => 'Kedua', 'urutan' => 2]);
+
+        $this->get(route('beranda'))
+            ->assertSee('x-data="carouselBanner(2, 6000)"', false)
+            ->assertSee('Jeda pergeseran banner')
+            ->assertSee('Putar pergeseran banner');
+    }
+
+    public function test_satu_banner_diam_tanpa_tombol_jeda(): void
+    {
+        $this->banner(['judul' => 'Satu-satunya']);
+
+        $this->get(route('beranda'))
+            ->assertSee('Satu-satunya')
+            ->assertDontSee('carouselBanner', false)
+            ->assertDontSee('Jeda pergeseran banner');
+    }
+
     /** Gambar yang sudah bertulisan: judul tidak dobel, seluruh banner jadi tautan. */
     public function test_tanpa_teks_di_atas_seluruh_banner_jadi_tautan(): void
     {

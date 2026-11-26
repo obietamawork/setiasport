@@ -1,19 +1,30 @@
 {{--
     Banner promo di puncak halaman depan (KEP-092), diatur di Panel > Banner beranda.
 
-    Satu banner tampil diam. Dua atau lebih bisa digeser: jari (scroll-snap
-    bawaan peramban), panah di layar lebar, titik, atau tombol panah papan
-    ketik. Tidak pernah bergeser sendiri: slide yang berganti saat orang masih
-    membaca hanya mengganggu, dan WCAG 2.2.2 mewajibkan tombol jeda kalau iya.
+    Satu banner tampil diam. Dua atau lebih bergeser sendiri tiap 6 detik
+    (KEP-166, permintaan klien; sebelumnya hanya manual) dan tetap bisa digeser:
+    jari (scroll-snap bawaan peramban), panah di layar lebar, titik, atau tombol
+    panah papan ketik. Pergeserannya berhenti selama kursor, jari, atau fokus
+    papan ketik ada di banner, dan tombol jeda menghentikannya sama sekali
+    (WCAG 2.2.2). Perangkat yang meminta gerakan dikurangi tetap berganti
+    banner, tetapi langsung tanpa animasi geser.
     Hanya gambar pertama yang dimuat segera (gambar terbesar di layar pertama);
     sisanya menyusul saat mendekat.
 --}}
-@php $banyak = $banner->count() > 1; @endphp
+@php
+    $banyak = $banner->count() > 1;
+    $selangMs = 6000;
+@endphp
 
 <div class="relative"
      @if ($banyak)
-         x-data="carouselBanner({{ $banner->count() }})"
+         x-data="carouselBanner({{ $banner->count() }}, {{ $selangMs }})"
          @keydown.left.prevent="ke(aktif - 1)" @keydown.right.prevent="ke(aktif + 1)"
+         @pointerenter="$event.pointerType === 'mouse' && tahan()"
+         @pointerleave="$event.pointerType === 'mouse' && lepas()"
+         @touchstart.passive="tahan()" @touchend.passive="lepas()" @touchcancel.passive="lepas()"
+         @focusin="$event.target.matches(':focus-visible') && tahan()"
+         @focusout="$el.contains($event.relatedTarget) || lepas()"
          role="region" aria-roledescription="carousel" aria-label="Promo toko"
      @endif>
 
@@ -81,6 +92,21 @@
             @endforeach
         </div>
 
-        <p class="sr-only" aria-live="polite" x-text="`Banner ${aktif + 1} dari {{ $banner->count() }}`"></p>
+        {{-- Tombol jeda di pojok kanan bawah, sebaris dengan titik. --}}
+        <button type="button" @click="alihJeda()" class="banner-jeda"
+                :aria-pressed="jeda.toString()">
+            <span x-show="! jeda" class="contents">
+                <x-ikon nama="jeda" ukuran="size-4" />
+                <span class="sr-only">Jeda pergeseran banner</span>
+            </span>
+            <span x-show="jeda" x-cloak class="contents">
+                <x-ikon nama="putar" ukuran="size-4" />
+                <span class="sr-only">Putar pergeseran banner</span>
+            </span>
+        </button>
+
+        {{-- Diam selama bergeser sendiri, supaya pembaca layar tidak
+             mengumumkan pergantian tiap enam detik. --}}
+        <p class="sr-only" :aria-live="berputar ? 'off' : 'polite'" x-text="`Banner ${aktif + 1} dari {{ $banner->count() }}`"></p>
     @endif
 </div>

@@ -3169,7 +3169,7 @@ dijalankan di Chromium dan WebKit, axe 40/40 bersih termasuk keranjang berisi.
 ---
 
 ## KEP-092 — Logo hero versi terang, dan banner promo beranda yang digeser manual
-**Status:** TERKUNCI · 2026-10-27
+**Status:** DIREVISI · 2026-10-27, direvisi KEP-166 pada 2026-11-26 (banner kini bergeser sendiri)
 
 - **Logo di hero tenggelam.** Tulisan navy logo lengkap diletakkan di atas
   hero yang juga navy, ditambah `opacity-90`; yang terbaca hanya ilustrasi
@@ -5811,6 +5811,29 @@ kembali ke Nama A–Z. Tautan kanonik tidak memuat urutan, karena isinya sama.
 
 ---
 
+## KEP-166 — Banner beranda bergeser sendiri
+**Status:** TERKUNCI · 2026-11-26
+
+Revisi klien, 26 Nov 2026: banner carousel diminta bergeser otomatis. Ini mengubah KEP-092, yang
+sengaja membuat banner hanya bisa digeser manual.
+
+- Dua banner atau lebih berganti sendiri tiap 6 detik, lalu kembali ke banner pertama setelah
+  yang terakhir. Satu banner tetap diam.
+- Pergeseran berhenti selama pengunjung sedang memegang banner: kursor di atasnya, jari
+  menyentuhnya, atau fokus papan ketik di dalamnya. Setelah dilepas, banner berikutnya menunggu
+  satu selang penuh. Menggeser manual juga menyetel ulang hitungannya.
+- Tombol jeda di pojok kanan bawah banner menghentikannya sampai diputar lagi (WCAG 2.2.2).
+- Perangkat yang meminta gerakan dikurangi tetap berganti banner, tetapi langsung tanpa animasi
+  geser. Pengaturan itu sering menyala tanpa disadari (Windows dengan animasi dimatikan, mode
+  hemat baterai), dan banner yang diam di sana terlihat seperti rusak.
+- Tab yang tidak sedang dilihat tidak ikut berganti banner. Pembaca layar tidak mengumumkan
+  pergantian selama banner bergeser sendiri, hanya saat dijeda atau digeser manual.
+
+Saat keputusan ini dibuat, situs baru punya satu banner aktif, jadi pergeserannya baru terlihat
+setelah banner kedua ditambahkan di Panel > Banner beranda.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -5906,7 +5929,7 @@ kembali ke Nama A–Z. Tautan kanonik tidak memuat urutan, karena isinya sama.
 | KEP-089 | Audit UI/UX: klik baris salah sasaran di Safari, dialog konfirmasi, aset, SEO | TERKUNCI |
 | KEP-090 | Audit developer/QA: N+1, galat yang menyamar, CI, analisis statis | TERKUNCI |
 | KEP-091 | Dua jalan pemesanan, tombol − +, hapus di keranjang, estimasi dari data | TERKUNCI |
-| KEP-092 | Logo hero versi terang, dan banner promo beranda yang digeser manual | TERKUNCI |
+| KEP-092 | Logo hero versi terang, dan banner promo beranda yang digeser manual | DIREVISI KEP-166 |
 | KEP-093 | Rilis pertama ke hosting, deploy lewat SSH | TERKUNCI |
 | KEP-094 | Email Resend dan ongkir Biteship dinyalakan di produksi | TERKUNCI |
 | KEP-095 | File desain pelanggan hanya lewat WhatsApp, dijelaskan sejak langkah desain | TERKUNCI |
@@ -5980,3 +6003,4 @@ kembali ke Nama A–Z. Tautan kanonik tidak memuat urutan, karena isinya sama.
 | KEP-163 | Tombol Mulai baru, pilihan saat percakapan selesai, otomatis baru setelah 7 hari ditutup, percakapan sebelumnya di panel | TERKUNCI |
 | KEP-164 | Strip hero dihapus, pembatalan kustom hanya sampai tahap desain, mockup wajib bergambar dan gambar desain lama bisa dilengkapi | TERKUNCI |
 | KEP-165 | Audit tampilan HP (320–768px): teks terhimpit, tabel dan bilah atas yang melebar; "Masuk staf" tidak tertutup tombol CS; pilihan urutan Terbaru di katalog | TERKUNCI |
+| KEP-166 | Banner beranda bergeser sendiri tiap 6 detik, berhenti saat dipegang, tombol jeda (mengubah KEP-092) | TERKUNCI |

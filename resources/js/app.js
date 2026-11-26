@@ -16,16 +16,64 @@ Alpine.data('ruangCs', ruangCs);
  * peramban, lalu sinkron() mencatat slide mana yang tampil; panah, titik, dan
  * tombol panah papan ketik memanggil ke(). Tidak pernah bergeser sendiri.
  */
-Alpine.data('carouselBanner', (jumlah) => ({
+/*
+ * Banner beranda (KEP-092, bergeser sendiri sejak KEP-166).
+ *
+ * Bergeser tiap `selang` milidetik, tetapi berhenti selama pengunjung sedang
+ * memegangnya: kursor di atasnya, jari menyentuhnya, atau fokus papan ketik
+ * di dalamnya. Tombol jeda menghentikannya sampai diputar lagi (WCAG 2.2.2).
+ * Perangkat yang meminta gerakan dikurangi tetap berganti banner, tetapi
+ * langsung tanpa animasi geser: pengaturan itu sering menyala tanpa disadari
+ * (Windows dengan animasi dimatikan, mode hemat baterai), dan banner yang diam
+ * di sana terlihat seperti rusak. Tab yang tidak terlihat tidak ikut berdetak.
+ */
+Alpine.data('carouselBanner', (jumlah, selang = 6000) => ({
     aktif: 0,
+    jeda: false,
+    tertahan: false,
+    _detak: null,
 
-    ke(i) {
+    init() {
+        this.mulai();
+        document.addEventListener('visibilitychange', () => this.mulai());
+    },
+
+    /** Sedang bergeser sendiri: dipakai untuk mematikan pengumuman pembaca layar. */
+    get berputar() {
+        return !this.jeda && !this.tertahan;
+    },
+
+    /** Menyetel ulang hitungan, jadi slide berikutnya selalu tampil penuh satu selang. */
+    mulai() {
+        clearInterval(this._detak);
+        this._detak = null;
+        if (this.jeda || this.tertahan || document.hidden) return;
+        this._detak = setInterval(() => this.ke(this.aktif + 1, false), selang);
+    },
+
+    tahan() {
+        this.tertahan = true;
+        this.mulai();
+    },
+
+    lepas() {
+        this.tertahan = false;
+        this.mulai();
+    },
+
+    alihJeda() {
+        this.jeda = !this.jeda;
+        this.mulai();
+    },
+
+    ke(i, olehPengunjung = true) {
         const jalur = this.$refs.jalur;
         this.aktif = (i + jumlah) % jumlah;
         jalur.scrollTo({
             left: this.aktif * jalur.clientWidth,
             behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
         });
+        if (olehPengunjung) this.mulai();
     },
 
     sinkron() {

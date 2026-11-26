@@ -536,6 +536,30 @@
 
     .banner-panah:hover { background: #fff; }
 
+    /* Tombol jeda pergeseran otomatis (KEP-166): kecil dan tenang, tetapi
+       kotak ketuknya tetap 32px. */
+    .banner-jeda {
+        position: absolute;
+        right: 0.75rem;
+        bottom: 0.5rem;
+        display: flex;
+        width: 2rem;
+        height: 2rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        background: rgb(13 23 51 / 0.45);
+        color: #fff;
+        backdrop-filter: blur(4px);
+        transition: background-color 120ms;
+    }
+
+    .banner-jeda:hover { background: rgb(13 23 51 / 0.7); }
+
+    @media (width >= 40rem) {
+        .banner-jeda { right: 1rem; bottom: 0.75rem; }
+    }
+
     /* Di HP cukup digeser jari; panah hanya menutupi gambar yang sudah kecil. */
     @media (width >= 40rem) {
         .banner-panah { display: flex; }

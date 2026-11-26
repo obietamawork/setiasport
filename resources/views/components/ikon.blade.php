@@ -40,6 +40,8 @@
         'buka-luar' => '<path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
         'kembali' => '<path d="M15 6l-6 6 6 6"/>',
         'lanjut' => '<path d="M9 6l6 6-6 6"/>',
+        'jeda' => '<path d="M9 5.5v13M15 5.5v13"/>',
+        'putar' => '<path d="M8 5.5v13l10-6.5-10-6.5Z"/>',
         'turun' => '<path d="M6 9l6 6 6-6"/>',
         'centang' => '<path d="m5 12.5 4.5 4.5L19 7"/>',
         'silang' => '<path d="M6 6l12 12M18 6 6 18"/>',
