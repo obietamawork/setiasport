@@ -325,13 +325,25 @@
         @endforeach
     </div>
     <div class="border-t border-line">
-        {{-- Di HP tautan lebih dulu: hak cipta tidak perlu diketuk. --}}
-        <div class="mx-auto flex max-w-6xl flex-col-reverse gap-2 px-5 py-4 text-xs text-muted sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
-            <span>&copy; {{ date('Y') }} {{ setting('toko_nama', 'Setia Sport') }}</span>
+        {{-- Di HP tautan lebih dulu: hak cipta tidak perlu diketuk.
+
+             "Masuk staf" menumpang di sebelah hak cipta, terpisah dari tautan
+             kebijakan untuk pelanggan, dan bagian paling bawah diberi ruang
+             setinggi tombol Chat CS yang melayang (KEP-165). Dulu tautan itu
+             berada tepat di pojok kanan bawah dan tertutup tombol tersebut. --}}
+        <div @class([
+            'mx-auto flex max-w-6xl flex-col-reverse gap-2 px-5 pt-4 text-xs text-muted sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3',
+            'pb-20 sm:pb-24' => cs_aktif(),
+            'pb-4' => ! cs_aktif(),
+        ])>
+            <p class="flex flex-wrap items-center gap-x-2">
+                <span>&copy; {{ date('Y') }} {{ setting('toko_nama', 'Setia Sport') }}</span>
+                <span aria-hidden="true" class="text-line-strong">&middot;</span>
+                <a href="{{ route('panel.login') }}" class="tautan inline-block py-1.5">Masuk staf</a>
+            </p>
             <nav class="flex flex-wrap items-center gap-x-5" aria-label="Tautan kebijakan">
                 <a href="{{ route('kebijakan-privasi') }}" class="tautan inline-block py-1.5">Kebijakan Privasi</a>
                 <a href="{{ route('syarat-ketentuan') }}" class="tautan inline-block py-1.5">Syarat &amp; Ketentuan</a>
-                <a href="{{ route('panel.login') }}" class="tautan inline-block py-1.5">Masuk staf</a>
             </nav>
         </div>
     </div>

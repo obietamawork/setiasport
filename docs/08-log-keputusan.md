@@ -5799,6 +5799,10 @@ terhimpit, tombol yang patah baris, dan isi yang keluar dari kotaknya. Yang dipe
   ke bawah di HP. Riwayat aktivitas digeser ke samping, tidak diperas. Ubin antrean produksi di
   dashboard dirapatkan supaya labelnya tidak keluar kotak. Tombol "Catat resi", "Barang masuk",
   dan "Chat lewat WhatsApp" tidak patah baris.
+- Kaki halaman: "Masuk staf" pindah ke sebelah hak cipta, terpisah dari tautan kebijakan untuk
+  pelanggan. Dulu ia berada di pojok kanan bawah dan tertutup tombol Chat CS yang melayang. Selama
+  widget CS aktif, bagian paling bawah diberi ruang setinggi tombol itu, jadi tidak ada tautan yang
+  tertutup di lebar layar mana pun.
 
 **Urutan katalog.** Katalog punya pilihan "Urutkan": Nama A–Z (bawaan, seperti sebelumnya) dan
 Terbaru (produk yang terakhir ditambahkan lebih dulu). Pilihan ikut terbawa saat pelanggan
@@ -5975,4 +5979,4 @@ kembali ke Nama A–Z. Tautan kanonik tidak memuat urutan, karena isinya sama.
 | KEP-162 | Panduan berkelompok sesuai izin, alur bernomor, lihat sebagai peran lain, panduan konveksi siap cetak A4 | TERKUNCI |
 | KEP-163 | Tombol Mulai baru, pilihan saat percakapan selesai, otomatis baru setelah 7 hari ditutup, percakapan sebelumnya di panel | TERKUNCI |
 | KEP-164 | Strip hero dihapus, pembatalan kustom hanya sampai tahap desain, mockup wajib bergambar dan gambar desain lama bisa dilengkapi | TERKUNCI |
-| KEP-165 | Audit tampilan HP (320–768px): teks terhimpit, tabel dan bilah atas yang melebar; pilihan urutan Terbaru di katalog | TERKUNCI |
+| KEP-165 | Audit tampilan HP (320–768px): teks terhimpit, tabel dan bilah atas yang melebar; "Masuk staf" tidak tertutup tombol CS; pilihan urutan Terbaru di katalog | TERKUNCI |
