@@ -3,7 +3,7 @@
 
 @section('isi')
 <div class="mx-auto max-w-md px-5 py-14">
-    <h1 class="text-3xl font-extrabold">Aktifkan akun</h1>
+    <h1 class="judul-tampil text-[2.5rem]">Aktifkan akun</h1>
     <p class="mt-3 leading-relaxed text-muted">
         Satu langkah lagi untuk akun {{ $pelanggan->email_samar }}: ketik kata sandi
         yang Anda buat saat mendaftar.
@@ -20,7 +20,7 @@
                    class="kotak-input" required autofocus autocomplete="current-password">
         </div>
 
-        <button type="submit" class="tombol tombol-utama w-full">Aktifkan akun</button>
+        <button type="submit" class="tombol tombol-navy w-full">Aktifkan akun</button>
     </form>
 
     <div class="notis notis-info mt-6">

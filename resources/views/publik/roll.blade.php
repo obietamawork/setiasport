@@ -35,7 +35,7 @@
                     @enderror
                 </div>
 
-                <button type="submit" class="tombol tombol-utama w-full" data-teks-proses="Menyimpan...">
+                <button type="submit" class="tombol tombol-navy w-full" data-teks-proses="Menyimpan...">
                     Tandai seluruh roll selesai
                 </button>
 

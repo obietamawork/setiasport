@@ -44,18 +44,18 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                            <button type="button" class="tautan py-1" @click="panel = panel === 'ubah' ? null : 'ubah'"
+                            <button type="button" class="tautan area-sentuh py-1" @click="panel = panel === 'ubah' ? null : 'ubah'"
                                     :aria-expanded="(panel === 'ubah').toString()">Ubah</button>
                             @unless ($diriSendiri)
-                                <button type="button" class="tautan py-1" @click="panel = panel === 'sandi' ? null : 'sandi'"
+                                <button type="button" class="tautan area-sentuh py-1" @click="panel = panel === 'sandi' ? null : 'sandi'"
                                         :aria-expanded="(panel === 'sandi').toString()">Atur ulang sandi</button>
-                                <button type="button" class="tautan py-1 {{ $u->aktif ? 'text-merah' : '' }}"
+                                <button type="button" class="tautan area-sentuh py-1 {{ $u->aktif ? 'text-merah' : '' }}"
                                         @click="panel = panel === 'aktif' ? null : 'aktif'"
                                         :aria-expanded="(panel === 'aktif').toString()">
                                     {{ $u->aktif ? 'Nonaktifkan' : 'Aktifkan' }}
                                 </button>
                             @else
-                                <a href="{{ route('panel.akun') }}" class="tautan py-1">Ganti sandi saya</a>
+                                <a href="{{ route('panel.akun') }}" class="tautan area-sentuh py-1">Ganti sandi saya</a>
                             @endunless
                         </div>
                     </div>

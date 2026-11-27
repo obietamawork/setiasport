@@ -5834,6 +5834,361 @@ setelah banner kedua ditambahkan di Panel > Banner beranda.
 
 ---
 
+## KEP-167 — Kit Tim tahap 1: huruf judul dan kerangka etalase
+**Status:** TERKUNCI · 2026-11-26
+
+Pemilik proyek menyetujui rancangan ulang "Kit Tim" (kanvas di claude.ai, versi 34) untuk
+diterapkan bertahap dan mobile first: tiap templat dirancang di 390px, dicek sampai 320px, lalu
+dilebarkan ke desktop. Tahap 1 memasang fondasi dan kerangka etalase. Halaman demi halaman
+menyusul dalam KEP berikutnya, jadi halaman yang belum disentuh masih memakai gaya lama.
+
+- **Peran warna.** Warna tetap dari logo; yang diatur ulang perannya, dengan takaran kira-kira
+  60 terang, 30 navy, 10 aksen. Merah hanya untuk tombol yang menggerakkan pesanan (beli,
+  pesan, bayar), satu per layar. Harga memakai tinta. Kotak info memakai navy 50, bukan merah.
+  Tidak ada gradien navy ke merah, karena campurannya jatuh ke ungu keruh. Kuning untuk garis,
+  cincin langkah, dan angka besar di atas navy. Biru tidak dipakai di etalase.
+- **Huruf judul.** Barlow Condensed miring 700 dan 800, senada dengan logo yang juga miring dan
+  sempit. Di-host sendiri seperti Plus Jakarta Sans (KEP-089), subset latin dan latin-ext,
+  ±78 KB, dan hanya terunduh di halaman yang memakainya. Token `--font-tampil`, kelas
+  `.judul-tampil` dan `.angka-tampil`. Isi tetap Plus Jakarta Sans.
+- **Komponen dasar:** `.garis-kit` (dua batang miring merah dan kuning), `.alis`, `.pita`,
+  `.motif` (navy padat bergaris tipis), `.lencana-stok`, `.lencana-kustom`.
+- **Kepala halaman etalase.** Di HP isinya logo, cari, keranjang, dan akun. Menu garis tiga
+  dihapus. Mulai 768px navigasi dari klien (KEP-062) tampil dengan garis kuning di menu aktif,
+  dan mulai 1024px ada kotak cari yang membuka katalog (`?q=`). Penghitung keranjang navy, bukan
+  merah.
+- **Bilah bawah etalase di HP**, di bawah 768px: Beranda, Produk, Custom, Lacak (atau Pesanan bagi
+  pelanggan yang masuk), dan Chat. Chat membuka jendela CS lewat peristiwa `buka-cs`; tanda pesan
+  belum dibaca dikirim widget lewat `cs-belum-dibaca`. Tanpa CS aktif, tempatnya diisi Masuk atau
+  Akun. Tombol Chat CS yang mengambang hanya tampil mulai 768px, jadi di HP ia tidak lagi
+  menutupi harga dan tautan (melanjutkan KEP-165).
+- **Kaki halaman** navy 900 dengan pita tiga warna di tepi atasnya. Isi dan susunannya tetap
+  KEP-091.
+- **Kartu produk.** Label "Ready Stock" dan "Pre Order" dari klien (KEP-132) tetap, tetapi
+  warnanya ikut Kit Tim: putih bertitik hijau dan navy, bukan biru dan merah. Peringatan minimum
+  pesanan memakai warna peringatan, dan "Stok habis" memakai tinta.
+
+Urutan tahap berikutnya: beranda dan katalog; halaman produk dan pesan kustom; keranjang,
+checkout, bayar, dan lacak; akun pelanggan; lalu panel.
+
+---
+
+## KEP-168 — Kit Tim tahap 2: beranda dan katalog
+**Status:** TERKUNCI · 2026-11-26
+
+Lanjutan KEP-167. Susunan dan kalimat beranda tetap milik klien (KEP-062, KEP-102, KEP-106,
+KEP-137); yang berubah tampilannya.
+
+- **Hero tanpa banner** memakai `.motif`, navy padat bergaris tipis, bukan gradien navy ke
+  merah. Label di atas judul memakai `.alis` dengan garis kit, dan judulnya huruf tampil.
+  Banner promo (KEP-092, KEP-164, KEP-166) tidak berubah.
+- **Satu tombol merah.** "Lihat produk" di hero dan di ajakan penutup menjadi tombol putih,
+  karena melihat produk belum menggerakkan pesanan. Merah tinggal di "Mulai pesan custom".
+- **Judul bagian** beranda (`.judul-bagian`) memakai huruf tampil dengan garis kit di atasnya,
+  menggantikan batang kuning tegak di kiri.
+- **Ikon, bukan inisial.** Petak kategori tanpa foto dan kartu produk tanpa foto dan tanpa pola
+  menampilkan ikon jenis barang (bola, sepatu, kaos, celana, jaket), ditebak dari slug kategori
+  atau nama produk. Yang tidak dikenali mendapat ikon umum. Dulu tampil inisial seperti "BO".
+- Blok layanan custom bermotif navy dengan nomor langkah angka tampil. Tugas lokasi di kartu toko
+  dan konveksi berwarna navy, bukan merah.
+- **Katalog:** judul besar huruf tampil, dan ikon jalur Custom Apparel navy, bukan merah. Kartu
+  jalur dan penyaringnya tetap KEP-142.
+
+---
+
+## KEP-169 — Kit Tim tahap 3: halaman produk dan pesan kustom
+**Status:** TERKUNCI · 2026-11-26
+
+Lanjutan KEP-167 dan KEP-168. Alur dan logikanya tidak berubah (KEP-045, KEP-091, KEP-143);
+yang berubah tampilannya, ditambah satu informasi baru di tombol ukuran.
+
+- **Kotak beli** berupa kartu bersudut bulat. Nama produk memakai huruf tampil dan harga memakai
+  tinta, bukan merah, baik harga stok maupun harga kustom dan total di konfigurator.
+- **Sisa stok di tombol ukuran.** Ukuran yang tinggal lima atau kurang menulis "sisa N" di
+  tombolnya sendiri, dan ukuran yang habis menulis "habis" dengan bingkai putus-putus, bukan
+  coretan. Pembeli tidak perlu mengetuk ukuran satu per satu untuk tahu mana yang hampir habis.
+  Tabel stok per ukuran tetap ada di bawah.
+- **"Siap diambil ... pada jam buka"** berwarna hijau dengan tanda centang.
+- **"Buat pesanan"** di produk kustom menjadi merah, karena tombol itulah yang memulai pesanan.
+  Kotak penjelasan waktu pengerjaan memakai navy 50, bukan merah.
+- Penanda "sekali" pada biaya tambahan memakai navy, bukan merah.
+- **Alur pesan kustom:** judul tiap langkah memakai huruf tampil. Di penanda langkah, langkah
+  yang sedang dikerjakan bercincin kuning dan yang sudah lewat navy penuh.
+- **Kotak persetujuan mockup** di halaman lacak menjadi kartu putih bertepi atas kuning, bukan
+  kotak merah muda. Merah tinggal di tombol "Setujui desain".
+- Pesan galat yang memblokir, seperti nomor punggung ganda atau jumlah di bawah minimum, tetap
+  merah: itu status galat, bukan hiasan.
+
+---
+
+## KEP-170 — Kit Tim tahap 4: keranjang, checkout, bayar, lacak, dan akun
+**Status:** TERKUNCI · 2026-11-26
+
+Lanjutan KEP-169. Alur pembayaran dan pelacakan tidak berubah; yang berubah warna dan judulnya.
+
+- **Judul halaman** Keranjang, Data pemesan, Lacak pesanan, status di halaman lacak, Pesanan
+  saya, dan Akun saya memakai huruf tampil.
+- **Nominal memakai tinta**, bukan merah: total keranjang, total di checkout, tagihan yang harus
+  dibayar, sisa tagihan, dan "Sisa Rp..." di daftar pesanan.
+- **Kotak batas pembayaran** berwarna kuning peringatan dengan kotak "Sisa waktu" berkepala navy,
+  bukan bidang merah. Begitu juga kotak "Langkah berikutnya" yang mendesak (`.langkah-berikut-mendesak`):
+  merahnya disimpan untuk tombol bayar atau setujui di dalamnya.
+- **Peringatan stok berubah** di keranjang memakai kuning peringatan, dan pemberitahuan sisa
+  pelunasan sebelum paket dikirim memakai navy 50.
+- Tetap merah: bukti bayar yang ditolak, alamat yang tidak ketemu, tanda wajib isi, pesan galat
+  isian, tombol Hapus di keranjang, dan tombol ajukan pembatalan. Semuanya galat atau tindakan
+  yang merusak, bukan hiasan.
+- **Halaman akun** (masuk, daftar, lupa sandi, atur sandi, aktifkan, profil, alamat): tombol
+  utamanya navy, bukan merah, karena masuk atau menyimpan profil bukan transaksi. Judulnya huruf
+  tampil, begitu juga Galeri portofolio, Testimoni pelanggan, dan halaman kebijakan.
+- **Widget Chat CS:** garis di atas kepala jendelanya memakai pita tiga warna, tombol Kirim navy,
+  dan penanda pesan belum dibaca putih bertulisan navy, bukan merah.
+
+---
+
+## KEP-171 — Kit Tim tahap 5: panel
+**Status:** TERKUNCI · 2026-11-26
+
+Lanjutan KEP-170. Pemilik proyek memutuskan panel ikut Kit Tim, jadi sebagian KEP-111 berubah:
+menu aktif biru terang dan kartu angka berlatar pastel diganti. Warna per bagian KEP-111 tetap
+ada di ikon dan chip status. Kerangka panel, susunan menu, dan semua kalimatnya tidak berubah.
+
+- **Menu aktif** di sidebar memakai navy terang (`navy-700`) bertulisan tebal dengan garis kuning
+  di kiri, bukan blok biru terang. Penghitung di menu berwarna putih tembus, bukan berwarna.
+- **Kartu angka** dan **ubin jalan pintas** berlatar putih bertepi garis dengan bayangan tipis.
+  Warna bagian tinggal di kotak ikonnya, dan kartu yang sedang dipilih bercincin warna bagiannya.
+  Angkanya memakai huruf tampil, begitu juga judul halaman (`.kop-judul`).
+- **Penanda tahap** di detail pesanan dan garis waktu: tahap yang sedang berjalan berwarna navy
+  bercincin kuning, bukan biru terang. Tahap yang selesai tetap hijau. Di riwayat progres halaman
+  lacak, titik pertama tetap hijau, titik lainnya navy, dan titik terbaru bercincin kuning.
+- **Tombol yang tidak merusak** memakai navy, bukan merah: Masuk di halaman masuk staf, Kirim
+  untuk disetujui, Catat pembayaran, Catat pelunasan, dan Chat baru di bilah atas. Penghitung di
+  bilah bawah HP memakai navy bercincin putih.
+- **Sisa biru** di kotak info, tautan nomor HP, dan pilihan tindakan revisi, di panel maupun di
+  halaman lacak, menjadi navy. Di panel, biru tetap dipakai sebagai warna bagian KEP-111 di ikon
+  dan chip, misalnya chip pesanan, kategori, tahap Print, dan Pre Order.
+- **Total pesanan** di kepala detail pesanan, kartu Informasi, dan Ringkasan total memakai tinta
+  di atas navy 50, bukan merah di atas merah muda, karena harga memakai tinta.
+- Tetap merah: tombol "Ya, batalkan" dan menonaktifkan pengguna, pesan galat, sisa tagihan yang
+  belum lunas, keterlambatan, stok habis, kelebihan bayar, ongkir yang belum diisi, serta chip
+  Dibatalkan dan Kedaluwarsa. Semuanya menandai masalah. Angka divisi di Antrian kerja juga
+  tetap merah, karena kalimat di halaman itu berbunyi "Angka merah berarti ada yang menunggu
+  dikerjakan".
+
+---
+
+## KEP-172 — Kit Tim tahap 6: email, halaman galat, dan roll printing
+**Status:** TERKUNCI · 2026-11-26
+
+Lanjutan KEP-171. Teks email dan halaman tidak berubah; yang berubah warnanya.
+
+- **Email** masih memakai palet rancangan awal, yaitu oranye `#FF5A1F` dan abu-abu kehijauan,
+  padahal di situs palet itu sudah lama diganti navy. Sekarang semua warnanya diambil dari token
+  Kit Tim dan ditulis inline:
+  - Kepala navy 900 dengan pita tiga warna di bawahnya. Pita dibuat dari tiga baris padat, bukan
+    gradien, karena Outlook tidak merender gradien.
+  - Semua tombol navy dengan sudut 8px seperti di situs. Itu termasuk "Buka halaman pesanan" di
+    email pesanan dibuat yang dulu oranye. "Buat kata sandi baru" dan "Konfirmasi akun" yang
+    dulu merah juga menjadi navy, mengikuti tombol halaman akun di KEP-170.
+  - Sisa tagihan di rincian memakai tinta, bukan oranye.
+  - Kotak sisa pelunasan dan pemberitahuan lain berlatar navy 50 bergaris navy. Kotak kode ambil
+    dan nomor resi berlatar navy 50 bergaris kuning.
+  - Teks pendukung memakai `muted`, garis pemisah `line`, dan latar luar `paper`.
+  - Tetap merah: alasan bukti bayar ditolak (warnanya disamakan dengan merah logo) dan lama
+    menunggu di email peringatan CS untuk staf.
+  - Huruf tampil tidak dipakai di email, karena banyak klien email tidak memuat huruf web.
+- **Halaman galat** 404, 419, dan 429: tombol "Buka katalog", "Kembali dan ulangi", dan
+  "Kembali" berwarna navy, bukan merah. Kode galat dan judulnya memakai huruf tampil.
+- **Halaman roll printing:** tombol "Tandai seluruh roll selesai" berwarna navy, sama dengan
+  tombol simpan di halaman kerja.
+
+---
+
+## KEP-173 — Kit Tim tahap 7: sisa audit warna
+**Status:** TERKUNCI · 2026-11-26
+
+Audit warna otomatis di 22 halaman etalase dan 30 halaman panel, ditambah CS dan email,
+menemukan sisa yang belum ikut Kit Tim. Teksnya tidak berubah.
+
+- **Token `navy-200` (`#C9D2E6`)** ditambahkan. Kelas `border-navy-200` dan `ring-navy-200` sudah
+  lama dipakai tanpa tokennya, jadi tidak menghasilkan CSS dan garisnya jatuh ke warna tinta.
+  Itu terjadi di garis kotak info pesan kustom, cincin pilihan potongan, dan tepi tombol saran di
+  widget Chat. Teks terang di hero dan kaki halaman yang tadinya ditulis langsung (`#c9d2e6`)
+  kini memakai token yang sama, tanpa perubahan warna.
+- **Halaman lacak:** chip tahap yang sedang berjalan berwarna navy, bukan biru.
+- **Pesanan saya:** chip "Kode ambil" berwarna hijau seperti "Siap diambil", bukan merah, karena
+  isinya informasi, bukan galat.
+- **CS:** titik "Online" di widget Chat dan ruang CS memakai hijau token, bukan `emerald` bawaan
+  Tailwind. Chip "Bot" di daftar percakapan berwarna navy, karena biru di panel menandai bagian
+  pesanan.
+- **Dialog progres panel:** chip "Sekarang" berwarna navy, sama dengan penanda tahap berjalan
+  lainnya (KEP-171).
+- Sengaja dibiarkan: halaman kerja pekerja tetap mengikuti gambar klien (KEP-160). Kartu tugas di
+  dashboard juga tetap merah, karena semuanya tergolong mendesak di daftar tindakan, sama seperti
+  titik merah di lonceng.
+
+---
+
+## KEP-174 — Kit Tim tahap 8: aturan tata letak HP
+**Status:** TERKUNCI · 2026-11-26
+
+Menerapkan aturan di papan Peta halaman kanvas Kit Tim yang belum masuk di tahap sebelumnya.
+Tidak ada kalimat yang berubah; label kartu dan bilah memakai kata yang sudah ada di halamannya.
+
+- **Aksi utama menempel di dasar layar HP** (di bawah 768px) dan menggantikan bilah navigasi
+  bawah di halaman itu, seperti papan HP di kanvas:
+  - produk siap beli: tombol Chat dan "Beli sekarang"; "Masukkan ke keranjang" tetap di kotak beli;
+  - produk kustom: tombol Chat dan "Buat pesanan";
+  - keranjang: total dan "Lanjut ke data pemesan";
+  - checkout: "Buat pesanan";
+  - pesan kustom: tombol langkahnya;
+  - halaman lacak yang menunggu bukti bayar: tombol Chat dan "Unggah bukti";
+  - serah terima di panel: "Catat pelunasan" atau "Konfirmasi serah terima".
+
+  Tombolnya tetap di dalam formulirnya; hanya letaknya yang dipindah lewat `.aksi-bawah`, jadi
+  pengiriman formulir tidak berubah. Di layar lebar pembungkus itu tidak membentuk kotak.
+- **Formulir panjang panel** (produk, pesanan manual, banner, portofolio, testimoni) memakai
+  bilah simpan yang menempel (`.bilah-aksi`), sama seperti pengaturan.
+- **Target sentuh paling kecil 44px** di layar sentuh: tombol kecil, tombol ikon, ikon bilah
+  atas, kotak isian, tab segmen, item menu tarik, dan paginasi. Tautan teks yang berdiri
+  sendiri dan tombol ikon di dalam tabel mendapat lapisan sentuh tak terlihat 44x44px, jadi
+  tampilannya tidak berubah. Tautan di dalam kalimat dikecualikan. Di tetikus ukurannya tetap.
+- **Teks paling kecil 12px**: label bilah bawah, angka penghitung, judul kelompok menu samping,
+  keterangan "sisa N" di tombol ukuran, dan jam pesan di chat.
+- **Tabel menjadi kartu di HP** lewat `.tabel-hp`: daftar serah terima, riwayat aktivitas, dan
+  data pemain saat diubah di detail pesanan. Kolom utama naik ke baris pertama kartu. Daftar
+  pemain di halaman lacak tetap tabel ringkas yang digeser di dalam pembungkusnya di bawah 360px.
+- **Ringkasan menempel di layar lebar**: keranjang menjadi dua kolom mulai 1024px dengan
+  ringkasan yang menempel, seperti checkout. Ringkasan checkout kini menempel di `top-24`
+  supaya tidak tertutup kepala halaman yang menempel.
+- Judul "Masuk" di halaman masuk staf memakai huruf tampil.
+- Ditunda menunggu keputusan pemilik: bilah bawah panel menurut peran, dan antrian kerja
+  berbentuk kolom per tahap di desktop. Keduanya diputuskan di KEP-175.
+
+---
+
+## KEP-175 — Kit Tim tahap 9: bilah bawah panel menurut peran dan papan kerja antrian
+**Status:** TERKUNCI · 2026-11-26
+
+Dua aturan papan Peta halaman yang ditunda di KEP-174, dikerjakan atas persetujuan pemilik
+proyek. Tidak ada kalimat yang berubah.
+
+- **Bilah bawah panel mengikuti peran.** Pemilik dan admin mendapat Dashboard, Pesanan,
+  Customer Service, dan Serah terima, sehingga Antrian kerja pindah ke laci Menu. Kasir
+  mendahulukan Serah terima, dan bagian produksi mendahulukan Antrian kerja. Peran dibaca dari
+  izinnya karena Pemilik bisa menyusun peran sendiri: `order.kelola` berarti admin,
+  `serah_terima.proses` tanpa itu berarti kasir, dan izin tahap produksi saja berarti bagian
+  produksi. Tujuan yang tidak boleh dilihat tetap disaring seperti sebelumnya, dan labelnya
+  tetap kata pertama menu klien.
+- **Antrian kerja berbentuk papan kerja mulai 1024px.** Kartu divisi berjajar sebagai kepala
+  kolom per tahap, dan di bawahnya kartu pekerjaan yang paling lama menunggu: kode pesanan,
+  produk dan jumlahnya, serta target. Setiap kolom memuat paling banyak enam kartu, dan
+  sisanya lewat "Lihat semua" ke halaman divisinya. Papannya digeser ke samping bila kolomnya
+  tidak muat. Di HP dan tablet kartu divisi tetap bertumpuk seperti semula. Halaman per divisi
+  (KEP-129) dan daftar pekerjaan sebagai pengingat (KEP-114) tidak berubah.
+
+---
+
+## KEP-176 — Kit Tim tahap 10: pusat akun pelanggan tanpa kata baru
+**Status:** TERKUNCI · 2026-11-27
+
+Bagian papan "Pesanan saya" dan "Akun" di kanvas yang tidak menambah kata baru, dikerjakan atas
+persetujuan pemilik proyek. Halaman pelanggan setelah masuk diperiksa langsung di browser lokal
+dengan akun uji sementara, yang datanya dipulihkan sesudahnya.
+
+- **Tab "Pesanan saya | Akun saya"** di kedua halaman, memakai label yang sudah ada; tab yang
+  aktif berwarna navy. Tautan "Keluar" kini ada di kedua halaman.
+- **Foto di setiap kartu pesanan**: mockup yang disetujui, lalu foto produk, lalu ikon jenis
+  barang, sama seperti antrian divisi (KEP-129). Ikon jenis barang kini satu helper,
+  `ikon_barang()`, yang juga dipakai kartu produk dan halaman produk.
+- **Kode ambil tampil besar** dalam kotak hijau di bawah kartu, menggantikan chip kecil;
+  tulisannya tetap "Kode ambil".
+- Tautan di strip informasi paling atas (nomor telepon dan media sosial) mendapat area sentuh
+  44px di layar sentuh.
+- Belum dibuat karena menambah kata atau fitur baru dan perlu keputusan klien: sapaan
+  "Halo, ...", saringan status pesanan, tombol aksi per pesanan (misalnya Periksa mockup dan
+  Pesan lagi), serta catatan tentang Lacak pesanan di bawah daftar. Keempatnya dikerjakan di
+  KEP-177.
+
+---
+
+## KEP-177 — Kit Tim tahap 11: sapaan, saringan, dan tombol aksi di pusat akun
+**Status:** TERKUNCI · 2026-11-27
+
+Sisa papan "Pesanan saya" dan "Akun" di kanvas yang menambah kata dan fitur baru, dikerjakan atas
+persetujuan pemilik proyek.
+
+- **Kepala pusat akun** di Pesanan saya dan Akun saya: lingkaran inisial, sapaan
+  "Halo, {nama}" sebagai judul, lalu email dan nomor HP, dan tab. Judul tab browser tetap
+  "Pesanan saya" dan "Akun saya".
+- **Saringan status** di Pesanan saya: Semua, Berjalan, Selesai, dan Dibatalkan, masing-masing
+  dengan jumlahnya (`?status=berjalan|selesai|batal`). Berjalan memakai scope `aktif()`, dan
+  Dibatalkan juga mencakup Kedaluwarsa.
+- **Satu tombol aksi per pesanan** sesuai keadaannya:
+  - desain menunggu persetujuan: "Periksa mockup" (merah) ke bagian persetujuannya di halaman
+    lacak, dan kartunya diberi pita tiga warna;
+  - siap diambil di toko: "Lihat petunjuk ambil" ke bagian Ambil di toko;
+  - selesai: "Pesan lagi" ke halaman produk barang pertama, bila produknya masih tayang;
+  - dibatalkan atau kedaluwarsa: "Lihat detail", dan kartunya diredam.
+
+  Seluruh kartu tetap bisa diketuk ke halaman lacak; tombolnya berada di atas lapisan tautan
+  kartu.
+- **Catatan Lacak** di bawah daftar: "Pesanan yang dibuat tanpa masuk akun tetap bisa dibuka
+  lewat Lacak pesanan dengan nomor pesanan dan email." Tombol **"Keluar dari akun"** pindah ke
+  bawah kedua halaman, menggantikan tautan Keluar di atas.
+- Lompatan ke jangkar berhenti di bawah kepala halaman yang menempel (`scroll-padding-top`).
+
+---
+
+## KEP-178 — Kit Tim tahap 12: kartu bayar berpita dan isian berkas
+**Status:** TERKUNCI · 2026-11-27
+
+Hasil pemeriksaan ulang halaman pembayaran dan kaki halaman terhadap kanvas Kit Tim. Tidak ada
+kalimat yang berubah.
+
+- **Kartu total pembayaran** di halaman lacak diberi pita tiga warna di atasnya, seperti papan
+  "HP | Bayar DP" di kanvas.
+- **Isian berkas** (bukti bayar, gambar produk, banner, QRIS, dan sejenisnya) memakai kotak unggah
+  bergaris putus-putus dengan tombol pilih bergaris navy, bukan tombol abu-abu bawaan browser.
+  Tulisan tombolnya tetap bawaan browser, mengikuti bahasa perangkat.
+- **Pesanan saya:** harga tetap rata kanan saat turun ke baris kedua di HP.
+- Kaki halaman sudah sesuai Kit Tim sejak KEP-167. Dua kolom tautan di kanvas ("Belanja" dan
+  "Bantuan") belum dibuat karena menambah kata dan tautan baru.
+
+---
+
+## KEP-179 — Kit Tim tahap 13: kolom tautan kaki halaman dan batang Laporan Terlaris
+**Status:** TERKUNCI · 2026-11-27
+
+Pengguna menyetujui dua kolom tautan dari papan "Kaki" di kanvas Kit Tim. Keduanya kata baru,
+bukan kalimat klien yang diubah. Tautan yang sudah ada tetap memakai nama yang dipakai situs.
+
+- **Belanja:** Katalog, Jersey custom, Siap beli, Portofolio, dan Testimoni. Kanvas menulis
+  "Portofolio dan testimoni" sebagai satu tautan, tetapi di situs keduanya halaman terpisah.
+  Masing-masing hanya muncul kalau galerinya berisi, karena galeri kosong menjawab 404 (KEP-106);
+  aturannya sama dengan peta situs.
+- **Bantuan:** Lacak pesanan, Cara pesan custom, Kebijakan Privasi, dan Syarat & Ketentuan.
+  "Cara pesan custom" menuju bagian layanan custom di beranda (`#cara-pesan`), tempat empat
+  langkah pemesanan. Kebijakan Privasi dan Syarat & Ketentuan pindah dari baris paling bawah
+  dengan nama yang sama dengan judul halamannya, jadi baris itu tinggal berisi hak cipta dan
+  Masuk staf (KEP-165).
+- **Panduan ukuran** dari kanvas belum dibuat. Panduan ukuran tersimpan per produk dan hanya
+  tampil di alur pesan kustom; belum ada halaman umum untuk ditautkan.
+- **Susunan:** mulai 1280px lima kolom sebaris seperti kanvas. Di tablet merek mendapat satu baris
+  sendiri dan empat kolom lain sebaris di bawahnya; kolom lokasi dibuat lebih lebar supaya jam
+  buka tidak patah. Di HP Belanja dan Bantuan berdampingan. Di layar sentuh tiap tautan setinggi
+  44px. Tautan berwarna navy 100, sedikit lebih terang dari teks, dan bergaris bawah hanya saat
+  disorot.
+- Tes KEP-142 yang menghitung tautan "Siap beli" di halaman katalog kini hanya menghitung isi
+  `<main>`, karena kaki halaman punya tautan itu sendiri.
+- **Laporan Terlaris:** batang "Bagian dari total" menjadi navy di atas navy 100, sama dengan
+  batang kemajuan di Kesiapan dan halaman lacak. Sebelumnya ungu, sisa warna bagian KEP-111,
+  padahal sejak KEP-171 warna bagian hanya untuk ikon dan chip. Ditemukan saat audit ulang;
+  sisa lain di kode layar tidak ada. Dokumen cetak (invoice, lembar kerja, roll cetak, Panduan
+  Kerja Konveksi) tetap abu-abu karena kanvas menaruhnya di luar kit layar.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -6004,3 +6359,16 @@ setelah banner kedua ditambahkan di Panel > Banner beranda.
 | KEP-164 | Strip hero dihapus, pembatalan kustom hanya sampai tahap desain, mockup wajib bergambar dan gambar desain lama bisa dilengkapi | TERKUNCI |
 | KEP-165 | Audit tampilan HP (320–768px): teks terhimpit, tabel dan bilah atas yang melebar; "Masuk staf" tidak tertutup tombol CS; pilihan urutan Terbaru di katalog | TERKUNCI |
 | KEP-166 | Banner beranda bergeser sendiri tiap 6 detik, berhenti saat dipegang, tombol jeda (mengubah KEP-092) | TERKUNCI |
+| KEP-167 | Kit Tim tahap 1: huruf judul Barlow Condensed, peran warna baru, bilah bawah etalase di HP dengan Chat, kepala dan kaki baru, label kartu tanpa biru dan merah | TERKUNCI |
+| KEP-168 | Kit Tim tahap 2: hero beranda navy bermotif, satu tombol merah, judul bagian huruf tampil, ikon pengganti inisial, judul katalog baru | TERKUNCI |
+| KEP-169 | Kit Tim tahap 3: kotak beli berupa kartu, harga tinta, sisa stok di tombol ukuran, Buat pesanan merah, langkah pesan kustom bercincin kuning, kotak setujui mockup | TERKUNCI |
+| KEP-170 | Kit Tim tahap 4: judul huruf tampil di keranjang sampai akun, nominal tinta, batas bayar dan langkah mendesak kuning, merah hanya galat dan aksi berbahaya | TERKUNCI |
+| KEP-171 | Kit Tim tahap 5: menu aktif panel navy bergaris kuning, kartu angka dan jalan pintas putih dengan warna bagian di ikon, tombol tidak merusak navy, total pesanan tinta (mengubah KEP-111) | TERKUNCI |
+| KEP-172 | Kit Tim tahap 6: email memakai warna Kit Tim (oranye dan abu-abu kehijauan dihapus, pita di kepala, tombol navy), tombol halaman galat dan roll printing navy | TERKUNCI |
+| KEP-173 | Kit Tim tahap 7: token navy-200 (garis yang jatuh ke warna tinta diperbaiki), chip lacak navy, Kode ambil hijau, titik Online dan chip Bot di CS, chip Sekarang navy | TERKUNCI |
+| KEP-174 | Kit Tim tahap 8: aksi utama menempel di dasar layar HP menggantikan bilah navigasi, target sentuh 44px dan teks 12px, tabel jadi kartu di HP, keranjang dua kolom dengan ringkasan menempel | TERKUNCI |
+| KEP-175 | Kit Tim tahap 9: bilah bawah panel menurut peran (pemilik/admin, kasir, produksi), antrian kerja berbentuk papan kerja per tahap mulai 1024px | TERKUNCI |
+| KEP-176 | Kit Tim tahap 10: tab Pesanan saya dan Akun saya, foto di kartu pesanan, kode ambil besar | TERKUNCI |
+| KEP-177 | Kit Tim tahap 11: sapaan "Halo" di pusat akun, saringan status Pesanan saya, tombol aksi per pesanan (Periksa mockup, Lihat petunjuk ambil, Pesan lagi, Lihat detail), catatan Lacak, Keluar dari akun di bawah | TERKUNCI |
+| KEP-178 | Kit Tim tahap 12: pita di kartu total pembayaran, isian berkas bergaya kotak unggah, harga Pesanan saya tetap rata kanan di HP | TERKUNCI |
+| KEP-179 | Kit Tim tahap 13: kolom tautan Belanja dan Bantuan di kaki halaman (Portofolio dan Testimoni hanya kalau galerinya berisi, Cara pesan custom ke beranda), tautan kebijakan pindah dari baris paling bawah; Panduan ukuran belum karena belum ada halaman umum; batang Laporan Terlaris navy, bukan ungu | TERKUNCI |

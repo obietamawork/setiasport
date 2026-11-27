@@ -22,6 +22,9 @@ use Illuminate\Http\Request;
  */
 class AntrianController extends Controller
 {
+    /** Kartu pekerjaan per kolom di papan kerja; sisanya lewat halaman divisinya. */
+    private const KARTU_PER_KOLOM = 6;
+
     public function __construct(private AlurPesanan $alur) {}
 
     public function index()
@@ -37,7 +40,8 @@ class AntrianController extends Controller
          * Selain jumlahnya, tiap divisi membawa pekerjaan yang paling lama
          * menunggu. Angka "3" tidak memberi tahu apa pun tentang urgensi;
          * "3, tertua 6 hari" langsung menunjukkan mana yang harus dikerjakan
-         * pagi ini.
+         * pagi ini. Kartu pekerjaannya mengisi kolom papan kerja di layar
+         * lebar (KEP-175).
          */
         $ringkas = collect($tahap)->mapWithKeys(function (ProductionStage $t) {
             $kerjaan = $this->kueri($t)->get();
@@ -46,6 +50,7 @@ class AntrianController extends Controller
                 'jumlah' => $kerjaan->count(),
                 'tertua' => $kerjaan->min('updated_at'),
                 'pesanan' => $kerjaan->pluck('order.kode')->unique()->take(3)->all(),
+                'kartu' => $kerjaan->take(self::KARTU_PER_KOLOM)->values(),
             ]];
         });
 

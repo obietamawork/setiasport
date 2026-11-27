@@ -34,6 +34,24 @@ class GaleriPublikTest extends TestCase
             ->assertDontSee(route('testimoni'));
     }
 
+    public function test_kaki_halaman_menautkan_galeri_hanya_kalau_berisi(): void
+    {
+        Portofolio::create(['judul' => 'Belum siap', 'slug' => 'belum-siap', 'aktif' => false]);
+
+        $this->get(route('lacak'))
+            ->assertOk()
+            ->assertDontSee(route('portofolio'))
+            ->assertDontSee(route('testimoni'));
+
+        Portofolio::create(['judul' => 'Jersey tim', 'slug' => 'jersey-tim', 'aktif' => true]);
+        Testimoni::create(['nama' => 'Budi', 'peran' => 'Pelatih SSB', 'isi' => 'Rapi.', 'bintang' => 5, 'aktif' => true]);
+
+        $this->get(route('lacak'))
+            ->assertOk()
+            ->assertSee('href="'.route('portofolio').'"', false)
+            ->assertSee('href="'.route('testimoni').'"', false);
+    }
+
     public function test_galeri_portofolio_memuat_semua_yang_aktif_beserta_ringkasannya(): void
     {
         foreach (range(1, 5) as $i) {

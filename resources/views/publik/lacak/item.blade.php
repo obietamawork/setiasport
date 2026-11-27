@@ -43,7 +43,7 @@
             @if ($linimasa['batal'])
                 <span class="chip chip-merah shrink-0 px-3 py-1.5 text-sm"><x-ikon nama="silang" ukuran="size-4" /> Dibatalkan</span>
             @elseif ($kini)
-                <span class="chip chip-biru shrink-0 px-3 py-1.5 text-sm"><x-ikon nama="pengaturan" ukuran="size-4" /> {{ $kini['label'] }}</span>
+                <span class="chip chip-navy shrink-0 px-3 py-1.5 text-sm"><x-ikon nama="pengaturan" ukuran="size-4" /> {{ $kini['label'] }}</span>
             @else
                 <span class="chip chip-ok shrink-0 px-3 py-1.5 text-sm"><x-ikon nama="centang" ukuran="size-4" /> Selesai</span>
             @endif
@@ -83,7 +83,7 @@
                 <li class="flex gap-3 {{ $loop->last ? '' : 'pb-3' }}">
                     <div class="flex flex-col items-center">
                         <span class="mt-1 size-2.5 shrink-0 rounded-full
-                            {{ $f['keadaan'] === 'kini' ? 'bg-biru-terang ring-4 ring-biru-100' : ($f['keadaan'] === 'lewat' ? 'bg-ok' : 'bg-line-strong') }}"></span>
+                            {{ $f['keadaan'] === 'kini' ? 'bg-navy ring-4 ring-kuning' : ($f['keadaan'] === 'lewat' ? 'bg-ok' : 'bg-line-strong') }}"></span>
                         @unless ($loop->last)
                             <span class="w-px flex-1 {{ $f['keadaan'] === 'lewat' ? 'bg-ok' : 'bg-line' }}"></span>
                         @endunless
@@ -99,7 +99,7 @@
         </ol>
 
         @if ($kini && $kini['catatan'])
-            <p class="mt-4 rounded-[10px] bg-biru-50 px-4 py-2.5 text-sm leading-relaxed">{{ $kini['catatan'] }}</p>
+            <p class="mt-4 rounded-[10px] bg-navy-50 px-4 py-2.5 text-sm leading-relaxed">{{ $kini['catatan'] }}</p>
         @endif
 
     @endif
@@ -116,7 +116,7 @@
         </div>
         <div class="mt-3 h-3 overflow-hidden rounded-full bg-navy-50" role="progressbar"
              aria-valuenow="{{ $produksi['persen'] }}" aria-valuemin="0" aria-valuemax="100">
-            <div class="h-full rounded-full bg-biru-terang" style="width: {{ $produksi['persen'] }}%"></div>
+            <div class="h-full rounded-full bg-navy" style="width: {{ $produksi['persen'] }}%"></div>
         </div>
 
         <ol class="mt-5 grid gap-3 sm:grid-cols-5 sm:gap-2">
@@ -125,7 +125,7 @@
                     <span @class([
                         'flex size-10 shrink-0 items-center justify-center rounded-full',
                         'bg-ok text-white' => $sub['keadaan'] === 'lewat',
-                        'bg-biru-100 text-biru-700' => $sub['keadaan'] === 'kini',
+                        'bg-navy-100 text-navy-700' => $sub['keadaan'] === 'kini',
                         'text-muted' => $sub['keadaan'] === 'nanti',
                     ])>
                         <x-ikon :nama="match ($sub['keadaan']) { 'lewat' => 'centang', 'kini' => 'muat-ulang', default => 'jam' }" ukuran="size-5" />
@@ -133,7 +133,7 @@
                     <span class="min-w-0">
                         <span @class([
                             'block font-bold',
-                            'rounded-[8px] bg-biru-50 px-2 text-biru-700' => $sub['keadaan'] === 'kini',
+                            'rounded-[8px] bg-navy-50 px-2 text-navy-700' => $sub['keadaan'] === 'kini',
                         ])>{{ $sub['label'] }}</span>
                         <span class="block text-sm text-muted tabular">
                             @if ($sub['keadaan'] === 'lewat')
@@ -192,7 +192,10 @@
             <h3 class="flex items-center gap-2.5 text-lg font-extrabold"><x-ikon nama="pekerja" class="text-navy-400" /> Daftar pemain</h3>
 
             @if ($adaPemain)
-                <table class="tabel mt-4 text-sm" x-show="! ubah">
+                {{-- Di layar di bawah 360px empat kolom ini tidak muat; tabelnya digeser
+                     di dalam pembungkusnya, bukan menggeser halaman. --}}
+                <div class="mt-4 overflow-x-auto" x-show="! ubah">
+                <table class="tabel text-sm">
                     <thead>
                         <tr>
                             {{-- Nomor urut disembunyikan di HP: nama dan ukuran lebih perlu tempat. --}}
@@ -225,9 +228,10 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
 
-                <p class="mt-3 flex flex-wrap items-center gap-2 rounded-[10px] bg-biru-50 px-4 py-2.5 text-sm" x-show="! ubah">
-                    <x-ikon nama="bantuan" ukuran="size-4" class="text-biru-700" />
+                <p class="mt-3 flex flex-wrap items-center gap-2 rounded-[10px] bg-navy-50 px-4 py-2.5 text-sm" x-show="! ubah">
+                    <x-ikon nama="bantuan" ukuran="size-4" class="text-navy-700" />
                     Total {{ $item->rosters->sum('jumlah') }} pemain.
                     @if ($item->rosters->count() > 5)
                         <button type="button" class="tautan-lihat" @click="semua = ! semua">

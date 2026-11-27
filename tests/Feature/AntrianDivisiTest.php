@@ -104,4 +104,32 @@ class AntrianDivisiTest extends TestCase
             ->assertSee('SMA / Dewasa M–L')
             ->assertSee('Target: 24 Nov 2026');
     }
+
+    public function test_papan_kerja_menaruh_kartu_pekerjaan_di_kolom_divisinya(): void
+    {
+        $printing = $this->barang(OrderItemStatus::PRINTING, 'Tim Voli', 'Custom Jersey Voli');
+        $jahit = $this->barang(OrderItemStatus::JAHIT, 'Tim Futsal', 'Custom Jersey Futsal');
+
+        $respons = $this->actingAs($this->owner())->get(route('panel.antrian.index'));
+
+        $respons->assertOk()
+            ->assertSeeInOrder([
+                'Printing Jersey', $printing->order->kode, 'Custom Jersey Voli · 5 pcs', 'Target: 24 Nov 2026',
+                'Jahit', $jahit->order->kode, 'Custom Jersey Futsal · 5 pcs',
+            ]);
+    }
+
+    public function test_kolom_papan_kerja_memuat_enam_kartu_dan_sisanya_lewat_halaman_divisi(): void
+    {
+        foreach (range(1, 7) as $i) {
+            $this->barang(OrderItemStatus::PRINTING, 'Tim '.$i);
+        }
+
+        $respons = $this->actingAs($this->owner())->get(route('panel.antrian.index'));
+
+        $respons->assertOk();
+        $kolom = $respons->viewData('ringkas')['PRINT'];
+        $this->assertSame(7, $kolom['jumlah']);
+        $this->assertCount(6, $kolom['kartu']);
+    }
 }

@@ -43,11 +43,12 @@
     {{-- Kolom "Rincian" bisa panjang (daftar perubahan, JSON bersarang) --
          dibungkus overflow-x-auto supaya yang melebar cuma tabelnya sendiri,
          bukan membuat seluruh halaman bisa digeser ke samping di HP. --}}
-    <section class="kartu mt-6 overflow-hidden">
+    <section class="kartu-md mt-6 md:overflow-hidden">
         <div class="overflow-x-auto" tabindex="0" role="region" aria-label="Daftar riwayat aktivitas">
-        {{-- Lebar minimum: di HP tabelnya digeser ke samping, tidak diperas
-             sampai tiap kolom tinggal satu kata per baris. --}}
-        <table class="tabel min-w-[44rem]">
+        {{-- Di HP tiap baris menjadi kartu lewat .tabel-hp (KEP-174). Mulai md
+             lebar minimumnya menjaga kolom tidak diperas sampai tinggal satu
+             kata per baris. --}}
+        <table class="tabel tabel-hp md:min-w-[44rem]">
             <thead>
                 <tr>
                     <th>Waktu</th>
@@ -63,16 +64,16 @@
                         {{-- Jam di baris kedua dan kode aksi boleh patah di mana saja:
                              sebaris, tabel ini lebih lebar 7-15px dari kartunya di
                              layar 48-64rem dan harus digeser (KEP-143). --}}
-                        <td class="tabular whitespace-nowrap text-sm text-muted">
+                        <td data-kolom="Waktu" class="tabular whitespace-nowrap text-sm text-muted">
                             {{ $l->created_at->translatedFormat('j M Y') }}
                             <span class="block text-xs">{{ $l->created_at->format('H:i') }}</span>
                         </td>
-                        <td class="text-sm">{{ $l->user->name ?? 'Sistem / publik' }}</td>
-                        <td class="text-sm font-medium wrap-anywhere">{{ $l->aksi }}</td>
-                        <td class="text-sm text-muted wrap-anywhere">
+                        <td data-kolom="Siapa" class="text-sm">{{ $l->user->name ?? 'Sistem / publik' }}</td>
+                        <td data-utama class="text-sm font-medium wrap-anywhere">{{ $l->aksi }}</td>
+                        <td data-kolom="Subjek" class="text-sm text-muted wrap-anywhere">
                             {{ $l->subjek_tipe ? $l->subjek_tipe.' #'.$l->subjek_id : '-' }}
                         </td>
-                        <td class="max-w-xs text-xs text-muted">
+                        <td data-kolom="Rincian" class="text-xs text-muted md:max-w-xs">
                             @if ($l->data_json)
                                 <ul class="space-y-0.5">
                                     @foreach ($l->data_json as $kunci => $nilai)

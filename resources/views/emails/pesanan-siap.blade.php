@@ -12,7 +12,7 @@
   </p>
 
   @if ($order->sisa_tagihan > 0)
-    <div style="border-left:3px solid #ff5a1f;background:#ffede4;padding:12px 16px;margin:0 0 16px;">
+    <div style="border-left:3px solid #16255b;background:#f2f5fa;padding:12px 16px;margin:0 0 16px;">
       <p style="margin:0;">
         Masih ada sisa <strong>{{ rupiah($order->sisa_tagihan) }}</strong>. Paket berangkat
         setelah pelunasannya kami terima. Rekening resmi dan tempat mengunggah buktinya
@@ -25,13 +25,13 @@
     Pesanan <strong>{{ $order->kode }}</strong> sudah selesai dan bisa diambil di toko.
   </p>
 
-  <div style="background:#e7efe9;padding:16px;margin:0 0 16px;">
-    <p style="margin:0 0 4px;font-size:12px;color:#5c6b64;">Kode ambil</p>
+  <div style="border-left:3px solid #fdc500;background:#f2f5fa;padding:16px;margin:0 0 16px;">
+    <p style="margin:0 0 4px;font-size:12px;color:#5d687f;">Kode ambil</p>
     <p style="margin:0;font-size:26px;font-weight:bold;letter-spacing:1px;">{{ $order->kode_ambil }}</p>
   </div>
 
   @if ($order->sisa_tagihan > 0)
-    <div style="border-left:3px solid #ff5a1f;background:#ffede4;padding:12px 16px;margin:0 0 16px;">
+    <div style="border-left:3px solid #16255b;background:#f2f5fa;padding:12px 16px;margin:0 0 16px;">
       <p style="margin:0;">
         Mohon bawa <strong>{{ rupiah($order->sisa_tagihan) }}</strong> untuk pelunasan.
         Bisa tunai maupun non-tunai di kasir.
@@ -54,7 +54,7 @@
 @endunless
 
 <a href="{{ $tautan }}"
-   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:3px;">
+   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:8px;">
   Lihat detail pesanan
 </a>
 @endsection

@@ -32,7 +32,7 @@
         </div>
         <div class="flex items-center justify-between gap-3 py-2.5">
             <dt class="text-muted">{{ $order->sisa_tagihan > 0 ? 'Sisa pelunasan' : 'Sisa' }}</dt>
-            <dd class="tabular font-bold {{ $order->sisa_tagihan > 0 ? 'text-merah' : 'text-ok' }}">
+            <dd class="tabular font-bold {{ $order->sisa_tagihan > 0 ? 'text-ink' : 'text-ok' }}">
                 {{ $order->sisa_tagihan > 0 ? rupiah($order->sisa_tagihan) : 'Lunas' }}
             </dd>
         </div>

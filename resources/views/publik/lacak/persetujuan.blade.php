@@ -30,8 +30,8 @@
 
 <section class="kartu-bayar space-y-5" id="persetujuan-{{ $item->id }}"
          x-data="{ pilihan: @js($pilihanAwal), catatan: @js(old('catatan', '')) }">
-    <div class="flex items-start gap-4 rounded-[14px] bg-biru-50 p-4">
-        <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-biru-100 text-biru-700">
+    <div class="flex items-start gap-4 rounded-[14px] bg-navy-50 p-4">
+        <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-navy-100 text-navy-700">
             <x-ikon nama="gambar" ukuran="size-6" />
         </span>
         <div>

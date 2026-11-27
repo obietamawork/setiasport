@@ -19,7 +19,7 @@
     @endif
 
     <p class="text-sm text-muted tabular">{{ $order->kode }}</p>
-    <h1 class="mt-1 text-3xl font-extrabold">{{ $order->status->label() }}</h1>
+    <h1 class="judul-tampil mt-1 text-[2.5rem]">{{ $order->status->label() }}</h1>
     @if ($tagihan && $tagihan['jenis'] === 'awal')
         <p class="mt-1 text-muted">Selesaikan pembayaran untuk melanjutkan proses pesanan Anda.</p>
     @endif
@@ -60,11 +60,11 @@
     {{-- Chat yang dibuka dari halaman ini membawa tautan pesanannya, jadi CS
          tahu pesanan mana yang dibicarakan dan bahwa penanya memang pemegangnya. --}}
     @if (cs_aktif())
-        <button type="button" x-data @click="$dispatch('buka-cs', {})" class="tautan mt-3 text-sm">
+        <button type="button" x-data @click="$dispatch('buka-cs', {})" class="tautan area-sentuh mt-3 text-sm">
             Ada pertanyaan atau komplain soal pesanan ini? Chat dengan CS
         </button>
     @elseif ($waPesanan = tautan_wa('Halo '.setting('toko_nama', 'Setia Sport').', saya mau tanya soal pesanan '.$order->kode.'.'))
-        <a href="{{ $waPesanan }}" target="_blank" rel="noopener" class="tautan mt-3 inline-block text-sm">
+        <a href="{{ $waPesanan }}" target="_blank" rel="noopener" class="tautan area-sentuh mt-3 inline-block text-sm">
             Ada pertanyaan atau komplain soal pesanan ini? Hubungi lewat WhatsApp
         </a>
     @endif
@@ -188,7 +188,7 @@
     {{-- Siap diambil: kode ambil dan sisa tagihan adalah dua hal yang dicari
          pelanggan saat berdiri di depan toko. --}}
     @elseif ($order->status === OrderStatus::SIAP_DIAMBIL && ! $order->dikirim())
-        <section class="mt-8 border border-line bg-field">
+        <section class="mt-8 border border-line bg-field" id="ambil-di-toko">
             <h2 class="border-b border-line px-5 py-3 font-semibold">Ambil di toko</h2>
             <div class="grid gap-5 p-5 sm:grid-cols-2">
                 <div>
@@ -201,7 +201,7 @@
                 <div>
                     @if ($order->sisa_tagihan > 0)
                         <p class="text-sm text-muted">Sisa pembayaran</p>
-                        <p class="numeral mt-2 text-4xl text-merah">{{ rupiah($order->sisa_tagihan) }}</p>
+                        <p class="numeral mt-2 text-4xl text-ink">{{ rupiah($order->sisa_tagihan) }}</p>
                         <p class="mt-3 text-sm text-muted">Bayar di kasir saat mengambil, atau transfer lewat bagian Pelunasan di atas.</p>
                     @else
                         <p class="text-sm text-muted">Pembayaran</p>
@@ -242,7 +242,7 @@
                     begitu paket diserahkan ke kurir.
                 </p>
                 @if ($order->sisa_tagihan > 0)
-                    <p class="border-l-2 border-merah bg-merah-50 p-4">
+                    <p class="border-l-2 border-navy bg-navy-50 p-4">
                         Masih ada sisa <strong>{{ rupiah($order->sisa_tagihan) }}</strong>.
                         Paket berangkat setelah pelunasannya kami terima. Rekening dan tempat
                         mengunggah buktinya ada di bagian Pelunasan di atas.
@@ -382,7 +382,7 @@
                 @endif
                 <div class="flex justify-between gap-3">
                     <dt class="font-semibold">Sisa tagihan</dt>
-                    <dd class="tabular font-semibold {{ $order->sisa_tagihan > 0 ? 'text-merah' : 'text-ok' }}">
+                    <dd class="tabular font-semibold {{ $order->sisa_tagihan > 0 ? 'text-ink' : 'text-ok' }}">
                         {{ $order->sisa_tagihan > 0 ? rupiah($order->sisa_tagihan) : 'Lunas' }}
                     </dd>
                 </div>

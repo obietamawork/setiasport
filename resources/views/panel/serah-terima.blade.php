@@ -86,7 +86,7 @@
                             <dd class="font-semibold wrap-break-word">
                                 @if ($ikon === 'whatsapp')
                                     <a href="https://wa.me/{{ nomor_wa($order->customer->no_hp) }}" target="_blank" rel="noopener"
-                                       class="tabular text-biru-700 hover:underline">{{ $order->customer->no_hp }}</a>
+                                       class="tabular text-navy-700 hover:underline">{{ $order->customer->no_hp }}</a>
                                 @else
                                     {{ $nilai }}
                                 @endif
@@ -194,10 +194,14 @@
                             <option value="TRANSFER">Transfer bank</option>
                         </select></div>
                     <input type="hidden" name="jenis" value="PELUNASAN">
-                    <button type="submit" class="tombol tombol-utama">
-                        <x-ikon nama="uang" ukuran="size-4" />
-                        Catat pelunasan
-                    </button>
+                    {{-- Di HP tombol ini menempel di dasar layar (KEP-174). --}}
+                    @section('kelas-body', 'ada-aksi-bawah')
+                    <div class="aksi-bawah">
+                        <button type="submit" class="tombol tombol-navy">
+                            <x-ikon nama="uang" ukuran="size-4" />
+                            Catat pelunasan
+                        </button>
+                    </div>
                 </form>
             @elseif ($order->dikirim())
                 {{-- Pesanan yang dikirim tidak lewat meja kasir (KEP-026). --}}
@@ -215,10 +219,13 @@
                                value="{{ $order->customer->nama }}">
                         <p class="mt-1 text-xs text-muted">Ubah kalau diwakilkan orang lain.</p>
                     </div>
-                    <button type="submit" class="tombol tombol-navy mb-5 py-3">
-                        <x-ikon nama="centang" ukuran="size-4" />
-                        Konfirmasi serah terima
-                    </button>
+                    @section('kelas-body', 'ada-aksi-bawah')
+                    <div class="aksi-bawah">
+                        <button type="submit" class="tombol tombol-navy py-3 md:mb-5">
+                            <x-ikon nama="centang" ukuran="size-4" />
+                            Konfirmasi serah terima
+                        </button>
+                    </div>
                 </form>
             @else
                 <p class="text-sm text-muted">
@@ -248,7 +255,7 @@
     </nav>
 
     <form method="POST" action="{{ route('panel.serah-terima.massal') }}" id="serah-massal"
-          class="mt-4 flex flex-wrap items-end gap-3 rounded-[12px] border border-biru-100 bg-biru-50 p-4"
+          class="mt-4 flex flex-wrap items-end gap-3 rounded-[12px] border border-navy-100 bg-navy-50 p-4"
           x-show="terpilih > 0" x-cloak>
         @csrf
         <div class="min-w-56 flex-1">
@@ -261,7 +268,7 @@
         </button>
     </form>
 
-    <div class="kartu mt-4 overflow-hidden">
+    <div class="kartu-md mt-4 md:overflow-hidden">
         @if ($daftar->isEmpty())
             <p class="px-5 py-8 text-center text-sm text-muted">
                 {{ match ($tab) {
@@ -272,7 +279,8 @@
             </p>
         @else
             <div class="overflow-x-auto">
-                <table class="tabel min-w-[44rem] text-sm">
+                {{-- Di HP tiap baris menjadi kartu lewat .tabel-hp (KEP-174). --}}
+                <table class="tabel tabel-hp text-sm md:min-w-[44rem]">
                     <thead>
                         <tr>
                             <th class="w-10"><span class="sr-only">Pilih</span></th>
@@ -292,7 +300,7 @@
                                 $keterangan = $o->items->map(fn ($i) => $i->nama_produk.' ('.$i->qty.' pcs)')->implode(', ');
                             @endphp
                             <tr>
-                                <td>
+                                <td data-kolom="Pilih" @class(['max-md:hidden' => $sudah])>
                                     @if (! $sudah)
                                         <input type="checkbox" name="pesanan[]" value="{{ $o->id }}" form="serah-massal"
                                                class="kotak-centang" @disabled(! $bisa)
@@ -301,15 +309,15 @@
                                                aria-label="Pilih pesanan {{ $o->kode }}">
                                     @endif
                                 </td>
-                                <td class="tabular font-bold">
-                                    <a href="{{ route('panel.pesanan.show', $o) }}" class="hover:underline">{{ $o->kode }}</a>
+                                <td data-utama class="tabular font-bold">
+                                    <a href="{{ route('panel.pesanan.show', $o) }}" class="area-sentuh hover:underline">{{ $o->kode }}</a>
                                     @if (! $sudah && $o->kode_ambil)
                                         <span class="block text-xs font-normal text-muted">Kode ambil {{ $o->kode_ambil }}</span>
                                     @endif
                                 </td>
-                                <td>{{ $sudah ? $o->diambil_oleh : $o->customer->nama }}</td>
-                                <td class="max-w-64">{{ $keterangan }}</td>
-                                <td>
+                                <td data-kolom="Penerima">{{ $sudah ? $o->diambil_oleh : $o->customer->nama }}</td>
+                                <td data-kolom="Keterangan" class="md:max-w-64">{{ $keterangan }}</td>
+                                <td data-kolom="Status">
                                     @if ($sudah)
                                         <span class="chip chip-netral"><x-ikon nama="centang" ukuran="size-3.5" /> Diserahkan {{ $o->diambil_pada?->translatedFormat('j M') }}</span>
                                     @elseif ($kirim)
@@ -320,7 +328,7 @@
                                         <span class="chip chip-kuning"><x-ikon nama="dompet" ukuran="size-3.5" /> Belum lunas</span>
                                     @endif
                                 </td>
-                                <td class="text-right whitespace-nowrap">
+                                <td data-kolom="Aksi" class="text-right whitespace-nowrap">
                                     @if ($sudah)
                                         <a href="{{ route('panel.pesanan.show', $o) }}" class="tombol tombol-garis tombol-sm">Lihat</a>
                                     @elseif ($kirim)

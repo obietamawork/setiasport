@@ -10,7 +10,7 @@
     @foreach ([
         ['Dijawab FAQ', $statistik['faq'], 'text-ok'],
         ['Menu dan jawaban sistem', $statistik['otomatis'], 'text-navy'],
-        ['Dijawab AI', $statistik['ai'], 'text-biru-700'],
+        ['Dijawab AI', $statistik['ai'], 'text-navy-700'],
         ['Diteruskan ke admin', $statistik['admin'], 'text-warn'],
     ] as [$label, $angka, $warna])
         <div class="kartu p-4">
@@ -45,7 +45,7 @@
                             <span class="tabular text-muted">dipakai {{ $f->dipakai }} kali</span>
                         </p>
                     </div>
-                    <a href="{{ route('panel.faq.index', ['ubah' => $f->id]) }}" class="tautan shrink-0 text-sm">Ubah</a>
+                    <a href="{{ route('panel.faq.index', ['ubah' => $f->id]) }}" class="tautan area-sentuh shrink-0 text-sm">Ubah</a>
                 </div>
             @empty
                 <p class="px-4 py-8 text-center text-sm text-muted">Belum ada FAQ. Mulai dari pertanyaan yang paling sering datang.</p>

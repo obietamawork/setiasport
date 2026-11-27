@@ -33,7 +33,7 @@
 <x-kop judul="Detail pesanan">
     <x-slot:bawahJudul>
         <nav aria-label="Remah roti" class="flex items-center gap-1.5 text-sm text-muted">
-            <a href="{{ route('panel.pesanan.index') }}" class="hover:text-navy">Pesanan</a>
+            <a href="{{ route('panel.pesanan.index') }}" class="area-sentuh hover:text-navy">Pesanan</a>
             <x-ikon nama="lanjut" ukuran="size-3.5" />
             <span class="tabular text-ink">{{ $pesanan->kode }}</span>
         </nav>
@@ -114,7 +114,7 @@
         </a>
         <div class="flex flex-wrap gap-2">
             @if ($bolehCatatBayar)
-                <button type="button" class="tombol tombol-utama" @click="$dispatch('buka-catat-bayar')">
+                <button type="button" class="tombol tombol-navy" @click="$dispatch('buka-catat-bayar')">
                     <x-ikon nama="uang" ukuran="size-4" /> Catat pembayaran
                 </button>
             @endif

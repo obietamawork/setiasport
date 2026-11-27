@@ -25,7 +25,7 @@
         <div class="min-w-0">
             @if ($kembali)
                 <a href="{{ $kembali }}"
-                   class="mb-1 inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-navy">
+                   class="area-sentuh mb-1 inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-navy">
                     <x-ikon nama="kembali" ukuran="size-4" />
                     {{ $kembaliLabel }}
                 </a>

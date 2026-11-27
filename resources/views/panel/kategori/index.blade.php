@@ -45,7 +45,7 @@
                     <span class="ml-auto flex items-center gap-2">
                         @if ($k->products_count > 0)
                             <a href="{{ route('panel.produk.index', ['q' => $k->nama]) }}"
-                               class="relative z-10 text-sm text-muted tabular hover:text-navy hover:underline">
+                               class="area-sentuh relative z-10 text-sm text-muted tabular hover:text-navy hover:underline">
                                 {{ $k->products_count }} produk
                             </a>
                         @else
@@ -100,7 +100,7 @@
                                 <span class="ml-auto flex items-center gap-2">
                                     @if ($anak->products_count > 0)
                                         <a href="{{ route('panel.produk.index', ['q' => $anak->nama]) }}"
-                                           class="relative z-10 text-sm text-muted tabular hover:text-navy hover:underline">
+                                           class="area-sentuh relative z-10 text-sm text-muted tabular hover:text-navy hover:underline">
                                             {{ $anak->products_count }} produk
                                         </a>
                                     @else

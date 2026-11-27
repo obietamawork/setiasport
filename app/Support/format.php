@@ -2,6 +2,7 @@
 
 use App\Models\Setting;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 
 if (! function_exists('rupiah')) {
     /** Rupiah tidak punya pecahan sen; seluruh nominal di sistem ini bilangan bulat. */
@@ -274,5 +275,25 @@ if (! function_exists('batas_unggah_mb')) {
         ], fn (?int $mb) => $mb !== null);
 
         return max(1, min($batas));
+    }
+}
+
+if (! function_exists('ikon_barang')) {
+    /**
+     * Ikon jenis barang menurut namanya, pengganti foto yang belum ada (KEP-169):
+     * di kartu produk, halaman produk, dan kartu Pesanan saya (KEP-176).
+     */
+    function ikon_barang(string $nama): string
+    {
+        $nama = Str::lower($nama);
+
+        return match (true) {
+            Str::contains($nama, 'bola') => 'bola',
+            Str::contains($nama, 'sepatu') => 'sepatu',
+            Str::contains($nama, 'celana') => 'celana',
+            Str::contains($nama, 'jaket') => 'jaket',
+            Str::contains($nama, ['jersey', 'kaos', 'baju', 'seragam', 'polo']) => 'kaos',
+            default => 'produk',
+        };
     }
 }

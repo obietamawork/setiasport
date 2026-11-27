@@ -3,7 +3,7 @@
 
 @section('isi')
 <div class="mx-auto max-w-md px-5 py-14">
-    <h1 class="text-3xl font-extrabold">Masuk</h1>
+    <h1 class="judul-tampil text-[2.5rem]">Masuk</h1>
     <p class="mt-3 leading-relaxed text-muted">
         Punya akun? Masuk untuk melihat semua pesanan Anda dalam satu halaman.
     </p>
@@ -28,10 +28,10 @@
                 <input type="checkbox" name="ingat" value="1" class="size-4 accent-navy">
                 Ingat saya di perangkat ini
             </label>
-            <a href="{{ route('lupa-sandi') }}" class="tautan text-sm">Lupa kata sandi?</a>
+            <a href="{{ route('lupa-sandi') }}" class="tautan area-sentuh text-sm">Lupa kata sandi?</a>
         </div>
 
-        <button type="submit" class="tombol tombol-utama w-full">Masuk</button>
+        <button type="submit" class="tombol tombol-navy w-full">Masuk</button>
 
         <p class="border-t border-line pt-4 text-sm text-muted">
             Belum punya akun?

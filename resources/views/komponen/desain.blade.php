@@ -51,7 +51,9 @@
          tim, jadi tombolnya minta nama diketik dan pernyataan dicentang: dan
          siapa yang mengetiknya dicatat bersama versi mockup yang disetujui. --}}
     @if ($perluSetuju)
-        <div class="mt-4 border border-merah bg-merah-50 p-4">
+        {{-- Kartu putih bertepi atas kuning (KEP-169), bukan kotak merah muda:
+             merah disimpan untuk tombol Setujui desain di dalamnya. --}}
+        <div class="mt-4 rounded-[12px] border border-line border-t-4 border-t-kuning bg-field p-4">
             <p class="font-semibold">Mockup menunggu persetujuan Anda</p>
             <p class="kolom-baca mt-1 text-sm leading-relaxed">
                 Periksa nama, nomor, warna, dan penempatan logo. Waktu pengerjaan

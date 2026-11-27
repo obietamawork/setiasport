@@ -7,7 +7,7 @@
 @section('isi')
 <article class="mx-auto max-w-3xl px-5 py-12 sm:py-16">
     <p class="text-xs font-semibold tracking-[0.14em] text-muted uppercase">{{ setting('toko_nama', 'Setia Sport') }}</p>
-    <h1 class="mt-2 text-3xl font-extrabold text-balance sm:text-4xl">{{ $judul }}</h1>
+    <h1 class="judul-tampil mt-2 text-[2.5rem] text-balance sm:text-5xl">{{ $judul }}</h1>
     @if ($diperbarui)
         <p class="mt-3 text-sm text-muted">Terakhir diperbarui {{ $diperbarui->translatedFormat('j F Y') }}</p>
     @endif

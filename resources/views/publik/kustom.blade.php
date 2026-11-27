@@ -113,9 +113,9 @@
      })">
 
     <nav class="text-sm text-muted" aria-label="Remah roti">
-        <a href="{{ route('katalog') }}" class="tautan">Katalog</a>
+        <a href="{{ route('katalog') }}" class="tautan area-sentuh">Katalog</a>
         <span class="mx-2 text-line-strong">/</span>
-        <a href="{{ route('produk', $produk) }}" class="tautan">{{ $produk->nama }}</a>
+        <a href="{{ route('produk', $produk) }}" class="tautan area-sentuh">{{ $produk->nama }}</a>
         <span class="mx-2 text-line-strong">/</span>
         <span class="text-ink">Buat pesanan</span>
     </nav>
@@ -129,10 +129,12 @@
         @foreach ($langkah as $i => $nama)
             <li class="flex shrink-0 items-center gap-1 md:gap-2">
                 <button type="button" data-langkah="{{ $i + 1 }}" @click="ke({{ $i + 1 }})" :disabled="{{ $i + 1 }} > tertinggi"
-                        class="flex items-center gap-2 rounded-full py-1 pl-1 transition-colors disabled:cursor-not-allowed"
+                        class="area-sentuh flex items-center gap-2 rounded-full py-1 pl-1 transition-colors disabled:cursor-not-allowed"
                         :class="langkah === {{ $i + 1 }} ? 'bg-navy pr-3 text-white' : (({{ $i + 1 }} <= tertinggi ? 'text-ink hover:bg-navy-50' : 'text-muted') + ' pr-1 md:pr-3')">
-                    <span class="flex size-6 items-center justify-center rounded-full text-xs font-bold"
-                          :class="langkah === {{ $i + 1 }} ? 'bg-white text-navy' : 'bg-navy-100 text-navy-800'">{{ $i + 1 }}</span>
+                    {{-- Kit Tim (KEP-169): langkah yang sedang dikerjakan bercincin
+                         kuning, yang sudah lewat navy penuh. --}}
+                    <span class="angka-tampil flex size-6 items-center justify-center rounded-full text-sm"
+                          :class="langkah === {{ $i + 1 }} ? 'bg-white text-navy ring-2 ring-kuning' : ({{ $i + 1 }} < langkah ? 'bg-navy text-white' : 'bg-navy-100 text-navy-800')">{{ $i + 1 }}</span>
                     <span class="whitespace-nowrap" :class="langkah === {{ $i + 1 }} ? '' : 'sr-only md:not-sr-only'">{{ $nama }}</span>
                 </button>
                 @unless ($loop->last)
@@ -161,7 +163,7 @@
             {{-- LANGKAH 1 --------------------------------------------------- --}}
             <section x-show="langkah === 1" class="space-y-4">
                 <div>
-                    <h1 class="text-xl font-bold">{{ $produk->nama }}</h1>
+                    <h1 class="judul-tampil text-[2rem] text-balance">{{ $produk->nama }}</h1>
                     @if ($produk->deskripsi)
                         <p class="mt-1 text-sm leading-relaxed text-muted">{{ $produk->deskripsi }}</p>
                     @endif
@@ -195,7 +197,7 @@
 
             {{-- LANGKAH 2 --------------------------------------------------- --}}
             <section x-show="langkah === 2" x-cloak class="space-y-4">
-                <h2 class="text-xl font-bold">Desain & detail</h2>
+                <h2 class="judul-tampil text-[1.75rem]">Desain &amp; detail</h2>
 
                 @if ($produk->pola)
                     <div class="kartu p-5">
@@ -356,7 +358,7 @@
             {{-- LANGKAH 3 --------------------------------------------------- --}}
             <section x-show="langkah === 3" x-cloak class="space-y-4">
                 <div>
-                    <h2 class="text-xl font-bold">Data pemain</h2>
+                    <h2 class="judul-tampil text-[1.75rem]">Data pemain</h2>
                     <p class="mt-1 text-sm leading-relaxed text-muted">
                         Jumlah pesanan mengikuti daftar yang diisi. Nama dan nomor punggung dapat dilengkapi kemudian, sebelum desain disetujui.
                     </p>
@@ -626,7 +628,7 @@
 
             {{-- LANGKAH 4 --------------------------------------------------- --}}
             <section x-show="langkah === 4" x-cloak class="space-y-4">
-                <h2 class="text-xl font-bold">Cek pesanan</h2>
+                <h2 class="judul-tampil text-[1.75rem]">Cek pesanan</h2>
 
                 <div class="kartu p-5">
                     <p class="font-semibold">{{ $produk->nama }}</p>
@@ -683,8 +685,8 @@
                         </table>
                     </div>
 
-                    <p class="mt-3 flex items-start gap-2 rounded-[10px] bg-biru-50 px-3 py-2.5 text-sm">
-                        <x-ikon nama="bantuan" ukuran="size-4" class="mt-0.5 shrink-0 text-biru-700" />
+                    <p class="mt-3 flex items-start gap-2 rounded-[10px] bg-navy-50 px-3 py-2.5 text-sm">
+                        <x-ikon nama="bantuan" ukuran="size-4" class="mt-0.5 shrink-0 text-navy-700" />
                         Pastikan detail pesanan sudah benar sebelum lanjut ke pembayaran.
                     </p>
 
@@ -695,8 +697,10 @@
                 </div>
             </section>
 
-            {{-- Navigasi langkah --}}
-            <div class="flex flex-wrap items-center justify-between gap-3">
+            {{-- Navigasi langkah. Di HP menempel di dasar layar dan menggantikan
+                 bilah navigasi (KEP-174). --}}
+            @section('kelas-body', 'ada-aksi-bawah')
+            <div class="aksi-bawah flex flex-wrap items-center justify-between gap-3">
                 <button type="button" @click="mundur()" x-show="langkah > 1" x-cloak
                         class="tombol tombol-garis">Kembali</button>
 

@@ -3,7 +3,7 @@
 
 @section('isi')
 <div class="mx-auto max-w-md px-5 py-14">
-    <h1 class="text-3xl font-extrabold">Kata sandi baru</h1>
+    <h1 class="judul-tampil text-[2.5rem]">Kata sandi baru</h1>
     <p class="mt-3 leading-relaxed text-muted">
         Buat kata sandi baru untuk akun {{ $pelanggan->email_samar }}. Minimal 8 karakter.
     </p>
@@ -21,7 +21,7 @@
                    required minlength="8" autocomplete="new-password">
         </div>
 
-        <button type="submit" class="tombol tombol-utama w-full">Simpan dan masuk</button>
+        <button type="submit" class="tombol tombol-navy w-full">Simpan dan masuk</button>
     </form>
 </div>
 @endsection

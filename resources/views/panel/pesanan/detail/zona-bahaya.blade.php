@@ -3,7 +3,7 @@
      sebobot kartu informasi di sebelahnya. --}}
 @if ($izin->punyaIzin('order.batal') && ! $pesanan->status->final())
     <div class="zona-bahaya" x-data="{ buka: false }">
-        <button type="button" @click="buka = !buka" class="tautan text-sm text-muted">
+        <button type="button" @click="buka = !buka" class="tautan area-sentuh text-sm text-muted">
             Batalkan pesanan ini
         </button>
 

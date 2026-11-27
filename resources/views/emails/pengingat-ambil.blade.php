@@ -8,8 +8,8 @@
   {{ $order->siap_pada?->translatedFormat('j F Y') }} dan masih menunggu diambil.
 </p>
 
-<div style="background:#e7efe9;padding:16px;margin:0 0 16px;">
-  <p style="margin:0 0 4px;font-size:12px;color:#5c6b64;">Kode ambil</p>
+<div style="border-left:3px solid #fdc500;background:#f2f5fa;padding:16px;margin:0 0 16px;">
+  <p style="margin:0 0 4px;font-size:12px;color:#5d687f;">Kode ambil</p>
   <p style="margin:0;font-size:26px;font-weight:bold;letter-spacing:1px;">{{ $order->kode_ambil }}</p>
 </div>
 
@@ -25,7 +25,7 @@
 </p>
 
 <a href="{{ $tautan }}"
-   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:3px;">
+   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:8px;">
   Lihat detail pesanan
 </a>
 @endsection

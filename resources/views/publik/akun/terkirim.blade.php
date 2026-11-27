@@ -3,7 +3,7 @@
 
 @section('isi')
 <div class="mx-auto max-w-md px-5 py-14">
-    <h1 class="text-3xl font-extrabold">Verifikasi email Anda</h1>
+    <h1 class="judul-tampil text-[2.5rem]">Verifikasi email Anda</h1>
 
     <div class="kartu mt-6 p-6">
         {{-- Kalimatnya sengaja tidak memastikan email terdaftar atau tidak, supaya

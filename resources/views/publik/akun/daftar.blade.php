@@ -3,7 +3,7 @@
 
 @section('isi')
 <div class="mx-auto max-w-md px-5 py-14">
-    <h1 class="text-3xl font-extrabold">Buat akun</h1>
+    <h1 class="judul-tampil text-[2.5rem]">Buat akun</h1>
     <p class="kolom-baca mt-3 leading-relaxed text-muted">
         Berguna kalau Anda memesan berulang kali. Kami akan mengirim tautan konfirmasi
         ke email Anda, dan setelah dikonfirmasi seluruh pesanan yang pernah dibuat dengan
@@ -52,7 +52,7 @@
             kami.
         </p>
 
-        <button type="submit" class="tombol tombol-utama w-full">Kirim tautan konfirmasi</button>
+        <button type="submit" class="tombol tombol-navy w-full">Kirim tautan konfirmasi</button>
 
         <p class="border-t border-line pt-4 text-sm text-muted">
             Sudah punya akun?

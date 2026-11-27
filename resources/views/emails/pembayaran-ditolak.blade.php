@@ -17,7 +17,7 @@
 </p>
 
 @if ($ditolak?->alasan_tolak)
-  <p style="margin:0 0 12px;padding:12px 14px;background:#fdecec;border-left:3px solid #c62828;">
+  <p style="margin:0 0 12px;padding:12px 14px;background:#fdedec;border-left:3px solid #d62b1f;">
     {{ $ditolak->alasan_tolak }}
   </p>
 @endif
@@ -36,7 +36,7 @@
 </p>
 
 <a href="{{ $tautan }}"
-   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:3px;">
+   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:8px;">
   Kirim ulang bukti pembayaran
 </a>
 @endsection

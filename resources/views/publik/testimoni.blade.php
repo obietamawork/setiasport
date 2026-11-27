@@ -13,7 +13,7 @@
         <span class="text-ink">Testimoni</span>
     </nav>
 
-    <h1 class="mt-3 text-3xl font-extrabold sm:text-4xl">Testimoni pelanggan</h1>
+    <h1 class="judul-tampil mt-3 text-[2.5rem] sm:text-5xl">Testimoni pelanggan</h1>
     <p class="kolom-baca mt-3 leading-relaxed text-muted">
         Cerita dari sekolah, tim, dan instansi yang sudah memesan di kami.
     </p>

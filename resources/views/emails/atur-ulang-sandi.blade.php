@@ -9,7 +9,7 @@
 </p>
 
 <a href="{{ $tautan }}"
-   style="display:inline-block;background:#d62b1f;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:7px;">
+   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:8px;">
   Buat kata sandi baru
 </a>
 

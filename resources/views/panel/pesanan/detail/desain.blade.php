@@ -95,7 +95,7 @@
 
                     @if ($lama->isNotEmpty())
                         <details class="mt-3 text-sm">
-                            <summary class="cursor-pointer text-muted">Versi sebelumnya ({{ $lama->count() }})</summary>
+                            <summary class="area-sentuh cursor-pointer text-muted">Versi sebelumnya ({{ $lama->count() }})</summary>
                             <ul class="mt-2 space-y-1.5">
                                 @foreach ($lama as $m)
                                     <li class="flex flex-wrap items-center gap-3">
@@ -169,7 +169,7 @@
                 {{-- Mockup versi baru selama pelanggan belum menyetujui (KEP-098). --}}
                 @if ($menunggu && $izin->punyaIzin('produksi.desain'))
                     <details class="mt-3 border-t border-line pt-3">
-                        <summary class="cursor-pointer text-sm text-muted">Kirim mockup versi baru</summary>
+                        <summary class="area-sentuh cursor-pointer text-sm text-muted">Kirim mockup versi baru</summary>
                         <form method="POST" action="{{ route('panel.mockup.simpan', $item) }}"
                               enctype="multipart/form-data" class="mt-3 flex flex-wrap items-end gap-3">
                             @csrf

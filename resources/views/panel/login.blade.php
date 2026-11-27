@@ -55,7 +55,7 @@
     <div class="flex items-center justify-center p-6 lg:bg-paper lg:p-12 xl:p-16">
         <div class="w-full max-w-sm">
             <div class="mb-8 lg:hidden">
-                <a href="{{ route('beranda') }}"><x-logo :terang="true" /></a>
+                <a href="{{ route('beranda') }}" class="inline-block pointer-coarse:py-1.5"><x-logo :terang="true" /></a>
                 <p class="mt-2 text-sm font-medium text-white/70">Panel internal</p>
             </div>
 
@@ -63,7 +63,7 @@
                 @csrf
 
                 <div>
-                    <h1 class="text-xl font-extrabold">Masuk</h1>
+                    <h1 class="judul-tampil text-[2rem]">Masuk</h1>
                     <p class="mt-1 text-sm text-muted">Pakai akun staf yang diberikan pemilik toko.</p>
                 </div>
 
@@ -88,7 +88,7 @@
                     Ingat saya di perangkat ini
                 </label>
 
-                <button type="submit" class="tombol tombol-utama w-full">Masuk</button>
+                <button type="submit" class="tombol tombol-navy w-full">Masuk</button>
 
                 {{-- Tidak ada pemulihan kata sandi lewat email dengan sengaja: ia
                      bergantung pada cron dan Resend, yang justru bisa ikut

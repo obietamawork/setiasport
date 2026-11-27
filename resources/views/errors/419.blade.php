@@ -5,6 +5,6 @@
     diterima. Muat ulang halamannya, lalu kirim sekali lagi. Isian Anda sebelumnya tidak tersimpan.')
 
 @section('aksi')
-    <a href="javascript:history.back()" class="tombol tombol-utama">Kembali dan ulangi</a>
+    <a href="javascript:history.back()" class="tombol tombol-navy">Kembali dan ulangi</a>
     <a href="/" class="tombol tombol-garis">Ke beranda</a>
 @endsection

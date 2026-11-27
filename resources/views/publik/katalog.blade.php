@@ -12,12 +12,12 @@
 
     @if ($induk)
         <nav class="mb-2 text-sm text-muted" aria-label="Remah roti">
-            <a href="{{ route('katalog') }}" class="tautan">Katalog</a>
+            <a href="{{ route('katalog') }}" class="tautan area-sentuh">Katalog</a>
             <span class="mx-2 text-line-strong">/</span>
-            <a href="{{ route('katalog', ['kategori' => $induk->slug]) }}" class="tautan">{{ $induk->nama }}</a>
+            <a href="{{ route('katalog', ['kategori' => $induk->slug]) }}" class="tautan area-sentuh">{{ $induk->nama }}</a>
         </nav>
     @endif
-    <h1 class="text-3xl font-extrabold sm:text-4xl">{{ $judulBesar }}</h1>
+    <h1 class="judul-tampil text-[2.5rem] sm:text-5xl">{{ $judulBesar }}</h1>
     @if ($keterangan)
         <p class="kolom-baca mt-3 leading-relaxed text-muted">{{ $keterangan }}</p>
     @endif
@@ -36,7 +36,7 @@
         @foreach ([
             ['', 'Semua produk', 'Perlengkapan olahraga siap beli dan jersey custom dalam satu daftar.', 'produk', 'bg-navy-50 text-navy'],
             ['stok', 'Ready Stock', 'Produk tersedia dan siap dibeli. Pesanan dapat dikirim atau diambil langsung di toko.', 'toko', 'bg-navy-50 text-navy'],
-            ['kustom', 'Custom Apparel (Pre-Order)', 'Estimasi produksi 7–10 hari kerja setelah desain disetujui.', 'kategori', 'bg-merah-50 text-merah'],
+            ['kustom', 'Custom Apparel (Pre-Order)', 'Estimasi produksi 7–10 hari kerja setelah desain disetujui.', 'kategori', 'bg-navy-50 text-navy'],
         ] as [$nilai, $label, $penjelasan, $ikon, $warnaIkon])
             @php $aktif = $jalurAktif === $nilai; @endphp
             <a href="{{ route('katalog', array_filter(['jalur' => $nilai, 'kategori' => request('kategori'), 'q' => request('q'), 'urut' => $urutDibawa])) }}"
@@ -101,7 +101,7 @@
                     {{-- Satu kolom ini mengubah katalog dari daftar menjadi alat
                          penawaran: kapten tim mengetik jumlah timnya, dan semua
                          harga langsung menyesuaikan. --}}
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
                         <label for="qty-katalog" class="text-sm font-semibold whitespace-nowrap">
                             Untuk berapa pcs?
                         </label>

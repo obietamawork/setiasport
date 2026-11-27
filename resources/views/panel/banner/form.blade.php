@@ -113,7 +113,7 @@
         Tayangkan di halaman depan
     </label>
 
-    <div class="flex flex-wrap items-center gap-3 border-t border-line pt-5">
+    <div class="bilah-aksi mt-6">
         <button type="submit" class="tombol tombol-navy">Simpan banner</button>
         <a href="{{ route('panel.banner.index') }}" class="tautan text-sm">Batal</a>
     </div>

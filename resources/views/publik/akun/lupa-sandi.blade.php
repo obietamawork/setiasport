@@ -3,7 +3,7 @@
 
 @section('isi')
 <div class="mx-auto max-w-md px-5 py-14">
-    <h1 class="text-3xl font-extrabold">Lupa kata sandi</h1>
+    <h1 class="judul-tampil text-[2.5rem]">Lupa kata sandi</h1>
 
     @if (session('terkirim'))
         {{-- Kalimatnya sama untuk email terdaftar maupun tidak (KEP-157). --}}
@@ -34,7 +34,7 @@
                        class="kotak-input" required autofocus autocomplete="email">
             </div>
 
-            <button type="submit" class="tombol tombol-utama w-full">Kirim tautan</button>
+            <button type="submit" class="tombol tombol-navy w-full">Kirim tautan</button>
 
             <p class="border-t border-line pt-4 text-sm text-muted">
                 Ingat kata sandinya? <a href="{{ route('masuk') }}" class="tautan">Masuk</a>

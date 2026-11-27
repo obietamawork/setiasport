@@ -43,9 +43,9 @@
             </div>
         @endif
 
-        <div class="flex items-center justify-between gap-3 rounded-[10px] bg-merah-50 px-3 py-3">
-            <dt class="text-base font-bold text-merah">Total tagihan</dt>
-            <dd class="tabular text-xl font-extrabold text-merah">{{ rupiah($pesanan->total) }}</dd>
+        <div class="flex items-center justify-between gap-3 rounded-[10px] bg-navy-50 px-3 py-3">
+            <dt class="text-base font-bold text-ink">Total tagihan</dt>
+            <dd class="tabular text-xl font-extrabold text-ink">{{ rupiah($pesanan->total) }}</dd>
         </div>
 
         @if ($pesanan->dikembalikan > 0)

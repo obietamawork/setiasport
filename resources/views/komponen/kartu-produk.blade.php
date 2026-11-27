@@ -70,18 +70,25 @@
                 <x-pola :pola="$produk->pola" tampak="ringkas" />
             </div>
         @else
-            {{-- Monogram hiasan: namanya sudah tertulis di bawah, jadi disembunyikan
-                 dari pembaca layar. navy-400 (4,2:1), bukan navy-300 (2,3:1). --}}
-            <span aria-hidden="true" class="absolute inset-0 flex items-center justify-center text-2xl font-extrabold tracking-tight text-navy-400">
-                {{ Str::upper(Str::substr($produk->nama, 0, 2)) }}
+            {{-- Ikon jenis barang, bukan inisial seperti "BO" (KEP-167). Hiasan:
+                 namanya sudah tertulis di bawah, jadi disembunyikan dari pembaca layar. --}}
+            @php
+                $ikonBarang = ikon_barang($produk->nama);
+            @endphp
+            <span aria-hidden="true" class="absolute inset-0 flex items-center justify-center">
+                <span class="flex size-16 items-center justify-center rounded-full bg-field text-navy shadow-sm">
+                    <x-ikon :nama="$ikonBarang" ukuran="size-8" />
+                </span>
             </span>
         @endif
 
         {{-- Penanda jalur ditempel di gambar, bukan menempati baris teks
-             sendiri: di kartu sesempit ini setiap baris berharga. --}}
+             sendiri: di kartu sesempit ini setiap baris berharga. Katanya dari
+             klien (KEP-132), warnanya dari Kit Tim (KEP-167): putih bertitik
+             hijau untuk stok, navy untuk pesanan kustom. --}}
         <div class="absolute top-2 left-2 flex flex-wrap gap-1">
-            @if ($stok) <span class="chip bg-biru-700 font-bold text-white shadow-sm">Ready Stock</span> @endif
-            @if ($kustom) <span class="chip chip-merah font-bold shadow-sm">Pre Order</span> @endif
+            @if ($stok) <span class="lencana lencana-stok">Ready Stock</span> @endif
+            @if ($kustom) <span class="lencana lencana-kustom">Pre Order</span> @endif
         </div>
     </div>
 
@@ -103,7 +110,7 @@
                         <span class="text-xs font-medium text-muted">Mulai</span>
                         {{ rupiah($hargaKustom) }}<span class="text-xs font-medium text-muted">/pcs</span>
                     </p>
-                    <p class="truncate text-xs" :class="qty < moq ? 'text-merah' : 'text-muted'"
+                    <p class="truncate text-xs" :class="qty < moq ? 'font-semibold text-warn' : 'text-muted'"
                        x-text="qty < moq ? `Minimum ${moq} pcs` : 'mulai ' + rp(mulai * qty) + ' total'"></p>
                 </div>
             @elseif ($modeJumlah)
@@ -111,7 +118,7 @@
                     <p class="tabular text-[15px] font-extrabold">
                         <span x-text="rp(hargaDi(tiers))"></span><span class="text-xs font-medium text-muted">/pcs</span>
                     </p>
-                    <p class="truncate text-xs" :class="qty < moq ? 'text-merah' : 'text-muted'"
+                    <p class="truncate text-xs" :class="qty < moq ? 'font-semibold text-warn' : 'text-muted'"
                        x-text="qty < moq ? `Minimum ${moq} pcs` : rp(hargaDi(tiers) * qty) + ' total'"></p>
                 </div>
             @elseif ($stok)
@@ -128,7 +135,7 @@
         <div class="mt-1 flex items-center justify-between gap-2">
             <div class="min-w-0">
                 @if ($stok)
-                    <p @class(['truncate text-xs', 'text-muted' => $tersedia !== 0, 'font-semibold text-merah' => $tersedia === 0])>{{ $teksStok }}</p>
+                    <p @class(['truncate text-xs', 'text-muted' => $tersedia !== 0, 'font-semibold text-ink' => $tersedia === 0])>{{ $teksStok }}</p>
                 @endif
                 @if ($kustom)
                     <p class="flex items-center gap-1 truncate text-xs font-semibold text-ink">

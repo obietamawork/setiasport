@@ -50,7 +50,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="flex min-h-screen flex-col antialiased">
+<body class="ada-nav-bawah @yield('kelas-body') flex min-h-screen flex-col antialiased">
 
 {{-- Pengguna papan ketik dan pembaca layar melompati kepala halaman (WCAG 2.4.1). --}}
 <a href="#konten" class="lewati-ke-konten">Lewati ke konten</a>
@@ -99,7 +99,7 @@
                 @if (setting('toko_telepon'))
                     <a href="{{ tautan_wa('Halo '.setting('toko_nama', 'Setia Sport').', saya mau bertanya.') ?: '#' }}"
                        target="_blank" rel="noopener"
-                       class="-my-1 flex items-center gap-1.5 py-1 text-white/75 hover:text-white">
+                       class="area-sentuh -my-1 flex items-center gap-1.5 py-1 text-white/75 hover:text-white">
                         <x-ikon nama="whatsapp" ukuran="size-4" />
                         <span class="tabular">{{ setting('toko_telepon') }}</span>
                     </a>
@@ -107,7 +107,7 @@
 
                 @foreach ($sosial as [$ikon, $nama, $tautan])
                     <a href="{{ $tautan }}" target="_blank" rel="noopener"
-                       class="text-white/80 hover:text-white" title="{{ $nama }}">
+                       class="area-sentuh text-white/80 hover:text-white" title="{{ $nama }}">
                         <span class="sr-only">{{ $nama }}</span>
                         <x-ikon :nama="$ikon" ukuran="size-4" />
                     </a>
@@ -117,22 +117,20 @@
     </div>
 @endif
 
-<header class="sticky top-0 z-30 border-b border-line bg-field/95 backdrop-blur"
-        x-data="{ menu: false }" @keydown.escape.window="menu = false">
-    {{-- Di HP baris ini cuma punya ruang 280px (layar 320) sampai 320px (layar
-         360), dan tidak ada isinya yang boleh menyusut. Dengan celah gap-4 dan
-         logo h-9 isinya butuh ±351px: tombol menu terdorong keluar layar dan
-         seluruh halaman bisa digeser ke samping. Celah dan logo dikecilkan
-         khusus di HP, dan tombol "Masuk" baru muncul mulai layar 360px
-         (di bawah itu ia tetap ada di dalam menu). --}}
+{{--
+    Kepala halaman (KEP-167). Di HP isinya cukup logo, cari, keranjang, dan
+    akun: menu pindah ke bilah bawah, tempat jempol berada. Di layar 320 baris
+    ini punya ruang 280px; logo h-8 dan tiga ikon 40px muat dengan celah 8px.
+    Mulai layar sedang navigasi (urutan dari klien, KEP-062) muncul di sini,
+    dan kotak cari baru muat mulai layar lebar.
+--}}
+<header class="sticky top-0 z-30 border-b border-line bg-field/95 backdrop-blur">
     <div class="mx-auto flex h-16 max-w-6xl items-center gap-2 px-5 sm:gap-4">
-        <a href="{{ route('beranda') }}" class="shrink-0" aria-label="Beranda Setia Sport">
+        <a href="{{ route('beranda') }}" class="shrink-0 pointer-coarse:py-1.5" aria-label="Beranda Setia Sport">
             <x-logo tinggi="h-8 sm:h-10" />
         </a>
 
-        {{-- Navigasi penuh hanya muat mulai layar sedang. Di bawah itu ia
-             meluber dan memotong dirinya sendiri, jadi dipindah ke panel. --}}
-        <nav class="ml-auto hidden h-full items-stretch gap-1 text-sm md:flex" aria-label="Navigasi utama">
+        <nav class="hidden h-full items-stretch gap-1 text-sm md:ml-2 md:flex" aria-label="Navigasi utama">
             @foreach ($nav as [$rute, $label, $pola, $parameter])
                 @php
                     // "Custom jersey" menunjuk ke katalog dengan penyaring, jadi
@@ -141,20 +139,34 @@
                         ? ($pola !== [] && request()->routeIs(...$pola) && ! request('jalur'))
                         : request()->routeIs('katalog') && request('jalur') === ($parameter['jalur'] ?? null);
                 @endphp
-                <a href="{{ route($rute, $parameter) }}"
-                   class="flex items-center px-3 font-medium transition-colors hover:text-navy
-                          {{ $aktif ? 'garis-aktif text-navy' : 'text-muted' }}">
+                <a href="{{ route($rute, $parameter) }}" @if ($aktif) aria-current="page" @endif
+                   class="flex items-center px-3 transition-colors hover:text-navy
+                          {{ $aktif ? 'garis-aktif font-bold text-navy' : 'font-medium text-ink' }}">
                     {{ $label }}
                 </a>
             @endforeach
         </nav>
+
+        <form action="{{ route('katalog') }}" method="GET" role="search" class="relative ml-auto hidden w-full max-w-xs lg:block">
+            <label for="cari-atas" class="sr-only">Cari produk</label>
+            <x-ikon nama="cari" ukuran="size-5" class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted" />
+            <input id="cari-atas" type="search" name="q" value="{{ request()->routeIs('katalog') ? request('q') : '' }}"
+                   placeholder="Cari jersey, bola, sepatu" enterkeyhint="search"
+                   class="h-11 w-full rounded-full border border-transparent bg-paper pr-4 pl-11 text-sm placeholder:text-muted focus:border-navy focus:bg-field focus:outline-none">
+        </form>
+
+        <a href="{{ route('katalog') }}#q" title="Cari produk"
+           class="ml-auto flex rounded-[7px] p-2 pointer-coarse:p-2.5 text-ink transition-colors hover:bg-navy-50 lg:hidden">
+            <span class="sr-only">Cari produk</span>
+            <x-ikon nama="cari" ukuran="size-6" />
+        </a>
 
         {{-- Keranjang tetap terlihat di semua ukuran: ia satu-satunya aksi yang
              sedang dikejar pelanggan, jadi tidak boleh disembunyikan di menu.
              Berupa ikon supaya muat berdampingan dengan tombol masuk di layar
              HP; namanya tetap terbaca pembaca layar dan muncul sebagai tooltip. --}}
         <a href="{{ route('keranjang') }}" title="Keranjang"
-           class="group relative ml-auto flex items-center rounded-[7px] p-2 text-muted transition-colors hover:bg-navy-50 hover:text-ink md:ml-2">
+           class="group relative flex items-center rounded-[7px] p-2 pointer-coarse:p-2.5 text-ink transition-colors hover:bg-navy-50">
             <span class="sr-only">Keranjang</span>
             <svg class="size-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -169,55 +181,34 @@
                 Keranjang
             </span>
             @if ($isiKeranjang)
-                <span class="tabular absolute -top-0.5 -right-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-merah px-1 text-xs font-semibold text-white">
+                {{-- Penghitung netral (navy): merah disimpan untuk tombol yang
+                     menggerakkan pesanan (KEP-167). --}}
+                <span class="tabular absolute -top-0.5 -right-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-navy px-1 text-xs font-bold text-white ring-2 ring-field">
                     {{ $isiKeranjang }}
                 </span>
             @endif
         </a>
 
-        @unless ($pelanggan)
+        @if ($pelanggan)
+            <a href="{{ route('akun') }}" title="Akun saya"
+               @if (request()->routeIs('akun', 'pesanan-saya')) aria-current="page" @endif
+               class="-mr-2 flex rounded-[7px] p-2 pointer-coarse:p-2.5 text-ink transition-colors hover:bg-navy-50 md:mr-0">
+                <span class="sr-only">Akun saya</span>
+                <x-ikon nama="orang" ukuran="size-6" />
+            </a>
+        @else
+            {{-- Di HP cukup ikon; tulisan "Masuk" baru muat mulai layar sedang. --}}
+            <a href="{{ route('masuk') }}" title="Masuk"
+               class="-mr-2 flex rounded-[7px] p-2 pointer-coarse:p-2.5 text-ink transition-colors hover:bg-navy-50 md:hidden">
+                <span class="sr-only">Masuk</span>
+                <x-ikon nama="orang" ukuran="size-6" />
+            </a>
             <a href="{{ route('masuk') }}"
-               class="hidden rounded-[7px] border border-line-strong px-3 py-2 text-sm font-semibold transition-colors hover:border-navy-300 hover:bg-navy-50 min-[360px]:block">
+               class="hidden rounded-[8px] border border-line-strong px-3.5 py-2 text-sm font-semibold transition-colors hover:border-navy-300 hover:bg-navy-50 md:block">
                 Masuk
             </a>
-        @endunless
-
-        <button type="button" @click="menu = !menu"
-                class="-mr-2 rounded-[7px] p-3 text-muted transition-colors hover:bg-navy-50 hover:text-ink md:hidden"
-                :aria-expanded="menu" aria-controls="menu-mobil" aria-label="Buka menu">
-            <svg class="size-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"
-                 stroke-linecap="round" aria-hidden="true">
-                <path x-show="!menu" d="M3 6h14M3 10h14M3 14h14" />
-                <path x-show="menu" x-cloak d="M5 5l10 10M15 5L5 15" />
-            </svg>
-        </button>
+        @endif
     </div>
-
-    <nav id="menu-mobil" x-show="menu" x-cloak @click="menu = false"
-         class="border-t border-line bg-field md:hidden" aria-label="Navigasi utama">
-        <div class="mx-auto max-w-6xl px-5 py-2">
-            @foreach ($nav as [$rute, $label, $pola, $parameter])
-                @php
-                    $aktif = $parameter === []
-                        ? ($pola !== [] && request()->routeIs(...$pola) && ! request('jalur'))
-                        : request()->routeIs('katalog') && request('jalur') === ($parameter['jalur'] ?? null);
-                @endphp
-                <a href="{{ route($rute, $parameter) }}"
-                   class="block border-l-2 py-3 pl-3 font-medium transition-colors
-                          {{ $aktif ? 'border-kuning text-navy' : 'border-transparent text-muted hover:text-ink' }}">
-                    {{ $label }}
-                </a>
-            @endforeach
-
-            @unless ($pelanggan)
-                <a href="{{ route('masuk') }}"
-                   class="block border-l-2 py-3 pl-3 font-medium transition-colors
-                          {{ request()->routeIs('masuk', 'daftar') ? 'border-kuning text-navy' : 'border-transparent text-muted hover:text-ink' }}">
-                    Masuk
-                </a>
-            @endunless
-        </div>
-    </nav>
 </header>
 
 {{-- Di HP, judul halaman ikut menempel di bawah bilah atas. Setelah menggulir
@@ -269,20 +260,24 @@
     kontaknya tombol di blok merek, tiap lokasi punya tautan petunjuk arah, dan
     kolom "Hubungi kami" yang hanya mengulang nomor itu dilebur.
 --}}
-<footer class="mt-16 border-t border-line bg-field sm:mt-20">
-    {{-- Dua lokasi dengan tugas berbeda: toko tempat pesanan diambil, konveksi
-         tempat jersey dikerjakan. Keduanya punya jam buka sendiri. --}}
-    <div class="mx-auto grid max-w-6xl gap-8 px-5 py-8 sm:grid-cols-2 sm:gap-10 sm:py-12 md:grid-cols-3">
-        {{-- Di tablet kecil merek selebar penuh, dua lokasi berdampingan di bawahnya. --}}
-        <div class="sm:col-span-2 md:col-span-1">
-            <x-logo tinggi="h-9 sm:h-10" />
-            <p class="mt-3 text-sm leading-relaxed text-muted">
+{{-- Kaki halaman navy berpita tiga warna (KEP-167), menutup halaman seperti
+     kerah jersey. Teks navy 200 di navy 900 (11,6:1), judul putih. --}}
+<footer class="mt-16 bg-navy-900 text-navy-200 sm:mt-20">
+    <div class="pita" aria-hidden="true"></div>
+    {{-- Lima kolom sebaris seperti papan Kaki di kanvas Kit Tim (KEP-179) mulai
+         layar lebar. Di bawahnya merek mengambil satu baris sendiri: di tablet
+         empat kolom sisanya sebaris, di HP berpasangan dua-dua. Kolom lokasi
+         dibuat lebih lebar supaya jam buka tidak patah di tengah. --}}
+    <div class="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-8 px-5 py-9 sm:gap-x-10 sm:py-12 md:grid-cols-[0.7fr_0.9fr_1.2fr_1.2fr] xl:grid-cols-[1.3fr_0.8fr_0.9fr_1fr_1fr]">
+        <div class="col-span-2 md:col-span-4 xl:col-span-1">
+            <x-logo terang tinggi="h-9 sm:h-10" />
+            <p class="mt-3 max-w-md text-sm leading-relaxed">
                 Menyediakan berbagai perlengkapan olahraga dan layanan konveksi jersey custom. Pesanan dapat diambil langsung di toko atau dikirim ke alamat tujuan.
             </p>
 
             @if (tautan_wa())
                 <a href="{{ tautan_wa() }}" target="_blank" rel="noopener"
-                   class="tombol tombol-garis mt-4 w-full whitespace-nowrap sm:w-auto md:text-sm">
+                   class="tombol mt-4 w-full border-white/30 bg-white/5 whitespace-nowrap text-white hover:bg-white/10 sm:w-auto md:text-sm">
                     <x-ikon nama="whatsapp" ukuran="size-4" />
                     Chat lewat WhatsApp
                 </a>
@@ -290,12 +285,11 @@
 
             @if ($sosial !== [])
                 <div class="mt-4 flex gap-2">
-                    {{-- Ikon bergaris tipis nyaris tak terlihat di kartu terang; latar
-                         navy membuatnya jelas tanpa memakai warna merek pihak lain,
-                         yang justru akan pecah dari palet situs. --}}
+                    {{-- Kotak bergaris terang di atas navy, bukan warna merek pihak
+                         lain yang akan pecah dari palet situs. --}}
                     @foreach ($sosial as [$ikon, $nama, $tautan])
                         <a href="{{ $tautan }}" target="_blank" rel="noopener" title="{{ $nama }}"
-                           class="flex size-11 items-center justify-center rounded-[8px] bg-navy text-white transition-colors hover:bg-navy-800">
+                           class="flex size-11 items-center justify-center rounded-[8px] border border-white/20 text-white transition-colors hover:bg-white/10">
                             <span class="sr-only">{{ $nama }}</span>
                             <x-ikon :nama="$ikon" ukuran="size-4" />
                         </a>
@@ -303,51 +297,122 @@
                 </div>
             @endif
         </div>
+        {{-- Tautan navy 100, sedikit lebih terang dari teks biasa, tanpa garis
+             bawah kecuali saat disorot, seperti di kanvas. Portofolio dan
+             testimoni dua halaman berbeda; masing-masing hanya ditautkan kalau
+             berisi, karena galeri kosong menjawab 404 (KEP-106). --}}
+        @foreach ([
+            ['Belanja', array_filter([
+                ['Katalog', route('katalog')],
+                ['Jersey custom', route('katalog', ['jalur' => 'kustom'])],
+                ['Siap beli', route('katalog', ['jalur' => 'stok'])],
+                \App\Models\Portofolio::aktif()->exists() ? ['Portofolio', route('portofolio')] : null,
+                \App\Models\Testimoni::aktif()->exists() ? ['Testimoni', route('testimoni')] : null,
+            ])],
+            ['Bantuan', [
+                ['Lacak pesanan', route('lacak')],
+                ['Cara pesan custom', route('beranda').'#cara-pesan'],
+                ['Kebijakan Privasi', route('kebijakan-privasi')],
+                ['Syarat & Ketentuan', route('syarat-ketentuan')],
+            ]],
+        ] as [$judulKolom, $tautanKolom])
+            <nav aria-label="{{ $judulKolom }}">
+                <p class="text-sm font-bold text-white">{{ $judulKolom }}</p>
+                <ul class="mt-1.5">
+                    @foreach ($tautanKolom as [$labelTautan, $urlTautan])
+                        <li><a href="{{ $urlTautan }}" class="inline-block py-1.5 pointer-coarse:py-3 text-sm text-navy-100 underline-offset-[3px] hover:underline">{{ $labelTautan }}</a></li>
+                    @endforeach
+                </ul>
+            </nav>
+        @endforeach
+        {{-- Dua lokasi dengan tugas berbeda: toko tempat pesanan diambil, konveksi
+             tempat jersey dikerjakan. Keduanya punya jam buka sendiri. --}}
         @foreach (array_filter([
             ['Toko', 'Toko Olahraga & Lokasi Pengambilan Pesanan', setting('toko_alamat'), setting('toko_jam_buka'), setting('maps_embed') ?: tautan_peta((string) setting('toko_alamat'))],
             setting('konveksi_alamat')
                 ? ['Konveksi', 'Lokasi produksi jersey & konveksi '.setting('toko_nama', 'Setia Sport'), setting('konveksi_alamat'), setting('konveksi_jam_buka'), tautan_peta((string) setting('konveksi_alamat'))]
                 : null,
         ]) as [$judul, $tugas, $alamat, $jam, $peta])
-            <div>
-                <p class="text-sm font-semibold">{{ $judul }}</p>
-                <p class="text-xs text-muted">{{ $tugas }}</p>
-                <p class="mt-2 text-sm leading-relaxed text-muted">{{ $alamat }}</p>
+            <div class="col-span-2 sm:col-span-1">
+                <p class="text-sm font-bold text-white">{{ $judul }}</p>
+                <p class="text-xs">{{ $tugas }}</p>
+                <p class="mt-2 text-sm leading-relaxed">{{ $alamat }}</p>
                 @if (filled($jam))
-                    <p class="tabular mt-1.5 text-sm leading-relaxed text-muted">{{ baris_html($jam) }}</p>
+                    <p class="tabular mt-1.5 text-sm leading-relaxed">{{ baris_html($jam) }}</p>
                 @endif
                 <a href="{{ $peta }}" target="_blank" rel="noopener"
-                   class="tautan mt-1 inline-flex items-center gap-1.5 py-1.5 text-sm font-medium">
+                   class="mt-1 inline-flex items-center gap-1.5 py-1.5 pointer-coarse:py-3 text-sm font-semibold text-white underline decoration-white/40 underline-offset-[3px] hover:decoration-white">
                     Petunjuk arah
                     <x-ikon nama="buka-luar" ukuran="size-3.5" />
                 </a>
             </div>
         @endforeach
     </div>
-    <div class="border-t border-line">
-        {{-- Di HP tautan lebih dulu: hak cipta tidak perlu diketuk.
-
-             "Masuk staf" menumpang di sebelah hak cipta, terpisah dari tautan
-             kebijakan untuk pelanggan, dan bagian paling bawah diberi ruang
-             setinggi tombol Chat CS yang melayang (KEP-165). Dulu tautan itu
-             berada tepat di pojok kanan bawah dan tertutup tombol tersebut. --}}
+    <div class="border-t border-white/10">
+        {{-- "Masuk staf" menumpang di sebelah hak cipta, terpisah dari tautan
+             untuk pelanggan (KEP-165); tautan kebijakan kini di kolom Bantuan
+             (KEP-179). Di HP bilah bawah sudah memberi ruang sendiri; mulai layar
+             sedang tombol Chat CS kembali mengambang, jadi bagian paling bawah
+             diberi ruang setinggi tombol itu. --}}
         <div @class([
-            'mx-auto flex max-w-6xl flex-col-reverse gap-2 px-5 pt-4 text-xs text-muted sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3',
-            'pb-20 sm:pb-24' => cs_aktif(),
-            'pb-4' => ! cs_aktif(),
+            'mx-auto max-w-6xl px-5 pt-4 pb-4 text-xs',
+            'md:pb-24' => cs_aktif(),
         ])>
             <p class="flex flex-wrap items-center gap-x-2">
                 <span>&copy; {{ date('Y') }} {{ setting('toko_nama', 'Setia Sport') }}</span>
-                <span aria-hidden="true" class="text-line-strong">&middot;</span>
-                <a href="{{ route('panel.login') }}" class="tautan inline-block py-1.5">Masuk staf</a>
+                <span aria-hidden="true" class="text-white/30">&middot;</span>
+                <a href="{{ route('panel.login') }}" class="inline-block py-1.5 pointer-coarse:py-3.5 text-white underline decoration-white/40 underline-offset-[3px] hover:decoration-white">Masuk staf</a>
             </p>
-            <nav class="flex flex-wrap items-center gap-x-5" aria-label="Tautan kebijakan">
-                <a href="{{ route('kebijakan-privasi') }}" class="tautan inline-block py-1.5">Kebijakan Privasi</a>
-                <a href="{{ route('syarat-ketentuan') }}" class="tautan inline-block py-1.5">Syarat &amp; Ketentuan</a>
-            </nav>
         </div>
     </div>
 </footer>
+
+{{--
+    Bilah bawah etalase di HP (KEP-167). Jempol ada di bawah layar; menu garis
+    tiga di pojok atas dulu butuh dua ketukan untuk berpindah halaman. Isinya
+    mengikuti menu atas (KEP-062) ditambah Beranda dan Chat. Tombol Chat
+    membuka jendela CS lewat peristiwa buka-cs; tanda pesan belum dibaca
+    dikirim balik oleh widget lewat cs-belum-dibaca. Tanpa CS aktif, tempatnya
+    diisi akun pelanggan. Ditaruh sebelum widget supaya pendengarnya sudah
+    terpasang saat widget mengirim hitungan awal.
+--}}
+@php
+    $aktifBawah = fn (array $pola, ?string $jalur = null) => request()->routeIs(...$pola)
+        && ($jalur === null ? ! request('jalur') : request('jalur') === $jalur);
+    $navBawah = [
+        [route('beranda'), 'Beranda', 'beranda', $aktifBawah(['beranda'])],
+        [route('katalog'), 'Produk', 'kategori', $aktifBawah(['katalog', 'produk'])],
+        [route('katalog', ['jalur' => 'kustom']), 'Custom', 'kaos', $aktifBawah(['katalog'], 'kustom') || request()->routeIs('kustom.*')],
+        $pelanggan
+            ? [route('pesanan-saya'), 'Pesanan', 'pesanan', request()->routeIs('pesanan-saya', 'lacak*')]
+            : [route('lacak'), 'Lacak', 'produk', request()->routeIs('lacak*')],
+    ];
+@endphp
+<nav class="nav-bawah nav-bawah-etalase print:hidden" aria-label="Navigasi bawah">
+    @foreach ($navBawah as [$url, $label, $ikon, $aktif])
+        <a href="{{ $url }}" @if ($aktif) aria-current="page" @endif>
+            <x-ikon :nama="$ikon" />
+            {{ $label }}
+        </a>
+    @endforeach
+    @if (cs_aktif())
+        <button type="button" x-data="{ belum: 0 }" @cs-belum-dibaca.window="belum = $event.detail"
+                @click="window.dispatchEvent(new CustomEvent('buka-cs'))">
+            <span class="relative">
+                <x-ikon nama="chat" />
+                <span x-show="belum > 0" x-cloak x-text="belum"
+                      class="tabular absolute -top-1 -right-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-navy px-1 text-xs font-bold text-white ring-2 ring-field"></span>
+            </span>
+            Chat
+        </button>
+    @else
+        <a href="{{ $pelanggan ? route('akun') : route('masuk') }}"
+           @if (request()->routeIs('akun', 'masuk', 'daftar')) aria-current="page" @endif>
+            <x-ikon nama="orang" />
+            {{ $pelanggan ? 'Akun' : 'Masuk' }}
+        </a>
+    @endif
+</nav>
 
 @if (cs_aktif())
     @include('komponen.widget-cs')

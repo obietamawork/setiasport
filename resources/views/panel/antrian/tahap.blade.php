@@ -30,8 +30,8 @@
 @endif
 
 {{-- Petunjuk dan kotak cari dalam satu bilah, seperti gambar klien. --}}
-<div class="mb-2 flex flex-wrap items-center gap-3 rounded-[12px] border border-biru-100 bg-biru-50 px-4 py-3">
-    <x-ikon nama="bantuan" class="shrink-0 text-biru-700" />
+<div class="mb-2 flex flex-wrap items-center gap-3 rounded-[12px] border border-navy-100 bg-navy-50 px-4 py-3">
+    <x-ikon nama="bantuan" class="shrink-0 text-navy-700" />
     <div class="min-w-48 flex-1 text-sm">
         <p class="font-semibold">Antrian {{ Str::lower($stage->label()) }}</p>
         <p class="text-muted">
@@ -213,7 +213,7 @@
                         <div class="min-w-56 flex-1"><label for="tautan-{{ $item->id }}" class="label-form">Tautan file siap cetak</label>
                             <input type="url" id="tautan-{{ $item->id }}" name="tautan" class="kotak-input"
                                    placeholder="https://drive.google.com/..."></div>
-                        <button type="submit" class="tombol tombol-utama">Kirim untuk disetujui</button>
+                        <button type="submit" class="tombol tombol-navy">Kirim untuk disetujui</button>
                         <p class="w-full text-xs text-muted">
                             Mengirim mockup memindahkan item ke Menunggu Persetujuan Pelanggan.
                             Jangan pakai tombol Selesai untuk itu.

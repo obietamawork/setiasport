@@ -44,11 +44,11 @@
                             <div class="mt-1 flex flex-wrap gap-3">
                                 <form method="POST" action="{{ route('panel.pesanan.email.ulang', [$pesanan, $log]) }}">
                                     @csrf
-                                    <button type="submit" class="tautan">Kirim ulang</button>
+                                    <button type="submit" class="tautan area-sentuh">Kirim ulang</button>
                                 </form>
                                 <form method="POST" action="{{ route('panel.pesanan.email.selesai', [$pesanan, $log]) }}">
                                     @csrf
-                                    <button type="submit" class="tautan text-muted">Sudah dikabari lewat WhatsApp</button>
+                                    <button type="submit" class="tautan area-sentuh text-muted">Sudah dikabari lewat WhatsApp</button>
                                 </form>
                             </div>
                         @endif

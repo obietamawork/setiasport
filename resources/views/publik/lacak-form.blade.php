@@ -3,7 +3,7 @@
 
 @section('isi')
 <div class="mx-auto max-w-lg px-5 py-14">
-    <h1 class="text-3xl font-extrabold">Lacak pesanan</h1>
+    <h1 class="judul-tampil text-[2.5rem]">Lacak pesanan</h1>
     <p class="mt-3 leading-relaxed text-muted">
         Cara termudah adalah melalui tautan di email konfirmasi. Jika tidak ditemukan,
         masukkan nomor pesanan dan email yang digunakan saat pemesanan.

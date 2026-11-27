@@ -137,7 +137,7 @@
                                     </span>
                                 @endif
                                 <span class="min-w-0">
-                                    <a href="{{ route('panel.produk.edit', $produk) }}" class="block font-bold text-ink hover:text-navy">{{ $produk->nama }}</a>
+                                    <a href="{{ route('panel.produk.edit', $produk) }}" class="area-sentuh block font-bold text-ink hover:text-navy">{{ $produk->nama }}</a>
                                     <span class="text-xs text-muted">
                                         {{ $tunggal ? 'Varian: tunggal' : $grup->count().' varian' }}
                                         <span class="tabular hidden md:inline xl:hidden">· {{ $tunggal ? $grup->first()->sku : $produk->sku }}</span>

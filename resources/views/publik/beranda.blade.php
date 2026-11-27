@@ -36,12 +36,14 @@
     perlu melewatinya lebih dulu.
 --}}
 
-<section class="relative overflow-hidden bg-navy-900 text-white">
+<section class="motif relative overflow-hidden text-white">
     {{-- Latar berupa warna, bukan foto: foto etalase yang bagus belum ada, dan
          foto seadanya yang diregangkan selebar layar terlihat lebih murah
          daripada bidang warna yang rapi. Begitu klien mengirim fotonya, cukup
-         tambahkan satu kelas latar di sini. --}}
-    <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_40rem_at_15%_-10%,rgba(214,43,31,0.35),transparent),radial-gradient(45rem_35rem_at_85%_0%,rgba(30,52,116,0.9),transparent)]"></div>
+         tambahkan satu kelas latar di sini.
+
+         Navy padat bermotif garis tipis (KEP-167). Gradien navy ke merah yang
+         dulu di sini jatuh ke ungu keruh, warna yang tidak ada di logo. --}}
 
     @if ($banner->isNotEmpty())
         {{-- Banner promo menggantikan judul dan tombol (KEP-092). Judul halaman
@@ -51,22 +53,25 @@
     @else
     <div class="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pt-14 pb-10 sm:pt-20 sm:pb-12 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div>
-            <p class="text-xs font-semibold tracking-[0.18em] text-white/55 uppercase">
+            <p class="alis alis-terang">
+                <span class="garis-kit" aria-hidden="true"></span>
                 {{ setting('toko_nama', 'Setia Sport') }} Wonogiri
             </p>
 
-            <h1 class="mt-4 max-w-2xl text-4xl leading-[1.08] font-extrabold text-balance sm:text-5xl">
+            <h1 class="judul-tampil mt-4 max-w-2xl text-[2.75rem] text-balance sm:text-6xl">
                 {{ setting('tentang_judul') ?: 'Perlengkapan olahraga lengkap & jersey custom' }}
             </h1>
 
-            <p class="kolom-baca mt-5 text-base leading-relaxed text-white/75 sm:text-lg">
+            <p class="kolom-baca mt-5 text-base leading-relaxed text-navy-200 sm:text-lg">
                 {{ setting('tentang_ringkas')
                     ?: 'Tersedia berbagai kebutuhan olahraga mulai dari sepatu, bola, jersey, pakaian olahraga,
                         aksesoris, hingga layanan custom jersey sesuai dengan desainmu.' }}
             </p>
 
+            {{-- Putih, bukan merah: melihat produk belum menggerakkan pesanan.
+                 Merah disimpan untuk "Mulai pesan custom" di bawah (KEP-167). --}}
             <div class="kelompok-tombol mt-8">
-                <a href="{{ route('katalog') }}" class="tombol tombol-utama">
+                <a href="{{ route('katalog') }}" class="tombol bg-white font-bold text-navy hover:bg-navy-50">
                     Lihat produk
                     <x-ikon nama="lanjut" ukuran="size-4" />
                 </a>
@@ -109,16 +114,26 @@
 <section class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
     <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Kategori produk</h2>
+            <h2 class="judul-bagian text-[2rem] sm:text-[2.5rem]">Kategori produk</h2>
             <p class="mt-1.5 text-muted">Temukan perlengkapan olahraga favorit Anda di sini.</p>
         </div>
-        <a href="{{ route('katalog') }}" class="tautan inline-block py-1 text-sm font-medium">Lihat semua<span class="sr-only"> produk</span> &rarr;</a>
+        <a href="{{ route('katalog') }}" class="tautan inline-block py-1 pointer-coarse:py-3 text-sm font-medium">Lihat semua<span class="sr-only"> produk</span> &rarr;</a>
     </div>
 
     {{-- Jumlah kolom mengikuti jumlah kategori, supaya setiap baris penuh.
          Dulu 4 kolom di tablet: enam kategori jatuh jadi 4 + 2 dengan dua
          petak kosong, dan petaknya membesar jadi kotak 170px yang melompong. --}}
     @php
+        // Ikon pengganti foto kategori (KEP-167), ditebak dari slug. Kategori
+        // yang tidak dikenali mendapat ikon umum, bukan inisial seperti "BO".
+        $ikonKategori = fn ($k) => match (true) {
+            Str::contains($k->slug, 'bola') => 'bola',
+            Str::contains($k->slug, 'sepatu') => 'sepatu',
+            Str::contains($k->slug, 'celana') => 'celana',
+            Str::contains($k->slug, 'jaket') => 'jaket',
+            Str::contains($k->slug, ['jersey', 'kaos', 'baju', 'seragam', 'polo', 'pakaian']) => 'kaos',
+            default => 'kategori',
+        };
         $kolomKategori = match ($kategori->count()) {
             1 => 'grid-cols-2 sm:grid-cols-4',
             2 => 'grid-cols-2',
@@ -137,8 +152,10 @@
                         <img src="{{ $k->gambar->thumb_url }}" alt="{{ $k->nama }}" loading="lazy" decoding="async"
                              class="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-105">
                     @else
-                        <span aria-hidden="true" class="absolute inset-0 flex items-center justify-center text-xl font-extrabold text-navy-400">
-                            {{ Str::upper(Str::substr($k->nama, 0, 2)) }}
+                        <span aria-hidden="true" class="absolute inset-0 flex items-center justify-center">
+                            <span class="flex size-14 items-center justify-center rounded-full bg-field text-navy shadow-sm sm:size-20">
+                                <x-ikon :nama="$ikonKategori($k)" ukuran="size-7 sm:size-10" />
+                            </span>
                         </span>
                     @endif
                 </div>
@@ -156,10 +173,10 @@
     <div class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
         <div class="flex flex-wrap items-end justify-between gap-4">
             <div>
-                <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Produk unggulan</h2>
+                <h2 class="judul-bagian text-[2rem] sm:text-[2.5rem]">Produk unggulan</h2>
                 <p class="mt-1.5 text-muted">Yang paling sering dibawa pulang pelanggan.</p>
             </div>
-            <a href="{{ route('katalog') }}" class="tautan inline-block py-1 text-sm font-medium">Lihat semua<span class="sr-only"> produk</span> &rarr;</a>
+            <a href="{{ route('katalog') }}" class="tautan inline-block py-1 pointer-coarse:py-3 text-sm font-medium">Lihat semua<span class="sr-only"> produk</span> &rarr;</a>
         </div>
 
         <div class="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -172,15 +189,15 @@
 @endif
 
 {{-- Layanan jersey custom. Inilah yang membedakan toko ini dari toko olahraga
-     lain, jadi ia mendapat satu bidang penuh, bukan satu baris di katalog. --}}
-<section class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
+     lain, jadi ia mendapat satu bidang penuh, bukan satu baris di katalog.
+     Tautan "Cara pesan custom" di kaki halaman menuju ke sini (KEP-179). --}}
+<section id="cara-pesan" class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
     <div class="kartu overflow-hidden lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div class="relative min-h-56 bg-navy-900">
-            <div class="absolute inset-0 bg-[radial-gradient(30rem_20rem_at_30%_20%,rgba(214,43,31,0.45),transparent)]"></div>
+        <div class="motif relative min-h-56">
             <div class="relative flex h-full flex-col justify-center gap-3 p-8 text-white">
-                <p class="text-xs font-semibold tracking-[0.18em] text-white/55 uppercase">Layanan custom</p>
-                <p class="text-3xl leading-tight font-extrabold text-balance">Buat jersey tim sesuai keinginan</p>
-                <p class="leading-relaxed text-white/70">
+                <p class="alis alis-terang"><span class="garis-kit" aria-hidden="true"></span>Layanan custom</p>
+                <p class="judul-tampil text-[2.5rem] text-balance">Buat jersey tim sesuai keinginan</p>
+                <p class="leading-relaxed text-navy-200">
                     Seluruh proses produksi dikerjakan langsung di konveksi kami tanpa melalui pihak ketiga.
                     Dalam satu pesanan, ukuran dapat dikombinasikan mulai dari anak-anak hingga dewasa.
                 </p>
@@ -215,7 +232,7 @@
                     'Pesanan diproduksi dalam waktu 7–10 hari kerja',
                 ] as $i => $langkah)
                     <li class="flex gap-2">
-                        <span class="numeral font-bold text-navy">{{ $i + 1 }}.</span>
+                        <span class="angka-tampil w-4 shrink-0 text-lg text-navy">{{ $i + 1 }}</span>
                         <span>{{ $langkah }}</span>
                     </li>
                 @endforeach
@@ -243,7 +260,7 @@
      keunggulan tidak pernah dibaca sampai habis. --}}
 <section class="border-y border-line bg-field">
     <div class="mx-auto max-w-6xl px-5 py-12 sm:py-14">
-        <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Kenapa Belanja di {{ setting('toko_nama', 'Setia Sport') }}?</h2>
+        <h2 class="judul-bagian text-[2rem] sm:text-[2.5rem]">Kenapa Belanja di {{ setting('toko_nama', 'Setia Sport') }}?</h2>
 
         <div class="mt-7 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             @foreach ([
@@ -274,10 +291,10 @@
 <section class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
     <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-            <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Galeri portofolio</h2>
+            <h2 class="judul-bagian text-[2rem] sm:text-[2.5rem]">Galeri portofolio</h2>
             <p class="mt-1.5 text-muted">Sekolah, instansi, dan komunitas di sekitar Wonogiri.</p>
         </div>
-        <a href="{{ route('portofolio') }}" class="tautan inline-block py-1 text-sm font-medium">Lihat semua<span class="sr-only"> portofolio</span> &rarr;</a>
+        <a href="{{ route('portofolio') }}" class="tautan inline-block py-1 pointer-coarse:py-3 text-sm font-medium">Lihat semua<span class="sr-only"> portofolio</span> &rarr;</a>
     </div>
 
     <div class="mt-7 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
@@ -296,10 +313,10 @@
     <div class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
         <div class="flex flex-wrap items-end justify-between gap-4">
             <div>
-                <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Testimoni pelanggan</h2>
+                <h2 class="judul-bagian text-[2rem] sm:text-[2.5rem]">Testimoni pelanggan</h2>
                 <p class="mt-1.5 text-muted">Kata mereka yang sudah memesan di kami.</p>
             </div>
-            <a href="{{ route('testimoni') }}" class="tautan inline-block py-1 text-sm font-medium">Lihat semua<span class="sr-only"> testimoni</span> &rarr;</a>
+            <a href="{{ route('testimoni') }}" class="tautan inline-block py-1 pointer-coarse:py-3 text-sm font-medium">Lihat semua<span class="sr-only"> testimoni</span> &rarr;</a>
         </div>
 
         <div class="mt-7 grid gap-4 lg:grid-cols-3">
@@ -318,7 +335,7 @@
 <section id="tentang" class="scroll-mt-20 border-y border-line bg-field">
     <div class="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:py-16 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
         <div>
-            <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Tentang {{ setting('toko_nama', 'kami') }}</h2>
+            <h2 class="judul-bagian text-[2rem] sm:text-[2.5rem]">Tentang {{ setting('toko_nama', 'kami') }}</h2>
             <div class="kolom-baca mt-4 space-y-4 leading-relaxed text-muted">
                 @foreach (preg_split('/\R{2,}/', (string) setting('tentang_lengkap')) as $paragraf)
                     <p>{{ $paragraf }}</p>
@@ -336,7 +353,7 @@
      Dua tempat dengan tugas berbeda: toko tempat pesanan diambil dan dilunasi,
      konveksi tempat jersey dikerjakan. --}}
 <section class="mx-auto max-w-6xl px-5 py-12 sm:py-16">
-    <h2 class="judul-bagian text-2xl font-extrabold sm:text-3xl">Toko dan konveksi kami</h2>
+    <h2 class="judul-bagian text-[2rem] sm:text-[2.5rem]">Toko dan konveksi kami</h2>
 
     <div class="mt-7 grid gap-4 md:grid-cols-2">
         @foreach ([
@@ -359,7 +376,7 @@
 
             <article class="kartu flex flex-col p-6 lg:p-8">
                 <p class="text-xl font-extrabold">{{ $lokasi['judul'] }}</p>
-                <p class="mt-1 text-sm font-medium text-merah">{{ $lokasi['tugas'] }}</p>
+                <p class="mt-1 text-sm font-semibold text-navy-700">{{ $lokasi['tugas'] }}</p>
 
                 <p class="mt-4 leading-relaxed">{{ $lokasi['alamat'] }}</p>
 
@@ -379,18 +396,18 @@
 {{-- Ajakan penutup. WhatsApp di sini BANTUAN, bukan jalur pemesanan (KEP-040):
      pesanannya tetap dibuat di web supaya ada nomornya, ada halaman lacaknya,
      dan ada catatan siapa menyetujui apa. --}}
-<section class="bg-navy-900 text-white">
+<section class="motif text-white">
     <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-5 py-12">
         <div>
-            <p class="text-2xl font-extrabold text-balance">Butuh perlengkapan olahraga atau jersey tim?</p>
-            <p class="mt-2 leading-relaxed text-white/70">
+            <p class="judul-tampil text-[2rem] text-balance sm:text-[2.5rem]">Butuh perlengkapan olahraga atau jersey tim?</p>
+            <p class="mt-2 leading-relaxed text-navy-200">
                 Belanja perlengkapan olahraga dan pesan jersey custom langsung melalui website.
             </p>
             {{-- Nomornya ditulis, bukan hanya jadi tautan: sebagian orang menyimpan
                  nomornya dulu di kontak sebelum menghubungi, dan nomor yang hanya
                  hidup di dalam tautan tidak bisa disalin. --}}
             @if (setting('toko_telepon'))
-                <p class="mt-3 text-sm text-white/70">
+                <p class="mt-3 text-sm text-navy-200">
                     <span class="tabular font-semibold text-white">WhatsApp toko {{ setting('toko_telepon') }}</span>,
                     {{ Str::lcfirst((string) setting('cs_jam_layanan')) }}
                 </p>
@@ -398,7 +415,7 @@
         </div>
 
         <div class="kelompok-tombol">
-            <a href="{{ route('katalog') }}" class="tombol tombol-utama">Lihat produk</a>
+            <a href="{{ route('katalog') }}" class="tombol bg-white font-bold text-navy hover:bg-navy-50">Lihat produk</a>
             @if ($csAktif)
                 <button type="button" x-data @click="$dispatch('buka-cs', {})"
                         class="tombol border-white/25 bg-white/10 text-white hover:bg-white/20">Chat dengan CS</button>

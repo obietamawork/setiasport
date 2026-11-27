@@ -28,7 +28,7 @@
      dipakai untuk membedakan bagian, bukan untuk menghias. --}}
 {{-- Satu tombol, dua perilaku: di layar lebar menguncupkan sidebar jadi rail
      ikon supaya tabel lebar dapat ruang; di HP membuka menu sebagai laci. --}}
-<body class="min-h-screen bg-paper"
+<body class="min-h-screen bg-paper @yield('kelas-body')"
       x-data="{
           menu: false,
           lebar: window.matchMedia('(min-width: 64rem)').matches,
@@ -109,9 +109,25 @@
         return ! ($t[0] === 'panel.antrian.index' && empty($u->tahapProduksi()));
     };
 
-    // Empat tujuan tersering untuk bilah bawah. Sisanya lewat laci menu: bilah
-    // bawah yang memuat sepuluh ikon sama sulitnya dengan tidak ada bilah.
-    $navBawah = collect($grup[''])->filter($bolehLihat)->take(4)->values();
+    /*
+     * Empat tujuan tersering untuk bilah bawah, mengikuti peran (KEP-175,
+     * papan Peta halaman Kit Tim). Pemilik dan admin: Dashboard, Pesanan,
+     * Customer Service, Serah terima. Kasir mendahulukan Serah terima, bagian
+     * produksi mendahulukan Antrian kerja. Peran dibaca dari izinnya, karena
+     * Pemilik bisa menyusun peran sendiri. Sisanya selalu ada di laci Menu:
+     * bilah bawah yang memuat sepuluh ikon sama sulitnya dengan tidak ada bilah.
+     */
+    $urutanBawah = array_flip(match (true) {
+        $u->punyaIzin('order.kelola') => ['panel.dashboard', 'panel.pesanan.index', 'panel.cs.index', 'panel.serah-terima', 'panel.antrian.index'],
+        $u->punyaIzin('serah_terima.proses') => ['panel.serah-terima', 'panel.dashboard', 'panel.pesanan.index', 'panel.cs.index', 'panel.antrian.index'],
+        $u->tahapProduksi() !== [] => ['panel.antrian.index', 'panel.dashboard', 'panel.pesanan.index', 'panel.cs.index', 'panel.serah-terima'],
+        default => array_column($grup[''], 0),
+    });
+    $navBawah = collect($grup[''])
+        ->filter($bolehLihat)
+        ->sortBy(fn (array $t) => $urutanBawah[$t[0]] ?? PHP_INT_MAX)
+        ->take(4)
+        ->values();
 
     $lonceng ??= [];
     $jumlahLonceng = array_sum(array_column($lonceng, 'jumlah'));
@@ -203,7 +219,7 @@
         {{-- Di HP sidebar tersembunyi, jadi logo pindah ke bilah atas. Di HP
              yang sangat sempit (di bawah 360px) logo mengalah: tanpa itu bilah
              atas lebih lebar dari layar dan seluruh panel bisa digeser ke samping. --}}
-        <a href="{{ route('panel.dashboard') }}" class="shrink-0 max-[22.5rem]:hidden lg:hidden">
+        <a href="{{ route('panel.dashboard') }}" class="shrink-0 pointer-coarse:py-2 max-[22.5rem]:hidden lg:hidden">
             <x-logo tinggi="h-7" />
         </a>
 
@@ -228,7 +244,7 @@
 
             @if ($csNotif)
                 <a href="{{ route('panel.cs.index') }}" x-show="jumlah > 0" x-cloak
-                   class="flex items-center gap-1.5 rounded-[7px] bg-merah px-2.5 py-1.5 font-semibold text-white hover:bg-merah/90">
+                   class="flex items-center gap-1.5 rounded-[7px] bg-navy px-2.5 py-1.5 font-semibold text-white hover:bg-navy-800">
                     <x-ikon nama="chat" ukuran="size-4" />
                     <span class="sr-only sm:not-sr-only">Chat baru</span>
                     <span class="tabular" x-text="jumlah"></span>
@@ -355,7 +371,7 @@
             <span class="relative">
                 <x-ikon :nama="$ikon" />
                 @if ($jumlah)
-                    <span class="absolute -top-1 -right-1.5 inline-flex min-w-4 justify-center rounded-full bg-merah px-1 text-[0.625rem] font-bold text-white tabular">
+                    <span class="absolute -top-1 -right-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-navy px-1 text-xs font-bold text-white tabular ring-2 ring-field">
                         {{ $jumlah }}
                     </span>
                 @endif
@@ -364,7 +380,7 @@
         </a>
     @endforeach
     <button type="button" @click="menu = true"
-            class="flex flex-col items-center gap-0.5 px-1 py-2 text-[0.6875rem] font-semibold text-muted">
+            class="flex flex-col items-center gap-0.5 px-1 py-2 text-xs font-semibold text-muted">
         <x-ikon nama="menu" />
         Menu
     </button>

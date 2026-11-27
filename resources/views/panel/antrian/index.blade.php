@@ -51,44 +51,78 @@
     @foreach ([['Konveksi · pesanan kustom', $tahapKonveksi], ['Barang stok toko', $tahapStok]] as [$namaJalur, $daftarTahap])
     @continue($daftarTahap->isEmpty())
     <h2 class="mt-7 text-sm font-semibold text-muted">{{ $namaJalur }}</h2>
-    <div class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    {{-- Di layar lebar divisi berjajar sebagai kolom papan kerja seperti papan
+         kanban (KEP-175, Peta halaman Kit Tim): kepala kolomnya tetap kartu
+         divisi, dan di bawahnya kartu pekerjaan yang paling lama menunggu.
+         Papannya digeser ke samping bila kolomnya tidak muat. Di HP dan tablet
+         kartu divisi tetap bertumpuk seperti semula. --}}
+    <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:auto-cols-[16rem] lg:grid-flow-col lg:grid-cols-none lg:items-start lg:overflow-x-auto lg:pb-3">
         @foreach ($daftarTahap as $t)
             @php
-                $r = $ringkas[$t->value] ?? ['jumlah' => 0, 'tertua' => null, 'pesanan' => []];
+                $r = $ringkas[$t->value] ?? ['jumlah' => 0, 'tertua' => null, 'pesanan' => [], 'kartu' => collect()];
                 $ada = $r['jumlah'] > 0;
             @endphp
 
-            <a href="{{ route('panel.antrian.tahap', strtolower($t->value)) }}"
-               class="kartu kartu-tautan flex flex-col gap-3 p-5">
-                {{-- Divisi kosong dibuat tenang lewat warna, bukan opacity: opacity
-                     ikut menurunkan kontras tulisannya di bawah batas WCAG. --}}
-                <div class="flex items-center gap-3">
-                    <span class="flex size-10 shrink-0 items-center justify-center rounded-[10px]
-                                 {{ $ada ? 'bg-merah-50 text-merah-tua' : 'bg-navy-50 text-navy-400' }}">
-                        <x-ikon :nama="$t->ikon()" />
-                    </span>
-                    <span class="min-w-0 flex-1 font-bold">{{ $t->label() }}</span>
-                    <span class="numeral text-3xl {{ $ada ? 'text-merah' : 'text-navy-400' }}">
-                        {{ $r['jumlah'] }}
-                    </span>
-                </div>
-
-                @if ($ada)
-                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
-                        @if ($r['tertua'])
-                            <span class="inline-flex items-center gap-1">
-                                <x-ikon nama="jam" ukuran="size-3.5" />
-                                Paling lama menunggu {{ $r['tertua']->diffForHumans(short: true) }}
-                            </span>
-                        @endif
-                        @foreach ($r['pesanan'] as $kode)
-                            <span class="tabular">{{ $kode }}</span>
-                        @endforeach
+            <div class="flex min-w-0 flex-col gap-2">
+                <a href="{{ route('panel.antrian.tahap', strtolower($t->value)) }}"
+                   class="kartu kartu-tautan flex flex-col gap-3 p-5 max-lg:flex-1">
+                    {{-- Divisi kosong dibuat tenang lewat warna, bukan opacity: opacity
+                         ikut menurunkan kontras tulisannya di bawah batas WCAG. --}}
+                    <div class="flex items-center gap-3">
+                        <span class="flex size-10 shrink-0 items-center justify-center rounded-[10px]
+                                     {{ $ada ? 'bg-merah-50 text-merah-tua' : 'bg-navy-50 text-navy-400' }}">
+                            <x-ikon :nama="$t->ikon()" />
+                        </span>
+                        <span class="min-w-0 flex-1 font-bold">{{ $t->label() }}</span>
+                        <span class="numeral text-3xl {{ $ada ? 'text-merah' : 'text-navy-400' }}">
+                            {{ $r['jumlah'] }}
+                        </span>
                     </div>
-                @else
-                    <p class="text-xs text-muted">Kosong.</p>
+
+                    @if ($ada)
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                            @if ($r['tertua'])
+                                <span class="inline-flex items-center gap-1">
+                                    <x-ikon nama="jam" ukuran="size-3.5" />
+                                    Paling lama menunggu {{ $r['tertua']->diffForHumans(short: true) }}
+                                </span>
+                            @endif
+                            {{-- Di papan kerja kodenya sudah tampil di kartu pekerjaan. --}}
+                            @foreach ($r['pesanan'] as $kode)
+                                <span class="tabular lg:hidden">{{ $kode }}</span>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-xs text-muted">Kosong.</p>
+                    @endif
+                </a>
+
+                @if ($r['kartu']->isNotEmpty())
+                    <ul class="hidden flex-col gap-2 lg:flex">
+                        @foreach ($r['kartu'] as $item)
+                            <li>
+                                <a href="{{ route('panel.antrian.tahap', strtolower($t->value)) }}"
+                                   class="kartu kartu-tautan block p-3 text-sm">
+                                    <span class="tabular block font-bold">{{ $item->order->kode }}</span>
+                                    <span class="mt-0.5 block">{{ $item->nama_produk }} · {{ $item->qty }} pcs</span>
+                                    @if ($item->order->target_siap_pada)
+                                        <span class="mt-1 block text-xs text-muted">
+                                            Target: {{ $item->order->target_siap_pada->translatedFormat('j M Y') }}
+                                        </span>
+                                    @endif
+                                </a>
+                            </li>
+                        @endforeach
+                        @if ($r['jumlah'] > $r['kartu']->count())
+                            <li>
+                                <a href="{{ route('panel.antrian.tahap', strtolower($t->value)) }}" class="tautan-lihat">
+                                    Lihat semua <x-ikon nama="lanjut" ukuran="size-4" />
+                                </a>
+                            </li>
+                        @endif
+                    </ul>
                 @endif
-            </a>
+            </div>
         @endforeach
     </div>
     @endforeach

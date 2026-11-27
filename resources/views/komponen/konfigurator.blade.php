@@ -91,7 +91,7 @@
                 <div class="flex justify-between gap-3">
                     <dt class="text-muted">
                         <span x-text="k.label"></span>
-                        <span class="text-merah">sekali</span>
+                        <span class="font-semibold text-navy-700">sekali</span>
                     </dt>
                     <dd class="tabular" x-text="(k.harga < 0 ? '−' : '+') + rp(Math.abs(k.harga))"></dd>
                 </div>
@@ -100,7 +100,7 @@
 
         <div class="mt-3 flex items-baseline justify-between gap-3 border-t border-line pt-3">
             <span class="font-semibold">Total</span>
-            <span class="numeral text-3xl text-merah" x-text="rp(total)"></span>
+            <span class="numeral text-3xl text-ink" x-text="rp(total)"></span>
         </div>
 
         <p class="mt-2 text-sm text-muted">

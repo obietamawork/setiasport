@@ -54,7 +54,7 @@
             @endif
             <div class="order-1 sm:order-2 sm:text-right">
                 <p class="text-sm text-muted">Total pesanan</p>
-                <p class="tabular text-2xl font-extrabold text-merah">{{ rupiah($pesanan->total) }}</p>
+                <p class="tabular text-2xl font-extrabold text-ink">{{ rupiah($pesanan->total) }}</p>
             </div>
         </div>
     </div>

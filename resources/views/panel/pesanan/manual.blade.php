@@ -287,7 +287,7 @@
         </div>
     </section>
 
-    <div class="flex flex-wrap items-center gap-3">
+    <div class="bilah-aksi mt-6">
         <button type="submit" class="tombol tombol-navy" data-teks-proses="Menyimpan...">
             Buat pesanan
         </button>

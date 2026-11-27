@@ -30,6 +30,49 @@
 }
 
 /*
+ * Huruf judul Kit Tim (KEP-167): Barlow Condensed miring, senada dengan logo
+ * yang juga miring dan sempit. Hanya dua berat (700 dan 800) dan hanya versi
+ * miring, karena hanya dipakai untuk judul tampil dan angka besar; isi tetap
+ * Plus Jakarta Sans. Di-host sendiri seperti di atas (KEP-089), lisensi OFL di
+ * resources/fonts/barlow-condensed/OFL.txt.
+ */
+@font-face {
+    font-family: "Barlow Condensed";
+    font-style: italic;
+    font-weight: 700;
+    font-display: swap;
+    src: url("../fonts/barlow-condensed/latin-700-miring.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Barlow Condensed";
+    font-style: italic;
+    font-weight: 700;
+    font-display: swap;
+    src: url("../fonts/barlow-condensed/latin-ext-700-miring.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: "Barlow Condensed";
+    font-style: italic;
+    font-weight: 800;
+    font-display: swap;
+    src: url("../fonts/barlow-condensed/latin-800-miring.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: "Barlow Condensed";
+    font-style: italic;
+    font-weight: 800;
+    font-display: swap;
+    src: url("../fonts/barlow-condensed/latin-ext-800-miring.woff2") format("woff2");
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/*
  * Elemen ber-x-cloak tersembunyi sampai Alpine siap (KEP-105). Aturan ini
  * tidak pernah ada, jadi 67 x-cloak di 20 tampilan tidak berarti apa-apa:
  * menu HP setinggi 209 px tampil sekilas di halaman depan lalu hilang, dan
@@ -54,6 +97,8 @@
  */
 @theme {
     --font-sans: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    /* Judul tampil dan angka besar saja (KEP-167). Selalu miring. */
+    --font-tampil: "Barlow Condensed", "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
 
     --color-navy-900: #0d1733;
     --color-navy-800: #12204a;
@@ -61,6 +106,7 @@
     --color-navy-700: #1e3474;
     --color-navy-400: #5f74a8;
     --color-navy-300: #93a3ca;
+    --color-navy-200: #c9d2e6;
     --color-navy-100: #e7ebf5;
     --color-navy-50: #f2f5fa;
 
@@ -248,11 +294,12 @@
      * Di layar sentuh tombol diberi tinggi minimum. Panel ini dipakai sambil
      * berdiri di konveksi dan di kasir, dengan jempol, bukan tetikus: tombol
      * setinggi 32px di sana berarti salah tekan, dan salah tekan di halaman
-     * pesanan berarti uang tercatat di tempat yang keliru.
+     * pesanan berarti uang tercatat di tempat yang keliru. Sejak KEP-174 tombol
+     * kecil pun 44px, mengikuti batas target sentuh Kit Tim.
      */
     @media (pointer: coarse) {
         .tombol { min-height: 2.75rem; }
-        .tombol-sm { min-height: 2.25rem; }
+        .tombol-sm { min-height: 2.75rem; }
     }
 
     /* Merah dipakai untuk satu aksi utama per layar, tidak lebih. */
@@ -316,6 +363,109 @@
         .kelompok-tombol > .tombol {
             width: 100%;
         }
+    }
+}
+
+/*
+ * Kit Tim (KEP-167). Bahasa visual seragam tim: warna tetap dari logo, yang
+ * diatur ulang adalah peran dan takarannya. Kira-kira 60 bagian terang,
+ * 30 navy, 10 aksen (merah untuk tombol yang menggerakkan pesanan, kuning
+ * untuk garis dan angka besar di atas navy). Etalase boleh berani; keranjang,
+ * checkout, dan panel tetap tenang.
+ */
+@layer components {
+
+    /* Judul tampil: Barlow Condensed miring. Ukurannya diatur dengan kelas
+       text-* di tempat pakai, supaya satu kelas ini cukup untuk semua jenjang. */
+    .judul-tampil {
+        font-family: var(--font-tampil);
+        font-style: italic;
+        font-weight: 800;
+        line-height: 0.95;
+        letter-spacing: 0;
+    }
+
+    /* Angka besar: nomor langkah, hitungan di dasbor, nomor punggung. */
+    .angka-tampil {
+        font-family: var(--font-tampil);
+        font-style: italic;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: 0.01em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Dua batang miring merah dan kuning, persis batang yang mengapit WONOGIRI
+       di logo. Penanda bagian, bukan hiasan bebas: satu per judul. */
+    .garis-kit {
+        display: inline-block;
+        flex: none;
+        width: 2.375rem;
+        height: 5px;
+        transform: skewX(-28deg);
+        background: linear-gradient(90deg, var(--color-merah) 0 44%, transparent 44% 58%, var(--color-kuning) 58% 100%);
+    }
+
+    /* Label kecil di atas judul bagian, didahului garis kit. */
+    .alis {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.625rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color-navy);
+    }
+
+    .alis-terang { color: var(--color-navy-200); }
+
+    /* Pita tiga warna di tepi atas blok navy dan kaki halaman. */
+    .pita {
+        height: 6px;
+        background: linear-gradient(180deg, var(--color-kuning) 0 2px, var(--color-navy-900) 2px 4px, var(--color-merah) 4px 6px);
+    }
+
+    /* Blok navy padat bermotif garis tipis. Tidak pernah gradien navy ke merah:
+       campurannya jatuh ke ungu keruh yang bukan warna logo. */
+    .motif {
+        background-color: var(--color-navy-900);
+        background-image: repeating-linear-gradient(118deg, rgb(255 255 255 / 0.04) 0 2px, transparent 2px 30px);
+    }
+
+    /* Lencana jalur di atas foto produk. Kata-katanya mengikuti klien (KEP-132);
+       warnanya mengikuti Kit Tim: tanpa biru dan tanpa merah, karena merah
+       hanya untuk tombol yang menggerakkan pesanan. */
+    .lencana {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        height: 1.625rem;
+        padding-inline: 0.625rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .lencana-stok {
+        background: #fff;
+        color: var(--color-ink);
+        box-shadow: inset 0 0 0 1px var(--color-line);
+    }
+
+    .lencana-stok::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--color-ok);
+    }
+
+    .lencana-kustom {
+        background: var(--color-navy);
+        color: #fff;
     }
 }
 
@@ -649,11 +799,14 @@
         margin-bottom: 1.5rem;
     }
 
+    /* Judul halaman panel memakai huruf tampil (KEP-171). */
     .kop-judul {
-        font-size: 1.5rem;
+        font-family: var(--font-tampil);
+        font-style: italic;
+        font-size: 2rem;
         font-weight: 800;
-        letter-spacing: -0.021em;
-        line-height: 1.2;
+        letter-spacing: 0;
+        line-height: 1;
     }
 
     .kop-catatan {
@@ -812,7 +965,7 @@
     }
 
     /* Judul kelompok dengan garis tipis, seperti di gambar contoh. Putih 55%
-       di atas navy-900 masih 6,9:1, aman untuk tulisan 11px. */
+       di atas navy-900 masih 6,9:1. Ukurannya 12px, batas terkecil Kit Tim (KEP-174). */
     .grup-menu {
         display: flex;
         align-items: center;
@@ -820,7 +973,7 @@
         margin-top: 1.1rem;
         margin-bottom: 0.3rem;
         padding-inline: 0.6rem;
-        font-size: 0.6875rem;
+        font-size: 0.75rem;
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -853,20 +1006,32 @@
 
     .menu-panel svg { color: rgb(255 255 255 / 0.7); }
 
-    /* Biru terang pada menu aktif, persis gambar contoh. Satu-satunya bidang
-       terang di sidebar, jadi mata langsung tahu sedang di mana. */
+    /* Menu aktif Kit Tim (KEP-171): navy terang dengan garis kuning di kiri,
+       pengganti biru terang KEP-111. Tetap satu-satunya bidang terang di
+       sidebar, jadi mata langsung tahu sedang di mana, tetapi warnanya dari logo. */
     .menu-panel-aktif,
     .menu-panel-aktif:hover {
-        background: var(--color-biru-terang);
+        background: var(--color-navy-700);
         color: #fff;
-        font-weight: 600;
-        box-shadow: 0 6px 16px rgb(59 130 246 / 0.35);
+        font-weight: 700;
+    }
+
+    .menu-panel-aktif::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.55rem;
+        bottom: 0.55rem;
+        width: 3px;
+        border-radius: 0 3px 3px 0;
+        background: var(--color-kuning);
     }
 
     .menu-panel-aktif svg { color: #fff; }
 
     /* Penghitung di samping menu: yang menunggu ditangani harus terlihat
-       tanpa perlu membuka halamannya. */
+       tanpa perlu membuka halamannya. Netral (KEP-171): penghitung merah di
+       setiap menu membuat merah berhenti berarti "mendesak". */
     .lencana-menu {
         margin-left: auto;
         display: inline-flex;
@@ -875,14 +1040,15 @@
         justify-content: center;
         border-radius: 999px;
         padding: 0.05rem 0.4rem;
-        background: var(--color-merah);
+        background: rgb(255 255 255 / 0.14);
         color: #fff;
-        font-size: 0.6875rem;
+        /* Teks paling kecil 12px (KEP-174). */
+        font-size: 0.75rem;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
     }
 
-    .menu-panel-aktif .lencana-menu { background: rgb(255 255 255 / 0.25); }
+    .menu-panel-aktif .lencana-menu { background: rgb(255 255 255 / 0.22); }
 
     @media (pointer: coarse) {
         .menu-panel { padding-block: 0.8rem; }
@@ -1048,20 +1214,23 @@
         padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    .nav-bawah a {
+    .nav-bawah a,
+    .nav-bawah > button {
         position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 0.15rem;
         padding: 0.5rem 0.25rem 0.55rem;
-        font-size: 0.6875rem;
+        /* Teks paling kecil 12px (KEP-174). */
+        font-size: 0.75rem;
         font-weight: 600;
         color: var(--color-muted);
     }
 
     .nav-bawah a[aria-current="page"] {
         color: var(--color-navy);
+        font-weight: 800;
     }
 
     .nav-bawah a[aria-current="page"]::before {
@@ -1076,6 +1245,21 @@
 
     @media (width >= 64rem) {
         .nav-bawah { display: none; }
+    }
+
+    /*
+     * Bilah bawah etalase (KEP-167): di HP menggantikan menu garis tiga, dan
+     * tombol Chat CS yang dulu mengambang (dan menutupi harga) pindah ke sini.
+     * Mulai layar sedang navigasi atas sudah muat, jadi bilah ini pamit lebih
+     * awal daripada milik panel. Badan halaman diberi ruang setinggi bilah
+     * supaya kaki halaman tidak tertutup.
+     */
+    @media (width >= 48rem) {
+        .nav-bawah-etalase { display: none; }
+    }
+
+    @media (width < 48rem) {
+        .ada-nav-bawah { padding-bottom: calc(3.9rem + env(safe-area-inset-bottom, 0px)); }
     }
 }
 
@@ -1128,8 +1312,10 @@
        biasa tidak muat sebaris, jadi bertumpuk dan kepala yang menempel itu
        menutupi hampir seperlima layar selama digulung. */
     @media (width < 40rem) {
+        /* Padding dan huruf seperti tombol kecil, tetapi tingginya tetap 44px
+           untuk jempol (KEP-174). */
         .kop-lekat .tombol {
-            min-height: 2.25rem;
+            min-height: 2.75rem;
             padding: 0.4rem 0.72rem;
             font-size: 0.8125rem;
         }
@@ -1278,7 +1464,8 @@
         .tabel-hp thead { display: none; }
 
         .tabel-hp tbody tr {
-            display: block;
+            display: flex;
+            flex-direction: column;
             border: 1px solid var(--color-line);
             border-radius: var(--radius-kartu);
             background: var(--color-field);
@@ -1313,6 +1500,9 @@
            bukan sebagai pasangan label-nilai seperti kolom lainnya. */
         .tabel-hp tbody td[data-utama] {
             display: block;
+            /* Kolom utama naik ke baris pertama kartu walau di tabel ia bukan
+               kolom pertama, misalnya setelah kotak centang (KEP-174). */
+            order: -1;
             text-align: left;
             padding-top: 0.7rem;
             font-weight: 600;
@@ -1403,10 +1593,12 @@
         padding: 0.9rem 1.1rem;
     }
 
+    /* Mendesak berwarna kuning peringatan, bukan merah (KEP-170): merahnya
+       sudah dipakai tombol bayar atau setujui di dalam kotak ini. */
     .langkah-berikut-mendesak {
-        border-color: var(--color-merah-50);
-        border-left-color: var(--color-merah);
-        background: linear-gradient(180deg, var(--color-merah-50), var(--color-field));
+        border-color: var(--color-kuning-100);
+        border-left-color: var(--color-kuning);
+        background: linear-gradient(180deg, var(--color-warn-50), var(--color-field));
     }
 
     .langkah-berikut-selesai {
@@ -1490,20 +1682,27 @@
  * tidak pernah bidang.
  */
 @layer components {
+    /* Judul bagian etalase (KEP-167): huruf tampil dengan garis kit di atasnya,
+       pengganti batang kuning tegak di kiri judul. */
     .judul-bagian {
         position: relative;
-        padding-left: 0.9rem;
+        padding-top: 1.1rem;
+        font-family: var(--font-tampil);
+        font-style: italic;
+        font-weight: 800;
+        line-height: 0.98;
+        letter-spacing: 0;
     }
 
     .judul-bagian::before {
         content: "";
         position: absolute;
-        left: 0;
-        top: 0.2em;
-        bottom: 0.2em;
-        width: 4px;
-        border-radius: 2px;
-        background: var(--color-kuning);
+        left: 0.15rem;
+        top: 0;
+        width: 2.375rem;
+        height: 5px;
+        transform: skewX(-28deg);
+        background: linear-gradient(90deg, var(--color-merah) 0 44%, transparent 44% 58%, var(--color-kuning) 58% 100%);
     }
 }
 
@@ -1541,16 +1740,17 @@
     .chip-ungu { background: var(--color-ungu-50); color: var(--color-ungu-700); }
     .chip-pink { background: var(--color-pink-50); color: var(--color-pink-700); }
 
-    /* Kartu angka berwarna: latar pastel, ikon dalam ubin berwarna, angka besar. */
+    /* Kartu angka Kit Tim (KEP-171): kartu putih, warna bagian KEP-111 hanya di
+       ubin ikonnya. Lima kartu berlatar pastel dulu bersaing satu sama lain. */
     .kartu-angka {
         display: flex;
         flex-direction: column;
         gap: 0.6rem;
-        border: 1px solid var(--w-100);
+        border: 1px solid var(--color-line);
         border-radius: 14px;
-        background: linear-gradient(160deg, var(--w-50) 0%, color-mix(in srgb, var(--w-50) 45%, #fff) 100%);
+        background: var(--color-field);
         padding: 1rem 1.1rem 1.1rem;
-        box-shadow: 0 1px 2px rgb(13 23 51 / 0.04), 0 4px 14px color-mix(in srgb, var(--w) 10%, transparent);
+        box-shadow: var(--bayang-kartu);
     }
 
     .kartu-angka-tautan {
@@ -1564,7 +1764,7 @@
 
     .kartu-angka-aktif {
         border-color: var(--w);
-        box-shadow: 0 0 0 1px var(--w), 0 4px 14px color-mix(in srgb, var(--w) 18%, transparent);
+        box-shadow: 0 0 0 1px var(--w);
     }
 
     .kartu-angka-ikon,
@@ -1596,12 +1796,15 @@
         color: var(--color-ink);
     }
 
+    /* Angka besar memakai huruf tampil (KEP-171), seperti nomor punggung. */
     .kartu-angka-nilai {
         margin-top: auto;
-        font-size: 1.75rem;
+        font-family: var(--font-tampil);
+        font-style: italic;
+        font-size: 2.125rem;
         font-weight: 800;
         line-height: 1;
-        letter-spacing: -0.02em;
+        letter-spacing: 0.01em;
         font-variant-numeric: tabular-nums;
         color: var(--color-ink);
     }
@@ -1644,14 +1847,14 @@
 @layer components {
     .chip-hijau { background: var(--color-ok-50); color: var(--color-ok); }
 
-    /* Tautan "Lihat semua" di kepala kartu dashboard. */
+    /* Tautan "Lihat semua" di kepala kartu dashboard. Navy, bukan biru (KEP-171). */
     .tautan-lihat {
         display: inline-flex;
         align-items: center;
         gap: 0.2rem;
         font-size: 0.875rem;
         font-weight: 600;
-        color: var(--color-biru-700);
+        color: var(--color-navy-700);
     }
 
     .tautan-lihat:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -1673,7 +1876,8 @@
         .kartu-angka-ringkas .kartu-angka-label { font-size: 0.75rem; }
     }
 
-    /* Ubin jalan pintas: ikon di atas label, warna mengikuti bagian. */
+    /* Ubin jalan pintas: ikon di atas label. Ubin putih, warna bagian hanya di
+       ikonnya (KEP-171). */
     .pintas {
         display: flex;
         min-height: 4.75rem;
@@ -1681,9 +1885,9 @@
         align-items: center;
         justify-content: center;
         gap: 0.4rem;
-        border: 1px solid var(--w-100);
+        border: 1px solid var(--color-line);
         border-radius: 12px;
-        background: var(--w-50);
+        background: var(--color-field);
         padding: 0.75rem;
         text-align: center;
         font-size: 0.875rem;
@@ -1834,7 +2038,7 @@
         align-items: center;
         justify-content: center;
         border-radius: 999px;
-        background: var(--color-biru-terang);
+        background: var(--color-navy);
         color: #fff;
         font-size: 0.8125rem;
         font-weight: 700;
@@ -1843,8 +2047,8 @@
 
 
 /* Tahap pesanan mendatar di halaman progres (KEP-122): bulatan hijau untuk
-   yang lewat, biru untuk yang berjalan, abu-abu untuk yang belum, dengan
-   garis penghubung di antaranya. */
+   yang lewat, navy bercincin kuning untuk yang berjalan (KEP-171), abu-abu
+   untuk yang belum, dengan garis penghubung di antaranya. */
 @layer components {
     .tahap-datar { display: grid; gap: 0.25rem; text-align: center; }
 
@@ -1879,8 +2083,9 @@
     }
 
     .tahap-datar-lewat .tahap-datar-bulat { background: var(--color-ok); color: #fff; }
-    .tahap-datar-kini .tahap-datar-bulat { background: var(--color-biru-terang); color: #fff; }
-    .tahap-datar-kini span:nth-child(2) { color: var(--color-biru-700); }
+    /* Tahap yang berjalan navy bercincin kuning, seperti penanda langkah Kit Tim (KEP-171). */
+    .tahap-datar-kini .tahap-datar-bulat { background: var(--color-navy); color: #fff; box-shadow: 0 0 0 3px var(--color-field), 0 0 0 5px var(--color-kuning); }
+    .tahap-datar-kini span:nth-child(2) { color: var(--color-navy); }
 }
 
 /* Detail pesanan panel (KEP-124): judul kartu berikon seperti gambar
@@ -1924,17 +2129,17 @@
         background: var(--color-line);
     }
 
-    .garis-waktu li:first-child::before { background: var(--color-biru-terang); }
+    .garis-waktu li:first-child::before { background: var(--color-navy); }
 
     .garis-waktu .garis-waktu-kini::before {
-        background: var(--color-biru-terang);
-        box-shadow: 0 0 0 4px var(--color-biru-100);
+        background: var(--color-navy);
+        box-shadow: 0 0 0 3px var(--color-kuning);
     }
 }
 
 /* Persetujuan desain pelanggan (KEP-125): dua kartu pilihan seperti gambar
-   klien, hijau untuk setujui dan biru untuk revisi, serta lipatan daftar
-   pemain dengan panah yang berputar. */
+   klien, hijau untuk setujui dan navy untuk revisi (KEP-171), serta lipatan
+   daftar pemain dengan panah yang berputar. */
 @layer components {
     .pilih-tindakan {
         display: block;
@@ -1966,11 +2171,12 @@
         box-shadow: 0 0 0 2px var(--color-ok-50);
     }
 
+    /* Revisi navy, bukan biru terang (KEP-171): biru tidak dipakai di etalase. */
     .pilih-tindakan-revisi,
     .pilih-tindakan-revisi:hover {
-        border-color: var(--color-biru-terang);
-        background: var(--color-biru-50);
-        box-shadow: 0 0 0 2px var(--color-biru-100);
+        border-color: var(--color-navy);
+        background: var(--color-navy-50);
+        box-shadow: 0 0 0 2px var(--color-navy-100);
     }
 
     .lipatan-pemain > summary { list-style: none; }
@@ -1981,7 +2187,7 @@
 
 /* Riwayat di halaman lacak (KEP-127): garis waktu dengan titik di kiri,
    ikon dalam lingkaran, dan waktu di kanan, seperti gambar klien. Yang
-   terbaru diberi cincin biru. */
+   terbaru diberi cincin kuning (KEP-171). */
 @layer components {
     .riwayat-lacak { padding-block: 0.5rem; }
 
@@ -2005,7 +2211,7 @@
         width: 0.7rem;
         height: 0.7rem;
         border-radius: 999px;
-        background: var(--color-biru-terang);
+        background: var(--color-navy);
         z-index: 1;
     }
 
@@ -2023,7 +2229,7 @@
 
     .riwayat-lacak .riwayat-lacak-kini::before {
         background: var(--color-field);
-        box-shadow: inset 0 0 0 3px var(--color-biru-terang), 0 0 0 3px var(--color-biru-100);
+        box-shadow: inset 0 0 0 3px var(--color-navy), 0 0 0 3px var(--color-kuning);
     }
 
     .riwayat-lacak-ikon {
@@ -2060,4 +2266,164 @@
     }
 
     .tombol-keranjang:hover { background: var(--color-navy-800); }
+}
+
+/*
+ * Target sentuh Kit Tim (KEP-174): di layar sentuh setiap kendali paling kecil
+ * 44px, supaya jempol tidak mengenai tetangganya. Di tetikus ukurannya tetap
+ * seperti semula, jadi tabel panel di desktop tidak ikut renggang. Ditaruh di
+ * akhir berkas supaya menang dari definisi komponen di atasnya.
+ */
+@layer components {
+    @media (pointer: coarse) {
+        .tombol-bilah { min-width: 2.75rem; min-height: 2.75rem; justify-content: center; }
+        .tombol-ikon { width: 2.75rem; height: 2.75rem; }
+        /* Di dalam tabel tombol ikon tetap 32px supaya kolomnya tidak melebar
+           (daftar pemain di halaman lacak, aksi di tabel panel); area sentuhnya
+           diperluas lewat lapisan tak terlihat di bawah ini. */
+        .tabel .tombol-ikon { width: 2rem; height: 2rem; }
+        .tombol-keranjang { width: 2.75rem; height: 2.75rem; }
+        .kotak-input { min-height: 2.75rem; }
+        .segmen-item { min-height: 2.75rem; }
+        .tautan-lihat { min-height: 2.75rem; }
+        .menu-tarik :is(a, button) { min-height: 2.75rem; }
+        .jumlah-tombol,
+        .jumlah-isian { min-height: 2.75rem; }
+        .jumlah-tombol { width: 2.75rem; }
+
+        /* Paginasi bawaan Laravel (daftar pelanggan dan sejenisnya). */
+        nav[role="navigation"] :is(a, span[aria-disabled]) { min-height: 2.75rem; }
+
+        /* Tautan, tombol teks, atau ikon kecil yang berdiri sendiri: area
+           sentuhnya diperluas lewat lapisan tak terlihat seluas paling kecil
+           44x44px di tengahnya. Tampilan dan tata letaknya tidak bergeser.
+           Semua .tautan yang berdiri sendiri (Ubah, Batal, Kembali ke daftar)
+           ikut otomatis; tautan di dalam kalimat dikecualikan, seperti
+           pengecualian WCAG untuk target sebaris. */
+        .area-sentuh,
+        .tabel .tombol-ikon,
+        button.tautan,
+        a.tautan:not(p a) { position: relative; }
+        .area-sentuh::after,
+        .tabel .tombol-ikon::after,
+        button.tautan::after,
+        a.tautan:not(p a)::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: max(100%, 2.75rem);
+            height: max(100%, 2.75rem);
+            transform: translate(-50%, -50%);
+        }
+    }
+}
+
+/*
+ * Aksi utama menempel di dasar layar HP (KEP-174), seperti papan kanvas Kit
+ * Tim: beli, lanjut ke data pemesan, buat pesanan, kirim bukti bayar, dan
+ * serahkan. Di halaman yang memilikinya (kelas body .ada-aksi-bawah) bilah ini
+ * menggantikan bilah navigasi bawah. Tombolnya tetap di dalam formulirnya;
+ * hanya letaknya yang dipindah, jadi pengiriman formulir tidak berubah. Di
+ * layar lebar pembungkusnya tidak membentuk kotak apa pun.
+ */
+@layer components {
+    .aksi-bawah { display: contents; }
+    .aksi-bawah-ringkas,
+    .aksi-bawah-chat { display: none; }
+
+    @media (width < 48rem) {
+        .ada-aksi-bawah {
+            --nav-bawah: 0px;
+            padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+        }
+
+        .ada-aksi-bawah .nav-bawah { display: none; }
+
+        .aksi-bawah {
+            position: fixed;
+            inset-inline: 0;
+            bottom: 0;
+            z-index: 40;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem 0.75rem;
+            margin: 0;
+            padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+            border-top: 1px solid var(--color-line);
+            background: color-mix(in srgb, var(--color-field) 94%, transparent);
+            backdrop-filter: blur(8px);
+        }
+
+        .aksi-bawah > .tombol { flex: 1 1 0; }
+        .aksi-bawah > .kelompok-tombol { flex: 1 1 100%; flex-wrap: nowrap; }
+        .aksi-bawah > .kelompok-tombol > .tombol { flex: 1 1 0; }
+        .aksi-bawah > p { flex: 1 1 100%; margin: 0; }
+
+        /* Total di kiri bilah, seperti papan Keranjang di kanvas. */
+        .aksi-bawah > .aksi-bawah-ringkas { display: block; flex: none; }
+
+        /* Bilah ini menggantikan bilah bawah, jadi pintu ke Chat CS ikut. */
+        .aksi-bawah > .aksi-bawah-chat {
+            display: inline-flex;
+            flex: none;
+            width: 2.75rem;
+            padding-inline: 0;
+        }
+    }
+}
+
+/*
+ * Bilah aksi dipindah ke dasar layar, jadi jarak dari space-y-* induknya tidak
+ * boleh ikut. Aturan ini sengaja di luar @layer: di sana ia menang dari utilitas
+ * margin yang diberikan induk kepada anak-anaknya.
+ */
+@media (width < 48rem) {
+    .aksi-bawah { margin: 0; }
+}
+
+/*
+ * Lompatan ke jangkar (misalnya tombol "Periksa mockup" dan "Lihat petunjuk
+ * ambil" dari Pesanan saya, KEP-177) berhenti di bawah kepala halaman yang
+ * menempel, bukan tertutup olehnya.
+ */
+@layer base {
+    html { scroll-padding-top: 5rem; }
+}
+
+/*
+ * Isian berkas (bukti bayar, gambar produk, banner, QRIS) memakai kotak unggah
+ * bergaris putus-putus dengan tombol pilih bergaris navy, bukan tombol abu-abu
+ * bawaan browser yang terbaca asing di samping kendali Kit Tim lain (KEP-178).
+ */
+@layer components {
+    .kotak-input[type="file"] {
+        padding: 0.4rem;
+        border-style: dashed;
+        border-color: var(--color-line-strong);
+        background: var(--color-paper);
+        color: var(--color-muted);
+        font-size: 0.875rem;
+        cursor: pointer;
+    }
+
+    .kotak-input[type="file"]::file-selector-button {
+        margin-right: 0.75rem;
+        min-height: 2.25rem;
+        border: 1px solid var(--color-navy);
+        border-radius: var(--radius-kontrol);
+        background: var(--color-field);
+        padding: 0.4rem 0.9rem;
+        font: inherit;
+        font-weight: 600;
+        color: var(--color-navy);
+        cursor: pointer;
+    }
+
+    .kotak-input[type="file"]::file-selector-button:hover { background: var(--color-navy-50); }
+
+    @media (pointer: coarse) {
+        .kotak-input[type="file"]::file-selector-button { min-height: 2.75rem; }
+    }
 }

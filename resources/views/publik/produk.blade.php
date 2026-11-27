@@ -53,15 +53,15 @@
 <div class="mx-auto max-w-6xl px-5 py-8">
 
     <nav class="text-sm text-muted" aria-label="Remah roti">
-        <a href="{{ route('katalog') }}" class="tautan">Katalog</a>
+        <a href="{{ route('katalog') }}" class="tautan area-sentuh">Katalog</a>
         @if ($produk->category->parent)
             <span class="mx-2 text-line-strong">/</span>
-            <a href="{{ route('katalog', ['kategori' => $produk->category->parent->slug]) }}" class="tautan">
+            <a href="{{ route('katalog', ['kategori' => $produk->category->parent->slug]) }}" class="tautan area-sentuh">
                 {{ $produk->category->parent->nama }}
             </a>
         @endif
         <span class="mx-2 text-line-strong">/</span>
-        <a href="{{ route('katalog', ['kategori' => $produk->category->slug]) }}" class="tautan">
+        <a href="{{ route('katalog', ['kategori' => $produk->category->slug]) }}" class="tautan area-sentuh">
             {{ $produk->category->nama }}
         </a>
     </nav>
@@ -139,9 +139,13 @@
                     </p>
                 </div>
             @else
+                {{-- Ikon jenis barang, bukan inisial (KEP-169). --}}
+                @php
+                    $ikonBarang = ikon_barang($produk->nama);
+                @endphp
                 <div class="kartu flex aspect-4/3 items-center justify-center bg-navy-50">
-                    <span aria-hidden="true" class="text-6xl font-extrabold tracking-tight text-navy-400">
-                        {{ Str::upper(Str::substr($produk->nama, 0, 2)) }}
+                    <span aria-hidden="true" class="flex size-28 items-center justify-center rounded-full bg-field text-navy shadow-sm">
+                        <x-ikon :nama="$ikonBarang" ukuran="size-14" />
                     </span>
                 </div>
             @endif
@@ -156,7 +160,7 @@
                      menyembunyikan justru informasi yang paling menentukan
                      keputusan: ukuran mana yang masih ada. --}}
                 <section class="mt-10">
-                    <h2 class="text-xl font-extrabold">Stok per ukuran</h2>
+                    <h2 class="judul-tampil text-[1.75rem]">Stok per ukuran</h2>
                     {{-- tabindex: tabel yang lebih lebar dari layar HP harus bisa
                          digeser dengan papan ketik juga, bukan hanya jari (KEP-107). --}}
                     <div class="mt-4 overflow-x-auto" tabindex="0" role="region" aria-label="Stok per ukuran, bisa digeser">
@@ -198,7 +202,7 @@
 
             @if ($adaKustom && $produk->options->isNotEmpty())
                 <section class="mt-10">
-                    <h2 class="text-xl font-extrabold">Pilihan untuk pesanan kustom</h2>
+                    <h2 class="judul-tampil text-[1.75rem]">Pilihan untuk pesanan kustom</h2>
                     <dl class="mt-4 divide-y divide-line border border-line bg-field">
                         @foreach ($produk->options as $opsi)
                             <div class="grid gap-2 p-4 sm:grid-cols-[160px_1fr]">
@@ -212,7 +216,7 @@
                                                     <span class="tabular text-muted">
                                                         {{ $v->tambahan_harga > 0 ? '+' : '−' }}{{ rupiah(abs($v->tambahan_harga)) }}
                                                         @if ($v->basis === \App\Enums\PriceBasis::PER_ITEM)
-                                                            <span class="text-merah">sekali</span>
+                                                            <span class="font-semibold text-navy-700">sekali</span>
                                                         @else
                                                             / pcs
                                                         @endif
@@ -255,7 +259,7 @@
                         @endforeach
                     </dl>
                     <p class="mt-3 text-sm text-muted">
-                        Biaya bertanda <span class="text-merah">sekali</span> dikenakan satu kali
+                        Biaya bertanda <span class="font-semibold text-navy-700">sekali</span> dikenakan satu kali
                         untuk seluruh pesanan, bukan per potong.
                     </p>
                 </section>
@@ -264,9 +268,11 @@
         </div>
         <aside x-data="{ jalur: '{{ $jalurAwal }}' }"
                class="order-2 min-w-0 md:w-80 md:shrink-0 md:sticky md:top-20 md:self-start lg:w-[390px]">
-            <div class="border border-line bg-field">
+            {{-- Kotak beli Kit Tim (KEP-169): kartu bersudut bulat, nama produk huruf
+                 tampil, harga tinta. Merah hanya di tombol beli atau pesan. --}}
+            <div class="kartu overflow-hidden">
                 <div class="border-b border-line p-5">
-                    <h1 class="text-2xl leading-tight font-extrabold">{{ $produk->nama }}</h1>
+                    <h1 class="judul-tampil text-[2rem] text-balance">{{ $produk->nama }}</h1>
                     <p class="mt-1 text-sm text-muted tabular">{{ $produk->sku }}</p>
                 </div>
 
@@ -296,8 +302,8 @@
                 @if ($adaStok)
                     <div x-show="jalur === 'stok'" class="space-y-4 p-5">
                         <div>
-                            <p class="numeral text-4xl text-merah">{{ rupiah($produk->harga_dasar) }}</p>
-                            <p class="mt-2 text-sm text-muted">Siap diambil {{ siap_stok() }} pada jam buka.</p>
+                            <p class="numeral text-4xl text-ink">{{ rupiah($produk->harga_dasar) }}</p>
+                            <p class="mt-2 flex items-center gap-1.5 text-sm font-semibold text-ok"><x-ikon nama="centang" ukuran="size-4" class="shrink-0" />Siap diambil {{ siap_stok() }} pada jam buka.</p>
                         </div>
 
                         @php
@@ -344,14 +350,21 @@
                                         <div>
                                             <p class="label-form">Ukuran</p>
                                             <div class="flex flex-wrap gap-2">
+                                                {{-- Sisa stok yang tinggal sedikit tertulis di tombolnya
+                                                     sendiri (KEP-169), jadi pembeli tidak perlu mengetuk
+                                                     ukuran satu per satu untuk tahu mana yang hampir habis. --}}
                                                 <template x-for="u in ukuran" :key="u">
                                                     <button type="button" @click="ukuranDipilih = u"
                                                             :disabled="stokUntuk(u) < 1"
-                                                            class="min-w-12 rounded-[8px] border px-3 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:text-muted disabled:line-through"
+                                                            class="flex min-h-12 min-w-14 flex-col items-center justify-center rounded-[8px] border px-3 py-1.5 text-sm leading-tight transition-colors disabled:cursor-not-allowed disabled:border-dashed disabled:bg-paper disabled:text-muted"
                                                             :class="ukuranDipilih === u
-                                                                ? 'border-navy bg-navy-50 font-medium text-navy-800'
-                                                                : 'border-line hover:border-navy-300'"
-                                                            x-text="u"></button>
+                                                                ? 'border-navy bg-navy-50 font-bold text-navy-800 ring-1 ring-navy'
+                                                                : 'border-line-strong font-semibold hover:border-navy-300'">
+                                                        <span x-text="u"></span>
+                                                        <span x-show="stokUntuk(u) > 0 && stokUntuk(u) <= 5" x-cloak
+                                                              class="text-xs font-semibold text-warn" x-text="'sisa ' + stokUntuk(u)"></span>
+                                                        <span x-show="stokUntuk(u) < 1" x-cloak class="text-xs font-medium">habis</span>
+                                                    </button>
                                                 </template>
                                             </div>
                                             <p class="mt-2 text-sm text-muted" x-show="ukuranDipilih" x-cloak>
@@ -379,10 +392,16 @@
                                      keranjang yang sama, jadi isi keranjang sebelumnya ikut
                                      ke checkout dan tetap bisa dikeluarkan di sana. --}}
                                 <div class="grid gap-2">
-                                    <button type="submit" name="lanjut" value="checkout" class="tombol tombol-utama w-full"
-                                            @if ($tersedia->count() !== 1 || $matriks) x-bind:disabled="!varianId" @endif>
-                                        Beli sekarang
-                                    </button>
+                                    {{-- Di HP "Beli sekarang" menempel di dasar layar bersama
+                                         tombol Chat, menggantikan bilah navigasi (KEP-174). --}}
+                                    @section('kelas-body', 'ada-aksi-bawah')
+                                    <div class="aksi-bawah">
+                                        <x-tombol-chat-bawah />
+                                        <button type="submit" name="lanjut" value="checkout" class="tombol tombol-utama w-full"
+                                                @if ($tersedia->count() !== 1 || $matriks) x-bind:disabled="!varianId" @endif>
+                                            Beli sekarang
+                                        </button>
+                                    </div>
                                     <button type="submit" name="lanjut" value="keranjang" class="tombol tombol-garis w-full"
                                             @if ($tersedia->count() !== 1 || $matriks) x-bind:disabled="!varianId" @endif>
                                         <x-ikon nama="tambah" ukuran="size-4" />
@@ -410,7 +429,7 @@
                     @endphp
                     <div x-show="jalur === 'kustom'" class="space-y-5 p-5">
                         <div>
-                            <p class="numeral text-4xl text-merah">
+                            <p class="numeral text-4xl text-ink">
                                 {{ rupiah($termurah) }}<span class="text-base font-medium text-muted"> / pcs</span>
                             </p>
                             <p class="mt-2 text-sm text-muted">
@@ -457,7 +476,7 @@
                             </div>
                         </dl>
 
-                        <p class="border-l-2 border-merah bg-merah-50 p-3 text-sm leading-relaxed">
+                        <p class="border-l-2 border-navy bg-navy-50 p-3 text-sm leading-relaxed">
                             Waktu pengerjaan dihitung sejak Anda menyetujui mockup, bukan sejak
                             pesanan masuk. Sisa pembayaran dilunasi setelah barang selesai dikerjakan,
                             lewat transfer atau di kasir, lalu barang siap diambil.
@@ -467,10 +486,15 @@
                             {{-- Harganya per ukuran (KEP-039), jadi jumlah pesanan baru
                                  diketahui setelah daftar ukurannya diisi. Pemesanannya
                                  lewat alur empat langkah, bukan satu kotak jumlah. --}}
-                            <a href="{{ route('kustom.buat', $produk) }}"
-                               class="tombol tombol-navy w-full justify-center">
-                                Buat pesanan
-                            </a>
+                            {{-- Merah: tombol ini memulai pesanan (KEP-169). --}}
+                            @section('kelas-body', 'ada-aksi-bawah')
+                            <div class="aksi-bawah">
+                                <x-tombol-chat-bawah />
+                                <a href="{{ route('kustom.buat', $produk) }}"
+                                   class="tombol tombol-utama w-full justify-center">
+                                    Buat pesanan
+                                </a>
+                            </div>
                             <p class="text-xs leading-relaxed text-muted">
                                 Pilih bahan dan model, isi daftar ukuran, lalu harganya muncul
                                 sebelum Anda memutuskan. Minimal {{ $produk->moq }} pcs.

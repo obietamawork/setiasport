@@ -42,8 +42,10 @@
                         <td data-kolom="Pesanan" class="tabular text-right text-muted">{{ $b->total_pesanan }}</td>
                         <td class="hidden md:table-cell">
                             <span class="flex items-center gap-2">
-                                <span class="h-2 flex-1 overflow-hidden rounded-full bg-ungu-50">
-                                    <span class="block h-full rounded-full bg-ungu" style="width: {{ $porsi }}%"></span>
+                                {{-- Navy seperti batang kemajuan lain (KEP-179); warna bagian
+                                     KEP-111 hanya untuk ikon dan chip (KEP-171). --}}
+                                <span class="h-2 flex-1 overflow-hidden rounded-full bg-navy-100">
+                                    <span class="block h-full rounded-full bg-navy" style="width: {{ $porsi }}%"></span>
                                 </span>
                                 <span class="tabular w-10 text-right text-xs text-muted">{{ $porsi }}%</span>
                             </span>

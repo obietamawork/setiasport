@@ -17,7 +17,7 @@
     Pesanan ini dibatalkan.
   </p>
 
-  <p style="margin:0 0 12px;padding:12px 14px;background:#eef3ff;border-left:3px solid #16255b;">
+  <p style="margin:0 0 12px;padding:12px 14px;background:#f2f5fa;border-left:3px solid #16255b;">
     @if ($pembatalan->refund_jumlah > 0)
       Pengembalian sebesar <strong>{{ rupiah($pembatalan->refund_jumlah) }}</strong>
       dikirim lewat {{ $pembatalan->refund_metode === 'TUNAI' ? 'tunai di toko' : 'transfer' }}.
@@ -34,7 +34,7 @@
 @endif
 
 @if ($pembatalan?->catatan_admin)
-  <p style="margin:0 0 12px;padding:12px 14px;background:#f5f6fa;border-left:3px solid #9aa3b8;">
+  <p style="margin:0 0 12px;padding:12px 14px;background:#f6f8fc;border-left:3px solid #c3cbdc;">
     {{ $pembatalan->catatan_admin }}
   </p>
 @endif
@@ -45,7 +45,7 @@
 </p>
 
 <a href="{{ $tautan }}"
-   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:3px;">
+   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:8px;">
   Lihat halaman pesanan
 </a>
 @endsection

@@ -5,6 +5,6 @@
     Produk yang Anda cari bisa jadi masih ada di katalog.')
 
 @section('aksi')
-    <a href="/katalog" class="tombol tombol-utama">Buka katalog</a>
+    <a href="/katalog" class="tombol tombol-navy">Buka katalog</a>
     <a href="/" class="tombol tombol-garis">Ke beranda</a>
 @endsection

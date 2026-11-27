@@ -100,7 +100,7 @@
                 </p>
                 <p class="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted" x-data="{ tersalin: false }">
                     No. pesanan: <span class="tabular font-semibold whitespace-nowrap text-ink">{{ $order->kode }}</span>
-                    <button type="button" class="text-navy-400 hover:text-navy" title="Salin nomor pesanan"
+                    <button type="button" class="area-sentuh text-navy-400 hover:text-navy" title="Salin nomor pesanan"
                             @click="navigator.clipboard.writeText(@js($order->kode)); tersalin = true; setTimeout(() => tersalin = false, 2000)">
                         <x-ikon nama="salin" ukuran="size-4" />
                         <span class="sr-only">Salin nomor pesanan</span>
@@ -128,10 +128,12 @@
     {{-- Total dan batas waktu. Bukti yang sudah terkirim menahan pembatalan
          otomatis (KEP-098), jadi batas yang lewat tidak boleh terbaca seperti
          ancaman bagi orang yang sudah membayar. --}}
-    <div class="kartu-bayar grid items-center gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+    <div class="kartu-bayar relative grid items-center gap-5 overflow-hidden md:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+        {{-- Pita tiga warna di kartu pembayaran utama, seperti papan kanvas Kit Tim (KEP-178). --}}
+        <span class="pita absolute inset-x-0 top-0" aria-hidden="true"></span>
         <div>
             <p class="text-sm font-semibold text-muted">Total pembayaran</p>
-            <p class="numeral mt-1 text-4xl text-merah sm:text-5xl">{{ rupiah($tagihan['jumlah']) }}</p>
+            <p class="numeral mt-1 text-4xl text-ink sm:text-5xl">{{ rupiah($tagihan['jumlah']) }}</p>
             @if ($tagihan['jenis'] === 'pelunasan')
                 <p class="mt-2 text-sm leading-relaxed">
                     @if ($order->dikirim())
@@ -153,7 +155,7 @@
                 <strong>{{ $tagihan['batas']->copy()->addHours(\App\Services\AlurPesanan::TENGGANG_BUKTI_JAM)->translatedFormat('l, j F Y H.i') }}</strong>.
             </p>
         @elseif ($tagihan['batas'])
-            <div class="flex flex-wrap items-center gap-4 rounded-[12px] border border-merah-100 bg-merah-50 p-4"
+            <div class="flex flex-wrap items-center gap-4 rounded-[12px] border border-kuning-100 bg-warn-50 p-4"
                  x-data="{ sisa: {{ $detikSisa }}, teks: @js($teksSisa($detikSisa)),
                            init() {
                                if (this.sisa <= 0) return;
@@ -164,17 +166,17 @@
                                    if (this.sisa <= 0) clearInterval(jalan);
                                }, 30000);
                            } }">
-                <x-ikon nama="jam" ukuran="size-7" class="text-merah" />
+                <x-ikon nama="jam" ukuran="size-7" class="text-warn" />
                 {{-- basis-48: di HP kotak sisa waktu turun ke baris berikutnya,
                      bukan menjepit tanggal sampai terlipat kata per kata. --}}
                 <div class="min-w-0 flex-1 basis-48">
-                    <p class="text-sm font-semibold text-merah-tua">Batas pembayaran</p>
+                    <p class="text-sm font-semibold text-warn">Batas pembayaran</p>
                     <p class="tabular text-lg font-bold">{{ $tagihan['batas']->translatedFormat('l, j F Y') }}, pukul {{ $tagihan['batas']->format('H.i') }} WIB</p>
                     <p class="text-xs text-muted">Pesanan akan otomatis dibatalkan apabila pembayaran belum diterima hingga batas waktu tersebut.</p>
                 </div>
-                <div class="overflow-hidden rounded-[10px] border border-merah text-center">
-                    <p class="bg-merah px-4 py-1 text-xs font-semibold text-white">Sisa waktu</p>
-                    <p class="tabular bg-field px-4 py-1.5 font-bold text-merah-tua" x-text="teks">{{ $teksSisa($detikSisa) }}</p>
+                <div class="overflow-hidden rounded-[10px] border border-navy text-center">
+                    <p class="bg-navy px-4 py-1 text-xs font-semibold text-white">Sisa waktu</p>
+                    <p class="tabular bg-field px-4 py-1.5 font-bold text-ink" x-text="teks">{{ $teksSisa($detikSisa) }}</p>
                 </div>
             </div>
         @elseif ($tagihan['jenis'] === 'pelunasan' && ! $order->dikirim())
@@ -272,7 +274,7 @@
                         lalu pilih fitur pindai dari galeri pada aplikasi pembayaran.
                     </p>
                 </div>
-                <div class="rounded-[12px] bg-biru-50 p-5">
+                <div class="rounded-[12px] bg-navy-50 p-5">
                     <h4 class="flex items-center gap-2 font-bold"><x-ikon nama="kirim" ukuran="size-5" class="text-navy-400" /> Cara bayar dengan QRIS</h4>
                     <ol class="langkah-bayar mt-4">
                         <li>Buka aplikasi m-banking atau e-wallet (OVO, DANA, GoPay, ShopeePay, dan lainnya).</li>
@@ -306,7 +308,7 @@
                         </div>
                     @endforeach
                 </div>
-                <div class="rounded-[12px] bg-biru-50 p-5">
+                <div class="rounded-[12px] bg-navy-50 p-5">
                     <h4 class="flex items-center gap-2 font-bold"><x-ikon nama="toko" ukuran="size-5" class="text-navy-400" /> Cara bayar lewat transfer bank</h4>
                     <ol class="langkah-bayar mt-4">
                         <li>Buka m-banking, internet banking, atau ATM.</li>
@@ -369,10 +371,18 @@
                     JPG atau PNG, maksimal {{ batas_unggah_mb() }} MB.
                 </p>
             </div>
-            <button type="submit" class="tombol {{ $buktiAda ? 'tombol-garis' : 'tombol-navy' }} mb-5">
-                <x-ikon nama="unggah" ukuran="size-4" />
-                {{ $buktiAda ? 'Ganti bukti' : 'Unggah bukti' }}
-            </button>
+            {{-- Sebelum ada bukti, tombol kirim menempel di dasar layar HP bersama
+                 tombol Chat (KEP-174). --}}
+            @unless ($buktiAda)
+                @section('kelas-body', 'ada-aksi-bawah')
+            @endunless
+            <div class="{{ $buktiAda ? 'contents' : 'aksi-bawah' }}">
+                <x-tombol-chat-bawah />
+                <button type="submit" class="tombol {{ $buktiAda ? 'tombol-garis mb-5' : 'tombol-navy md:mb-5' }}">
+                    <x-ikon nama="unggah" ukuran="size-4" />
+                    {{ $buktiAda ? 'Ganti bukti' : 'Unggah bukti' }}
+                </button>
+            </div>
         </form>
     </div>
 

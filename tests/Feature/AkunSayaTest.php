@@ -2,9 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Enums\DesignAssetType;
+use App\Enums\OrderItemStatus;
+use App\Enums\OrderStatus;
 use App\Models\AlamatPelanggan;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -185,5 +190,44 @@ class AkunSayaTest extends TestCase
         $this->assertSame(1, Order::count());
         $this->assertSame(2, $this->pelanggan->alamat()->count());
         $this->assertTrue($this->pelanggan->alamat()->where('alamat', 'Jl. Kenanga 7, Wonogiri')->exists());
+    }
+
+    public function test_kartu_pesanan_memakai_foto_produk_barang_pertama(): void
+    {
+        $produk = Product::where('sku', 'CUST-JRS-ATASAN')->firstOrFail();
+        $produk->images()->create(['external_url' => 'https://cdn.contoh.test/jersey.jpg', 'urutan' => 0]);
+        $this->pesananUntuk($produk);
+
+        $respons = $this->actingAs($this->pelanggan, 'pelanggan')->get(route('pesanan-saya'));
+
+        $respons->assertOk()->assertSee('src="https://cdn.contoh.test/jersey.jpg"', false);
+    }
+
+    public function test_kartu_pesanan_mendahulukan_mockup_yang_disetujui_daripada_foto_produk(): void
+    {
+        $produk = Product::where('sku', 'CUST-JRS-ATASAN')->firstOrFail();
+        $produk->images()->create(['external_url' => 'https://cdn.contoh.test/jersey.jpg', 'urutan' => 0]);
+        $item = $this->pesananUntuk($produk);
+        $mockup = $item->designAssets()->create(['tipe' => DesignAssetType::MOCKUP, 'versi' => 1, 'path' => 'desain/mockup-tim.jpg']);
+        $item->forceFill(['approved_design_asset_id' => $mockup->id])->save();
+
+        $respons = $this->actingAs($this->pelanggan, 'pelanggan')->get(route('pesanan-saya'));
+
+        $respons->assertOk()
+            ->assertSee('src="'.asset('storage/desain/mockup-tim.jpg').'"', false)
+            ->assertDontSee('https://cdn.contoh.test/jersey.jpg');
+    }
+
+    private function pesananUntuk(Product $produk): OrderItem
+    {
+        $order = Order::create([
+            'kode' => Order::kodeBaru(), 'customer_id' => $this->pelanggan->id, 'status' => OrderStatus::DIPROSES,
+            'access_token' => Order::tokenBaru(), 'tipe_pembayaran' => 'DP',
+        ]);
+
+        return $order->items()->create([
+            'product_id' => $produk->id, 'nama_produk' => $produk->nama, 'fulfillment_type' => 'PREORDER',
+            'qty' => 6, 'harga_satuan' => 70_000, 'status_item' => OrderItemStatus::DIPROSES,
+        ]);
     }
 }

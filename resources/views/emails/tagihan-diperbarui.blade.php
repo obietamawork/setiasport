@@ -15,7 +15,7 @@
 
 @include('emails.komponen-rincian')
 
-<div style="border-left:3px solid #16255b;background:#eef1f8;padding:16px;margin:0 0 16px;">
+<div style="border-left:3px solid #16255b;background:#f2f5fa;padding:16px;margin:0 0 16px;">
   @if ($order->kelebihan_bayar > 0)
     <p style="margin:0;">
       Ada <strong>kelebihan bayar {{ rupiah($order->kelebihan_bayar) }}</strong>. Kami akan
@@ -41,13 +41,13 @@
 </div>
 
 {{-- Rekening sengaja tidak ditulis di email (KEP-029). --}}
-<p style="margin:0 0 20px;font-size:13px;color:#5c6b64;">
+<p style="margin:0 0 20px;font-size:13px;color:#5d687f;">
   Ada yang kurang jelas? Hubungi kami lewat {{ kanal_kontak() }}. Rekening dan QRIS resmi kami hanya
   ada di halaman pesanan Anda; kami tidak pernah meminta transfer lewat WhatsApp.
 </p>
 
 <a href="{{ $tautan }}"
-   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:3px;">
+   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:8px;">
   Buka halaman pesanan
 </a>
 @endsection

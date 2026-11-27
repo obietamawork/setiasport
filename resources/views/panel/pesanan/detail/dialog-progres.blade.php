@@ -44,7 +44,7 @@
                     <template x-for="p in barang.pilihan" :key="p.status">
                         <label class="flex items-start gap-3 px-3 py-2.5 text-sm"
                                :class="{
-                                   'bg-biru-50': tujuan === p.status,
+                                   'bg-navy-50': tujuan === p.status,
                                    'cursor-pointer hover:bg-navy-50': p.aksi,
                                    'text-muted': ! p.aksi && p.keadaan !== 'kini',
                                }">
@@ -53,7 +53,7 @@
                             <span class="min-w-0 flex-1">
                                 <span class="flex flex-wrap items-center gap-2">
                                     <span :class="p.keadaan === 'kini' && 'font-bold'" x-text="p.label"></span>
-                                    <span class="chip chip-biru" x-show="p.keadaan === 'kini'">Sekarang</span>
+                                    <span class="chip chip-navy" x-show="p.keadaan === 'kini'">Sekarang</span>
                                     <span class="chip chip-ok" x-show="p.aksi === 'maju'">Berikutnya</span>
                                     <span class="chip chip-kuning" x-show="p.aksi === 'mundur'">Kembalikan</span>
                                     <span class="text-xs text-ok" x-show="p.keadaan === 'lewat'">sudah lewat</span>

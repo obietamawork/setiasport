@@ -15,6 +15,7 @@
      */
     $jalur = [
         // Navigasi
+        'beranda' => '<path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/>',
         'dashboard' => '<path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z"/>',
         'pesanan' => '<path d="M6 3h9l5 5v13H6V3Z"/><path d="M14 3v6h6"/><path d="M9 13h7M9 17h5"/>',
         'antrian' => '<path d="M4 6h10M4 12h16M4 18h7"/><path d="M18 5.5 19.5 7 22 4.5"/>',
@@ -70,6 +71,11 @@
         'keranjang' => '<path d="M3 4h2.2l2.3 11h10.2l2-8H6.4"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/>',
         'daftar' => '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
         'kaos' => '<path d="M9 3.5 4 6l-1.5 4.5 3 1V20.5h13V11.5l3-1L20 6l-5-2.5a3 3 0 0 1-6 0Z"/>',
+        // Kategori etalase (KEP-167), pengganti inisial di petak kategori tanpa foto.
+        'bola' => '<circle cx="12" cy="12" r="9"/><path d="m12 7.5 4 3-1.5 4.5h-5L8 10.5l4-3Z"/><path d="M12 3v4.5M16 10.5l4.5-1.5M14.5 15l2.5 4M9.5 15 7 19M8 10.5 3.5 9"/>',
+        'sepatu' => '<path d="M3 17v-4.5C3 11 4 10 5.5 10H8l2.5 2.5H14l6 2.2c.6.2 1 .8 1 1.4V17H3Z"/><path d="M3 20h18"/><path d="M9.5 11.5 11 10M12 13l1.5-1.5"/>',
+        'celana' => '<path d="M6 3h12l1.5 18h-5L12 10l-2.5 11h-5L6 3Z"/><path d="M6 7h12"/>',
+        'jaket' => '<path d="M9 3 4 5.5 2 10l2 1v10h7V7"/><path d="M15 3l5 2.5L22 10l-2 1v10h-7V7"/><path d="M9 3l3 4 3-4"/>',
         'jam-pasir' => '<path d="M6.5 3.5h11M6.5 20.5h11"/><path d="M7.5 3.5c0 4 4.5 5.5 4.5 8.5s-4.5 4.5-4.5 8.5M16.5 3.5c0 4-4.5 5.5-4.5 8.5s4.5 4.5 4.5 8.5"/>',
         'mata' => '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/>',
         'mata-coret' => '<path d="M4 4l16 16"/><path d="M10.6 5.6A9 9 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.6 6.7C4 8.4 2.5 12 2.5 12S6 18.5 12 18.5a9 9 0 0 0 4.1-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',

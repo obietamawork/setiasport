@@ -4,13 +4,7 @@
 @section('isi')
 @php($batas = \App\Models\AlamatPelanggan::BATAS)
 <div class="mx-auto max-w-3xl px-5 py-10">
-    <div class="flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-            <h1 class="text-3xl font-extrabold">Akun saya</h1>
-            <p class="mt-1 text-sm text-muted">{{ $pelanggan->email }}</p>
-        </div>
-        <a href="{{ route('pesanan-saya') }}" class="tautan text-sm">Pesanan saya</a>
-    </div>
+    @include('publik.akun.kepala', ['aktif' => 'akun'])
 
     {{-- Profil --}}
     <section class="kartu mt-8 p-6">
@@ -35,7 +29,7 @@
                 {{-- Email mengikat pesanan ke akun (KEP-020), jadi tidak diubah sendiri. --}}
                 <p class="bantuan-form">Email terhubung dengan seluruh pesanan Anda. Untuk menggantinya, hubungi CS kami.</p>
             </div>
-            <button type="submit" class="tombol tombol-utama">Simpan profil</button>
+            <button type="submit" class="tombol tombol-navy">Simpan profil</button>
         </form>
     </section>
 
@@ -129,6 +123,8 @@
             Lupa kata sandi saat ini? <a href="{{ route('lupa-sandi') }}" class="tautan">Kirim tautan atur ulang</a>
         </p>
     </section>
+
+    @include('publik.akun.keluar')
 </div>
 @endsection
 

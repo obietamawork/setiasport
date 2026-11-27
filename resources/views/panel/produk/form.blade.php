@@ -198,7 +198,7 @@
         Tampilkan di katalog
     </label>
 
-    <div class="flex flex-wrap items-center gap-3 border-t border-line pt-5">
+    <div class="bilah-aksi mt-6">
         <button type="submit" class="tombol tombol-navy">
             {{ $produk->exists ? 'Simpan perubahan' : 'Buat produk' }}
         </button>

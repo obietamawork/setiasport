@@ -4,7 +4,7 @@
 
 @section('isi')
 <div class="mx-auto max-w-4xl px-5 py-10">
-    <h1 class="text-3xl font-extrabold">Keranjang</h1>
+    <h1 class="judul-tampil text-[2.5rem]">Keranjang</h1>
 
     @if ($isi->isEmpty())
         <div class="mt-8 border border-line bg-field p-10 text-center">
@@ -20,135 +20,148 @@
         </div>
     @else
         @if ($adaMasalah)
-            <p class="mt-6 border-l-2 border-merah bg-merah-50 px-4 py-3 text-sm">
+            <p class="mt-6 border-l-2 border-kuning bg-warn-50 px-4 py-3 text-sm">
                 Ada barang yang stoknya berubah sejak Anda memasukkannya. Sesuaikan
                 jumlahnya atau keluarkan dari keranjang sebelum melanjutkan.
             </p>
         @endif
 
-        <div class="mt-6 divide-y divide-line border border-line bg-field">
-            @foreach ($isi as $b)
-                <div class="flex flex-wrap items-start gap-4 p-4">
-                    <div class="min-w-50 flex-1">
-                        <a href="{{ route('produk', $b['produk']) }}" class="tautan font-semibold">
-                            {{ $b['produk']->nama }}
-                        </a>
-                        @if ($b['varian']?->label)
-                            <p class="text-sm text-muted">{{ $b['varian']->label }}</p>
-                        @endif
+        {{-- Mulai layar lebar daftar dan ringkasannya berdampingan, dan
+             ringkasannya menempel saat digulir (KEP-174), sama seperti checkout. --}}
+        <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+            <div class="divide-y divide-line border border-line bg-field">
+                @foreach ($isi as $b)
+                    <div class="flex flex-wrap items-start gap-4 p-4">
+                        <div class="min-w-50 flex-1">
+                            <a href="{{ route('produk', $b['produk']) }}" class="tautan font-semibold">
+                                {{ $b['produk']->nama }}
+                            </a>
+                            @if ($b['varian']?->label)
+                                <p class="text-sm text-muted">{{ $b['varian']->label }}</p>
+                            @endif
 
-                        {{-- Pilihan barang kustom (KEP-096). Tanpa ini pembeli hanya
-                             melihat "Rp 160.000 / pcs" tanpa tahu bahan dan model apa
-                             yang sedang ia bayar, dan baru bisa memeriksanya setelah
-                             pesanan jadi. --}}
-                        @if ($b['rincian']?->komponenPerPcs)
-                            <p class="mt-0.5 text-sm text-muted">
-                                {{ collect($b['rincian']->komponenPerPcs)->map(fn ($k) => $k['label'].': '.$k['nilai'])->implode(' · ') }}
-                            </p>
-                        @endif
+                            {{-- Pilihan barang kustom (KEP-096). Tanpa ini pembeli hanya
+                                 melihat "Rp 160.000 / pcs" tanpa tahu bahan dan model apa
+                                 yang sedang ia bayar, dan baru bisa memeriksanya setelah
+                                 pesanan jadi. --}}
+                            @if ($b['rincian']?->komponenPerPcs)
+                                <p class="mt-0.5 text-sm text-muted">
+                                    {{ collect($b['rincian']->komponenPerPcs)->map(fn ($k) => $k['label'].': '.$k['nilai'])->implode(' · ') }}
+                                </p>
+                            @endif
 
-                        {{-- Baris kustom berharga per ukuran (KEP-039): jumlahnya
-                             berasal dari daftar ukuran, jadi daftar itu yang
-                             ditampilkan, bukan satu angka jumlah. --}}
-                        @if ($b['ukuran'] ?? null)
-                            <ul class="mt-1 space-y-0.5 text-sm text-muted">
-                                @foreach ($b['rincian']?->baris ?? [] as $u)
-                                    <li class="tabular">
-                                        {{ $u['jumlah'] }} pcs
-                                        {{ \App\Enums\KategoriUkuran::tryFrom($u['kategori'])?->labelUkuran($u['ukuran']) ?? $u['ukuran'] }}
-                                        &middot; {{ rupiah($u['harga_satuan']) }} / pcs
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
+                            {{-- Baris kustom berharga per ukuran (KEP-039): jumlahnya
+                                 berasal dari daftar ukuran, jadi daftar itu yang
+                                 ditampilkan, bukan satu angka jumlah. --}}
+                            @if ($b['ukuran'] ?? null)
+                                <ul class="mt-1 space-y-0.5 text-sm text-muted">
+                                    @foreach ($b['rincian']?->baris ?? [] as $u)
+                                        <li class="tabular">
+                                            {{ $u['jumlah'] }} pcs
+                                            {{ \App\Enums\KategoriUkuran::tryFrom($u['kategori'])?->labelUkuran($u['ukuran']) ?? $u['ukuran'] }}
+                                            &middot; {{ rupiah($u['harga_satuan']) }} / pcs
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
 
-                        @if (($b['rincian']->potongan ?? 0) > 0)
-                            <p class="mt-1 text-sm font-medium text-ok">
-                                Potongan {{ $b['produk']->diskon_min_qty }} pcs ke atas:
-                                −{{ rupiah($b['rincian']->potongan) }}
-                            </p>
-                        @endif
+                            @if (($b['rincian']->potongan ?? 0) > 0)
+                                <p class="mt-1 text-sm font-medium text-ok">
+                                    Potongan {{ $b['produk']->diskon_min_qty }} pcs ke atas:
+                                    −{{ rupiah($b['rincian']->potongan) }}
+                                </p>
+                            @endif
 
-                        @foreach ($b['rincian']?->komponenPerItem ?? [] as $k)
-                            <p class="text-sm text-muted tabular">
-                                {{ $k['label'] }}: {{ rupiah($k['jumlah']) }} (sekali)
-                            </p>
-                        @endforeach
+                            @foreach ($b['rincian']?->komponenPerItem ?? [] as $k)
+                                <p class="text-sm text-muted tabular">
+                                    {{ $k['label'] }}: {{ rupiah($k['jumlah']) }} (sekali)
+                                </p>
+                            @endforeach
 
-                        @if ($b['masalah'])
-                            <p class="mt-1 text-sm text-merah">{{ $b['masalah'] }}</p>
-                        @endif
-                    </div>
-
-                    @if ($b['ukuran'] ?? null)
-                        {{-- Jumlahnya diubah dengan menyusun ulang daftar ukurannya,
-                             supaya jumlah potong dan daftar pemain tidak berselisih. --}}
-                        <div class="text-sm">
-                            <p class="tabular font-medium">{{ $b['qty'] }} pcs</p>
-                            <a href="{{ route('kustom.buat', $b['produk']) }}" class="tautan text-xs">Ubah pesanan</a>
+                            @if ($b['masalah'])
+                                <p class="mt-1 text-sm text-merah">{{ $b['masalah'] }}</p>
+                            @endif
                         </div>
-                    @else
-                        {{-- Langsung tersimpan saat jumlahnya berubah (KEP-091): lewat
-                             − + atau diketik lalu keluar dari kotaknya. Batasnya sama dengan
-                             yang dipakai saat memesan: kustom tidak di bawah minimum
-                             pesannya, stok tidak melebihi sisa di rak. --}}
-                        @php
-                            $kustom = $b['jalur'] === \App\Enums\FulfillmentType::PREORDER;
-                        @endphp
-                        <form method="POST" action="{{ route('keranjang.ubah') }}">
-                            @csrf @method('PUT')
-                            <input type="hidden" name="kunci" value="{{ $b['kunci'] }}">
-                            <label class="sr-only" for="qty-{{ $b['kunci'] }}">Jumlah {{ $b['produk']->nama }}</label>
-                            <x-jumlah id="qty-{{ $b['kunci'] }}" name="qty" :value="$b['qty']"
-                                      :min="$kustom ? $b['produk']->moq : 1"
-                                      :max="$kustom ? 100000 : max($b['qty'], $b['varian']?->stok_tersedia ?? 1)"
-                                      label="jumlah {{ $b['produk']->nama }}" data-kirim-saat-ubah />
-                            <noscript><button type="submit" class="tautan py-2 text-sm">Perbarui</button></noscript>
-                        </form>
-                    @endif
 
-                    <div class="w-32 text-right">
-                        <p class="tabular font-semibold">
-                            {{ rupiah(($b['rincian']?->subtotal ?? 0) - ($b['rincian']->potongan ?? 0)) }}
-                        </p>
-                        @if ($b['rincian'] && ! ($b['ukuran'] ?? null))
-                            <p class="text-xs text-muted tabular">{{ rupiah($b['rincian']->hargaSatuan) }} / pcs</p>
+                        @if ($b['ukuran'] ?? null)
+                            {{-- Jumlahnya diubah dengan menyusun ulang daftar ukurannya,
+                                 supaya jumlah potong dan daftar pemain tidak berselisih. --}}
+                            <div class="text-sm">
+                                <p class="tabular font-medium">{{ $b['qty'] }} pcs</p>
+                                <a href="{{ route('kustom.buat', $b['produk']) }}" class="tautan text-xs">Ubah pesanan</a>
+                            </div>
+                        @else
+                            {{-- Langsung tersimpan saat jumlahnya berubah (KEP-091): lewat
+                                 − + atau diketik lalu keluar dari kotaknya. Batasnya sama dengan
+                                 yang dipakai saat memesan: kustom tidak di bawah minimum
+                                 pesannya, stok tidak melebihi sisa di rak. --}}
+                            @php
+                                $kustom = $b['jalur'] === \App\Enums\FulfillmentType::PREORDER;
+                            @endphp
+                            <form method="POST" action="{{ route('keranjang.ubah') }}">
+                                @csrf @method('PUT')
+                                <input type="hidden" name="kunci" value="{{ $b['kunci'] }}">
+                                <label class="sr-only" for="qty-{{ $b['kunci'] }}">Jumlah {{ $b['produk']->nama }}</label>
+                                <x-jumlah id="qty-{{ $b['kunci'] }}" name="qty" :value="$b['qty']"
+                                          :min="$kustom ? $b['produk']->moq : 1"
+                                          :max="$kustom ? 100000 : max($b['qty'], $b['varian']?->stok_tersedia ?? 1)"
+                                          label="jumlah {{ $b['produk']->nama }}" data-kirim-saat-ubah />
+                                <noscript><button type="submit" class="tautan py-2 text-sm">Perbarui</button></noscript>
+                            </form>
                         @endif
-                        {{-- Dulu tulisan kecil abu-abu "Keluarkan" yang tidak terbaca
-                             sebagai tombol, sehingga pelanggan mengira barang tidak bisa
-                             dihapus (KEP-091). Kini tombol berikon, cukup besar untuk jempol. --}}
-                        <form method="POST" action="{{ route('keranjang.hapus') }}" class="mt-2">
-                            @csrf @method('DELETE')
-                            <input type="hidden" name="kunci" value="{{ $b['kunci'] }}">
-                            <button type="submit" class="tombol tombol-halus tombol-sm text-merah hover:text-merah"
-                                    data-teks-proses="Menghapus...">
-                                <x-ikon nama="hapus" ukuran="size-4" />
-                                Hapus
-                                <span class="sr-only">{{ $b['produk']->nama }} dari keranjang</span>
-                            </button>
-                        </form>
+
+                        <div class="w-32 text-right">
+                            <p class="tabular font-semibold">
+                                {{ rupiah(($b['rincian']?->subtotal ?? 0) - ($b['rincian']->potongan ?? 0)) }}
+                            </p>
+                            @if ($b['rincian'] && ! ($b['ukuran'] ?? null))
+                                <p class="text-xs text-muted tabular">{{ rupiah($b['rincian']->hargaSatuan) }} / pcs</p>
+                            @endif
+                            {{-- Dulu tulisan kecil abu-abu "Keluarkan" yang tidak terbaca
+                                 sebagai tombol, sehingga pelanggan mengira barang tidak bisa
+                                 dihapus (KEP-091). Kini tombol berikon, cukup besar untuk jempol. --}}
+                            <form method="POST" action="{{ route('keranjang.hapus') }}" class="mt-2">
+                                @csrf @method('DELETE')
+                                <input type="hidden" name="kunci" value="{{ $b['kunci'] }}">
+                                <button type="submit" class="tombol tombol-halus tombol-sm text-merah hover:text-merah"
+                                        data-teks-proses="Menghapus...">
+                                    <x-ikon nama="hapus" ukuran="size-4" />
+                                    Hapus
+                                    <span class="sr-only">{{ $b['produk']->nama }} dari keranjang</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-4 border border-line bg-field p-5 lg:sticky lg:top-24 lg:flex-col lg:items-stretch">
+                <div>
+                    <p class="text-sm text-muted">Total</p>
+                    <p class="numeral mt-1 text-3xl text-ink">{{ rupiah($total) }}</p>
+                    {{-- Pengiriman dipilih di checkout (KEP-058), dan ongkirnya dihitung
+                         otomatis di sana (KEP-094). --}}
+                    <p class="mt-2 text-sm text-muted">
+                        Belum termasuk ongkos kirim. Ambil di toko gratis, atau pilih dikirim
+                        di langkah berikutnya.
+                    </p>
+                </div>
+                <div class="kelompok-tombol lg:flex-col lg:items-stretch">
+                    <a href="{{ route('katalog') }}" class="tombol tombol-garis">Tambah barang lain</a>
+                    {{-- Di HP tombol lanjut menempel di dasar layar bersama totalnya
+                         (KEP-174); di layar lebar pembungkus ini tidak membentuk kotak. --}}
+                    @section('kelas-body', 'ada-aksi-bawah')
+                    <div class="aksi-bawah">
+                        <div class="aksi-bawah-ringkas">
+                            <p class="text-xs text-muted">Total</p>
+                            <p class="tabular font-extrabold">{{ rupiah($total) }}</p>
+                        </div>
+                        <a href="{{ route('checkout') }}"
+                           class="tombol tombol-utama {{ $adaMasalah ? 'pointer-events-none opacity-50' : '' }}">
+                            Lanjut ke data pemesan
+                        </a>
                     </div>
                 </div>
-            @endforeach
-        </div>
-
-        <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border border-line bg-field p-5">
-            <div>
-                <p class="text-sm text-muted">Total</p>
-                <p class="numeral mt-1 text-3xl text-merah">{{ rupiah($total) }}</p>
-                {{-- Pengiriman dipilih di checkout (KEP-058), dan ongkirnya dihitung
-                     otomatis di sana (KEP-094). --}}
-                <p class="mt-2 text-sm text-muted">
-                    Belum termasuk ongkos kirim. Ambil di toko gratis, atau pilih dikirim
-                    di langkah berikutnya.
-                </p>
-            </div>
-            <div class="kelompok-tombol">
-                <a href="{{ route('katalog') }}" class="tombol tombol-garis">Tambah barang lain</a>
-                <a href="{{ route('checkout') }}"
-                   class="tombol tombol-utama {{ $adaMasalah ? 'pointer-events-none opacity-50' : '' }}">
-                    Lanjut ke data pemesan
-                </a>
             </div>
         </div>
     @endif

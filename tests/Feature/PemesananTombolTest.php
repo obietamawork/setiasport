@@ -153,4 +153,12 @@ class PemesananTombolTest extends TestCase
             ->assertSee('Chat lewat WhatsApp')
             ->assertSee('Petunjuk arah');
     }
+
+    public function test_cara_pesan_custom_di_kaki_halaman_menuju_bagian_layanan_custom_beranda(): void
+    {
+        $this->get(route('beranda'))
+            ->assertOk()
+            ->assertSee('href="'.route('beranda').'#cara-pesan"', false)
+            ->assertSee('<section id="cara-pesan"', false);
+    }
 }

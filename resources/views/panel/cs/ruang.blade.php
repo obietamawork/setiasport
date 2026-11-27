@@ -11,13 +11,13 @@
          apakah pelanggan akan dilayani, yaitu "Menerima chat" dan suara. --}}
     <header class="flex h-12 shrink-0 items-center gap-3 bg-navy-900 px-3 text-white sm:px-4">
         {{-- Buka-tutup daftar chat (KEP-160). --}}
-        <button type="button" @click="alihDaftar()" class="-ml-1 rounded-[7px] p-1.5 hover:bg-white/10"
+        <button type="button" @click="alihDaftar()" class="-ml-1 rounded-[7px] p-1.5 pointer-coarse:p-3 hover:bg-white/10"
                 :aria-expanded="(daftarTampil || daftarHp).toString()" aria-controls="daftar-chat"
                 :title="daftarTampil ? 'Sembunyikan daftar chat' : 'Tampilkan daftar chat'">
             <x-ikon nama="menu" ukuran="size-5" />
             <span class="sr-only">Tampilkan atau sembunyikan daftar chat</span>
         </button>
-        <a href="{{ route('panel.dashboard') }}" class="flex items-center gap-3" title="Kembali ke panel">
+        <a href="{{ route('panel.dashboard') }}" class="flex items-center gap-3 pointer-coarse:py-1.5" title="Kembali ke panel">
             <x-logo :terang="true" />
         </a>
         <span class="hidden h-5 w-px bg-white/20 sm:block"></span>
@@ -27,14 +27,14 @@
         <div class="ml-auto flex items-center gap-1 text-sm">
             {{-- Pelanggan melihat status ini di jendela chat mereka (KEP-031). --}}
             <button type="button" x-show="{{ $awal['aktif'] ? 'true' : 'false' }}" @click="gantiMenerima()" role="switch" :aria-checked="menerima"
-                    class="flex items-center gap-2 rounded-full px-3 py-1.5 font-medium transition-colors"
+                    class="area-sentuh flex items-center gap-2 rounded-full px-3 py-1.5 font-medium transition-colors"
                     :class="menerima ? 'bg-white/10 hover:bg-white/15' : 'text-white/60 hover:bg-white/10'">
-                <span class="size-2 rounded-full" :class="menerima ? 'bg-emerald-400' : 'bg-white/40'"></span>
+                <span class="size-2 rounded-full" :class="menerima ? 'bg-hijau' : 'bg-white/40'"></span>
                 <span x-text="menerima ? 'Menerima chat' : 'Tidak menerima chat'"></span>
             </button>
 
             <button type="button" @click="gantiSuara()" :aria-pressed="suara"
-                    class="rounded-[7px] p-2 hover:bg-white/10" :title="suara ? 'Matikan suara pesan baru' : 'Nyalakan suara pesan baru'">
+                    class="rounded-[7px] p-2 pointer-coarse:p-3 hover:bg-white/10" :title="suara ? 'Matikan suara pesan baru' : 'Nyalakan suara pesan baru'">
                 <svg x-show="suara" class="size-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M4 8h2.5L10 5v10l-3.5-3H4z"/><path d="M13 7.5a3.5 3.5 0 0 1 0 5M15 5.5a6.5 6.5 0 0 1 0 9"/>
                 </svg>
@@ -81,7 +81,7 @@
                                 class="flex flex-col items-center justify-center rounded-[7px] px-1 py-1.5 leading-tight font-semibold transition-colors"
                                 :class="saring === nilai ? 'bg-navy text-white shadow-sm' : 'text-muted hover:bg-field hover:text-ink'">
                             <span x-text="label"></span>
-                            <span class="tabular text-[11px] font-medium"
+                            <span class="tabular text-xs font-medium"
                                   :class="saring === nilai ? 'text-white/80' : (nilai === 'menunggu' && jumlah.menunggu > 0 ? 'text-merah' : '')"
                                   x-text="'(' + (jumlah[nilai] ?? 0) + ')'"></span>
                         </button>
@@ -97,7 +97,7 @@
                     </div>
                     <div class="relative" @click.outside="saringBuka = false">
                         <button type="button" @click="saringBuka = !saringBuka" :aria-expanded="saringBuka.toString()"
-                                class="flex size-10 items-center justify-center rounded-[8px] border border-line-strong text-muted hover:border-navy-300 hover:text-ink"
+                                class="flex size-10 pointer-coarse:size-11 items-center justify-center rounded-[8px] border border-line-strong text-muted hover:border-navy-300 hover:text-ink"
                                 :class="topik && 'border-navy bg-navy-50 text-navy'" title="Saring per topik">
                             <x-ikon nama="saring" ukuran="size-4" />
                             <span class="sr-only">Saring per topik</span>
@@ -183,7 +183,7 @@
             <template x-if="terpilih">
                 <div class="flex min-h-0 flex-1 flex-col">
                     <div class="flex shrink-0 items-center gap-3 border-b border-line bg-field px-3 py-2.5 sm:px-5">
-                        <button type="button" @click="lepas()" class="-ml-1 rounded-[7px] p-1.5 text-muted hover:bg-navy-50 md:hidden" aria-label="Kembali ke daftar">
+                        <button type="button" @click="lepas()" class="-ml-1 rounded-[7px] p-1.5 pointer-coarse:p-3 text-muted hover:bg-navy-50 md:hidden" aria-label="Kembali ke daftar">
                             <x-ikon nama="kembali" ukuran="size-5" />
                         </button>
 
@@ -282,9 +282,9 @@
                                                 </template>
                                                 <p x-show="p.isi" class="px-3.5 py-2 break-words whitespace-pre-line" x-text="p.isi"></p>
                                             </div>
-                                            <p x-show="p.pengirim === 'BOT' && p.pilihan?.length" class="mt-1 text-right text-[11px] text-muted"
+                                            <p x-show="p.pengirim === 'BOT' && p.pilihan?.length" class="mt-1 text-right text-xs text-muted"
                                                x-text="'Pilihan: ' + (p.pilihan ?? []).join(' · ')"></p>
-                                            <p class="tabular mt-1 text-[11px] text-muted" :class="dariToko(p) && 'text-right'" x-text="jam(p.waktu)"></p>
+                                            <p class="tabular mt-1 text-xs text-muted" :class="dariToko(p) && 'text-right'" x-text="jam(p.waktu)"></p>
                                         </div>
                                     </div>
                                 </li>
@@ -295,7 +295,7 @@
                     {{-- Siapa yang sedang menangani (KEP-151): asisten otomatis, atau admin
                          karena diteruskan asisten dengan alasan tertentu. --}}
                     <p x-show="terpilih.ditangani === 'BOT' && terpilih.status === 'TERBUKA'" x-cloak
-                       class="shrink-0 border-t border-biru-100 bg-biru-50 px-5 py-2 text-sm">
+                       class="shrink-0 border-t border-navy-100 bg-navy-50 px-5 py-2 text-sm">
                         Dijawab asisten otomatis. Balasan Anda akan mengambil alih percakapan ini.
                     </p>
                     <p x-show="terpilih.ditangani === 'ADMIN' && terpilih.alasan_serah && terpilih.menunggu_sejak" x-cloak
@@ -398,7 +398,7 @@
                                 <span class="sr-only" x-text="mengirim ? 'Mengirim' : 'Kirim'">Kirim</span>
                             </button>
                         </div>
-                        <p class="mt-1.5 hidden text-[11px] text-muted sm:block">Enter untuk kirim, Shift+Enter untuk baris baru, ketik / di awal untuk balasan cepat.</p>
+                        <p class="mt-1.5 hidden text-xs text-muted sm:block">Enter untuk kirim, Shift+Enter untuk baris baru, ketik / di awal untuk balasan cepat.</p>
                     </form>
                 </div>
             </template>

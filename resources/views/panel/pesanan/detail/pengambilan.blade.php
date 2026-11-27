@@ -159,7 +159,7 @@
             @endif
 
             <details class="lipatan border-t border-line" @if ($errors->has('alamat_kirim') || $errors->has('metode_ambil')) open @endif>
-                <summary>{{ $pesanan->dikirim() ? 'Ubah alamat atau kembalikan ke ambil di toko' : 'Pesanan ini mau dikirim' }}</summary>
+                <summary class="area-sentuh">{{ $pesanan->dikirim() ? 'Ubah alamat atau kembalikan ke ambil di toko' : 'Pesanan ini mau dikirim' }}</summary>
                 <form method="POST" action="{{ route('panel.pesanan.pengiriman.atur', $pesanan) }}"
                       class="space-y-4 bg-navy-50 p-4">
                     @csrf

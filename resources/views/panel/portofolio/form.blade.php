@@ -86,7 +86,7 @@
         Tampilkan di halaman depan
     </label>
 
-    <div class="flex flex-wrap items-center gap-3 border-t border-line pt-5">
+    <div class="bilah-aksi mt-6">
         <button type="submit" class="tombol tombol-navy">Simpan portofolio</button>
         <a href="{{ route('panel.portofolio.index') }}" class="tautan text-sm">Batal</a>
     </div>

@@ -107,7 +107,7 @@
 
     <form id="form-massal" method="POST" action="{{ route('panel.produk.massal') }}"
           x-show="dipilih.length > 0" x-cloak
-          class="flex flex-wrap items-center gap-2 border-b border-line bg-biru-50 px-4 py-3 sm:px-5">
+          class="flex flex-wrap items-center gap-2 border-b border-line bg-navy-50 px-4 py-3 sm:px-5">
         @csrf
         <span class="text-sm font-semibold"><span class="tabular" x-text="dipilih.length"></span> produk dipilih</span>
         <label for="aksi-massal" class="sr-only">Aksi untuk produk terpilih</label>
@@ -177,7 +177,7 @@
                         $tersedia = (int) $p->variants_sum_stok - (int) $p->variants_sum_stok_dipesan;
                     @endphp
                     <tr class="hover:bg-navy-50 {{ $p->aktif ? '' : 'text-muted' }}"
-                        :class="dipilih.includes({{ $p->id }}) && 'bg-biru-50'"
+                        :class="dipilih.includes({{ $p->id }}) && 'bg-navy-50'"
                         data-tautan="{{ route('panel.produk.edit', $p) }}">
                         <td data-kolom="Pilih">
                             <label class="sr-only" for="pilih-{{ $p->id }}">Pilih {{ $p->nama }}</label>
@@ -197,7 +197,7 @@
                             @endif
                         </td>
                         <td data-utama>
-                            <a href="{{ route('panel.produk.edit', $p) }}" class="font-semibold text-ink">{{ $p->nama }}</a>
+                            <a href="{{ route('panel.produk.edit', $p) }}" class="area-sentuh font-semibold text-ink">{{ $p->nama }}</a>
                             <div class="tabular text-xs text-muted">{{ $p->sku }}</div>
                             <div class="mt-1.5 flex flex-wrap gap-1.5 font-normal 2xl:hidden">
                                 <span class="chip {{ $warnaKategori($p->category->nama) }}">{{ $p->category->nama }}</span>

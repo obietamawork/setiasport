@@ -1,12 +1,28 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-FQm4gI_i.css",
+    "file": "assets/app-BoVgGvjv.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
     "names": [
       "app.css"
     ]
+  },
+  "resources/fonts/barlow-condensed/latin-700-miring.woff2": {
+    "file": "assets/latin-700-miring-DjyOzRJ7.woff2",
+    "src": "resources/fonts/barlow-condensed/latin-700-miring.woff2"
+  },
+  "resources/fonts/barlow-condensed/latin-800-miring.woff2": {
+    "file": "assets/latin-800-miring-Cnej2eWp.woff2",
+    "src": "resources/fonts/barlow-condensed/latin-800-miring.woff2"
+  },
+  "resources/fonts/barlow-condensed/latin-ext-700-miring.woff2": {
+    "file": "assets/latin-ext-700-miring-CbhzQEkf.woff2",
+    "src": "resources/fonts/barlow-condensed/latin-ext-700-miring.woff2"
+  },
+  "resources/fonts/barlow-condensed/latin-ext-800-miring.woff2": {
+    "file": "assets/latin-ext-800-miring-BbzArEj4.woff2",
+    "src": "resources/fonts/barlow-condensed/latin-ext-800-miring.woff2"
   },
   "resources/fonts/plus-jakarta-sans/latin-ext.woff2": {
     "file": "assets/latin-ext-DmpS2jIq.woff2",
@@ -17,7 +33,7 @@
     "src": "resources/fonts/plus-jakarta-sans/latin.woff2"
   },
   "resources/js/app.js": {
-    "file": "assets/app-BoUMIa1B.js",
+    "file": "assets/app-BH69GR5R.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

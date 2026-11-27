@@ -59,5 +59,5 @@
                class="kotak-input" maxlength="500" placeholder="https://maps.app.goo.gl/...">
     </div>
 
-    <button type="submit" class="tombol tombol-utama">{{ $tombol }}</button>
+    <button type="submit" class="tombol tombol-navy">{{ $tombol }}</button>
 </form>

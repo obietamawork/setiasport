@@ -13,6 +13,7 @@ use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -272,12 +273,15 @@ class ProfilUsahaTest extends TestCase
     /**
      * Kartu penjelas dan tab di bawahnya dulu menyaring hal yang sama, jadi
      * terlihat dobel (KEP-142). Kini satu baris kartu yang sekaligus menjadi
-     * penyaring; penjelasnya tetap terbaca setelah salah satu dipilih.
+     * penyaring; penjelasnya tetap terbaca setelah salah satu dipilih. Yang
+     * dihitung isi <main> saja: kaki halaman punya tautan "Siap beli" sendiri
+     * (KEP-179).
      */
     public function test_kartu_jalur_sekaligus_penyaring_tanpa_tab_dobel(): void
     {
         $halaman = $this->get(route('katalog'))->assertOk();
-        $this->assertSame(1, substr_count((string) $halaman->getContent(), 'href="'.route('katalog', ['jalur' => 'stok']).'"'));
+        $isi = Str::between((string) $halaman->getContent(), '<main', '</main>');
+        $this->assertSame(1, substr_count($isi, 'href="'.route('katalog', ['jalur' => 'stok']).'"'));
 
         $this->get(route('katalog', ['jalur' => 'stok']))
             ->assertOk()

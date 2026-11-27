@@ -33,11 +33,11 @@
 </p>
 
 <a href="{{ $tautan }}"
-   style="display:inline-block;background:#ff5a1f;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:3px;">
+   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:8px;">
   Buka halaman pesanan
 </a>
 
-<p style="margin:20px 0 0;font-size:12px;color:#5c6b64;">
+<p style="margin:20px 0 0;font-size:12px;color:#5d687f;">
   Simpan email ini. Tautan di atas adalah satu-satunya cara membuka pesanan Anda tanpa
   membuat akun: boleh dibagikan ke anggota tim yang ingin ikut memantau.
 </p>

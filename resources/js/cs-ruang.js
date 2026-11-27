@@ -239,7 +239,7 @@ export function ruangCs(awal) {
         labelStatus(p) {
             if (p.status === 'SELESAI') return ['Selesai', 'chip-ok'];
             // Masih dijawab asisten otomatis (KEP-151): belum perlu admin.
-            if (p.ditangani === 'BOT') return ['Bot', 'chip-biru'];
+            if (p.ditangani === 'BOT') return ['Bot', 'chip-navy'];
             if (p.menunggu_sejak) return ['Baru', 'chip-merah'];
             return ['Diproses', 'chip-kuning'];
         },

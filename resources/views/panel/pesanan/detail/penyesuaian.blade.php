@@ -12,8 +12,8 @@
 <section id="penyesuaian" class="kartu-bayar scroll-mt-32">
     <h2 class="judul-kartu"><x-ikon nama="saring" class="text-navy-400" /> Penyesuaian biaya</h2>
 
-    <p class="mt-4 flex items-start gap-2 rounded-[10px] bg-biru-50 px-3 py-2.5 text-sm leading-relaxed">
-        <x-ikon nama="bantuan" ukuran="size-4" class="mt-0.5 shrink-0 text-biru-700" />
+    <p class="mt-4 flex items-start gap-2 rounded-[10px] bg-navy-50 px-3 py-2.5 text-sm leading-relaxed">
+        <x-ikon nama="bantuan" ukuran="size-4" class="mt-0.5 shrink-0 text-navy-700" />
         Gunakan untuk menambah atau mengurangi biaya setelah pesanan dibuat. Pelanggan melihatnya di halaman pesanannya.
     </p>
 
@@ -63,7 +63,7 @@
                        placeholder="Dibaca pelanggan, misalnya: tambah 2 pemain">
             </div>
 
-            <button type="submit" class="tombol tombol-garis w-full border-biru-terang text-biru-700">
+            <button type="submit" class="tombol tombol-garis w-full border-navy text-navy-700">
                 <x-ikon nama="tambah" ukuran="size-4" /> Tambah penyesuaian
             </button>
         </form>

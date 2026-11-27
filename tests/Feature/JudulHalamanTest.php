@@ -107,20 +107,20 @@ class JudulHalamanTest extends TestCase
             ->assertSee('<title>Bola › Futsal |', false)
             ->assertSee($lekat('Bola › Futsal'), false)
             ->assertSee('aria-label="Remah roti"', false)
-            ->assertSee('<h1 class="text-3xl font-extrabold sm:text-4xl">Futsal</h1>', false)
+            ->assertSee('<h1 class="judul-tampil text-[2.5rem] sm:text-5xl">Futsal</h1>', false)
             ->assertDontSee($lekat('Katalog'), false);
 
         $this->get(route('katalog', ['q' => 'jersey']))
             ->assertSee($lekat('Hasil pencarian &quot;jersey&quot;'), false)
-            ->assertSee('<h1 class="text-3xl font-extrabold sm:text-4xl">Hasil pencarian &quot;jersey&quot;</h1>', false);
+            ->assertSee('<h1 class="judul-tampil text-[2.5rem] sm:text-5xl">Hasil pencarian &quot;jersey&quot;</h1>', false);
 
         $this->get(route('katalog', ['jalur' => 'kustom']))
             ->assertSee($lekat('Custom jersey'), false)
-            ->assertSee('<h1 class="text-3xl font-extrabold sm:text-4xl">Custom jersey</h1>', false);
+            ->assertSee('<h1 class="judul-tampil text-[2.5rem] sm:text-5xl">Custom jersey</h1>', false);
 
         $this->get(route('katalog'))
             ->assertSee('<title>Katalog produk |', false)
-            ->assertSee('<h1 class="text-3xl font-extrabold sm:text-4xl">Katalog produk</h1>', false)
+            ->assertSee('<h1 class="judul-tampil text-[2.5rem] sm:text-5xl">Katalog produk</h1>', false)
             ->assertDontSee('aria-label="Remah roti"', false);
     }
 

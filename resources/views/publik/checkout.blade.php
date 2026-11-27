@@ -4,7 +4,7 @@
 
 @section('isi')
 <div class="mx-auto max-w-4xl px-5 py-10">
-    <h1 class="text-3xl font-extrabold">Data pemesan</h1>
+    <h1 class="judul-tampil text-[2.5rem]">Data pemesan</h1>
     {{-- Teks di halaman ini dari klien (KEP-144). --}}
     <p class="kolom-baca mt-3 text-muted">
         Pesanan dapat diambil langsung di toko atau dikirim ke alamat tujuan. Pastikan nomor WhatsApp yang Anda cantumkan aktif agar kami dapat menghubungi Anda saat pesanan siap.
@@ -318,7 +318,11 @@
                 kami.
             </p>
 
-            <button type="submit" class="tombol tombol-utama w-full">Buat pesanan</button>
+            {{-- Di HP tombol ini menempel di dasar layar (KEP-174). --}}
+            @section('kelas-body', 'ada-aksi-bawah')
+            <div class="aksi-bawah">
+                <button type="submit" class="tombol tombol-utama w-full">Buat pesanan</button>
+            </div>
 
             {{-- Bantuan diletakkan tepat di samping tombol terakhir, karena di
                  situlah keraguan muncul: ukuran, bahan, atau cara bayar. Tanpa
@@ -339,7 +343,7 @@
             @endif
         </form>
 
-        <aside class="order-1 lg:order-2 lg:sticky lg:top-6 lg:self-start">
+        <aside class="order-1 lg:order-2 lg:sticky lg:top-24 lg:self-start">
             <div class="border border-line bg-field">
                 <h2 class="border-b border-line px-5 py-3 font-semibold">Ringkasan</h2>
                 <ul class="divide-y divide-line text-sm">
@@ -381,7 +385,7 @@
 
                     <div class="mt-2 flex items-baseline justify-between gap-3">
                         <span class="font-semibold">Total</span>
-                        <span class="numeral text-2xl text-merah"
+                        <span class="numeral text-2xl text-ink"
                               x-text="rupiah({{ $total + $biayaLayanan }} + ongkir)">{{ rupiah($total + $biayaLayanan) }}</span>
                     </div>
                     <p class="mt-2 text-xs text-muted" x-show="metode !== 'KIRIM'">

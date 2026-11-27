@@ -307,7 +307,7 @@
                 @foreach ($siapDikirim as $o)
                     <li>
                         <a href="{{ route('panel.pesanan.show', $o) }}#pengambilan"
-                           class="flex items-start justify-between gap-4 px-5 py-2.5 hover:bg-navy-50">
+                           class="flex items-start justify-between gap-4 px-5 py-2.5 pointer-coarse:py-3 hover:bg-navy-50">
                             <span class="tabular shrink-0 font-medium">{{ $o->kode }}</span>
                             <span class="min-w-0 text-right text-muted">
                                 {{ $o->customer->nama }}{{ $o->sisa_tagihan > 0 ? ', sisa '.rupiah($o->sisa_tagihan) : '' }}
@@ -357,7 +357,7 @@
                 @foreach ($lamaBelumDiambil as $o)
                     <li>
                         <a href="{{ route('panel.pesanan.show', $o) }}"
-                           class="flex items-start justify-between gap-4 px-5 py-2.5 hover:bg-navy-50">
+                           class="flex items-start justify-between gap-4 px-5 py-2.5 pointer-coarse:py-3 hover:bg-navy-50">
                             <span class="tabular shrink-0 font-medium">{{ $o->kode }}</span>
                             <span class="min-w-0 text-right text-muted">
                                 {{ $o->customer->nama }}, siap {{ $o->siap_pada?->diffForHumans(short: true) }}
@@ -384,7 +384,7 @@
                 @foreach ($paketPerluDitutup as $o)
                     <li>
                         <a href="{{ route('panel.pesanan.show', $o) }}#pengambilan"
-                           class="flex items-start justify-between gap-4 px-5 py-2.5 hover:bg-navy-50">
+                           class="flex items-start justify-between gap-4 px-5 py-2.5 pointer-coarse:py-3 hover:bg-navy-50">
                             <span class="tabular shrink-0 font-medium">{{ $o->kode }}</span>
                             <span class="min-w-0 text-right text-muted">
                                 {{ $o->customer->nama }}, {{ $o->paketSampai() ? 'kata kurir sudah sampai' : 'dikirim '.$o->dikirim_pada?->diffForHumans(short: true) }}
@@ -429,7 +429,7 @@
                     <li class="flex items-start justify-between gap-4 px-5 py-2.5">
                         @if ($log->order)
                             <a href="{{ route('panel.pesanan.show', $log->order) }}"
-                               class="tautan tabular font-medium">{{ $log->order->kode }}</a>
+                               class="tautan area-sentuh tabular font-medium">{{ $log->order->kode }}</a>
                         @else
                             <span class="tabular text-muted">tanpa pesanan</span>
                         @endif

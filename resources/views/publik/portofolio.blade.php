@@ -13,7 +13,7 @@
         <span class="text-ink">Portofolio</span>
     </nav>
 
-    <h1 class="mt-3 text-3xl font-extrabold sm:text-4xl">Galeri portofolio</h1>
+    <h1 class="judul-tampil mt-3 text-[2.5rem] sm:text-5xl">Galeri portofolio</h1>
     <p class="kolom-baca mt-3 leading-relaxed text-muted">
         Sebagian pekerjaan yang pernah kami selesaikan untuk sekolah, instansi, dan komunitas
         di sekitar Wonogiri.

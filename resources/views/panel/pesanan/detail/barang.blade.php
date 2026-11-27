@@ -98,7 +98,7 @@
     {{-- Tautan kerja (KEP-047), sama persis dengan QR di lembar kerja. --}}
     @if (! $batal && $item->productionJobs->isNotEmpty())
         <div class="mt-3 flex flex-wrap items-center gap-3 text-sm" x-data="{ tersalin: false }">
-            <button type="button" class="tautan"
+            <button type="button" class="tautan area-sentuh"
                     @click="navigator.clipboard.writeText(@js(route('kerja', $item->tokenKerja())))
                             .then(() => { tersalin = true; setTimeout(() => tersalin = false, 2500) })">
                 <span x-show="!tersalin">Salin tautan kerja</span>
@@ -211,7 +211,8 @@
                     @csrf
 
                     <div class="overflow-x-auto">
-                        <table class="tabel tabel-rapat min-w-[40rem] text-sm">
+                        {{-- Di HP tiap pemain menjadi kartu isian lewat .tabel-hp (KEP-174). --}}
+                        <table class="tabel tabel-rapat tabel-hp text-sm md:min-w-[40rem]">
                             <thead>
                                 <tr>
                                     <th class="w-10">No</th>
@@ -231,20 +232,20 @@
                             <tbody>
                                 <template x-for="(b, i) in baris" :key="i">
                                     <tr>
-                                        <td class="tabular text-muted" x-text="i + 1"></td>
-                                        <td>
+                                        <td data-kolom="No" class="tabular text-muted" x-text="i + 1"></td>
+                                        <td data-kolom="Nama">
                                             <input type="text" x-model="b.nama_punggung" :name="`baris[${i}][nama_punggung]`"
                                                    maxlength="60" class="kotak-input" placeholder="Tanpa nama" :aria-label="`Nama pemain ${i + 1}`">
                                             @unless ($opsiPemain)
                                                 <input type="hidden" :name="`baris[${i}][model]`" :value="b.model">
                                             @endunless
                                         </td>
-                                        <td>
+                                        <td data-kolom="Nomor">
                                             <input type="text" x-model="b.nomor" :name="`baris[${i}][nomor]`"
                                                    maxlength="5" class="kotak-input tabular" :aria-label="`Nomor pemain ${i + 1}`">
                                         </td>
                                         @if ($pakaiKategori)
-                                            <td>
+                                            <td data-kolom="Kategori">
                                                 <select x-model="b.kategori" :name="`baris[${i}][kategori]`" @change="betulkan(b)"
                                                         class="kotak-input" :aria-label="`Kategori pemain ${i + 1}`">
                                                     @foreach (KategoriUkuran::cases() as $kat)
@@ -253,7 +254,7 @@
                                                 </select>
                                             </td>
                                         @endif
-                                        <td>
+                                        <td data-kolom="Ukuran">
                                             <select x-model="b.ukuran" :name="`baris[${i}][ukuran]`" class="kotak-input" required
                                                     :aria-label="`Ukuran pemain ${i + 1}`">
                                                 <template x-for="u in ukuranUntuk(b)" :key="u">
@@ -262,7 +263,7 @@
                                             </select>
                                         </td>
                                         @if ($opsiPemain)
-                                            <td>
+                                            <td data-kolom="{{ $opsiPemain->nama }}">
                                                 <select x-model="b.model" :name="`baris[${i}][model]`" class="kotak-input"
                                                         :aria-label="@js($opsiPemain->nama) + ' pemain ' + (i + 1)">
                                                     @unless ($opsiPemain->wajib)
@@ -274,10 +275,10 @@
                                                 </select>
                                             </td>
                                         @endif
-                                        <td>
+                                        <td data-kolom="Jumlah">
                                             <x-jumlah x-model.number="b.jumlah" ::name="`baris[${i}][jumlah]`" :min="0" max="5000" required />
                                         </td>
-                                        <td class="text-right">
+                                        <td data-kolom="Hapus" class="text-right">
                                             <button type="button" class="tombol-ikon tombol-ikon-bahaya" @click="baris.splice(i, 1)"
                                                     :aria-label="`Hapus baris ${i + 1}`" title="Hapus baris">
                                                 <x-ikon nama="hapus" ukuran="size-4" />

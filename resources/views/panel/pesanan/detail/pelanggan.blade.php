@@ -48,7 +48,7 @@
             <dd class="tabular">
                 @if (nomor_wa($pelanggan->no_hp))
                     <a href="https://wa.me/{{ nomor_wa($pelanggan->no_hp) }}" target="_blank" rel="noopener"
-                       class="font-medium text-biru-700 hover:underline">{{ $pelanggan->no_hp }}</a>
+                       class="area-sentuh font-medium text-navy-700 hover:underline">{{ $pelanggan->no_hp }}</a>
                 @else
                     {{ $pelanggan->no_hp ?: '-' }}
                 @endif

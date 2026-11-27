@@ -37,17 +37,18 @@
 
 <div x-data="widgetCs(@js($csAwal))" @keydown.escape.window="konfirmasiBaru ? (konfirmasiBaru = false) : (buka && bukaTutup(false))" class="print:hidden">
 
-    {{-- Tombol. Di layar sempit cukup ikon dan satu kata: ia mengambang di
-         atas konten, jadi tidak boleh menutupi lebih dari yang perlu. --}}
+    {{-- Tombol mengambang hanya mulai layar sedang. Di HP chat dibuka dari
+         bilah bawah (KEP-167): tombol mengambang di sana dulu menutupi harga
+         dan tautan di pojok kanan bawah. --}}
     <button type="button" @click="bukaTutup()" x-show="!buka"
-            class="fixed right-4 bottom-4 z-40 flex items-center gap-2 rounded-full bg-navy px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-navy/25 transition-transform hover:-translate-y-0.5 sm:right-6 sm:bottom-6"
+            class="fixed right-4 bottom-4 z-40 hidden items-center gap-2 md:flex rounded-full bg-navy px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-navy/25 transition-transform hover:-translate-y-0.5 sm:right-6 sm:bottom-6"
             aria-label="Buka chat dengan CS">
         <svg class="size-5" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
             <path d="M4 4.5h12a1.5 1.5 0 0 1 1.5 1.5v7A1.5 1.5 0 0 1 16 14.5H9l-4 3v-3H4A1.5 1.5 0 0 1 2.5 13V6A1.5 1.5 0 0 1 4 4.5Z" stroke-linejoin="round"/>
         </svg>
         <span>Chat CS</span>
         <span x-show="belumDibaca > 0" x-cloak
-              class="tabular -mr-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-merah px-1 text-xs"
+              class="tabular -mr-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-xs font-bold text-navy"
               x-text="belumDibaca"></span>
     </button>
 
@@ -57,14 +58,14 @@
              role="dialog" aria-modal="false" aria-labelledby="judul-cs">
 
         <header class="relative shrink-0 bg-navy px-4 pt-4 pb-3 text-white">
-            <span class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-merah via-merah to-kuning"></span>
+            <span class="pita absolute inset-x-0 top-0" aria-hidden="true"></span>
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <p id="judul-cs" class="font-bold">CS {{ setting('toko_nama', 'Setia Sport') }}</p>
                     {{-- Janji yang jujur lebih baik daripada diam: pelanggan tahu
                          apakah ada yang sedang membaca, atau kapan akan dibalas. --}}
                     <p x-show="online" class="mt-0.5 flex items-center gap-1.5 text-xs text-white/80">
-                        <span class="size-2 rounded-full bg-emerald-400"></span>
+                        <span class="size-2 rounded-full bg-hijau"></span>
                         Online, biasanya membalas dalam beberapa menit
                     </p>
                     <p x-show="!online" x-cloak class="mt-0.5 text-xs text-white/70">
@@ -148,7 +149,7 @@
                         <input type="file" accept="image/*" class="sr-only" x-ref="berkasAwal" @change="pilihLampiran($event)">
                         <span x-text="lampiran ? lampiran.name : '+ Lampirkan foto (maks {{ batas_unggah_mb() }} MB)'"></span>
                     </label>
-                    <button type="submit" class="tombol tombol-utama" :disabled="mengirim">
+                    <button type="submit" class="tombol tombol-navy" :disabled="mengirim">
                         <span x-text="mengirim ? 'Mengirim...' : 'Kirim'">Kirim</span>
                     </button>
                 </div>
@@ -181,7 +182,7 @@
                                 {{-- x-text, bukan x-html: isi pesan datang dari orang asing. --}}
                                 <p x-show="p.isi" class="px-3 py-2 break-words whitespace-pre-line" x-text="p.isi"></p>
                             </div>
-                            <p class="tabular mt-0.5 text-[11px] text-muted"
+                            <p class="tabular mt-0.5 text-xs text-muted"
                                :class="p.pengirim === 'PELANGGAN' ? 'text-right' : ''" x-text="waktu(p.waktu)"></p>
                         </div>
                     </li>
@@ -254,7 +255,7 @@
         <p x-show="galat" x-cloak class="shrink-0 border-t border-merah/30 bg-merah-50 px-4 py-2 text-sm" x-text="galat"></p>
 
         {{-- Alasan klien membuat chat ini: penipu yang menyamar sebagai toko. --}}
-        <p class="shrink-0 border-t border-line bg-field px-4 py-2 text-[11px] leading-snug text-muted">
+        <p class="shrink-0 border-t border-line bg-field px-4 py-2 text-xs leading-snug text-muted">
             CS resmi kami hanya di sini. Pembayaran hanya ke rekening yang tertera di halaman pesanan Anda.
         </p>
 

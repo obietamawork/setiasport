@@ -11,8 +11,8 @@
       : 'Tinggal satu langkah sebelum bisa diambil: pelunasan.' }}
 </p>
 
-<div style="border-left:3px solid #ff5a1f;background:#ffede4;padding:16px;margin:0 0 16px;">
-  <p style="margin:0 0 4px;font-size:12px;color:#5c6b64;">Sisa yang perlu dilunasi</p>
+<div style="border-left:3px solid #16255b;background:#f2f5fa;padding:16px;margin:0 0 16px;">
+  <p style="margin:0 0 4px;font-size:12px;color:#5d687f;">Sisa yang perlu dilunasi</p>
   <p style="margin:0;font-size:26px;font-weight:bold;">{{ rupiah($order->sisa_tagihan) }}</p>
 </div>
 
@@ -25,14 +25,14 @@
   mengunggah bukti transfernya.@unless ($order->dikirim()) Bisa juga dibayar langsung di kasir saat datang.@endunless
 </p>
 
-<p style="margin:0 0 20px;font-size:13px;color:#5c6b64;">
+<p style="margin:0 0 20px;font-size:13px;color:#5d687f;">
   Kami tidak pernah meminta transfer lewat WhatsApp atau ke rekening selain yang
   tertera di halaman pesanan. Kalau ada yang memintanya atas nama kami, abaikan
   dan kabari kami lewat {{ kanal_kontak() }}.
 </p>
 
 <a href="{{ $tautan }}"
-   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:3px;">
+   style="display:inline-block;background:#16255b;color:#ffffff;text-decoration:none;padding:12px 20px;font-weight:bold;border-radius:8px;">
   Buka halaman pesanan
 </a>
 @endsection

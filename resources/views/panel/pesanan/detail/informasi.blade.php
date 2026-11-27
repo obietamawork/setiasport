@@ -25,9 +25,9 @@
                 <dd class="font-semibold">{{ $nilai }}</dd>
             </div>
         @endforeach
-        <div class="mt-2 grid grid-cols-[8rem_minmax(0,1fr)] gap-3 rounded-[10px] bg-merah-50 px-3 py-2.5">
+        <div class="mt-2 grid grid-cols-[8rem_minmax(0,1fr)] gap-3 rounded-[10px] bg-navy-50 px-3 py-2.5">
             <dt class="font-semibold">Total</dt>
-            <dd class="tabular text-lg font-extrabold text-merah">{{ rupiah($pesanan->total) }}</dd>
+            <dd class="tabular text-lg font-extrabold text-ink">{{ rupiah($pesanan->total) }}</dd>
         </div>
     </dl>
 </section>

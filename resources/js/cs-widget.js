@@ -76,6 +76,12 @@ export function widgetCs(awal) {
             urlStatus = awal.url.status;
             window.addEventListener('buka-cs', (e) => this.bukaDengan(e.detail ?? {}));
 
+            // Di HP tombol Chat ada di bilah bawah etalase (KEP-167), di luar
+            // komponen ini. Tanda pesan belum dibaca dikirim ke sana.
+            const kabarkanBelumDibaca = (n) => window.dispatchEvent(new CustomEvent('cs-belum-dibaca', { detail: n }));
+            this.$watch('belumDibaca', kabarkanBelumDibaca);
+            kabarkanBelumDibaca(this.belumDibaca);
+
             // Percakapan yang masih berjalan disambungkan sejak halaman dibuka,
             // supaya balasan CS memunculkan tanda di tombol meski jendela
             // chat sedang tertutup.
