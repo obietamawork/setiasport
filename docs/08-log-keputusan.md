@@ -6293,7 +6293,10 @@ Kotak persegi sebelum KEP-183 (375px) dinilai terlalu besar.
   teks, dan tombolnya butuh ruang. Gambarnya memenuhi kotak karena tulisannya tidak tercetak.
 - Deret tanpa gambar HP tetap 8:3, karena hanya punya gambar lebar.
 - Di panel, isian "Gambar untuk HP" tampil lagi untuk semua banner, dengan rasio anjuran 2:1.
-  Keterangan gambar utama menyebut bahwa gambar itu dipakai di HP hanya kalau gambar HP kosong.
+  Pratinjaunya kini 2:1 dan utuh, bukan potongan persegi. Keterangan gambar utama menyebut bahwa
+  gambar itu dipakai di HP hanya kalau gambar HP kosong.
+- Gambar HP yang diunggah kini disimpan sampai lebar 1200px (sebelumnya 900px), sesuai anjuran
+  1200 × 600 px, supaya tetap tajam di layar HP berkepadatan 3x.
 
 ---
 

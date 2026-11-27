@@ -18,7 +18,8 @@ class BannerController extends Controller
     /** Lebar simpan gambar desktop dan HP; desktop selebar monitor 1920px. */
     private const LEBAR_DESKTOP = 1920;
 
-    private const LEBAR_HP = 900;
+    /** Sama dengan anjuran gambar HP 1200 × 600 (KEP-184), tetap tajam di layar HP 3x. */
+    private const LEBAR_HP = 1200;
 
     public function index()
     {

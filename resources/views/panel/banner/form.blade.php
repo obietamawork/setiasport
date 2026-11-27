@@ -39,8 +39,9 @@
     <div>
         <label for="gambar_hp" class="label-form">Gambar untuk HP <span class="font-normal text-muted">(boleh kosong)</span></label>
         @if ($banner->gambar_hp_path)
+            {{-- Pratinjau 2:1 dan utuh, seperti tampilannya di HP (KEP-184). --}}
             <img src="{{ asset('storage/'.$banner->gambar_hp_path) }}" alt=""
-                 class="mb-2 aspect-square w-32 border border-line object-cover">
+                 class="mb-2 aspect-[2/1] w-56 border border-line bg-paper object-contain">
             <label class="mb-3 flex items-center gap-2 text-sm">
                 <input type="checkbox" name="hapus_gambar_hp" value="1" class="size-4 accent-navy">
                 Hapus, pakai gambar utama saja

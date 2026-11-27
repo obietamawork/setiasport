@@ -51,7 +51,7 @@ class BannerTest extends TestCase
                 'teks_tombol' => 'Pesan sekarang',
                 'tautan' => '/katalog?jalur=kustom',
                 'gambar' => UploadedFile::fake()->image('lebar.jpg', 2400, 900),
-                'gambar_hp' => UploadedFile::fake()->image('hp.jpg', 1200, 1200),
+                'gambar_hp' => UploadedFile::fake()->image('hp.jpg', 2400, 1200),
                 'teks_di_atas' => '1', 'aktif' => '1', 'urutan' => 1,
             ])
             ->assertRedirect(route('panel.banner.index'))
@@ -63,6 +63,10 @@ class BannerTest extends TestCase
         // Desktop dikecilkan ke 1920, bukan 1400 seperti foto produk.
         [$lebar] = getimagesizefromstring(Storage::disk('public')->get($banner->gambar_path));
         $this->assertSame(1920, $lebar);
+
+        // Gambar HP dikecilkan ke 1200, sesuai anjuran 1200 × 600 (KEP-184).
+        [$lebarHp] = getimagesizefromstring(Storage::disk('public')->get($banner->gambar_hp_path));
+        $this->assertSame(1200, $lebarHp);
     }
 
     /** Tautannya diklik pengunjung mana pun: hanya alamat di situs ini atau https. */
