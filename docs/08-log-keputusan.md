@@ -6189,6 +6189,32 @@ bukan kalimat klien yang diubah. Tautan yang sudah ada tetap memakai nama yang d
 
 ---
 
+## KEP-180 — Tambalan keamanan Symfony 7.4.24
+**Status:** TERKUNCI · 2026-11-27
+
+Sebelum deploy Kit Tim, `composer audit` (langkah 3 `deploy/periksa.sh`, KEP-109) menemukan lima
+advisory yang terbit 25 November 2026 untuk paket Symfony bawaan Laravel:
+
+- `symfony/http-kernel` 7.4.23: CVE-2026-133743, fragmen sebaris yang membiarkan header
+  forwarded yang tidak tepercaya mengubah URL `asset()` dan `absolute_url()`.
+- `symfony/routing` 7.4.23: CVE-2026-133746 dan CVE-2026-133754, `UrlGenerator` masih bisa
+  membuat URL ke host lain.
+- `symfony/mailer` 7.4.17: CVE-2026-133751 dan CVE-2026-133755, celah STARTTLS dan
+  `require_tls` pada SMTP. Produksi mengirim email lewat API Resend, bukan SMTP, tetapi paketnya
+  tetap ikut diperbarui.
+
+Keputusan:
+
+- Ketiga paket itu naik ke versi patch 7.4.24 lewat `composer update` dengan nama paketnya,
+  tanpa mengubah `composer.json`. `symfony/http-foundation` ikut naik ke 7.4.24 karena
+  `http-kernel` 7.4.24 memerlukannya. Paket lain di `composer.lock` tidak bergeser.
+- Setelahnya `composer audit` dan `npm audit` bersih, Larastan tanpa galat, dan seluruh tes
+  lulus (1013).
+- Disetujui pemilik proyek di percakapan, sesuai aturan bahwa dependensi tidak diubah tanpa izin
+  (seperti KEP-118).
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -6372,3 +6398,4 @@ bukan kalimat klien yang diubah. Tautan yang sudah ada tetap memakai nama yang d
 | KEP-177 | Kit Tim tahap 11: sapaan "Halo" di pusat akun, saringan status Pesanan saya, tombol aksi per pesanan (Periksa mockup, Lihat petunjuk ambil, Pesan lagi, Lihat detail), catatan Lacak, Keluar dari akun di bawah | TERKUNCI |
 | KEP-178 | Kit Tim tahap 12: pita di kartu total pembayaran, isian berkas bergaya kotak unggah, harga Pesanan saya tetap rata kanan di HP | TERKUNCI |
 | KEP-179 | Kit Tim tahap 13: kolom tautan Belanja dan Bantuan di kaki halaman (Portofolio dan Testimoni hanya kalau galerinya berisi, Cara pesan custom ke beranda), tautan kebijakan pindah dari baris paling bawah; Panduan ukuran belum karena belum ada halaman umum; batang Laporan Terlaris navy, bukan ungu | TERKUNCI |
+| KEP-180 | Tambalan keamanan Symfony 7.4.24 (http-kernel, http-foundation, routing, mailer) | TERKUNCI |
