@@ -6256,7 +6256,7 @@ kustom, dan tabel daftar pemain. Halamannya sendiri tidak pernah ikut bergeser.
 ---
 
 ## KEP-183 — Banner beranda melebar di HP
-**Status:** TERKUNCI · 2026-11-27
+**Status:** DIREVISI · 2026-11-27, direvisi KEP-184 pada hari yang sama (8:3 di HP terlalu kecil; kini 2:1 dengan gambar HP)
 
 Pemilik proyek menunjukkan beranda di HP: banner tampil persegi selebar layar, setinggi 390px di
 layar 390px atau hampir separuh layar, sedangkan di tablet dan layar lebar banner melebar 8:3.
@@ -6272,6 +6272,28 @@ sudah tercetak di gambarnya.
   Keterangan gambar utama kini mengingatkan bahwa gambar tampil utuh di HP dengan lebar kira-kira
   seperlima, jadi tulisan di gambar perlu cukup besar.
 - Gambar HP yang sudah diunggah untuk kedua banner itu tetap tersimpan, hanya tidak dipakai.
+
+---
+
+## KEP-184 — Banner HP 2:1, gambar HP tampil utuh
+**Status:** TERKUNCI · 2026-11-27
+
+Setelah KEP-183 dideploy, pemilik proyek menilai banner 8:3 di HP terlalu kecil: tinggi 141px
+di layar 375px, dan tulisan pada gambar lebar jadi mungil. Sebagai acuan ia menunjukkan banner
+HP regarmarket.id, yang berukuran sekitar 2:1 dan memakai gambar khusus HP bertulisan besar.
+Kotak persegi sebelum KEP-183 (375px) dinilai terlalu besar.
+
+- Banner yang punya gambar HP kini tampil 2:1 di HP, kira-kira 188px di layar 375px. Gambar HP
+  yang tulisannya tercetak tampil utuh tanpa dipotong. Kalau bentuknya bukan 2:1, sisi kiri dan
+  kanannya diisi gambar yang sama yang diburamkan.
+- Kedua gambar HP yang tayang sekarang berbentuk persegi dan tegak 4:5, jadi masih tampil di
+  tengah dengan sisi buram. Hasil seperti acuan baru tercapai kalau klien mengunggah gambar HP
+  2:1 (ideal 1200 × 600 px) dengan tulisan besar.
+- Deret yang memuat banner bertulisan HTML di atas gambar memakai 3:2 di HP, karena judul,
+  teks, dan tombolnya butuh ruang. Gambarnya memenuhi kotak karena tulisannya tidak tercetak.
+- Deret tanpa gambar HP tetap 8:3, karena hanya punya gambar lebar.
+- Di panel, isian "Gambar untuk HP" tampil lagi untuk semua banner, dengan rasio anjuran 2:1.
+  Keterangan gambar utama menyebut bahwa gambar itu dipakai di HP hanya kalau gambar HP kosong.
 
 ---
 
@@ -6461,4 +6483,5 @@ sudah tercetak di gambarnya.
 | KEP-180 | Tambalan keamanan Symfony 7.4.24 (http-kernel, http-foundation, routing, mailer) | TERKUNCI |
 | KEP-181 | Produk terlaris ringkas di HP: tiga kartu angka sebaris (`.deret-angka`), tabel peringkat tetap tabel | TERKUNCI |
 | KEP-182 | Progres tahap di detail pesanan panel menurun di bawah 768px (`<x-tahap-menurun>`, sama dengan lacak), mendatar tanpa digeser di atasnya | TERKUNCI |
-| KEP-183 | Banner beranda melebar 8:3 di HP seperti di layar lebar; persegi hanya untuk banner bertulisan HTML di atas gambar | TERKUNCI |
+| KEP-183 | Banner beranda melebar 8:3 di HP seperti di layar lebar; persegi hanya untuk banner bertulisan HTML di atas gambar | DIREVISI KEP-184 |
+| KEP-184 | Banner HP 2:1 dengan gambar HP yang tampil utuh (sisi buram bila bentuknya lain); 3:2 untuk banner bertulisan HTML; 8:3 bila tanpa gambar HP | TERKUNCI |

@@ -15,13 +15,21 @@
     $banyak = $banner->count() > 1;
     $selangMs = 6000;
 
-    // Di HP banner tampil melebar 8:3 seperti di tablet dan layar lebar
-    // (KEP-183); kotak persegi dulu setinggi satu layar HP. Hanya deret yang
-    // memuat banner bertulisan HTML di atas gambar yang tetap persegi di HP,
-    // karena judul dan tombolnya butuh ruang, dan di deret itu gambar HP
-    // dipakai bila ada. Satu bentuk untuk seluruh deret, supaya slide yang
-    // berganti tidak mengubah tinggi banner.
-    $persegiDiHp = $banner->contains(fn ($b) => $b->teks_di_atas);
+    // Ukuran banner di HP (KEP-184). Kotak persegi setinggi 390px terlalu
+    // besar, 8:3 seperti layar lebar terlalu kecil (KEP-183), jadi gambar HP
+    // tampil 2:1 seperti banner HP toko daring pada umumnya: kira-kira 188px
+    // di layar 375px. Gambar HP yang tulisannya tercetak tampil utuh tanpa
+    // dipotong, dan sisi kosongnya diisi gambar yang sama yang diburamkan.
+    // Deret yang memuat banner bertulisan HTML di atas gambar memakai 3:2,
+    // karena judul dan tombolnya butuh ruang. Deret tanpa gambar HP tetap
+    // 8:3, karena hanya punya gambar lebar. Satu bentuk untuk seluruh deret,
+    // supaya slide yang berganti tidak mengubah tinggi banner.
+    $bentukHp = match (true) {
+        $banner->contains(fn ($b) => $b->teks_di_atas) => 'aspect-[3/2]',
+        $banner->contains(fn ($b) => filled($b->gambar_hp_path)) => 'aspect-[2/1]',
+        default => 'aspect-[8/3]',
+    };
+    $pakaiGambarHp = $bentukHp !== 'aspect-[8/3]';
 @endphp
 
 <div class="relative"
@@ -39,20 +47,29 @@
     <div class="banner-jalur" @if ($banyak) x-ref="jalur" @scroll.debounce.60ms="sinkron()" @endif>
         @foreach ($banner as $i => $b)
             @php $tautan = $b->tautan; @endphp
-            <div class="relative w-full shrink-0 snap-start"
+            @php
+                $gambarHp = $pakaiGambarHp && $b->gambar_hp_path ? asset('storage/'.$b->gambar_hp_path) : null;
+                $utuhDiHp = $pakaiGambarHp && ! $b->teks_di_atas;
+            @endphp
+            <div class="relative w-full shrink-0 snap-start overflow-hidden"
                  @if ($banyak)
                      role="group" aria-roledescription="slide" aria-label="{{ $i + 1 }} dari {{ $banner->count() }}"
                      :inert="aktif !== {{ $i }}"
                  @endif>
+                @if ($utuhDiHp)
+                    {{-- Latar buram di kiri-kanan gambar yang tampil utuh, hanya di HP. --}}
+                    <img src="{{ $gambarHp ?? asset('storage/'.$b->gambar_path) }}" alt="" aria-hidden="true" loading="lazy"
+                         class="absolute inset-0 size-full scale-110 object-cover blur-xl sm:hidden">
+                @endif
                 <picture>
-                    @if ($persegiDiHp && $b->gambar_hp_path)
-                        <source media="(max-width: 639px)" srcset="{{ asset('storage/'.$b->gambar_hp_path) }}">
+                    @if ($gambarHp)
+                        <source media="(max-width: 639px)" srcset="{{ $gambarHp }}">
                     @endif
                     <img src="{{ asset('storage/'.$b->gambar_path) }}"
                          alt="{{ $b->teks_di_atas || $tautan ? '' : $b->judul }}"
                          width="1920" height="720"
                          @if ($i === 0) fetchpriority="high" @else loading="lazy" @endif
-                         class="block w-full object-cover sm:aspect-[8/3] {{ $persegiDiHp ? 'aspect-square' : 'aspect-[8/3]' }}">
+                         class="relative block w-full sm:aspect-[8/3] sm:object-cover {{ $bentukHp }} {{ $utuhDiHp ? 'object-contain' : 'object-cover' }}">
                 </picture>
 
                 @if ($b->teks_di_atas)

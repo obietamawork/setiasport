@@ -30,14 +30,13 @@
         <input type="file" id="gambar" name="gambar" accept="image/*" class="kotak-input"
                @unless ($banner->gambar_path) required @endunless>
         <x-keterangan-unggah rasio="8:3 (melebar)" ukuran="ideal 1920 × 720 px">
-            Gambar ini tampil utuh di semua layar, termasuk HP yang lebarnya kira-kira seperlima
-            ukuran ini, jadi buat tulisan di gambar cukup besar.
+            Dipakai di tablet dan layar lebar, dan di HP kalau gambar untuk HP kosong. Di HP lebarnya
+            kira-kira seperlima ukuran ini, jadi tulisan kecil sulit terbaca.
         </x-keterangan-unggah>
     </div>
 
-    {{-- Gambar HP hanya dipakai banner bertulisan HTML di atas gambar, yang
-         tetap persegi di HP (KEP-183). --}}
-    <div x-show="teks">
+    {{-- Di HP gambar ini tampil 2:1 (KEP-184). --}}
+    <div>
         <label for="gambar_hp" class="label-form">Gambar untuk HP <span class="font-normal text-muted">(boleh kosong)</span></label>
         @if ($banner->gambar_hp_path)
             <img src="{{ asset('storage/'.$banner->gambar_hp_path) }}" alt=""
@@ -48,9 +47,9 @@
             </label>
         @endif
         <input type="file" id="gambar_hp" name="gambar_hp" accept="image/*" class="kotak-input">
-        <x-keterangan-unggah rasio="1:1 (persegi)" ukuran="ideal 900 × 900 px">
-            Banner yang judul dan tombolnya tampil di atas gambar dibuat persegi di HP supaya tulisannya
-            muat. Kalau kosong, gambar utama dipotong bagian tengahnya.
+        <x-keterangan-unggah rasio="2:1 (melebar)" ukuran="ideal 1200 × 600 px">
+            Di HP banner tampil 2:1, seperti banner HP toko daring pada umumnya, jadi buat tulisan di gambar
+            ini besar. Gambar persegi atau tegak tetap tampil utuh, dengan sisi kiri-kanan diisi versi buramnya.
         </x-keterangan-unggah>
     </div>
 
