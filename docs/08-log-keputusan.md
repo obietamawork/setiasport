@@ -3169,7 +3169,7 @@ dijalankan di Chromium dan WebKit, axe 40/40 bersih termasuk keranjang berisi.
 ---
 
 ## KEP-092 — Logo hero versi terang, dan banner promo beranda yang digeser manual
-**Status:** DIREVISI · 2026-10-27, direvisi KEP-166 pada 2026-11-26 (banner kini bergeser sendiri)
+**Status:** DIREVISI · 2026-10-27, direvisi KEP-166 pada 2026-11-26 (banner kini bergeser sendiri) dan KEP-183 pada 2026-11-27 (di HP banner melebar 8:3; gambar HP hanya untuk banner bertulisan di atas gambar)
 
 - **Logo di hero tenggelam.** Tulisan navy logo lengkap diletakkan di atas
   hero yang juga navy, ditambah `opacity-90`; yang terbaca hanya ilustrasi
@@ -6255,6 +6255,26 @@ kustom, dan tabel daftar pemain. Halamannya sendiri tidak pernah ikut bergeser.
 
 ---
 
+## KEP-183 — Banner beranda melebar di HP
+**Status:** TERKUNCI · 2026-11-27
+
+Pemilik proyek menunjukkan beranda di HP: banner tampil persegi selebar layar, setinggi 390px di
+layar 390px atau hampir separuh layar, sedangkan di tablet dan layar lebar banner melebar 8:3.
+Kedua banner yang tayang memakai gambar HP sendiri (persegi dan tegak 4:5) dengan tulisan yang
+sudah tercetak di gambarnya.
+
+- Banner yang tulisannya sudah ada di gambar kini tampil melebar 8:3 di semua layar, memakai
+  gambar utama yang sama dengan tablet dan layar lebar. Di layar 390px tingginya 146px.
+- Banner yang judul, teks, dan tombolnya tampil di atas gambar tetap persegi di HP, karena tulisan
+  HTML-nya butuh ruang, dan memakai gambar HP bila ada. Kalau satu deret memuat banner jenis ini,
+  seluruh deret persegi di HP, supaya tinggi banner tidak berubah saat bergeser.
+- Di panel, isian "Gambar untuk HP" hanya muncul saat saklar teks di atas gambar menyala.
+  Keterangan gambar utama kini mengingatkan bahwa gambar tampil utuh di HP dengan lebar kira-kira
+  seperlima, jadi tulisan di gambar perlu cukup besar.
+- Gambar HP yang sudah diunggah untuk kedua banner itu tetap tersimpan, hanya tidak dipakai.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -6350,7 +6370,7 @@ kustom, dan tabel daftar pemain. Halamannya sendiri tidak pernah ikut bergeser.
 | KEP-089 | Audit UI/UX: klik baris salah sasaran di Safari, dialog konfirmasi, aset, SEO | TERKUNCI |
 | KEP-090 | Audit developer/QA: N+1, galat yang menyamar, CI, analisis statis | TERKUNCI |
 | KEP-091 | Dua jalan pemesanan, tombol − +, hapus di keranjang, estimasi dari data | TERKUNCI |
-| KEP-092 | Logo hero versi terang, dan banner promo beranda yang digeser manual | DIREVISI KEP-166 |
+| KEP-092 | Logo hero versi terang, dan banner promo beranda yang digeser manual | DIREVISI KEP-166, KEP-183 |
 | KEP-093 | Rilis pertama ke hosting, deploy lewat SSH | TERKUNCI |
 | KEP-094 | Email Resend dan ongkir Biteship dinyalakan di produksi | TERKUNCI |
 | KEP-095 | File desain pelanggan hanya lewat WhatsApp, dijelaskan sejak langkah desain | TERKUNCI |
@@ -6441,3 +6461,4 @@ kustom, dan tabel daftar pemain. Halamannya sendiri tidak pernah ikut bergeser.
 | KEP-180 | Tambalan keamanan Symfony 7.4.24 (http-kernel, http-foundation, routing, mailer) | TERKUNCI |
 | KEP-181 | Produk terlaris ringkas di HP: tiga kartu angka sebaris (`.deret-angka`), tabel peringkat tetap tabel | TERKUNCI |
 | KEP-182 | Progres tahap di detail pesanan panel menurun di bawah 768px (`<x-tahap-menurun>`, sama dengan lacak), mendatar tanpa digeser di atasnya | TERKUNCI |
+| KEP-183 | Banner beranda melebar 8:3 di HP seperti di layar lebar; persegi hanya untuk banner bertulisan HTML di atas gambar | TERKUNCI |

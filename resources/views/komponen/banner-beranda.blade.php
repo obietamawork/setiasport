@@ -14,6 +14,14 @@
 @php
     $banyak = $banner->count() > 1;
     $selangMs = 6000;
+
+    // Di HP banner tampil melebar 8:3 seperti di tablet dan layar lebar
+    // (KEP-183); kotak persegi dulu setinggi satu layar HP. Hanya deret yang
+    // memuat banner bertulisan HTML di atas gambar yang tetap persegi di HP,
+    // karena judul dan tombolnya butuh ruang, dan di deret itu gambar HP
+    // dipakai bila ada. Satu bentuk untuk seluruh deret, supaya slide yang
+    // berganti tidak mengubah tinggi banner.
+    $persegiDiHp = $banner->contains(fn ($b) => $b->teks_di_atas);
 @endphp
 
 <div class="relative"
@@ -37,14 +45,14 @@
                      :inert="aktif !== {{ $i }}"
                  @endif>
                 <picture>
-                    @if ($b->gambar_hp_path)
+                    @if ($persegiDiHp && $b->gambar_hp_path)
                         <source media="(max-width: 639px)" srcset="{{ asset('storage/'.$b->gambar_hp_path) }}">
                     @endif
                     <img src="{{ asset('storage/'.$b->gambar_path) }}"
                          alt="{{ $b->teks_di_atas || $tautan ? '' : $b->judul }}"
                          width="1920" height="720"
                          @if ($i === 0) fetchpriority="high" @else loading="lazy" @endif
-                         class="block aspect-square w-full object-cover sm:aspect-[8/3]">
+                         class="block w-full object-cover sm:aspect-[8/3] {{ $persegiDiHp ? 'aspect-square' : 'aspect-[8/3]' }}">
                 </picture>
 
                 @if ($b->teks_di_atas)

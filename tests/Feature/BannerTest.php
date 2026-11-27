@@ -166,6 +166,29 @@ class BannerTest extends TestCase
         $this->assertStringContainsString('<span class="sr-only">Promo Canva</span>', $html);
     }
 
+    /** Banner bertulisan di gambar tampil melebar di HP seperti di layar lebar (KEP-183). */
+    public function test_banner_bertulisan_di_gambar_tampil_melebar_di_hp_tanpa_gambar_hp(): void
+    {
+        $this->banner(['teks_di_atas' => false, 'gambar_hp_path' => 'banner/a-hp.webp']);
+
+        $banner = Str::betweenFirst($this->get(route('beranda'))->assertOk()->getContent(), 'banner-jalur', '</section>');
+
+        $this->assertStringNotContainsString('a-hp.webp', $banner);
+        $this->assertStringNotContainsString('aspect-square', $banner);
+        $this->assertStringContainsString('aspect-[8/3]', $banner);
+    }
+
+    /** Judul dan tombol HTML butuh ruang, jadi banner itu tetap persegi di HP dengan gambar HP-nya. */
+    public function test_banner_bertulisan_di_atas_gambar_tetap_persegi_di_hp(): void
+    {
+        $this->banner(['teks_di_atas' => true, 'gambar_hp_path' => 'banner/a-hp.webp']);
+
+        $banner = Str::betweenFirst($this->get(route('beranda'))->assertOk()->getContent(), 'banner-jalur', '</section>');
+
+        $this->assertStringContainsString('<source media="(max-width: 639px)" srcset="'.asset('storage/banner/a-hp.webp').'">', $banner);
+        $this->assertStringContainsString('aspect-square', $banner);
+    }
+
     public function test_menghapus_banner_ikut_menghapus_gambarnya(): void
     {
         Storage::disk('public')->put('banner/a.webp', 'x');
