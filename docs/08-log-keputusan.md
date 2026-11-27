@@ -6215,6 +6215,46 @@ Keputusan:
 
 ---
 
+## KEP-181 — Produk terlaris ringkas di HP
+**Status:** TERKUNCI · 2026-11-27
+
+Pemilik proyek menunjuk halaman Produk terlaris di HP: tiga kartu angkanya bertumpuk satu kolom,
+sekitar 460px, sebelum peringkatnya terlihat. Hanya halaman ini yang begitu. Dashboard, laporan
+stok, dan daftar pesanan sudah memakai dua kolom.
+
+- Tiga kartu angka tetap sebaris di semua lebar layar. Di bawah 640px kartunya merapat lewat
+  `.deret-angka`: jarak dalam lebih kecil, ikon 2rem, label 12px, dan angka yang mengecil
+  mengikuti lebar layar. Tinggi deretnya kini 125px di layar 390px dan 138px di 320px.
+- Tabel peringkat tetap tabel di HP, tidak dijadikan kartu lewat `.tabel-hp`. Empat kolomnya
+  (#, Produk, Pcs, Pesanan) muat di 320px, sedangkan sebagai kartu setiap produk memakan empat
+  baris. Kolom batang "Bagian dari total" tetap baru tampil mulai 768px.
+- Laporan penjualan tetap satu kolom di HP, karena kartunya memuat nominal rupiah penuh dan
+  kalimat penjelasan yang butuh lebar.
+
+---
+
+## KEP-182 — Progres tahap di detail pesanan panel menurun di HP
+**Status:** TERKUNCI · 2026-11-27
+
+Deret tahap di kepala detail pesanan panel dikunci selebar 34rem lalu digeser. Di layar 390px
+hanya empat dari tujuh tahap barang kustom yang terlihat; Produksi, Siap, dan Selesai tersembunyi
+di kanan, padahal staf membuka halaman ini untuk tahu pesanan sedang menuju ke mana. Audit geser
+samping di 20 halaman (390px dan 320px) menemukan hanya deret ini yang bermasalah. Yang lain
+memang dirancang bisa digeser di dalam kotaknya sendiri: tab penyaring, penanda langkah pesan
+kustom, dan tabel daftar pemain. Halamannya sendiri tidak pernah ikut bergeser.
+
+- Di bawah 768px deret tahap menurun, sama dengan halaman lacak. Ketujuh tahap terlihat dalam
+  tinggi 198px. Tahap sekarang tebal dengan titik navy bercincin kuning, dan status rincinya
+  (misalnya Produksi: Jahit) tampil di kanan.
+- Mulai 768px deret tetap mendatar seperti sebelumnya, dan kini muat tanpa digeser. Batasnya
+  768px, bukan 640px seperti lacak, karena tujuh tahap staf belum muat di layar 640px.
+- Daftar menurun di halaman lacak dipindah ke komponen `<x-tahap-menurun>`, yang kini dipakai
+  kedua halaman supaya bentuknya tidak bercabang. Tampilan lacak tidak berubah.
+- Pemilik proyek memilih bentuk menurun, bukan memecah deret menjadi dua atau tiga baris. Di
+  deret yang dipecah, garis penghubung antartahap putus di setiap pergantian baris.
+
+---
+
 ## Ringkasan keputusan
 
 | # | Keputusan | Status |
@@ -6399,3 +6439,5 @@ Keputusan:
 | KEP-178 | Kit Tim tahap 12: pita di kartu total pembayaran, isian berkas bergaya kotak unggah, harga Pesanan saya tetap rata kanan di HP | TERKUNCI |
 | KEP-179 | Kit Tim tahap 13: kolom tautan Belanja dan Bantuan di kaki halaman (Portofolio dan Testimoni hanya kalau galerinya berisi, Cara pesan custom ke beranda), tautan kebijakan pindah dari baris paling bawah; Panduan ukuran belum karena belum ada halaman umum; batang Laporan Terlaris navy, bukan ungu | TERKUNCI |
 | KEP-180 | Tambalan keamanan Symfony 7.4.24 (http-kernel, http-foundation, routing, mailer) | TERKUNCI |
+| KEP-181 | Produk terlaris ringkas di HP: tiga kartu angka sebaris (`.deret-angka`), tabel peringkat tetap tabel | TERKUNCI |
+| KEP-182 | Progres tahap di detail pesanan panel menurun di bawah 768px (`<x-tahap-menurun>`, sama dengan lacak), mendatar tanpa digeser di atasnya | TERKUNCI |

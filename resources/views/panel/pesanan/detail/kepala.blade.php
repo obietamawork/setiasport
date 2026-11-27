@@ -71,7 +71,14 @@
             @if ($fase === [])
                 <p class="text-sm text-muted">Barang ini dibatalkan.</p>
             @else
-                <div class="-mx-1 overflow-x-auto px-1 pb-1">
+                {{-- Mendatar mulai 768px, menurun di bawahnya seperti halaman
+                     lacak (KEP-182). Dulu deret ini dikunci selebar 34rem dan
+                     digeser, sehingga Produksi, Siap, dan Selesai tidak terlihat
+                     di HP. Batasnya 768px, bukan 640px seperti lacak, karena
+                     tujuh tahap staf belum muat di 640px. --}}
+                <x-tahap-menurun :fase="$fase" class="md:hidden"
+                                 aria-label="Tahap {{ $item->nama_produk }}: {{ $item->status_item->labelStaf() }}" />
+                <div class="-mx-1 hidden overflow-x-auto px-1 pb-1 md:block">
                     <ol class="tahap-datar min-w-[34rem]" style="grid-template-columns: repeat({{ count($fase) }}, minmax(0, 1fr))"
                         aria-label="Tahap {{ $item->nama_produk }}: {{ $item->status_item->labelStaf() }}">
                         @foreach ($fase as $f)

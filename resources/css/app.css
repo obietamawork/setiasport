@@ -1876,6 +1876,18 @@
         .kartu-angka-ringkas .kartu-angka-label { font-size: 0.75rem; }
     }
 
+    /* Deret kartu angka yang tetap sebaris di HP (KEP-181). Di layar sempit
+       kartunya merapat seperti .kartu-angka-ringkas, dan angkanya mengecil
+       mengikuti lebar layar supaya "12.345" pun muat di layar 320px. */
+    .deret-angka > .kartu-angka { min-width: 0; }
+
+    @media (width < 40rem) {
+        .deret-angka > .kartu-angka { gap: 0.45rem; padding: 0.65rem; }
+        .deret-angka .kartu-angka-ikon { width: 2rem; height: 2rem; }
+        .deret-angka .kartu-angka-label { font-size: 0.75rem; }
+        .deret-angka .kartu-angka-nilai { font-size: clamp(1.25rem, 7vw, 1.6rem); }
+    }
+
     /* Ubin jalan pintas: ikon di atas label. Ubin putih, warna bagian hanya di
        ikonnya (KEP-171). */
     .pintas {

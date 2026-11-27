@@ -78,25 +78,7 @@
             @endforeach
         </ol>
 
-        <ol class="mt-5 sm:hidden">
-            @foreach ($linimasa['fase'] as $f)
-                <li class="flex gap-3 {{ $loop->last ? '' : 'pb-3' }}">
-                    <div class="flex flex-col items-center">
-                        <span class="mt-1 size-2.5 shrink-0 rounded-full
-                            {{ $f['keadaan'] === 'kini' ? 'bg-navy ring-4 ring-kuning' : ($f['keadaan'] === 'lewat' ? 'bg-ok' : 'bg-line-strong') }}"></span>
-                        @unless ($loop->last)
-                            <span class="w-px flex-1 {{ $f['keadaan'] === 'lewat' ? 'bg-ok' : 'bg-line' }}"></span>
-                        @endunless
-                    </div>
-                    <div class="-mt-0.5 flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3">
-                        <p class="text-sm {{ $f['keadaan'] === 'kini' ? 'font-bold' : ($f['keadaan'] === 'lewat' ? '' : 'text-muted') }}">{{ $f['label'] }}</p>
-                        @if ($f['waktu'])
-                            <p class="text-xs text-muted tabular">{{ $f['waktu']->translatedFormat('j M, H.i') }}</p>
-                        @endif
-                    </div>
-                </li>
-            @endforeach
-        </ol>
+        <x-tahap-menurun :fase="$linimasa['fase']" class="mt-5 sm:hidden" />
 
         @if ($kini && $kini['catatan'])
             <p class="mt-4 rounded-[10px] bg-navy-50 px-4 py-2.5 text-sm leading-relaxed">{{ $kini['catatan'] }}</p>

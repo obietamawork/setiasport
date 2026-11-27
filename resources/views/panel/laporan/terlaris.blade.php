@@ -7,7 +7,9 @@
 
 @include('panel.laporan.periode', ['rute' => 'panel.laporan.terlaris'])
 
-<div class="mt-6 grid gap-3 sm:grid-cols-3">
+{{-- Tiga angka tetap sebaris di HP (KEP-181). Dulu ditumpuk satu kolom dan
+     memakan satu layar penuh sebelum peringkatnya terlihat. --}}
+<div class="deret-angka mt-6 grid grid-cols-3 gap-2 sm:gap-3">
     <x-kartu-angka warna="ungu" ikon="keranjang" label="Potong terjual" :angka="number_format($totalQty, 0, ',', '.')" />
     <x-kartu-angka warna="biru" ikon="produk" label="Produk berbeda" :angka="$terlaris->count()" />
     <x-kartu-angka warna="hijau" ikon="pesanan" label="Pesanan yang memuatnya" :angka="$totalPesanan" />
@@ -22,7 +24,9 @@
 @else
     <section class="kartu mt-6 overflow-hidden">
         <h2 class="kartu-kop">Peringkat produk</h2>
-        <table class="tabel tabel-hp">
+        {{-- Tetap tabel di HP, tidak jadi kartu (KEP-181): empat kolomnya pendek
+             dan muat di layar 320px, sedangkan kartu memakan empat baris per produk. --}}
+        <table class="tabel">
             <thead>
                 <tr>
                     <th class="w-12">#</th>

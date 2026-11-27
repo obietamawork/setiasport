@@ -135,10 +135,20 @@ di jalan. Hasil auditnya ada di [13-audit-ui.md](13-audit-ui.md).
 - Teks paling kecil 12px, termasuk label bilah bawah dan angka penghitung
 - Urutan di layar sempit mengikuti urutan pertanyaan pelanggan, bukan urutan
   markup. Di halaman produk: gambar, kotak beli, baru spesifikasi
-- Tabel data menjadi kartu di HP lewat `.tabel-hp`: setiap `<td>` membawa label
-  kolomnya di `data-kolom`, dan kolom utama ditandai `data-utama` supaya naik ke
-  baris pertama kartu. Hanya tabel ringkas beberapa kolom yang boleh digeser di
-  dalam pembungkusnya, dan tidak pernah menggeser halaman
+- Tabel data yang tidak muat menjadi kartu di HP lewat `.tabel-hp`: setiap `<td>`
+  membawa label kolomnya di `data-kolom`, dan kolom utama ditandai `data-utama`
+  supaya naik ke baris pertama kartu. Tabel dengan beberapa kolom pendek yang muat
+  di 320px tetap tabel, karena kartu memakan beberapa baris per data (KEP-181).
+  Hanya tabel ringkas beberapa kolom yang boleh digeser di dalam pembungkusnya,
+  dan tidak pernah menggeser halaman
+- Kartu angka tidak ditumpuk satu kolom di HP. Tiga kartu tetap sebaris lewat
+  `.deret-angka`, yang merapatkan kartunya di bawah 640px; empat atau lima kartu
+  dua kolom (KEP-181)
+- Deret pilihan yang setara (tab penyaring, penanda langkah) boleh digeser ke
+  samping di dalam kotaknya. Deret urutan seperti progres pesanan tidak: tahap
+  terakhirnya tidak boleh tersembunyi. Di layar sempit progres menurun lewat
+  `<x-tahap-menurun>`, dan versi mendatarnya `.tahap-datar` baru dipakai setelah
+  semua tahap muat (KEP-182)
 - Mulai 1024px konten dan ringkasannya berdampingan, dengan ringkasan menempel
   di `top-24` supaya tidak tertutup kepala halaman yang menempel
 - Item grid yang memuat pembungkus `overflow-x-auto` wajib diberi `min-w-0`,
